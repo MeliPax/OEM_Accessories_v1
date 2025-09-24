@@ -1,0 +1,92 @@
+Model,Trim,Year,Description,Active
+ELCS4V2BES00	,Essential IVT,2024,Elantra,True
+ELCS4V2BPR00,Preferred IVT,2024,Elantra,True
+ELCS4V2BPRTE	,Preferred with Sun & Tech Pkg IVT,2024,Elantra,True
+ELCS4V2BLU00,Luxury IVT,2024,Elantra,True
+ELCS4V2BLUME,Luxury IVT (Two Tone Interior),2024,Elantra,True
+ELCS4U1ANLUL,N-Line DCT,2024,Elantra,True
+ELHS4T1BLUHE,Hybrid Luxury,2024,Elantra HEV,True
+ELHS4T1BLUHM,Hybrid Luxury (Two-Tone Interior),2024,Elantra HEV,True
+ELCS472ANN00,Elantra N MT,2024,Elantra N,True
+ELCS4M2ANN00	,Elantra N DCT,2024,Elantra N,True
+SOCS4J2EPRTR,Preferred-Trend FWD,2024,Sonata,True
+SOCS4K2EPRTR	,Preferred-Trend AWD,2024,Sonata,True
+SOCS4M2DNL00	,N-Line,2024,Sonata,True
+VNCW5V1FES00,Essential,2024,Venue,True
+VNCW5V1FESTT	,Essential (Two-tone),2024,Venue,True
+VNCW5V1FPR00,Preferred,2024,Venue,True
+VNCW5V1FPRTT	,Preferred (Two-tone),2024,Venue,True
+VNCW5V1FULCP	,Ultimate - Denim interior,2024,Venue,True
+VNCW5V1FUL00	,Ultimate - Black interior,2024,Venue,True
+KOCW5V2BES00	,2.0L Essential FWD,2024,Kona,True
+KOCW5Q2BES00	,2.0L Essential AWD,2024,Kona,True
+KOCW5V2BPR00	,2.0L Preferred FWD,2024,Kona,True
+KOCW5Q2BPR00	,2.0L Preferred AWD,2024,Kona,True
+KOCW5Q2BPRTR	,2.0L Preferred AWD with Trend Pkg,2024,Kona,True
+KOCW5K1ANL00	,1.6T N Line AWD,2024,Kona,True
+KOCW5K1ANLTT	,1.6T N Line AWD w/ Two-tone,2024,Kona,True
+KOCW5K1ANLUL	,1.6T N Line Ultimate AWD,2024,Kona,True
+KOCW5K1ANLBA	,1.6T N Line Ultimate AWD w/ Two-tone,2024,Kona,True
+TUCWDK2EPR00	,Preferred,2024,Tucson,True
+TUCWDK2EPRTR	,Trend,2024,Tucson,True
+TUHWDG1ALUHE,Luxury HEV,2024,Tucson HEV,True
+TUHWDG1ANLHE	,N-Line HEV,2024,Tucson HEV,True
+TUHWDG1AULHE	,Ultimate HEV,2024,Tucson HEV,True
+TUPWDG1AULPH	,Ultimate PHEV,2024,Tucson PHEV,True
+EL74IF20A100	,Essential IVT,2024,Elantra,True
+EL74IF20A200	,Preferred IVT,2024,Elantra,True
+EL74IF20A283	,Preferred with Sun & Tech Pkg IVT,2024,Elantra,True
+EL74IF20A300	,Luxury IVT,2024,Elantra,True
+EL74IF20A354	,Luxury IVT (Two Tone Interior),2024,Elantra,True
+EL74DF16DO20,N-Line DCT,2024,Elantra,True
+EL74DF16I3AA,Hybrid Luxury,2024,Elantra HEV,True
+EL74DF16I3AC,Hybrid Luxury (Two-Tone Interior),2024,Elantra HEV,True
+EL74MF20DX39,Elantra N MT,2024,Elantra N,True
+EL74DF20DX39,Elantra N DCT,2024,Elantra N,True
+SO84AF25B241,Preferred-Trend FWD,2024,Sonata,True
+SO84AA25B241,Preferred-Trend AWD,2024,Sonata,True
+SO84DF25DO00	,N-Line,2024,Sonata,True
+VN1SIF16A100,Essential,2024,Venue,True
+VN1SIF16A166,Essential (Two-tone),2024,Venue,True
+VN1SIF16A200,Preferred,2024,Venue,True
+VN1SIF16A266,Preferred (Two-tone),2024,Venue,True
+VN1SIF16A489,Ultimate - Denim interior,2024,Venue,True
+VN1SIF16A400,Ultimate - Black interior,2024,Venue,True
+KO2SAF20A100,2.0L Essential FWD,2024,Kona,True
+KO2SAA20A100,2.0L Essential AWD,2024,Kona,True
+KO2SAF20A200,2.0L Preferred FWD,2024,Kona,True
+KO2SAA20A200,2.0L Preferred AWD,2024,Kona,True
+KO2SAA20A241,2.0L Preferred AWD with Trend Pkg,2024,Kona,True
+KO2SDA16DO00	,1.6T N Line AWD,2024,Kona,True
+KO2SDA16DO66,1.6T N Line AWD w/ Two-tone,2024,Kona,True
+KO2SDA16DO20,1.6T N Line Ultimate AWD,2024,Kona,True
+KO2SAA16DOBA,1.6T N Line Ultimate AWD w/ Two-tone,2024,Kona,True
+SACW7N2DXR00	,2.5T XRT AWD 7-Pass,2024,Santa Fe,True
+SACW7N2DLU00	,2.5T Luxury AWD 7-pass,2024,Santa Fe,True
+SACW6N2DULBG,2.5T Ultimate Calligraphy AWD 6-Pass,2024,Santa Fe,True
+SACW6N2DULBH	,2.5T Ultimate Calligraphy AWD 6-Pass Beige,2024,Santa Fe,True
+SZCP5N2DPR00	,Preferred RSAB,2024,Santa Cruz,True
+SZCP5N2DPRTR,Trend RSAB,2024,Santa Cruz,True
+SZCP5N2DUL00	,Ultimate RSAB,2024,Santa Cruz,True
+SZCP5N2DUL95	,Ultimate w/ Colour pkg RSAB,2024,Santa Cruz,True
+SZCP5N2DPRBB	,Preferred AWD,2024,Santa Cruz,True
+SZCP5N2DPRBC,Preferred AWD w/Trend,2024,Santa Cruz,True
+SZCP5N2DULBB,Ultimate AWD,2024,Santa Cruz,True
+SZCP5N2DULBD	,Ultimate AWD w/ Colour Pack,2024,Santa Cruz,True
+PACW8K3DPR00,Preferred AWD,2024,Palisade,True
+PACW8K3DUR00	,Urban AWD 8-Pass,2024,Palisade,True
+PACW7K3DUR91	,Urban AWD 7-Pass,2024,Palisade,True
+PACW7K3DULC7	,Ultimate Caligraphy AWD,2024,Palisade,True
+PACW7K3DULCB	,Ultimate Caligraphy AWD (Beige Int.),2024,Palisade,True
+I5EW5ZE4PRLR,Preferred Long Range,2024,Ioniq 5,True
+I5EW5ZE2PRLR,Preferred AWD Long Range,2024,Ioniq 5,True
+I5EW5ZE2PRLP	,Preferred AWD Long Range with Luxury package,2024,Ioniq 5,True
+I5EW5ZE2PRUP,Preferred AWD Long Range with Ultimate package,2024,Ioniq 5,True
+I6ES4ZE4PRLR,Preferred RWD Long Range,2024,Ioniq 6,True
+I6ES4ZE2PRLR	,Preferred AWD Long Range,2024,Ioniq 6,True
+I6ES4ZE4PRUP	,Preferred RWD Long Range with Ultimate Package,2024,Ioniq 6,True
+I6ES4ZE2PRUP	,Preferred AWD Long Range with Ultimate Package,2024,Ioniq 6,True
+KEEW5ZE4PR00	,Preferred,2024,Kona EV,True
+KEEW5ZE4UL00	,Ultimate,2024,Kona EV,True
+KEEW5ZE4ULTT	,Ultimate w/ Two-tone Ext.,2024,Kona EV,True
+KEEW5ZE4ULBF	,Ultimate w/ Sage-Green Int.,2024,Kona EV,True
