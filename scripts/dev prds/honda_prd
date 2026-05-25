@@ -1,0 +1,148 @@
+📘 Product Requirements Document
+Product: OEM Accessory Pricing Extraction Pipeline
+Status: Final (Production‑Ready)
+Audience: Engineering, Analytics, Product, Data Governance
+
+1. Executive Summary
+   This pipeline ingests OEM Excel accessory pricing files and produces a clean, normalized, analysis‑ready dataset per model.
+   It is designed to handle:
+
+Inconsistent worksheet naming
+Multi‑row headers
+Dynamic trim applicability columns
+Section‑specific formatting
+Pricing continuity across rows
+
+The system enforces strict data integrity guarantees, provides full auditability, and preserves business semantics required for downstream operations such as trim‑level record explosion.
+
+2. Goals & Non‑Goals
+   Goals
+
+Preserve all business‑meaningful pricing and applicability data
+Prevent silent data loss or duplication
+Produce deterministic, explainable outputs
+Support future trim‑level expansion
+
+Non‑Goals
+
+Inferring applicability where not explicitly provided
+Normalizing model naming conventions
+Pricing calculations or business rule application
+
+3. Inputs & Outputs
+   Inputs
+
+Excel workbooks (.xlsx, .xlsm)
+English worksheet only (\*\_APP_EN)
+Multiple accessory sections per file
+
+Outputs
+
+One merged DataFrame per model
+Stable schema with core + dynamic columns
+
+4. Core Schema Contract
+   Core Columns (Invariant)
+   description
+   part number
+   dealer net
+   list price
+   frt
+   installed price
+   comments
+
+These columns:
+Must exist
+Must never be dropped
+Must not be empty (except comments)
+
+5. Dynamic Columns & Applicability
+
+Dynamic columns represent trim applicability
+Valid values:
+• T E S or empty
+
+Empty means “does not apply”
+No inference or auto‑population is allowed
+
+A dynamic column is kept only if it contains ≥2 distinct applicability states.
+
+6. Header Processing
+
+Header row detected by presence of all core columns
+Helper row used to fill missing header labels only
+Helper row removed from data
+Header promotion is guarded against data loss
+
+7. Row Processing Rules
+   Forward‑Fill
+
+Applies only to core/pricing columns
+Never applies to dynamic columns
+
+Row Authority
+
+Pricing identity defines row uniqueness:
+description
+part number
+dealer net
+list price
+frt
+installed price
+
+Rows with same identity + same applicability are duplicates
+Rows with same description/part number but different pricing are valid
+
+8. Merge Strategy
+
+Sections concatenated first
+Columns reordered after concat
+No column re-indexing
+Dynamic columns preserved across sections
+
+9. Data Integrity Guarantees
+   The pipeline guarantees:
+
+✅ No silent data loss
+✅ No inferred applicability
+✅ No duplicate pricing rows
+✅ No empty pricing fields
+✅ Fully auditable transformations
+
+Failures are fail‑fast and explainable.
+
+10. Audit & QA Strategy
+
+The pipeline includes:
+Structural validation
+Header guards
+Column‑level audits
+Row‑level authority tracing
+Merge safety checks
+Final schema validation
+
+Audits can be enabled selectively per model or section.
+
+11. Known Constraints
+
+Worksheet naming conventions vary (handled via relaxed regex)
+Section presence may vary by model
+Some parts legitimately repeat with different pricing
+
+12. Future Extensions
+
+Trim‑level record explosion
+Export to downstream systems
+Model normalization layer
+Automated regression tests from audit rules
+
+✅ Final Confidence Statement
+With the current pipeline and QA plan:
+
+You can trust the output without manual inspection.
+Any data issue will either be:
+
+prevented, or
+surfaced clearly with actionable diagnostics.
+
+

@@ -1,0 +1,511 @@
+================================================================================
+MITSUBISHI OEM ACCESSORIES — DATA PIPELINE PLAN
+================================================================================
+
+
+================================================================================
+ERROR TAXONOMY
+================================================================================
+
+Two error tiers govern the pipeline. Every rule below is tagged with one.
+
+  FATAL
+    The sheet cannot be processed. Log the error and skip to the next sheet.
+    The pipeline keeps running for remaining sheets.
+
+  DQ_WARNING
+    A data quality issue was found. Log the record details to the DQ log and
+    continue processing. The offending record may be excluded from output
+    depending on the rule (noted per rule below).
+
+
+================================================================================
+CONFIG FILE
+================================================================================
+
+All configuration lives in a single file: mitsubishi_config.json
+The orchestrator loads this file once at startup and passes each section to the
+step that needs it by key (e.g. config["trim_bounds_config"]).
+
+This approach keeps all related values in one place, prevents sections from
+drifting out of sync, and makes it straightforward to swap in a different OEM's
+config file when building pipelines for other makes.
+
+------------------------------------------------------------
+mitsubishi_config.json  —  full structure
+------------------------------------------------------------
+
+{
+  "column_definition": {
+    ...  (see below)
+  },
+  "required_columns":         [...],
+  "non_null_columns":         [...],
+  "col_data_type_dict":       {...},
+  "trim_bounds_config":       {...},
+  "trim_validation_config":   {...},
+  "non_acceptable_sheet_names": [...]
+}
+
+------------------------------------------------------------
+column_definition  (config["column_definition"])
+------------------------------------------------------------
+Maps incoming column names (which vary across files) to standard internal names.
+Matching is always case-insensitive.
+
+{
+  "part_number":          { "key_words": { "must_have": ["part", "number"],          "must_have_one_of": [], "not_have": [] } },
+  "english_description":  { "key_words": { "must_have": ["english", "description"],  "must_have_one_of": [], "not_have": [] } },
+  "french_description":   { "key_words": { "must_have": ["french", "description"],   "must_have_one_of": [], "not_have": [] } },
+  "msrp":                 { "key_words": { "must_have": ["msrp"],                    "must_have_one_of": [], "not_have": [] } },
+  "dnp":                  { "key_words": { "must_have": ["dnp"],                     "must_have_one_of": [], "not_have": [] } },
+  "install_time":         { "key_words": { "must_have": ["install", "time"],         "must_have_one_of": [], "not_have": [] } },
+  "labour_rate":          { "key_words": { "must_have": ["labour", "rate"],          "must_have_one_of": [], "not_have": [] } },
+  "remarks_en":           { "key_words": { "must_have": ["remarks"],                 "must_have_one_of": [], "not_have": ["fr", "french"] } },
+  "remarks_fr":           { "key_words": { "must_have": ["remarks"],                 "must_have_one_of": ["fr", "french"], "not_have": [] } }
+}
+
+------------------------------------------------------------
+required_columns  (config["required_columns"])
+------------------------------------------------------------
+Columns that must exist after header normalization. If any are missing, FATAL.
+
+["part_number", "english_description", "french_description", "msrp", "dnp", "install_time", "labour_rate"]
+
+------------------------------------------------------------
+non_null_columns  (config["non_null_columns"])
+------------------------------------------------------------
+After header promotion, these columns must have no null values.
+
+["part_number", "english_description", "french_description", "msrp", "dnp", "install_time", "labour_rate"]
+
+------------------------------------------------------------
+col_data_type_dict  (config["col_data_type_dict"])
+------------------------------------------------------------
+Used in Step 3 to enforce data types on standard columns.
+
+{
+  "to_string": ["part_number", "english_description", "french_description"],
+  "to_float":  ["msrp", "dnp", "install_time", "labour_rate"]
+}
+
+------------------------------------------------------------
+trim_bounds_config  (config["trim_bounds_config"])
+------------------------------------------------------------
+Defines the boundary columns that bracket the trim-level columns.
+
+{
+  "left_bound":  { "must_contain": ["remarks"], "must_contain_one_of": [] },
+  "right_bound": { "must_contain": [], "must_contain_one_of": ["photo", "image"] }
+}
+
+------------------------------------------------------------
+trim_validation_config  (config["trim_validation_config"])
+------------------------------------------------------------
+Used to confirm that candidate columns are truly trim-level columns by their data.
+
+{
+  "expected_data":  { "data": "X", "perc_thresh": 60 },
+  "must_have_only": { "expected_value_types": ["X", "", "__na__"] }
+}
+
+  Notes on this config:
+  - All string comparisons are case-insensitive (so "x" matches "X").
+  - "__na__" is a sentinel value. When the validator encounters it, it resolves
+    the check to pd.isna(value) == True, covering both None and float NaN.
+  - perc_thresh: the percentage of values in a candidate column that must equal
+    the expected_data value for the column to pass as a valid trim column.
+
+------------------------------------------------------------
+non_acceptable_sheet_names  (config["non_acceptable_sheet_names"])
+------------------------------------------------------------
+List of sheet names that are always skipped regardless of name format.
+Example: ["Summary", "Instructions", "Cover Page"]
+
+
+================================================================================
+SHARED HELPERS
+================================================================================
+
+These functions are used by multiple steps. Define them once in a shared module.
+
+------------------------------------------------------------
+promote_header_row(df) -> df
+------------------------------------------------------------
+  - Creates a copy of df to avoid mutating the original.
+  - Drops the first row (index 0).
+  - Resets the index.
+  - Promotes the new first row (which was the original second row) to be the
+    column headers.
+  - Returns the df with promoted headers.
+
+  Used by: Step 1 (data completeness), Step 3 (standardization).
+  This is the single definition — do not re-implement this logic elsewhere.
+
+------------------------------------------------------------
+lowercase_columns(col_list: list) -> list
+------------------------------------------------------------
+  - Takes a list of column name strings.
+  - Returns each name lowercased, preserving the original order.
+
+  Used by: Step 2 (header normalization).
+
+
+================================================================================
+DQ LOG SCHEMA
+================================================================================
+
+Every DQ_WARNING must be written as a record to the DQ log with these fields:
+
+  run_id            : Unique identifier for this pipeline run (e.g. UUID or timestamp)
+  source_file       : Name of the Excel file being processed
+  sheet_name        : Name of the worksheet
+  model_name        : Value from cell (row=0, col=0)
+  record_index      : Row index of the offending record in the working df
+  record_snapshot   : Full dict of the record's field values at the time of the check
+  rule_violated     : Machine-readable rule name (e.g. "profitability_rule", "trim_applicability_rule")
+  issue_description : Human-readable explanation of what was wrong
+
+
+================================================================================
+STEP 1 — DATA EVALUATION (VALIDATION)
+================================================================================
+
+Input  : Raw Excel worksheet loaded as a DataFrame (original row structure intact)
+Output : meta_data dict populated with sheet-level information, and working_df
+         (header-promoted copy of the sheet) ready for Step 2.
+         OR raises FATAL and skips the sheet.
+Side effects: DQ_WARNINGs written to the DQ log for profitability violations.
+
+------------------------------------------------------------
+1.1  Sheet Name Validation
+------------------------------------------------------------
+Error type: FATAL — skip this sheet if it fails, continue to next sheet.
+
+  - Check that the worksheet name matches the pattern: YYYY <string>
+    (four digits, one space, followed by one or more non-space characters).
+  - Check that the worksheet name is NOT in config["non_acceptable_sheet_names"].
+  - If either check fails, log a FATAL with the sheet name and reason, then skip.
+
+------------------------------------------------------------
+1.2  Structural Validation
+------------------------------------------------------------
+
+  1.2.1  Model name check
+  Error type: FATAL
+
+    - Assert that cell (row=0, col=0) is non-null and contains a string value.
+    - Store the value in meta_data["model_name"].
+
+  1.2.2  Header keywords check
+  Error type: FATAL
+
+    - Examine row index 1 of the raw df (the second row).
+    - Confirm (case-insensitive) that ALL of the following keywords appear
+      somewhere in that row:
+        ['Part Number', 'English Description', 'French Description',
+         'Remarks', 'MSRP', 'DNP', 'Install Time', 'Labour Rate']
+    - If any keyword is missing, log FATAL listing which keywords were not found.
+
+  1.2.3  Trim boundary marker check
+  Error type: FATAL
+
+    - In row index 1 (the header row), confirm there is a column whose name
+      contains "Remarks" (case-insensitive). This is the LEFT boundary marker.
+    - Confirm there is a column whose name contains "Photo" or "Image"
+      (case-insensitive). This is the RIGHT boundary marker.
+    - Do NOT extract trim columns here. This check only confirms the boundaries
+      exist so Step 2 can do the full extraction.
+    - If either boundary is missing, log FATAL.
+
+------------------------------------------------------------
+1.3  Data Completeness Validation
+------------------------------------------------------------
+
+  Call promote_header_row(df) to get working_df.
+  All checks below operate on working_df.
+
+  Note: Column names in working_df are still raw/original at this stage.
+  Use case-insensitive partial matching against raw column names when
+  locating the columns listed below.
+
+  1.3.1  Non-null columns check
+  Error type: FATAL
+
+    - For each column in config["non_null_columns"], assert there are no null
+      values in working_df.
+    - If any column has nulls, log FATAL with the column name and null count.
+
+  1.3.2  Column data type check
+  Error type: FATAL
+
+    - String columns: ['Part Number', 'English Description', 'French Description']
+      Assert all non-null values in these columns are strings.
+    - Numeric columns: ['MSRP', 'DNP', 'Install Time', 'Labour Rate']
+      Assert all non-null values in these columns are coercible to float.
+    - If any check fails, log FATAL with the column name and a sample of
+      the offending values.
+
+------------------------------------------------------------
+1.4  Profitability Rule Check
+------------------------------------------------------------
+Error type: DQ_WARNING — log offending records, continue processing.
+
+  - Coerce the DNP and MSRP columns in working_df to float before comparing.
+  - For each record:
+    - If DNP <= 0 or MSRP <= 0, write a DQ_WARNING.
+    - If MSRP <= DNP, write a DQ_WARNING.
+  - Include in the DQ_WARNING: rule_violated = "profitability_rule",
+    plus the full record_snapshot.
+  - These records are NOT excluded from the pipeline at this stage.
+    They are flagged for review but still processed.
+
+
+================================================================================
+STEP 2 — HEADER NORMALIZATION
+================================================================================
+
+Input  : working_df (header-promoted, from Step 1),
+         config["column_definition"],
+         config["trim_bounds_config"],
+         config["trim_validation_config"],
+         config["required_columns"]
+
+Output :
+  {
+    "col_mapping":          { "original_col_name": "mapped_col_name | None", ... },
+    "valid_trim_cols":      ["trim_col_A", "trim_col_B", ...],
+    "trim_validation_log":  { ... }
+  }
+
+------------------------------------------------------------
+Helper: column_type_finder(col_name, column_definition) -> dict
+------------------------------------------------------------
+  - Lowercase col_name before any matching.
+  - Iterate through each key in column_definition.
+  - For each key, apply the three rules in this sequence:
+      1. not_have   : if ANY keyword in this list appears in col_name → skip key
+      2. must_have  : ALL keywords in this list must appear in col_name
+      3. must_have_one_of : if the list is non-empty, AT LEAST ONE keyword must
+                            appear in col_name
+  - Return {"<original_col_name>": "<matched_key>"} for the first key that
+    passes all three rules.
+  - If no key matches, return {"<original_col_name>": None}.
+
+------------------------------------------------------------
+Helper: map_all_columns(df, column_definition) -> dict
+------------------------------------------------------------
+  - Call lowercase_columns(df.columns) to get lowercased names for matching,
+    while keeping the original column names as keys in the output dict.
+  - Call column_type_finder for each column.
+  - Return a single dict of all results:
+    { "Part Number": "part_number", "MSRP": "msrp", "Unnamed: 5": None, ... }
+
+------------------------------------------------------------
+Helper: assert_required_columns(col_mapping, required_cols_list) -> None or FATAL
+------------------------------------------------------------
+Error type: FATAL
+
+  - Collect all non-None values from col_mapping into a flat list.
+  - Check that every entry in required_cols_list (config) is present in that list.
+  - If any required column is missing:
+    - Log FATAL. Include which required columns had no match and which original
+      column names mapped to None (these are the unrecognized columns).
+    - Raise the error to halt processing of this sheet.
+
+------------------------------------------------------------
+Helper: identify_trim_candidates(df, trim_bounds_config) -> list
+------------------------------------------------------------
+Error type: FATAL if bounds cannot be located.
+
+  - Lowercase df.columns for matching.
+  - Find the index of the LEFT bound column using must_contain and
+    must_contain_one_of rules from trim_bounds_config["left_bound"].
+  - Find the index of the RIGHT bound column using the same rules from
+    trim_bounds_config["right_bound"].
+  - If either bound cannot be located, log FATAL.
+  - Return the list of column names whose index is strictly between the
+    left and right bound indices (the bounds themselves are excluded).
+
+------------------------------------------------------------
+Helper: validate_trim_by_datatype(df, candidates, trim_validation_config) -> (list, dict)
+------------------------------------------------------------
+
+  For each column in candidates:
+
+    a) must_have_only check:
+       - Get the list of expected_value_types from the config.
+       - For each expected type, resolve "__na__" to a pd.isna() check.
+         All other values are compared case-insensitively as strings.
+       - Assert that every value in the candidate column matches one of
+         the expected value types (after resolving __na__).
+
+    b) expected_data rate check:
+       - Count what percentage of values in the column equal the
+         expected_data["data"] value (case-insensitive comparison).
+       - The column passes if that percentage >= perc_thresh.
+
+    Record the result for each candidate column:
+    {
+      "<col_name>": {
+        "result":             "pass" | "fail",
+        "expected_data_rate": <float, e.g. 0.72>,
+        "unique_col_data":    [<list of unique values found in the column>]
+      }
+    }
+
+  - Columns that fail are excluded from the pipeline.
+  - Log each failed candidate as a DQ_WARNING with rule_violated =
+    "trim_candidate_failed_validation".
+  - Return (passed_cols_list, full_results_dict).
+
+------------------------------------------------------------
+Step 2 Main Function
+------------------------------------------------------------
+  1. Call map_all_columns(working_df, config["column_definition"])           -> col_mapping
+  2. Call assert_required_columns(col_mapping, config["required_columns"])  [FATAL if fails]
+  3. Call identify_trim_candidates(working_df, config["trim_bounds_config"]) -> candidates
+  4. Call validate_trim_by_datatype(working_df, candidates, config["trim_validation_config"])
+       -> (valid_trim_cols, trim_validation_log)
+  5. Return:
+     {
+       "col_mapping":         col_mapping,
+       "valid_trim_cols":     valid_trim_cols,
+       "trim_validation_log": trim_validation_log
+     }
+
+
+================================================================================
+STEP 3 — DATA STANDARDIZATION
+================================================================================
+
+Input  : working_df (from Step 1),
+         Step 2 output dict (col_mapping, valid_trim_cols),
+         config["col_data_type_dict"]
+Output : standardized_df
+
+------------------------------------------------------------
+Helper: apply_col_mapping(df, col_mapping) -> df
+------------------------------------------------------------
+  - Rename columns in df using the col_mapping dict (original -> mapped name).
+  - Drop any columns whose mapped value is None (unrecognized columns),
+    EXCEPT for columns that are in valid_trim_cols — those are kept as-is
+    since they were identified by position, not by name matching.
+  - Return the renamed df.
+
+------------------------------------------------------------
+Helper: enforce_col_data_types(df, col_data_type_dict) -> df
+------------------------------------------------------------
+Error type: FATAL if conversion fails.
+
+  - col_data_type_dict is config["col_data_type_dict"] and has the structure:
+      { "to_string": [...col names...], "to_float": [...col names...] }
+  - For each column in to_string: convert non-null values to str.
+  - For each column in to_float: convert non-null values to float.
+  - Skip null / NaN values during conversion.
+  - If any conversion raises an error, log FATAL with the column name and
+    a sample of values that could not be converted.
+  - Return the type-enforced df.
+
+------------------------------------------------------------
+Helper: standardize_trim_values(df, trim_cols) -> df
+------------------------------------------------------------
+  - For each column in trim_cols:
+    - Convert all non-null string values to uppercase.
+    - Leave null / empty values unchanged.
+  - Return the df.
+
+------------------------------------------------------------
+Step 3 Main Function
+------------------------------------------------------------
+  1. Call promote_header_row(working_df)                -> promoted_df
+  2. Call apply_col_mapping(promoted_df, col_mapping)   -> mapped_df
+  3. Call enforce_col_data_types(mapped_df, config["col_data_type_dict"])  -> typed_df  [FATAL if fails]
+  4. Call standardize_trim_values(typed_df, valid_trim_cols)     -> standardized_df
+  5. Return standardized_df
+
+
+================================================================================
+STEP 4 — DATA TRANSFORMATION (PIVOT TRIM LEVELS)
+================================================================================
+
+Input  : standardized_df, valid_trim_cols list
+Output : transformed_df — one row per valid part-trim combination
+
+------------------------------------------------------------
+4.1  Part Applicability Validation
+------------------------------------------------------------
+Error type: DQ_WARNING — offending records are excluded from output.
+
+  - For each record in standardized_df, check whether at least one column in
+    valid_trim_cols contains "X" (case-insensitive).
+  - If a record has no "X" across all trim columns, it applies to no trim level.
+  - Write a DQ_WARNING for that record with:
+    rule_violated = "trim_applicability_rule"
+    issue_description = "Record applies to zero trim levels"
+  - Exclude these records from the df before proceeding to the melt.
+
+------------------------------------------------------------
+4.2  Melt Trim Columns
+------------------------------------------------------------
+  - Use pd.melt to unpivot the trim level columns:
+      id_vars     = all non-trim columns in standardized_df
+      value_vars  = valid_trim_cols
+      var_name    = "trim_level"
+      value_name  = "applicable"
+  - Filter the melted df to keep only rows where applicable == "X"
+    (case-insensitive).
+  - Drop the "applicable" column after filtering.
+  - Return transformed_df.
+
+
+================================================================================
+STEP 5 — OUTPUT
+================================================================================
+
+Input  : transformed_df, meta_data dict
+Output : Data written to the target destination defined in config.
+
+  5.1  Enrich with run metadata
+       - Add the following columns to transformed_df from meta_data:
+           model_name, sheet_name, source_file
+       - Add run_id for traceability.
+
+  5.2  Write output
+       - Write transformed_df to the target (DB table or CSV — path/table
+         defined in config["output"]).
+
+
+================================================================================
+STEP 6 — DQ REPORT SUMMARY
+================================================================================
+
+Run once after all sheets have been processed.
+
+  - Aggregate all DQ_WARNINGs collected during the run.
+  - Produce a per-sheet summary:
+      sheet_name, total_records_in, records_excluded, warning_count_by_rule
+  - Write the full DQ log and the summary to the path defined in config["output"].
+
+
+================================================================================
+FULL PIPELINE EXECUTION ORDER
+================================================================================
+
+For each Excel file:
+  For each worksheet in the file:
+
+    1.  [STEP 1.1]  Sheet name validation          FATAL -> skip sheet
+    2.  [STEP 1.2]  Structural validation           FATAL -> skip sheet
+    3.  [STEP 1.3]  Data completeness validation    FATAL -> skip sheet
+    4.  [STEP 1.4]  Profitability rule check        DQ_WARNING -> log, continue
+    5.  [STEP 2  ]  Header normalization            FATAL -> skip sheet
+    6.  [STEP 3  ]  Data standardization            FATAL -> skip sheet
+    7.  [STEP 4  ]  Transform / pivot trim levels   DQ_WARNING for bad records
+    8.  [STEP 5  ]  Write output
+
+  End for each worksheet.
+
+  [STEP 6]  Write DQ report summary for this file.
+
+End for each file.

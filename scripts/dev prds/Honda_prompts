@@ -1,0 +1,20 @@
+Requirements to create model specific lists. I want you to review these requirements and come up with a plan in continuation of what w've already worked on, clarify all the requirements and move to developement.
+
+- We'll create a next step in the pipeline, that aims to create lists for each model through the following steps:
+
+1. Function that create trim_level templates: After extracting and merging data for a model into a merged_df, we'll mode to preparing data for load. The dynamic columns are our trim options. We'll go through each trim and create a list for each based on teh following conditions:
+
+- Filter df for each trim where the value in the column is not empty (contains any of these • T E S). then you'll save that df, delete the rest of the trim columns except the current one. at the end, you'll have a df that has core columns + 1 trim columns. Now, store all the dfs into a dict named trim_dfs.
+
+- Run a function to attach model number: This function will take every combination of Make/Model/Trim and run another another function to make a db call to a database that will be provided to get a modelnumber for that vehicle. It will then create a column_named modenumber and populate the model number value to that column. For now, I want the getmodelNumber Function to get model name just for test, I'll implement the actual db query later.    
+
+- Merge all trim_dfs for each model into now: Then at the end, I want you to append the all the dfs of each model into one file with all the list 
+of the model.
+
+- Save ready to load file into one excel: Then add the end, you will save the df into an excel file with each worksheet containing data for one model. The worksheet will be named after the model name. for each file, if it passed all the requirements (data complete, and all), the label it in green, if it has minor issues save it has some data to review, then label it blue, otherwise label it red, this way it's easy to identify which ones to review. A extra level, I want yo to highlight those lines that are missing data or have issue with the same colors for direct recognition in the final file. This function takes in a directory where to save the file. As you save, add a report worksheet providing a summary list of each model and it's trims that were processed and some metadata. Questions like:
+    - Have Model number or missing?
+    - Data integrity: any data anomalies for this trim? (for instance do we have data in any columns that is not in our type. for instance the dynamic columns must have certain data but we saw a different kind.)
+    - Was it successful?
+    - Come up with some interesting ones that would help as well.
+    - The goal is to have a comprehensive report, where data is complete of if something happened in the pipeline that we should be concerned about  
+

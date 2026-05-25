@@ -1,0 +1,418 @@
+================================================================================
+ACCY V2 — MULTI-OEM PIPELINE ARCHITECTURE PLAN
+================================================================================
+
+PURPOSE
+-------
+This document defines the architecture for the v2 project structure. The goal
+is a scalable, consistent framework where:
+
+  - Every OEM has its own self-contained pipeline folder.
+  - All OEM pipelines share the same set of core helpers.
+  - Each OEM defines its own config file following a standard schema.
+  - Adding a new OEM means creating one config file and one pipeline folder —
+    no changes to shared code required (unless a new shared capability is needed).
+  - The pipeline contract (what steps exist and what they accept/return) is
+    consistent across all OEMs, even if the internal logic of a step differs.
+
+
+================================================================================
+PROJECT FOLDER STRUCTURE
+================================================================================
+
+OEMAccessories/
+│
+├── core/                            # Shared code used by ALL OEM pipelines
+│   ├── base_pipeline.py             # Abstract base class defining the pipeline
+│   │                                # contract every OEM must follow
+│   ├── config_loader.py             # Loads and validates an OEM config file
+│   └── helpers/
+│       ├── column_mapper.py         # column_type_finder, map_all_columns,
+│       │                            # assert_required_columns
+│       ├── dq_logger.py             # Data quality log — record-level DQ_WARNINGs
+│       │                            # and DQ report writer (stakeholder-facing)
+│       ├── header_helpers.py        # promote_header_row, lowercase_columns
+│       ├── pipeline_logger.py       # Execution log — FATAL errors, sheet skips,
+│       │                            # run events, record counts (developer-facing)
+│       └── trim_helpers.py          # identify_trim_candidates,
+│                                    # validate_trim_by_datatype
+│
+├── data/                            # Raw incoming files, organized by OEM
+│   └── landing_zone/
+│       ├── mitsubishi/
+│       ├── honda/
+│       ├── mazda/
+│       └── <new_oem>/
+│
+├── oems/                            # One sub-folder per OEM
+│   │
+│   ├── mitsubishi/
+│   │   ├── config/
+│   │   │   └── mitsubishi_config.json
+│   │   ├── pipeline/
+│   │   │   ├── step1_validation.py
+│   │   │   ├── step2_header_normalization.py
+│   │   │   ├── step3_standardization.py
+│   │   │   ├── step4_transformation.py
+│   │   │   ├── step5_output.py
+│   │   │   └── orchestrator.py      # Entry point for this OEM's pipeline
+│   │   └── tests/
+│   │       └── test_mitsubishi_pipeline.py
+│   │
+│   ├── honda/
+│   │   ├── config/
+│   │   │   └── honda_config.json
+│   │   ├── pipeline/
+│   │   │   └── orchestrator.py      # Honda may override or skip steps
+│   │   └── tests/
+│   │
+│   ├── mazda/
+│   │   ├── config/
+│   │   │   └── mazda_config.json
+│   │   ├── pipeline/
+│   │   │   └── orchestrator.py
+│   │   └── tests/
+│   │
+│   └── <new_oem>/                   # Template for any future OEM
+│       ├── config/
+│       │   └── <new_oem>_config.json
+│       ├── pipeline/
+│       │   └── orchestrator.py
+│       └── tests/
+│
+├── output/                          # All pipeline outputs land here
+│   ├── ready_to_upload/
+│   │   ├── mitsubishi/
+│   │   ├── honda/
+│   │   └── mazda/
+│   ├── dq_reports/                  # Stakeholder-facing data quality reports
+│   │   ├── mitsubishi/
+│   │   ├── honda/
+│   │   └── mazda/
+│   └── pipeline_logs/               # Developer-facing execution logs
+│       ├── mitsubishi/
+│       ├── honda/
+│       └── mazda/
+│
+└── project_architecture_plan        # This file
+
+
+================================================================================
+CORE MODULE RESPONSIBILITIES
+================================================================================
+
+The core/ folder contains code that belongs to no single OEM. Any function that
+two or more OEM pipelines would otherwise duplicate belongs here.
+
+------------------------------------------------------------
+core/helpers/header_helpers.py
+------------------------------------------------------------
+  promote_header_row(df) -> df
+    Drops row 0, resets index, promotes new row 0 as column headers.
+    Returns a copy — never mutates the input df.
+
+  lowercase_columns(col_list: list) -> list
+    Lowercases all strings in col_list, preserving order.
+
+------------------------------------------------------------
+core/helpers/column_mapper.py
+------------------------------------------------------------
+  column_type_finder(col_name, column_definition) -> dict
+    Matches a single column name against the column_definition config.
+    Returns {"original": "mapped_name"} or {"original": None}.
+    Rules applied in sequence: not_have -> must_have -> must_have_one_of.
+    All matching is case-insensitive.
+
+  map_all_columns(df, column_definition) -> dict
+    Calls column_type_finder for every column in df.
+    Returns the full mapping dict for the sheet.
+
+  assert_required_columns(col_mapping, required_cols) -> None or raises FATAL
+    Verifies that every entry in required_cols has a non-None match in
+    col_mapping. Raises FATAL listing any missing columns.
+
+------------------------------------------------------------
+core/helpers/trim_helpers.py
+------------------------------------------------------------
+  identify_trim_candidates(df, trim_bounds_config) -> list
+    Locates left and right boundary columns using the bounds config.
+    Returns the list of column names strictly between the two bounds.
+    Raises FATAL if either boundary cannot be found.
+
+  validate_trim_by_datatype(df, candidates, trim_validation_config) -> (list, dict)
+    Validates each candidate column against the trim_validation_config.
+    Resolves "__na__" sentinel to pd.isna() checks.
+    All string comparisons are case-insensitive.
+    Returns (passed_cols_list, results_dict).
+
+------------------------------------------------------------
+core/helpers/dq_logger.py
+------------------------------------------------------------
+  Audience: business stakeholders / data stewards.
+  Purpose:  tracks issues found WITHIN the data (DQ_WARNINGs only).
+            Produces the DQ report that goes to output/dq_reports/.
+
+  DQLogger class
+    Instantiated once per pipeline run with a run_id and source_file.
+    Accumulates DQ_WARNING records during the run.
+
+    Methods:
+      log_warning(sheet_name, model_name, record_index, record_snapshot,
+                  rule_violated, issue_description)
+        Appends a DQ_WARNING record to the internal log.
+
+      write_dq_report(output_path)
+        Writes the full record-level DQ log and a per-sheet summary
+        (total records, records excluded, warning counts by rule) to
+        output_path.
+
+------------------------------------------------------------
+core/helpers/pipeline_logger.py
+------------------------------------------------------------
+  Audience: developers / ops.
+  Purpose:  tracks what the pipeline DID during a run — FATAL errors,
+            sheet skips, files processed, record counts, run timing.
+            Built on Python's standard logging module.
+            Writes to output/pipeline_logs/<oem>/<run_id>.log
+
+  PipelineLogger class
+    Wraps Python's logging.Logger. Instantiated once per run.
+
+    Methods:
+      log_run_start(oem, file_path)
+        Records run start time and source file.
+
+      log_sheet_start(sheet_name)
+        Records that processing has begun for a sheet.
+
+      log_fatal(sheet_name, step, reason)
+        Records a FATAL event and the reason the sheet was skipped.
+        Does not stop execution — the orchestrator handles the skip
+        after calling this.
+
+      log_sheet_complete(sheet_name, records_in, records_out)
+        Records record counts when a sheet finishes successfully.
+
+      log_run_complete()
+        Records run end time and total sheets processed / skipped.
+
+------------------------------------------------------------
+core/base_pipeline.py
+------------------------------------------------------------
+  BasePipeline (abstract class)
+    Defines the contract that every OEM orchestrator must follow.
+    Each step is a method with a defined signature. OEM pipelines inherit
+    from this class and implement or override each step.
+
+    Abstract methods (must be implemented per OEM):
+      run_step1_validation(df, config, meta_data, dq_logger, pipeline_logger) -> working_df
+      run_step2_header_normalization(working_df, config, dq_logger, pipeline_logger) -> step2_result
+      run_step3_standardization(working_df, step2_result, config, pipeline_logger) -> standardized_df
+      run_step4_transformation(standardized_df, step2_result, dq_logger, pipeline_logger) -> transformed_df
+      run_step5_output(transformed_df, meta_data, config, pipeline_logger) -> None
+
+    Concrete method (shared logic, not overridden):
+      run(file_path, config)
+        The main entry point. Instantiates both loggers, loads the Excel
+        file, iterates over sheets, calls each step in sequence, handles
+        FATAL errors (skip sheet), and writes both logs at the end.
+
+------------------------------------------------------------
+core/config_loader.py
+------------------------------------------------------------
+  load_config(config_path) -> dict
+    Loads and parses the OEM's JSON config file.
+    Validates that all required top-level keys are present.
+    Raises an error on load if the config is structurally invalid —
+    this fails fast before any data is touched.
+
+  Required top-level keys every config must have:
+    column_definition, required_columns, non_null_columns,
+    col_data_type_dict, trim_bounds_config, trim_validation_config,
+    non_acceptable_sheet_names, output
+
+
+================================================================================
+OEM-SPECIFIC MODULE RESPONSIBILITIES
+================================================================================
+
+Each OEM lives under oems/<oem_name>/. An OEM folder contains:
+
+  config/<oem>_config.json
+    The single config file for this OEM. Follows the standard config schema
+    (see below). All OEM-specific business rules live here, not in code.
+
+  pipeline/orchestrator.py
+    Entry point for this OEM. Inherits from BasePipeline and implements
+    each step. If an OEM's step logic is identical to another OEM's, both
+    can call the same shared helper — the difference lives in the config.
+
+  pipeline/step1_validation.py  (and steps 2–5)
+    Individual step implementations. For simple OEMs these may just call
+    core helpers directly. For OEMs with unusual file structures, this is
+    where custom logic lives.
+
+  tests/
+    Unit tests for this OEM's pipeline steps, using sample input files.
+
+Key principle: if a step implementation is the same across two OEMs, do NOT
+copy the code. Instead, move that logic into core/helpers/ and have both
+OEMs call it. The only thing that should differ per OEM is config values and
+any genuinely unique file-structure handling.
+
+
+================================================================================
+STANDARD CONFIG SCHEMA
+================================================================================
+
+Every OEM config file must follow this schema. Optional sections are noted.
+
+{
+  "column_definition": {
+    "<standard_col_name>": {
+      "key_words": {
+        "must_have":        [...],
+        "must_have_one_of": [...],
+        "not_have":         [...]
+      }
+    }
+  },
+
+  "required_columns":           [...list of standard_col_names that must be found],
+  "non_null_columns":           [...list of standard_col_names that must not be null],
+
+  "col_data_type_dict": {
+    "to_string":  [...col names],
+    "to_float":   [...col names]
+  },
+
+  "trim_bounds_config": {
+    "left_bound":  { "must_contain": [...], "must_contain_one_of": [...] },
+    "right_bound": { "must_contain": [...], "must_contain_one_of": [...] }
+  },
+
+  "trim_validation_config": {
+    "expected_data":  { "data": "X", "perc_thresh": 60 },
+    "must_have_only": { "expected_value_types": ["X", "", "__na__"] }
+  },
+
+  "non_acceptable_sheet_names": [...],
+
+  "output": {
+    "ready_to_upload_path": "output/ready_to_upload/<oem>/",
+    "dq_report_path":       "output/dq_reports/<oem>/",
+    "pipeline_log_path":    "output/pipeline_logs/<oem>/"
+  }
+}
+
+Notes:
+  - All string comparisons in the pipeline are case-insensitive by default.
+  - "__na__" in expected_value_types resolves to pd.isna() at runtime.
+  - If an OEM does not use trim levels, trim_bounds_config and
+    trim_validation_config can be set to null and step 4 is skipped.
+
+
+================================================================================
+HOW TO ONBOARD A NEW OEM
+================================================================================
+
+To add a new OEM to the pipeline:
+
+  1. Create the folder:
+       oems/<new_oem>/config/
+       oems/<new_oem>/pipeline/
+       oems/<new_oem>/tests/
+
+  2. Create oems/<new_oem>/config/<new_oem>_config.json
+     Fill in the standard config schema for this OEM's column names,
+     required fields, trim boundaries, and output paths.
+
+  3. Create oems/<new_oem>/pipeline/orchestrator.py
+     Inherit from BasePipeline. Implement each step method.
+     For steps with no OEM-specific logic, call the core helpers directly.
+     Override only the steps that need custom handling.
+
+  4. Add a data/landing_zone/<new_oem>/ folder for incoming files.
+
+  5. Run tests against a sample file before connecting to production data.
+
+No changes to core/ are needed unless this OEM requires a capability that
+doesn't exist yet (e.g. a new file format). In that case, add the new
+capability to core/helpers/ so all OEMs can use it.
+
+
+================================================================================
+PIPELINE EXECUTION FLOW (ALL OEMs)
+================================================================================
+
+The run() method in BasePipeline follows this flow for every OEM:
+
+  Logger key:
+    [PL] -> pipeline_logger  (execution events — developer-facing)
+    [DQ] -> dq_logger        (data quality issues — stakeholder-facing)
+
+  config          = load_config("<oem>_config.json")
+  dq_logger       = DQLogger(run_id, source_file)
+  pipeline_logger = PipelineLogger(run_id, config["output"]["pipeline_log_path"])
+
+  [PL] log_run_start(oem, file_path)
+
+  For each Excel file in data/landing_zone/<oem>/:
+    For each worksheet in the file:
+
+      [PL] log_sheet_start(sheet_name)
+
+      [Step 1]  Validation
+                  Sheet name check          [PL] FATAL -> skip sheet
+                  Structural validation     [PL] FATAL -> skip sheet
+                  Data completeness         [PL] FATAL -> skip sheet
+                  Profitability check       [DQ] DQ_WARNING -> log, continue
+
+      [Step 2]  Header normalization
+                  Column mapping            [PL] FATAL -> skip sheet
+                  Required columns check    [PL] FATAL -> skip sheet
+                  Trim candidate detection  [PL] FATAL -> skip sheet
+                  Trim validation           [DQ] DQ_WARNING for failed candidates
+
+      [Step 3]  Standardization
+                  Promote header            (shared helper)
+                  Apply column mapping
+                  Enforce data types        [PL] FATAL -> skip sheet
+                  Standardize trim values
+
+      [Step 4]  Transformation
+                  Applicability validation  [DQ] DQ_WARNING -> exclude record
+                  Melt trim columns
+
+      [Step 5]  Output
+                  Enrich with metadata
+                  Write to output path
+
+      [PL] log_sheet_complete(sheet_name, records_in, records_out)
+
+    End for each worksheet.
+
+    [DQ] dq_logger.write_dq_report(config["output"]["dq_report_path"])
+    [PL] pipeline_logger.log_run_complete()
+
+  End for each file.
+
+
+================================================================================
+RELATIONSHIP TO EXISTING V1 CODE
+================================================================================
+
+v1 (OEM Accessories_v1/) remains unchanged and in production.
+v2 is built alongside it.
+
+Migration path per OEM:
+  1. Port the OEM's config values into the new standard config schema.
+  2. Implement the orchestrator using core helpers.
+  3. Validate output matches v1 output on the same input files.
+  4. Switch landing zone routing to v2 once validated.
+
+Existing v1 assets that map to v2:
+  v1 config/<oem>_config.json    ->  v2 oems/<oem>/config/<oem>_config.json
+  v1 scripts/<oem>_processor.*  ->  v2 oems/<oem>/pipeline/
+  v1 landing_zone/<oem>/        ->  v2 data/landing_zone/<oem>/
+  v1 ready_to_upload/<oem>/     ->  v2 output/ready_to_upload/<oem>/

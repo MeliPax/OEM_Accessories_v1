@@ -1,0 +1,156 @@
+Data loading:
+
+Data Checks:
+
+- File type: Excel file
+- Step 1: Data evaluation : assert that data meets the standards and structure. Go through every worksheet and validate :
+  - Determine where it's a valid model sheet_name:
+    - The worksheet name must have a format : "YYYY string\*". Four numbers blanc space and a string
+    - Check if worksheet name in not in the non-acceptable sheet_name list
+
+  - Each worksheet must have:
+    - Data Structure :
+      - First Row
+        - Contains Model_name on position first row first column (1,1)
+      - Second Row
+        - Contains Header row key words:
+          - Create a function that takes in a df and return True/False based on the following logic
+          - Check if the second row contains these key words ['Part Number', 'English Description', 'French Description', 'Remarks','MSRP', 'Install Time','Labour Rate'].
+          - Make sure key word matching is case insensitive to accommodate any text format changes. Ideally,
+        - Contains trim columns - Very Essential, check if trim level column exist before extract:
+          - Trim columns names are located in the cell positions between keyword "Remarks" and "Photo" also referred to as "Image" key word
+          - Store trim level names (strings between "Remarks" and "Photo" also referred to as "Image") into a list and add them to meta_data dict
+
+    - Data completeness:
+      - Action to do first:
+        - Create a copy of the worksheet and store it in a df
+        - Delete the first row
+        - Check if the new first row contains the must-have header column keywords
+        - If yes, the Promote the second row to be the header
+
+      - With the new headers established, check for the following:
+        - Non_Null columns rule: ['Part Number', 'English Description', 'French Description', 'MSRP', 'Install Time','Labour Rate']
+        - Columns and which type of data they should store:
+          - String columns: ['Part Number', 'English Description', 'French Description']
+          - Numeric columns: ['MSRP', 'Install Time','Labour Rate']
+          - If columns do not contain the correct data, raise an error, because these are must haves.
+        - Trim data type validation:
+          - For all the confirmed trim columns, as per the definition, check if
+            - All values in the columns are either ['X', '', nan]. Any data point in these columns that is not in the defined data will be flags as a data quality issue, and will be added to the records with issues log file. This will be a log database that contains a list of records that need verification. this database will include the sheet name, the model name, complete snapshot of the records and the description of the data issue.
+          - Part Applicability rule:
+            - When a record contains "X" in it column, that means that record applies to the trim in that column. If it's empty, then it doesn't.
+            - As a rule, each record must apply to at least trim level column. if it doesn't, that's a data quality issue to be reported in the data quality database with proper details about the error.
+        - Profitability Rule:
+          - Value in columns "DNP" and "MSRP" must be great than zero. Ensure that the values are converted to numeric decimal type before comparing.
+          - The value in column "MSRP" must be greater than the value in column "DNP" on a record. If not, record a data issue that the profitability rule was broken.
+        -
+
+Data Normalization: At this stage data transformation is starting
+
+Step 2 - Header validator function:
+  - Function takes in a df and using defined column identification rules, this function updates columns names to standard names. This is done because incoming files is not always consistent and require extract column mapping.
+
+  Global values:
+  - Standard column names:
+    - these are defined column names that the df must have after the normalization step. They will be in a json format with definition of keyword to look for to determine with column name it is.
+    - For example, the column_name definition json will look like this:
+      {
+      "part_number":{key_words: {"must_have": ["part", "number"]}},  
+       "english_description":{key_words: {"must_have":["english", "definition"]}},
+      "MSRP":{key_words: {"must_have": ["MSRP"], "must_have_one_of":[], "not_have":[]}},
+      "instructions_en": {"key_words": {"must_have": ["remarks"], "must_have_one_of":[], "not_have":["english","en"]}},
+      "instructions_fr": { "key_words": {"must_have": ["remarks"], "must_have_one_of":["FR"], "not_have":["english","en"]}},
+      }
+    - column_name json definition:
+    - First layer of keys, eg. "part_number", is a type of expected column.
+    - Key_word: will contain keyword instruction to search for
+    - must have: Key word that must be present
+    - must_have_one_of: the column name must have one of the one the values in the list.
+    - not_have : must not have one of the keywords on this list.
+    - Based on the above instructions, using the name of the column, we should be able to tell which type of column it is.
+
+  - Helpers that should help with this function:
+    - Convert column name to lower case for normalization.
+      - Takes in a list of columns, converts all of them to lower case, and returns the list, make sure the sequence doesn't change.
+    - Column_type_Finder:
+      - Takes in a column name and the column_definition json, and returns the column type based tha matched it or false if nothing matched it.
+      - Then go through the pass json to see if there's any match:
+        - the following rules must pass: no_have, must have key_words, and must_have_one_on in this sequence.
+      - At the end, return {"original_col_name": "mapped_col_name"}, eg: {"part number":"part_number"}, which is the original passed column and the very first key whose instructions matched the col naming instructions.
+      - Otherwise return {"original_col_name": None} .
+    - Store all the returned json values into a dict that will be used in the next function to check whether all the required columns found matches.
+
+    - Assert all_required columns are present:
+      - This function takes in the dict of results from mapped_columns and required_cols_list
+      - Put all the mapped values in a list for easy check if exist
+      - Then checks whether the all values in require_cols_list are in mapped_columns, keep track of the indx of the item being check to locate it's original value
+      - If not all, then return error that there are required columns missing and log the original_col_name of missing cols.
+      - This is something that should stop the pipeline if not passed
+
+    - Identify valid trim level columns:
+      - This function will help to identify trim level columns. It takes in a df and a dict of instruction of how to find the columns.
+      - The passed dict has a left side bound and right side bound keywords, with the following structure :  
+      {
+        left_bound: {must_contain:["Remarks], must_contain_one_of=[]},
+        right_bound:{must_contain:[], must_contain_one_of=["photo","image"]}
+      }
+      - Using the left and right bound values, then find the left and right bound cols from the df cols names. If they can't be located, then flag an error.  
+      -  use the found left and right bound to get a list of cols that are in between them, which will be candidate trim-level columns.
+      - to confirm that they are trim level columns, we'll need to validate using their data.
+        - helpers:
+          - validate trim by data_type:
+            - this one will take in a df, trim_level_col_candidates and a dict of instructions
+            - instructions dict will look like and will be globally accessible:
+              {
+                expected_data:{"data": 'x', "perc_thresh": 60},
+                must_have_only:{expected_value_types:["x","", is_na]} // need to get ideas of how to represent empty values in such a way that it includes "" and .isna() in python as config values
+              }
+            - Then we'll loop through all the candidate cols and assert them on instruction in the dict.
+            - Create a dict that will store results for each trim_col_candidate in json format :
+              {
+                trim_col_name_1 : {results: Pass,
+                  expected_data_rate : {calculated percent},
+                  unique_col_data: list of uniq vals in the column} 
+                trim_col_name_2 : {results: Fail,
+                  expected_data_rate : {calculated percent},
+                  unique_col_data: list of uniq vals in the column} 
+              } 
+            - This dict will be logged and be used to determine with columns will be processed and those that won't, passed columns are the ones that will be passed to the pipeline. 
+            - Then return a list of columns that passed the validation and pass the result dict as well 
+      
+  - The headers validator function should return the following dict:
+    {
+      validated_all_required_cols : {
+        status: pass based on the status passed, col_mapping: {original_col_name:new_col_name_based on mapping function return value}
+      },
+      valid_trim_level_cols : {
+        status: pass, trim_level_cols: [list of all valid trim_level cols]
+      }
+    }
+
+Step 3: Standardize data for columns:
+  - Function to promote header row:
+        - Create a copy of the worksheet and store it in a df
+        - Delete the first row
+        - Check if the new first row contains the must-have/required_cols header column keywords
+        - If yes, the Promote the second row to be the header
+        - Return the df with promoted header 
+
+  - Helper to enforce column data type for all the required cols:
+    - Takes in the header_promoted_df and a col_data_type_dict mapper that we got from header handler. 
+    - Dict will have structure:
+      -  {to_string: [list of column names to convert], to_float: [cols to convert], etc..}
+    - Convert all the column data, ignore empty, as instructed in the dictionary
+    - if any of them fails, return an error and pipeline fails
+    - return the transformed df
+  
+  - Standardize trim-level cols:
+    - This function takes in the transformed df and will help us to standardize the values in trim cols
+    - Make all values in trim columns to capital letters and ignore all empty values
+    - return the transformed df
+  
+  - at the end fo step 3, return the standardized_data_df 
+
+ 
+
+  

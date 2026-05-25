@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+dq_reports/
+pipeline_logs/
+ready_to_upload/
+
+
+
+# Raw OEM source files — drop into data/landing_zone/{oem}/ before running
+# Contains sensitive pricing data and large binary files
+data/landing_zone/
