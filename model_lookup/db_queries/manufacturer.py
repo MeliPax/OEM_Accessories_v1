@@ -13,3 +13,10 @@ GET_ALL = text("""
     FROM Manufacturer
     WHERE ManufacturerStatus = 0
 """)
+
+GET_LATEST_BULLETIN_BY_MANUFACTURER = text("""
+    SELECT TOP 1 *
+    FROM Bulletin
+    WHERE ManufacturerID = :manufacturer_id
+    ORDER BY BulletinEnd DESC
+""")

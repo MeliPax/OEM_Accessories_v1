@@ -17,7 +17,7 @@ def load_env():
     Must be called explicitly by the application.
     """
     base_dir = Path.cwd()
-    env_path = base_dir.parent / "db_engine" / "creds" / ".env"
+    env_path = base_dir.parent / "model_lookup" / "creds" / ".env"
 
     load_dotenv(dotenv_path=env_path)
 

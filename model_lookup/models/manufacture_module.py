@@ -54,7 +54,30 @@ def get_manufacturer_bulletins_json(engine, make: str) -> pd.DataFrame:
         result = conn.execute(
             text("""
                     SELECT 
-                        top(5) B.BulletinDetails
+                        B.BulletinDetails
+
+                    FROM Bulletin B
+                    WHERE B.BulletinManufacturer = (
+                        SELECT ManufacturerId
+                        FROM Manufacturer
+                        WHERE ManufacturerName = :make
+                            AND ManufacturerStatus = 0
+                    )
+                    AND B.BulletinStatus = 1
+                    ORDER BY B.BulletinEnd DESC
+                """),
+            {"make": make},
+        )
+        return result.mappings().all()
+
+
+def get_latest_bulletin_by_manufacturer_json(engine, make: str) -> pd.DataFrame:
+
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("""
+                    SELECT 
+                        top(1) B.BulletinDetails
 
                     FROM Bulletin B
                     WHERE B.BulletinManufacturer = (
