@@ -54,7 +54,8 @@ def get_manufacturer_bulletins_json(engine, make: str) -> pd.DataFrame:
         result = conn.execute(
             text("""
                     SELECT 
-                        B.BulletinDetails
+                 top(1)       
+                 B.BulletinDetails
 
                     FROM Bulletin B
                     WHERE B.BulletinManufacturer = (
@@ -92,6 +93,63 @@ def get_latest_bulletin_by_manufacturer_json(engine, make: str) -> pd.DataFrame:
             {"make": make},
         )
         return result.mappings().all()
+
+
+def print_bulletin_details(bull):
+    json_ = parse_json_string(bull[0]["BulletinDetails"])
+
+    for idx, values in enumerate(json_):
+
+        ModelYear = json_[idx].get("Year")
+        ModelNumber = json_[idx].get("Model")
+        Description = json_[idx].get("Description")
+        Description2 = json_[idx].get("Description2")
+        Package = json_[idx].get("Package")
+        Style_ID = json_[idx].get("Style")
+
+        print(
+            f"{ModelYear}, {ModelNumber}, { Description}, { Description2}, { Package}, {Style_ID}"
+        )
+
+
+def print_bulletin_details(bull: list[dict[str, Any]]) -> pd.DataFrame:
+
+    json_ = parse_json_string(bull[0]["BulletinDetails"])
+
+    data = pd.DataFrame(
+        columns=[
+            "ModelYear",
+            "ModelNumber",
+            "Description",
+            "Description2",
+            "Package",
+            "Style_ID",
+        ]
+    )
+
+    for idx, values in enumerate(json_):
+
+        ModelYear = json_[idx].get("Year")
+
+        ModelNumber = json_[idx].get("Model")
+        Description = json_[idx].get("Description")
+        Description2 = json_[idx].get("Description2")
+        Package = json_[idx].get("Package")
+        Style_ID = json_[idx].get("Style")
+
+        data = data.append(
+            {
+                "ModelYear": ModelYear,
+                "ModelNumber": ModelNumber,
+                "Description": Description,
+                "Description2": Description2,
+                "Package": Package,
+                "Style_ID": Style_ID,
+            },
+            ignore_index=True,
+        )
+
+    return data
 
 
 def get_active_unique_manufacturers(engine) -> pd.DataFrame:
