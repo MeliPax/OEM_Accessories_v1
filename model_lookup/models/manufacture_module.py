@@ -42,14 +42,14 @@ def get_manufacturer_config(make: str) -> dict:
 
 def is_valid_year(value: Any) -> bool:
     """
-    Validate if a value is a valid year (1900-current year + 10).
+    Validate if a value is a valid year (1900-current year + 5).
     """
     if value is None or value == "":
         return False
     try:
         year = int(value)
         current_year = datetime.now().year
-        return 1900 <= year <= current_year + 10
+        return 1900 <= year <= current_year + 5
     except (ValueError, TypeError):
         return False
 
@@ -104,9 +104,15 @@ def check_duplicate_record(
     if df_existing.empty:
         return df_new
 
+    required_cols = ["Manufacturer", "ModelYear", "ModelNumber"]
+    existing_cols = [col for col in required_cols if col in df_existing.columns]
+
+    if not existing_cols:
+        return df_new
+
     merge = df_new.merge(
-        df_existing[["Manufacturer", "ModelYear", "ModelNumber"]],
-        on=["Manufacturer", "ModelYear", "ModelNumber"],
+        df_existing[existing_cols],
+        on=existing_cols,
         how="left",
         indicator=True,
     )
@@ -357,6 +363,73 @@ def get_active_unique_manufacturers(engine) -> pd.DataFrame:
     """)
 
     return pd.read_sql(query, engine)
+
+
+def batch_save_manufacturer_models(
+    engine,
+    manufacturers: list[str],
+    csv_path: str = None,
+) -> dict:
+    """
+    Fetch and save vehicle models for multiple manufacturers.
+
+    Args:
+        engine: SQLAlchemy engine for database connection
+        manufacturers: List of manufacturer names
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+
+    Returns:
+        dict with results for each manufacturer and summary totals
+    """
+    if csv_path is None:
+        csv_path = "db/db_vehicle_models.csv"
+
+    results = {
+        "manufacturers": {},
+        "summary": {
+            "total_processed": 0,
+            "total_saved": 0,
+            "total_duplicates": 0,
+            "total_invalid": 0,
+            "errors": [],
+        },
+    }
+
+    for make in manufacturers:
+        try:
+            bull = get_manufacturer_bulletins_json(engine, make)
+            if not bull:
+                results["manufacturers"][make] = {
+                    "status": "no_data",
+                    "message": "No bulletin data found",
+                }
+                continue
+
+            df_models = convert_bulletin_to_df(bull, make=make)
+            if df_models.empty:
+                results["manufacturers"][make] = {
+                    "status": "no_valid_records",
+                    "message": "No valid records in bulletin",
+                }
+                continue
+
+            save_result = save_vehicle_models_to_csv(df_models, csv_path)
+            results["manufacturers"][make] = save_result
+
+            results["summary"]["total_processed"] += save_result["total_records"]
+            results["summary"]["total_saved"] += save_result["records_saved"]
+            results["summary"]["total_duplicates"] += save_result["duplicates"]
+            results["summary"]["total_invalid"] += save_result["invalid_records"]
+
+        except Exception as e:
+            error_msg = f"Error processing {make}: {str(e)}"
+            results["manufacturers"][make] = {
+                "status": "error",
+                "message": error_msg,
+            }
+            results["summary"]["errors"].append(error_msg)
+
+    return results
 
 
 def search_vehicle_models(
