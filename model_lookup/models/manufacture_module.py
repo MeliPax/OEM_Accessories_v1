@@ -28,6 +28,8 @@ MANUFACTURER_SEARCH_CONFIG = {
     },
 }
 
+EV_KEYWORDS = ["EV", "PHEV"]
+
 
 def get_manufacturer_config(make: str) -> dict:
     """
@@ -430,6 +432,47 @@ def batch_save_manufacturer_models(
             results["summary"]["errors"].append(error_msg)
 
     return results
+
+
+def search_models_by_description(
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True
+) -> pd.DataFrame:
+    """
+    Search vehicle models by manufacturer, year, and description keywords.
+
+    Args:
+        make: Manufacturer name
+        year: Model year
+        keywords: List of keywords to match in Description (all must be present)
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
+
+    Returns:
+        DataFrame with matching records
+    """
+    if csv_path is None:
+        csv_path = "db/db_vehicle_models.csv"
+
+    df = load_existing_csv(csv_path)
+
+    if df.empty:
+        return pd.DataFrame()
+
+    df_filtered = df[df["Manufacturer"] == make].copy()
+    df_filtered = df_filtered[df_filtered["ModelYear"] == year]
+
+    for keyword in keywords:
+        df_filtered = df_filtered[
+            df_filtered["Description"].str.contains(keyword, case=False, na=False)
+        ]
+
+    if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in EV_KEYWORDS):
+        for ev_keyword in EV_KEYWORDS:
+            df_filtered = df_filtered[
+                ~df_filtered["Description"].str.contains(ev_keyword, case=False, na=False)
+            ]
+
+    return df_filtered
 
 
 def search_vehicle_models(
