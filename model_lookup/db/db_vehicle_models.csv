@@ -3476,3 +3476,628 @@ Mitsubishi,2026,COEV-G,Outlander PHEV SEL S-AWC,,,483110
 Mitsubishi,2026,COEV-X,Outlander PHEV GT S-AWC,,,F63
 Mitsubishi,2026,COEV-X,Outlander PHEV GT Premium S-AWC,,,F64
 Mitsubishi,2026,COEV-N,Outlander PHEV GT NOIR S-AWC,,,483112
+mitsubishi,2024,CG44-A,Mirage ES CVT,,,443870
+mitsubishi,2024,CG44-N,Mirage NOIR CVT,,,443872
+mitsubishi,2024,CG44-T,Mirage GT CVT,,,443871
+mitsubishi,2024,CS45-A,RVR ES TA,,,446465
+mitsubishi,2024,CS45-B,RVR ES AWC,,,446466
+mitsubishi,2024,CS45-E,RVR SE AWC,,,446467
+mitsubishi,2024,CS45-G,RVR SEL AWC,,,446468
+mitsubishi,2024,CS45-N,RVR NOIR AWC,,,446470
+mitsubishi,2024,CS45-Z,RVR GT AWC,,,446469
+mitsubishi,2024,CE45-B,Eclipse Cross ES S-AWC,,,439265
+mitsubishi,2024,CE45-F,Eclipse Cross SE S-AWC,,,439266
+mitsubishi,2024,CE45-G,Eclipse Cross SEL S-AWC,,,439267
+mitsubishi,2024,CE45-N,Eclipse Cross NOIR S-AWC,,,447971
+mitsubishi,2024,CE45-X,Eclipse Cross GT S-AWC,,,439268
+mitsubishi,2024,CO45-B,Outlander ES S-AWC,,,446113
+mitsubishi,2024,CO45-D,Outlander SE S-AWC,,,446114
+mitsubishi,2024,CO45-F,Outlander LE S-AWC,,,446115
+mitsubishi,2024,CO45-G,Outlander SEL S-AWC,,,446116
+mitsubishi,2024,CO45-X,Outlander GT S-AWC,,,446117
+mitsubishi,2024,CO45-X,Outlander GT Premium S-AWC,,,446118
+mitsubishi,2024,CO45-N,Outlander NOIR S-AWC,,,460910
+mitsubishi,2024,COEV-B,Outlander PHEV ES S-AWC,,,447075
+mitsubishi,2024,COEV-F,Outlander PHEV LE S-AWC,,,447076
+mitsubishi,2024,COEV-G,Outlander PHEV SEL S-AWC,,,447077
+mitsubishi,2024,COEV-X,Outlander PHEV GT S-AWC,,,447078
+mitsubishi,2024,COEV-N,Outlander PHEV NOIR S-AWC,,,455290
+mitsubishi,2019,CE45-B,Eclipse Cross ES S-AWC *Ltd Avail*,,,403358
+mitsubishi,2019,CE45-F,Eclipse Cross SE S-AWC *Ltd Avail*,,,403359
+mitsubishi,2019,CE45-X,Eclipse Cross GT S-AWC *Ltd Avail*,,,403360
+mitsubishi,2019,CE45-C,Eclipse Cross ES S-AWC,,,403918
+mitsubishi,2019,CE45-G,Eclipse Cross SE S-AWC,,,403919
+mitsubishi,2019,CE45-Y,Eclipse Cross GT S-AWC,,,403920
+mitsubishi,2019,CE45-G,Eclipse Cross SE w/Tech Pkg S-AWC,,,406540
+mitsubishi,2019,CE45-F,Eclipse Cross SE w/Tech Pkg S-AWC *Ltd Avail*,,,406541
+mitsubishi,2019,CE45-G,Eclipse Cross SE Black Edition S-AWC,,,406542
+mitsubishi,2019,CG44-A,Mirage ES Manual,,,404430
+mitsubishi,2019,CG44-A,Mirage ES CVT,,,404431
+mitsubishi,2019,CG44-T,Mirage GT CVT,,,404432
+mitsubishi,2019,CG44-E,Mirage ES Limited CVT,,,404433
+mitsubishi,2019,CG44-A,Mirage ES Plus Manual,,,406534
+mitsubishi,2019,CG44-A,Mirage ES Plus CVT,,,406535
+mitsubishi,2019,CS41-A,Mirage G4 ES Manual,,,404379
+mitsubishi,2019,CS41-A,Mirage G4 ES CVT,,,404380
+mitsubishi,2019,CS41-T,Mirage G4 GT CVT,,,404381
+mitsubishi,2019,CO45-F,Outlander ES AWC,,,399915
+mitsubishi,2019,CO45-G,Outlander SE AWC,,,399916
+mitsubishi,2019,CO45-X,Outlander GT S-AWC,,,399917
+mitsubishi,2019,C045-J,Outlander SE Black Edition AWC,,,404324
+mitsubishi,2019,CO45-F,Outlander ES Touring AWC,,,406536
+mitsubishi,2019,CO45-G,Outlander SE Touring AWC,,,406537
+mitsubishi,2019,CO45-F,Outlander ES Premium AWC,,,406538
+mitsubishi,2019,COEV-G,Outlander PHEV SE S-AWC,,,404500
+mitsubishi,2019,COEV-G,Outlander PHEV SE Touring S-AWC,,,404501
+mitsubishi,2019,COEV-X,Outlander PHEV GT S-AWC,,,404502
+mitsubishi,2019,COEV-G,Outlander PHEV SE Limited Edition S-AWC,,,404503
+mitsubishi,2019,CS45-A,RVR ES FWD,,,403492
+mitsubishi,2019,CS45-D,RVR SE FWD,,,403493
+mitsubishi,2019,CS45-E,RVR SE AWC,,,403494
+mitsubishi,2019,CS45-F,RVR SE LTD AWC,,,403495
+mitsubishi,2019,CS45-Z,RVR GT AWC,,,403496
+mitsubishi,2019,CS45-J,RVR SE Black Edition AWC,,,403497
+mitsubishi,2019,CS45-Z,RVR GT Premium AWC,,,406539
+mitsubishi,2021,CG44-A,Mirage ES Manual,,,419061
+mitsubishi,2021,CG44-A,Mirage ES CVT,,,419062
+mitsubishi,2021,CG44-D,Mirage SE CVT,,,419063
+mitsubishi,2021,CG44-T,Mirage GT CVT,,,419064
+mitsubishi,2021,COEV-G,Outlander PHEV SE S-AWC,,,419818
+mitsubishi,2021,COEV-J,Outlander PHEV LE S-AWC,,,419819
+mitsubishi,2021,COEV-L,Outlander PHEV SEL S-AWC,,,419820
+mitsubishi,2021,COEV-X,Outlander PHEV GT S-AWC,,,419821
+mitsubishi,2021,CS45-A,RVR ES FWD,,,418970
+mitsubishi,2021,CS45-D,RVR SE FWD,,,418971
+mitsubishi,2021,CS45-B,RVR ES AWC,,,418972
+mitsubishi,2021,CS45-E,RVR SE AWC,,,418973
+mitsubishi,2021,CS45-G,RVR SEL AWC,,,418974
+mitsubishi,2021,CS45-Z,RVR GT AWC,,,418975
+mitsubishi,2021,CS45-L,RVR LE AWC,,,418976
+mitsubishi,2022,CE45-B,Eclipse Cross ES S-AWC,,,419293
+mitsubishi,2022,CE45-F,Eclipse Cross SE S-AWC *Ltd Avail*,,,419294
+mitsubishi,2022,CE45-G,Eclipse Cross SEL S-AWC *Ltd Avail*,,,419295
+mitsubishi,2022,CE45-X,Eclipse Cross GT S-AWC,,,419296
+mitsubishi,2022,CE45-H,Eclipse Cross SE S-AWC,,,427501
+mitsubishi,2022,CE45-J,Eclipse Cross SEL S-AWC,,,427502
+mitsubishi,2022,CG44-A,Mirage ES Manual,,,423372
+mitsubishi,2022,CG44-A,Mirage ES CVT,,,423373
+mitsubishi,2022,CG44-D,Mirage SE CVT,,,423374
+mitsubishi,2022,CG44-T,Mirage GT CVT,,,423375
+mitsubishi,2022,CG44-C,Mirage Carbon Edition CVT,,,423376
+mitsubishi,2022,CO45-B,Outlander ES S-AWC,,,420744
+mitsubishi,2022,CO45-D,Outlander SE S-AWC,,,420745
+mitsubishi,2022,CO45-G,Outlander SEL S-AWC,,,420746
+mitsubishi,2022,CO45-F,Outlander LE S-AWC,,,420747
+mitsubishi,2022,CO45-X,Outlander GT S-AWC,,,420748
+mitsubishi,2022,CO45-F,Outlander LE Premium S-AWC,,,421002
+mitsubishi,2022,CO45-X,Outlander GT Premium S-AWC,,,421003
+mitsubishi,2022,COEV-G,Outlander PHEV SE S-AWC,,,422021
+mitsubishi,2022,COEV-J,Outlander PHEV LE S-AWC,,,422022
+mitsubishi,2022,COEV-X,Outlander PHEV GT S-AWC,,,422023
+mitsubishi,2022,COEV-T,Outlander PHEV Black Edition S-AWC,,,422024
+mitsubishi,2022,CS45-A,RVR ES FWD,,,424595
+mitsubishi,2022,CS45-C,RVR SE FWD,,,424596
+mitsubishi,2022,CS45-B,RVR ES AWC,,,424597
+mitsubishi,2022,CS45-F,RVR SE AWC,,,424598
+mitsubishi,2022,CS45-H,RVR SEL AWC,,,424599
+mitsubishi,2022,CS45-M,RVR LE AWC,,,424600
+mitsubishi,2022,CS45-Z,RVR GT AWC,,,424601
+mitsubishi,2022,CS45-D,RVR SE FWD,,,425552
+mitsubishi,2022,CS45-E,RVR SE AWC,,,425553
+mitsubishi,2022,CS45-G,RVR SEL AWC,,,425554
+mitsubishi,2022,CS45-L,RVR LE AWC,,,425555
+mitsubishi,2023,CE45-B,Eclipse Cross ES S-AWC,,,427550
+mitsubishi,2023,CE45-F,Eclipse Cross SE S-AWC,,,427551
+mitsubishi,2023,CE45-G,Eclipse Cross SEL S-AWC,,,427552
+mitsubishi,2023,CE45-X,Eclipse Cross GT S-AWC,,,427553
+mitsubishi,2023,CE45-L,Eclipse Cross Carbon Edition S-AWC,,,427554
+mitsubishi,2023,CG44-A,Mirage ES Manual,,,431916
+mitsubishi,2023,CG44-A,Mirage ES CVT,,,431917
+mitsubishi,2023,CG44-D,Mirage SE CVT,,,431918
+mitsubishi,2023,CG44-T,Mirage GT CVT,,,431919
+mitsubishi,2023,CO45-B,Outlander ES S-AWC,,,433344
+mitsubishi,2023,CO45-D,Outlander SE S-AWC,,,433345
+mitsubishi,2023,CO45-F,Outlander LE S-AWC,,,433346
+mitsubishi,2023,CO45-F,Outlander LE Premium S-AWC,,,433347
+mitsubishi,2023,CO45-G,Outlander SEL S-AWC,,,433348
+mitsubishi,2023,CO45-X,Outlander GT S-AWC,,,433349
+mitsubishi,2023,CO45-X,Outlander GT Premium S-AWC,,,433350
+mitsubishi,2023,CO45-L,Outlander NOIR S-AWC,,,435659
+mitsubishi,2023,COEV-F,Outlander PHEV LE S-AWC,,,433786
+mitsubishi,2023,COEV-X,Outlander PHEV GT S-AWC,,,433787
+mitsubishi,2023,COEV-B,Outlander PHEV ES S-AWC,,,433788
+mitsubishi,2023,COEV-G,Outlander PHEV SEL S-AWC,,,433789
+mitsubishi,2023,CS45-A,RVR ES FWD,,,433710
+mitsubishi,2023,CS45-D,RVR SE FWD,,,433711
+mitsubishi,2023,CS45-B,RVR ES AWC,,,433712
+mitsubishi,2023,CS45-Z,RVR GT AWC,,,433713
+mitsubishi,2023,CS45-E,RVR SE AWC,,,433714
+mitsubishi,2023,CS45-G,RVR SEL AWC,,,433715
+mitsubishi,2023,CS45-L,RVR LE AWC,,,433716
+mitsubishi,2020,CE45-B,Eclipse Cross ES S-AWC,,,408785
+mitsubishi,2020,CE45-F,Eclipse Cross SE S-AWC,,,408786
+mitsubishi,2020,CE45-X,Eclipse Cross GT S-AWC,,,408787
+mitsubishi,2020,CE45-G,Eclipse Cross Limited Edition S-AWC,,,408788
+mitsubishi,2020,CG44-A,Mirage ES Manual,,,411606
+mitsubishi,2020,CG44-A,Mirage ES CVT,,,411607
+mitsubishi,2020,CG44-T,Mirage GT CVT,,,411608
+mitsubishi,2020,CG44-D,Mirage SE CVT,,,411609
+mitsubishi,2020,CO45-B,Outlander ES S-AWC,,,409745
+mitsubishi,2020,CO45-F,Outlander SEL S-AWC,,,409746
+mitsubishi,2020,CO45-G,Outlander Limited Edition S-AWC,,,409747
+mitsubishi,2020,CO45-D,Outlander EX-L S-AWC,,,409748
+mitsubishi,2020,CO45-X,Outlander GT S-AWC,,,409749
+mitsubishi,2020,CO45-C,Outlander EX S-AWC,,,409750
+mitsubishi,2020,CO45-E,Outlander SE S-AWC,,,409751
+mitsubishi,2020,COEV-G,Outlander PHEV SE S-AWC,,,408707
+mitsubishi,2020,COEV-X,Outlander PHEV GT S-AWC,,,408708
+mitsubishi,2020,COEV-J,Outlander PHEV LE S-AWC,,,408709
+mitsubishi,2020,COEV-L,Outlander PHEV SEL S-AWC,,,408710
+mitsubishi,2020,CS45-A,RVR ES FWD,,,409189
+mitsubishi,2020,CS45-D,RVR SE FWD,,,409190
+mitsubishi,2020,CS45-E,RVR SE AWC,,,409191
+mitsubishi,2020,CS45-Z,RVR GT AWC,,,409192
+mitsubishi,2020,CS45-B,RVR ES AWC,,,409193
+mitsubishi,2020,CS45-G,RVR SEL AWC,,,409194
+mitsubishi,2020,CS45-L,RVR Limited Edition AWC,,,411423
+mitsubishi,2025,CS45-A,RVR ES FWD,,,470165
+mitsubishi,2025,CS45-B,RVR ES AWC,,,470166
+mitsubishi,2025,CS45-E,RVR SE AWC,,,470167
+mitsubishi,2025,CS45-G,RVR SEL AWC,,,470168
+mitsubishi,2025,CS45-N,RVR NOIR AWC,,,470169
+mitsubishi,2025,CS45-Z,RVR GT AWC,,,470170
+mitsubishi,2025,CE45-B,Eclipse Cross ES S-AWC,,,466272
+mitsubishi,2025,CE45-F,Eclipse Cross SE S-AWC,,,466273
+mitsubishi,2025,CE45-G,Eclipse Cross SEL S-AWC,,,466274
+mitsubishi,2025,CE45-N,Eclipse Cross NOIR S-AWC,,,466276
+mitsubishi,2025,CE45-X,Eclipse Cross GT S-AWC,,,466275
+mitsubishi,2025,CO45-B,Outlander ES S-AWC,,,470581
+mitsubishi,2025,CO45-D,Outlander SE S-AWC,,,470582
+mitsubishi,2025,CO45-F,Outlander LE S-AWC,,,470583
+mitsubishi,2025,CO45-G,Outlander SEL S-AWC,,,470584
+mitsubishi,2025,CO45-X,Outlander GT S-AWC,,,470585
+mitsubishi,2025,CO45-X,Outlander GT Premium S-AWC,,,470586
+mitsubishi,2025,COEV-B,Outlander PHEV ES S-AWC,,,459713
+mitsubishi,2025,COEV-D,Outlander PHEV SE S-AWC,,,459717
+mitsubishi,2025,COEV-F,Outlander PHEV LE S-AWC,,,459714
+mitsubishi,2025,COEV-G,Outlander PHEV SEL S-AWC,,,459715
+mitsubishi,2025,COEV-X,Outlander PHEV GT S-AWC,,,459716
+mitsubishi,2025,COEV-N,Outlander PHEV NOIR S-AWC,,,459718
+mitsubishi,2026,CS45-A,RVR ES FWD,,,481614
+mitsubishi,2026,CS45-B,RVR ES AWC,,,481615
+mitsubishi,2026,CS45-E,RVR SE AWC,,,481616
+mitsubishi,2026,CS45-G,RVR SEL AWC,,,481617
+mitsubishi,2026,CS45-N,RVR NOIR AWC,,,481618
+mitsubishi,2026,CS45-Z,RVR GT AWC,,,481619
+mitsubishi,2026,CE45-B,Eclipse Cross ES S-AWC,,,477389
+mitsubishi,2026,CE45-F,Eclipse Cross SE S-AWC,,,477390
+mitsubishi,2026,CE45-N,Eclipse Cross NOIR S-AWC,,,477392
+mitsubishi,2026,CE45-X,Eclipse Cross GT S-AWC,,,477391
+mitsubishi,2026,CO45-B,Outlander ES S-AWC,,,481877
+mitsubishi,2026,CO45-D,Outlander SE S-AWC,,,481878
+mitsubishi,2026,CO45-F,Outlander LE S-AWC,,,481879
+mitsubishi,2026,CO45-G,Outlander SEL S-AWC,,,481880
+mitsubishi,2026,CO45-X,Outlander GT S-AWC,,,481881
+mitsubishi,2026,CO45-X,Outlander GT PREMIUM S-AWC,,,481882
+mitsubishi,2026,CO45-N,Outlander NOIR S-AWC,,,483389
+mitsubishi,2026,COEV-B,Outlander PHEV ES S-AWC,,,483107
+mitsubishi,2026,COEV-D,Outlander PHEV SE S-AWC,,,483108
+mitsubishi,2026,COEV-F,Outlander PHEV LE S-AWC,,,483109
+mitsubishi,2026,COEV-G,Outlander PHEV SEL S-AWC,,,483110
+mitsubishi,2026,COEV-X,Outlander PHEV GT S-AWC,,,F63
+mitsubishi,2026,COEV-X,Outlander PHEV GT Premium S-AWC,,,F64
+mitsubishi,2026,COEV-N,Outlander PHEV GT NOIR S-AWC,,,483112
+Kia,2027,5HW52J61QBS0GG233,Seltos EX AWD,,,
+Kia,2027,5HW52J61QBS0GG234,Seltos EX Premium AWD,,,
+Kia,2027,5HW5D5G1KBS0HH132,Seltos X-Line AWD,,,
+Kia,2027,1SW5D5G1KBS0HH0K9,Seltos X-Line Limited AWD,,,
+Kia,2027,5HW52J61QBS0GG233,Seltos EX AWD,,,
+Kia,2027,5HW52J61QBS0GG234,Seltos EX Premium AWD,,,
+Kia,2027,5HW5D5G1KBS0HH132,Seltos X-Line AWD,,,
+Kia,2027,1SW5D5G1KBS0HH0K9,Seltos X-Line Limited AWD,,,
+Volvo,2023,XC40,XC40 B4 AWD Core,,,429946
+Volvo,2023,XC40,XC40 B5 AWD Core,,,429947
+Volvo,2023,XC40,XC40 B5 AWD Plus (Bright),,,429949
+Volvo,2023,XC40,XC40 B5 AWD Plus (Dark),,,429948
+Volvo,2023,XC40,XC40 B5 AWD Ultimate (Bright),,,429951
+Volvo,2023,XC40,XC40 B5 AWD Ultimate (Dark),,,429950
+Volvo,2023,XC40,XC40 Recharge Pure Electric Core,,,429046
+Volvo,2023,XC40,XC40 Recharge Pure Electric Plus,,,429044
+Volvo,2023,XC40,XC40 Recharge Pure Electric Ultimate,,,429045
+Volvo,2023,C40,C40 Recharge Pure Electric Core,,,430568
+Volvo,2023,C40,C40 Recharge Pure Electric Plus,,,430569
+Volvo,2023,C40,C40 Recharge Pure Electric Ultimate,,,430570
+Volvo,2023,S60,S60 B5 FWD Core,,,430079
+Volvo,2023,S60,S60 B5 AWD Core,,,430080
+Volvo,2023,S60,S60 B5 AWD Core (Black Edition),,,430081
+Volvo,2023,S60,S60 B5 AWD Plus (Bright),,,430083
+Volvo,2023,S60,S60 B5 AWD Plus (Dark),,,430082
+Volvo,2023,S60,S60 B5 AWD Plus (Black Edition),,,430084
+Volvo,2023,S60,S60 B5 AWD Ultimate (Bright),,,430086
+Volvo,2023,S60,S60 B5 AWD Ultimate (Dark),,,430085
+Volvo,2023,S60,S60 Recharge Plug-In Hybrid Plus,,,430088
+Volvo,2023,S60,S60 Recharge Plug-In Hybrid Plus (Black Edition),,,430089
+Volvo,2023,S60,S60 Recharge Plug-In Hybrid Ultimate,,,430090
+Volvo,2023,S60,S60 T8 eAWD Polestar Engineered,,,430087
+Volvo,2023,S90,S90 B6 AWD Plus,,,430241
+Volvo,2023,S90,S90 B6 AWD Ultimate,,,430242
+Volvo,2023,S90,S90 Recharge Plug-In Hybrid Plus,,,430243
+Volvo,2023,S90,S90 Recharge Plug-In Hybrid Ultimate,,,430244
+Volvo,2023,XC60,XC60 B5 AWD Core,,,430517
+Volvo,2023,XC60,XC60 B6 AWD Core,,,430518
+Volvo,2023,XC60,XC60 B6 AWD Plus (Bright),,,430520
+Volvo,2023,XC60,XC60 B6 AWD Plus (Dark),,,430519
+Volvo,2023,XC60,XC60 B6 AWD Ultimate (Bright),,,430522
+Volvo,2023,XC60,XC60 B6 AWD Ultimate (Dark),,,430521
+Volvo,2023,XC60,XC60 Recharge Plug-In Hybrid Core,,,430524
+Volvo,2023,XC60,XC60 Recharge Plug-In Hybrid Plus (Bright),,,430526
+Volvo,2023,XC60,XC60 Recharge Plug-In Hybrid Plus (Dark),,,430525
+Volvo,2023,XC60,XC60 Recharge Plug-In Hybrid Ultimate (Bright),,,430528
+Volvo,2023,XC60,XC60 Recharge Plug-In Hybrid Ultimate (Dark),,,430527
+Volvo,2023,XC60,XC60 T8 eAWD Polestar Engineered,,,430523
+Volvo,2023,V60,V60 B6 AWD Core,,,430091
+Volvo,2023,V60,V60 B6 AWD Plus,,,430092
+Volvo,2023,V60,V60 B6 AWD Ultimate,,,430093
+Volvo,2023,V60,V60 Recharge Plus,,,430006
+Volvo,2023,V60,V60 Recharge Ultimate,,,430007
+Volvo,2023,V60,V60 T8 eAWD Polestar Engineered,,,430008
+Volvo,2023,V60CC,V60CC B5 AWD Core,,,429943
+Volvo,2023,V60CC,V60CC B5 AWD Plus,,,429944
+Volvo,2023,V60CC,V60CC B5 AWD Ultimate,,,429945
+Volvo,2023,V90CC,V90CC B6 AWD Plus,,,429881
+Volvo,2023,V90CC,V90CC B6 AWD Ultimate,,,429882
+Volvo,2023,XC90,XC90 B6 AWD Core,,,430529
+Volvo,2023,XC90,XC90 B6 AWD Plus (Bright),,,430531
+Volvo,2023,XC90,XC90 B6 AWD Plus (Dark),,,430530
+Volvo,2023,XC90,XC90 B6 AWD Plus 6 Seat (Bright),,,430532
+Volvo,2023,XC90,XC90 B6 AWD Ultimate (Dark),,,430533
+Volvo,2023,XC90,XC90 B6 AWD Ultimate (Bright),,,430534
+Volvo,2023,XC90,XC90 B6 AWD Ultimate 6 Seat (Bright),,,430535
+Volvo,2023,XC90,XC90 Recharge Plug-In Hybrid Core,,,430536
+Volvo,2023,XC90,XC90 Recharge Plug-In Hybrid Plus (Bright),,,430538
+Volvo,2023,XC90,XC90 Recharge Plug-In Hybrid Plus (Dark),,,430537
+Volvo,2023,XC90,XC90 Recharge Plug-In Hybrid Ultimate (Bright),,,430540
+Volvo,2023,XC90,XC90 Recharge Plug-In Hybrid Ultimate (Dark),,,430539
+Volvo,2022,C40,C40 Recharge Pure Electric P8 eAWD Ultimate,,,424602
+Volvo,2022,XC40,XC40 T5 AWD Momentum,,,422259
+Volvo,2022,XC40,XC40 T5 AWD R-Design,,,422260
+Volvo,2022,XC40,XC40 T5 AWD Inscription,,,422261
+Volvo,2022,XC40,XC40 T4 AWD Momentum,,,422258
+Volvo,2022,XC40,XC40 Recharge P8 eAWD Pure Electric Plus,,,422408
+Volvo,2022,XC40,XC40 Recharge P8 eAWD Pure Electric Ultimate,,,422409
+Volvo,2022,XC40,XC40 Recharge P8 eAWD Pure Electric Core,,,424995
+Volvo,2022,S60,S60 B5 FWD Momentum,,,422071
+Volvo,2022,S60,S60 B5 AWD Momentum,,,422072
+Volvo,2022,S60,S60 B5 AWD R-Design,,,422073
+Volvo,2022,S60,S60 B5 AWD Inscription,,,422074
+Volvo,2022,S60,S60 B5 AWD Black Edition Momentum,,,426178
+Volvo,2022,S60,S60 B5 AWD Black Edition R-Design,,,426179
+Volvo,2022,S60,S60 Recharge T8 eAWD PHEV R-Design,,,422076
+Volvo,2022,S60,S60 Recharge T8 eAWD PHEV Polestar Engineered,,,422077
+Volvo,2022,S60,S60 Recharge T8 eAWD PHEV R-Design Extended Range,,,426180
+Volvo,2022,S60,S60 Recharge T8 eAWD PHEV Black R-Design Extended,,,426181
+Volvo,2022,S60,S60 Recharge T8 eAWD PHEV Polestar Engineered Extended Range,,,426182
+Volvo,2022,S90,S90 B6 AWD Inscription,,,422237
+Volvo,2022,S90,S90 Recharge T8 eAWD PHEV Inscription,,,422236
+Volvo,2022,S90,S90 Recharge T8 eAWD PHEV Inscription Extended Range,,,426183
+Volvo,2022,XC60,XC60 	B5 AWD Momentum,,,422000
+Volvo,2022,XC60,XC60 	B6 AWD Momentum,,,422001
+Volvo,2022,XC60,XC60 	B6 AWD R-Design,,,422002
+Volvo,2022,XC60,XC60 B6 AWD Inscription,,,422003
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Inscription Expression,,,422004
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV R-Design,,,422005
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Inscription,,,422006
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Polestar Engineered,,,422007
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Inscription Expression Extended Range,,,426512
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV R-Design Extended Range,,,426513
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Inscription Extended Range,,,426514
+Volvo,2022,XC60,XC60	 Recharge T8 eAWD PHEV Polestar Engineered Extended Range,,,426515
+Volvo,2022,V60,V60 	T6 AWD Momentum,,,422234
+Volvo,2022,V60,V60 T6 AWD R-Design,,,422235
+Volvo,2022,V60,V60 Recharge T8 eAWD PHEV R-Design,,,422123
+Volvo,2022,V60,V60 Recharge T8 eAWD PHEV Polestar Engineered,,,422124
+Volvo,2022,V60,V60 Recharge T8 eAWD PHEV R-Design Extended Range,,,426688
+Volvo,2022,V60,V60 Recharge T8 eAWD PHEV Polestar Engineered Extended Range,,,426689
+Volvo,2022,V60CC,V60CC T5 AWD,,,422020
+Volvo,2022,V90CC,V90CC B6 AWD,,,422407
+Volvo,2022,XC90,XC90 	T5 AWD Momentum 7-Seater,,,422065
+Volvo,2022,XC90,XC90 T6 AWD Momentum 7-Seater,,,422066
+Volvo,2022,XC90,XC90 T6 AWD R-Design 7-Seater,,,422067
+Volvo,2022,XC90,XC90 T6 AWD Inscription 7-Seater,,,422068
+Volvo,2022,XC90,XC90 T6 AWD Momentum 6-Seater,,,422069
+Volvo,2022,XC90,XC90 T6 AWD Inscription 6-Seater,,,422070
+Volvo,2022,XC90,XC90 Recharge T8 eAWD PHEV Inscription Expression,,,422125
+Volvo,2022,XC90,XC90 	Recharge T8 eAWD PHEV R-Design,,,422126
+Volvo,2022,XC90,XC90 Recharge T8 eAWD PHEV Inscription,,,422127
+Volvo,2022,XC90,XC90 Recharge T8 eAWD PHEV Inscription Expression Extended Range,,,426509
+Volvo,2022,XC90,XC90 	Recharge T8 eAWD PHEV R-Design Extended Range,,,426510
+Volvo,2022,XC90,XC90 Recharge T8 eAWD PHEV Inscription Extended Range,,,426511
+Volvo,2020,XC40,XC40 T5 AWD Momentum,,,407800
+Volvo,2020,XC40,XC40 T5 AWD R-Design,,,407801
+Volvo,2020,XC40,XC40 T5 AWD Inscription,,,407802
+Volvo,2020,XC40,XC40 T4 AWD Momentum,,,407803
+Volvo,2020,S60,S60 T5 FWD Momentum,,,407804
+Volvo,2020,S60,S60 T6 AWD Momentum,,,407805
+Volvo,2020,S60,S60 T6 AWD R-Design,,,407806
+Volvo,2020,S60,S60 T6 AWD Inscription,,,407807
+Volvo,2020,S60,S60 T8 eAWD Plug-In Hybrid R-Design,,,407808
+Volvo,2020,S60,S60 T8 eAWD Plug-In Hybrid Polestar,,,407809
+Volvo,2020,S90,S90 T6 AWD Inscription,,,406922
+Volvo,2020,S90,S90 T8 eAWD Plug-In Hybrid Inscription,,,406923
+Volvo,2020,XC60,XC60 T5 AWD Momentum,,,406914
+Volvo,2020,XC60,XC60 T6 AWD Momentum,,,406915
+Volvo,2020,XC60,XC60 T6 AWD R-Design,,,406916
+Volvo,2020,XC60,XC60 T6 AWD Inscription,,,406917
+Volvo,2020,XC60,XC60 T8 eAWD Plug-In Hybrid R-Design,,,406977
+Volvo,2020,XC60,XC60 T8 eAWD Plug-In Hybrid Inscription,,,406978
+Volvo,2020,XC60,XC60 T8 eAWD Plug-In Hybrid Polestar,,,406979
+Volvo,2020,V60,V60 T8 eAWD Plug-In Hybrid Inscription,,,407740
+Volvo,2020,V60,V60 T8 eAWD Plug-In Hybrid Polestar,,,407741
+Volvo,2020,V60,V60 T5 FWD Momentum,,,407796
+Volvo,2020,V60,V60 	T6 AWD Momentum,,,407797
+Volvo,2020,V60,V60 T6 AWD R-Design,,,407798
+Volvo,2020,V60,V60 	T6 AWD Inscription,,,407799
+Volvo,2020,V60CC,V60CC T5 AWD,,,407688
+Volvo,2020,XC90,XC90 	T5 AWD Momentum 7-Seater,,,407072
+Volvo,2020,XC90,XC90 T6 AWD Momentum 7-Seater,,,407073
+Volvo,2020,XC90,XC90 T6 AWD R-Design 7-Seater,,,407074
+Volvo,2020,XC90,XC90 T6 AWD Inscription 7-Seater,,,407075
+Volvo,2020,XC90,XC90 	T8 eAWD Plug-In Hybrid Momentum,,,407077
+Volvo,2020,XC90,XC90 T8 eAWD Plug-In Hybrid R-Design,,,407078
+Volvo,2020,XC90,XC90 T8 eAWD Plug-In Hybrid Inscription,,,407079
+Volvo,2020,XC90,XC90 T6 AWD Momentum 6-Seater,,,407080
+Volvo,2020,XC90,XC90 T6 AWD Inscription 6-Seater,,,407081
+Volvo,2021,XC40,XC40 T4 AWD Momentum,,,413814
+Volvo,2021,XC40,XC40 T5 AWD Momentum,,,413815
+Volvo,2021,XC40,XC40 T5 AWD R-Design,,,413816
+Volvo,2021,XC40,XC40 T5 AWD Inscription,,,413817
+Volvo,2021,XC40,XC40 Recharge P8 eAWD Pure Electric,,,413818
+Volvo,2021,S60,S60 T5 FWD Momentum,,,413808
+Volvo,2021,S60,S60 T6 AWD Momentum,,,413809
+Volvo,2021,S60,S60 T6 AWD R-Design,,,413810
+Volvo,2021,S60,S60 T6 AWD Inscription,,,413811
+Volvo,2021,S60,S60 Recharge T8 eAWD PHEV R-Design,,,413812
+Volvo,2021,S60,S60 Recharge T8 eAWD PHEV Polestar,,,413813
+Volvo,2021,S60,S60 T5 AWD Momentum,,,418671
+Volvo,2021,S60,S60 T5 AWD R-Design,,,418672
+Volvo,2021,S60,S60 T5 AWD Inscription,,,418673
+Volvo,2021,S90,S90 	T6 AWD Inscription,,,413698
+Volvo,2021,S90,S90 Recharge T8 eAWD PHEV Inscription,,,413722
+Volvo,2021,XC60,XC60 	T5 AWD Momentum,,,414104
+Volvo,2021,XC60,XC60 	T6 AWD Momentum,,,414105
+Volvo,2021,XC60,XC60 	T6 AWD R-Design,,,414106
+Volvo,2021,XC60,XC60 T6 AWD Inscription,,,414107
+Volvo,2021,XC60,XC60	 Recharge T8 eAWD PHEV R-Design,,,414108
+Volvo,2021,XC60,XC60	 Recharge T8 eAWD PHEV Inscription,,,414109
+Volvo,2021,XC60,XC60	 Recharge T8 eAWD PHEV Polestar,,,414110
+Volvo,2021,XC60,XC60 	Recharge T8 eAWD PHEV Inscription Expression,,,414111
+Volvo,2021,V60,V60 T5 FWD Momentum,,,413700
+Volvo,2021,V60,V60 	T6 AWD Momentum,,,413701
+Volvo,2021,V60,V60 T6 AWD R-Design,,,413702
+Volvo,2021,V60,V60 	T6 AWD Inscription,,,413703
+Volvo,2021,V60,V60 Recharge T8 eAWD PHEV Inscription,,,413724
+Volvo,2021,V60,V60 Recharge T8 eAWD PHEV Polestar,,,413725
+Volvo,2021,V60CC,V60CC T5 AWD,,,413699
+Volvo,2021,XC90,XC90 	T5 AWD Momentum 7-Seater,,,414291
+Volvo,2021,XC90,XC90 T6 AWD Momentum 7-Seater,,,414292
+Volvo,2021,XC90,XC90 T6 AWD R-Design 7-Seater,,,414293
+Volvo,2021,XC90,XC90 T6 AWD Inscription 7-Seater,,,414294
+Volvo,2021,XC90,XC90 Recharge T8 eAWD PHEV Inscription Expression,,,414297
+Volvo,2021,XC90,XC90 	Recharge T8 eAWD PHEV R-Design,,,414298
+Volvo,2021,XC90,XC90 Recharge T8 eAWD PHEV Inscription,,,414299
+Volvo,2021,XC90,XC90 T6 AWD Momentum 6-Seater,,,414295
+Volvo,2021,XC90,XC90 T6 AWD Inscription 6-Seater,,,414296
+Volvo,2024,XC40,B5 AWD Core (Bright),,,441570
+Volvo,2024,XC40,B5 AWD Core (Dark),,,441565
+Volvo,2024,XC40,B5 AWD Plus (Bright),,,441567
+Volvo,2024,XC40,B5 AWD Plus (Dark),,,441566
+Volvo,2024,XC40,B5 AWD Ultimate (Bright),,,441569
+Volvo,2024,XC40,B5 AWD Ultimate (Dark),,,441568
+Volvo,2024,XC40,Recharge Core,,,441472
+Volvo,2024,XC40,Recharge Plus,,,441473
+Volvo,2024,XC40,Recharge Ultimate,,,441474
+Volvo,2024,XC40,Recharge TWIN Core,,,441469
+Volvo,2024,XC40,Recharge TWIN Plus,,,441470
+Volvo,2024,XC40,Recharge TWIN Ultimate,,,441471
+Volvo,2024,C40,Recharge Core,,,441592
+Volvo,2024,C40,Recharge Plus,,,441593
+Volvo,2024,C40,Recharge Ultimate,,,441594
+Volvo,2024,C40,Recharge TWIN Core,,,441589
+Volvo,2024,C40,Recharge TWIN Plus,,,441590
+Volvo,2024,C40,Recharge TWIN Ultimate,,,441591
+Volvo,2024,S60,B5 AWD Core,,,441435
+Volvo,2024,S60,B5 AWD Plus,,,441436
+Volvo,2024,S60,B5 AWD Plus (Black Edition),,,441437
+Volvo,2024,S60,B5 AWD Ultimate,,,441438
+Volvo,2024,S60,Recharge Core,,,441442
+Volvo,2024,S60,Recharge Plus,,,441439
+Volvo,2024,S60,Recharge Plus (Black Edition),,,441440
+Volvo,2024,S60,Recharge Ultimate,,,441441
+Volvo,2024,S60,Recharge Ultimate (Black Edition),,,441443
+Volvo,2024,V60,T8 eAWD Polestar Engineered,,,441431
+Volvo,2024,V60CC,B5 AWD Core,,,441432
+Volvo,2024,V60CC,B5 AWD Plus,,,441433
+Volvo,2024,V60CC,B5 AWD Ultimate,,,441434
+Volvo,2024,XC60,B5 AWD Core,,,441414
+Volvo,2024,XC60,B5 AWD Plus,,,441415
+Volvo,2024,XC60,B5 AWD Ultimate,,,441416
+Volvo,2024,XC60,B5 AWD Ultimate (Black Edition),,,447300
+Volvo,2024,XC60,Recharge Core,,,441420
+Volvo,2024,XC60,Recharge Plus,,,441417
+Volvo,2024,XC60,Recharge Ultimate,,,441418
+Volvo,2024,XC60,Recharge Ultimate (Black Edition),,,447466
+Volvo,2024,XC60,T8 eAWD Polestar Engineered,,,441419
+Volvo,2024,S90,B6 AWD Plus,,,441577
+Volvo,2024,S90,B6 AWD Ultimate,,,441578
+Volvo,2024,S90,Recharge Plus,,,441579
+Volvo,2024,S90,Recharge Ultimate,,,441580
+Volvo,2024,V90CC,B6 AWD Plus,,,441669
+Volvo,2024,V90CC,B6 AWD Ultimate,,,441670
+Volvo,2024,XC90,B6 AWD Core,,,441421
+Volvo,2024,XC90,B6 AWD Plus,,,441422
+Volvo,2024,XC90,B6 AWD Plus 6 Seat,,,441423
+Volvo,2024,XC90,B6 AWD Ultimate,,,441424
+Volvo,2024,XC90,B6 AWD Ultimate 6 Seat,,,441425
+Volvo,2024,XC90,Recharge Core,,,441426
+Volvo,2024,XC90,Recharge Plus,,,441427
+Volvo,2024,XC90,Recharge Plus 6 Seat,,,441428
+Volvo,2024,XC90,Recharge Ultimate,,,441429
+Volvo,2024,XC90,Recharge Ultimate 6 Seat,,,441430
+Volvo,2025,XC40,B5 AWD Core (Bright),,,457967
+Volvo,2025,XC40,B5 AWD Core (Dark),,,
+Volvo,2025,XC40,B5 AWD Plus (Bright),,,457969
+Volvo,2025,XC40,B5 AWD Plus (Dark),,,457968
+Volvo,2025,XC40,B5 AWD Ultra (Bright),,,457971
+Volvo,2025,XC40,B5 AWD Ultra (Dark),,,457970
+Volvo,2025,EX40,Recharge Core,,,458855
+Volvo,2025,EX40,Recharge Plus,,,458856
+Volvo,2025,EX40,Recharge Ultra,,,458857
+Volvo,2025,EX40,Recharge TWIN Core,,,458852
+Volvo,2025,EX40,Recharge TWIN Plus,,,458853
+Volvo,2025,EX40,Recharge TWIN Ultra,,,458854
+Volvo,2025,EC40,Recharge Core,,,458867
+Volvo,2025,EC40,Recharge Plus,,,458868
+Volvo,2025,EC40,Recharge Ultra,,,458869
+Volvo,2025,EC40,Recharge TWIN Core,,,458863
+Volvo,2025,EC40,Recharge TWIN Plus,,,458864
+Volvo,2025,EC40,Recharge TWIN Ultra,,,458865
+Volvo,2025,EC40,Recharge TWIN Ultra Black Edition,,,458866
+Volvo,2025,S60,T8 Core,,,458096
+Volvo,2025,S60,T8 Plus,,,458097
+Volvo,2025,S60,T8 Ultra,,,458098
+Volvo,2025,S60,T8 Ultra (Black Edition),,,458099
+Volvo,2025,V60,T8 eAWD Polestar Engineered,,,457977
+Volvo,2025,V60CC,B5 AWD Core,,,457978
+Volvo,2025,V60CC,B5 AWD Plus,,,457979
+Volvo,2025,V60CC,B5 AWD Ultra,,,457980
+Volvo,2025,XC60,B5 AWD Core,,,458075
+Volvo,2025,XC60,B5 AWD Plus,,,458076
+Volvo,2025,XC60,B5 AWD Ultra,,,458077
+Volvo,2025,XC60,B5 AWD Ultra (Black Edition),,,458078
+Volvo,2025,XC60,T8 Core,,,458079
+Volvo,2025,XC60,T8 Plus,,,458080
+Volvo,2025,XC60,T8 Ultra,,,458081
+Volvo,2025,XC60,T8 Ultra (Black Edition),,,458083
+Volvo,2025,XC60,T8 eAWD Polestar Engineered,,,458082
+Volvo,2025,S90,B6 AWD Plus,,,458011
+Volvo,2025,S90,B6 AWD Ultra,,,458012
+Volvo,2025,S90,T8 Plus,,,458013
+Volvo,2025,S90,T8 Ultra,,,458014
+Volvo,2025,V90CC,B6 AWD Plus,,,458015
+Volvo,2025,V90CC,B6 AWD Ultra,,,458016
+Volvo,2025,XC90,B6 AWD Ultra 7 Seat,,,458017
+Volvo,2025,XC90,2025.5 B6 AWD Core 7 Seat,,,464776
+Volvo,2025,XC90,2025.5 B6 AWD Plus 7 Seat,,,464777
+Volvo,2025,XC90,2025.5 B6 AWD Ultra 7 Seat,,,464778
+Volvo,2025,XC90,2025.5 B6 AWD Ultra 6 Seat,,,464779
+Volvo,2025,XC90,T8 Ultra 7 Seat,,,458021
+Volvo,2025,XC90,2025.5 T8 Core 7 Seat,,,464780
+Volvo,2025,XC90,2025.5 T8 Plus 7 Seat,,,464781
+Volvo,2025,XC90,2025.5 T8 Ultra 7 Seat,,,464782
+Volvo,2025,XC90,2025.5 T8 Ultra 6 Seat,,,464783
+Volvo,2025,EX30,Core (Single Motor Extended Range),,,450124
+Volvo,2025,EX30,Plus (Single Motor Extended Range),,,450125
+Volvo,2025,EX30,Ultra (Single Motor Extended Range),,,450126
+Volvo,2025,EX30,Plus (Twin Motor Performance),,,450122
+Volvo,2025,EX30,Ultra (Twin Motor Performance),,,450123
+Volvo,2025,EX90,Plus (Twin Motor Performance),,,454240
+Volvo,2025,EX90,Plus (Twin Motor Performance) 6 Seat,,,454241
+Volvo,2025,EX90,Ultra (Twin Motor Performance),,,454242
+Volvo,2025,EX90,Ultra (Twin Motor Performance) 6 Seat,,,454243
+Volvo,2025,XC90,B6 AWD Core,,,
+Volvo,2024,XC60,XC60 Core Dark Theme,,,
+Volvo,2024,XC60,XC60 Plus Dark Theme,,,
+Volvo,2024,XC60,XC60 Ultimate Dark Theme,,,
+Volvo,2024,XC60,XC60 Recharge Plus Dark Theme,,,
+Volvo,2024,XC60,XC60 Recharge Ultimate Dark Theme,,,
+Volvo,2024,XC60,XC60 Recharge Polestar Engineered,,,
+Volvo,2024,XC60,XC60 Recharge Core Dark Theme,,,
+Volvo,2024,XC90,XC90 Core Bright Theme,,,
+Volvo,2024,XC90,XC90 Plus Bright Theme,,,
+Volvo,2024,XC90,XC90 Plus Bright Theme,,,
+Volvo,2024,XC90,XC90 Ultimate Bright Theme,,,
+Volvo,2024,XC90,XC90 Ultimate Bright Theme,,,
+Volvo,2024,XC90,XC90 Recharge Core Bright Theme,,,
+Volvo,2024,XC90,XC90 Recharge Plus Bright Theme,,,
+Volvo,2024,XC90,XC90 Recharge Plus Bright Theme,,,
+Volvo,2024,XC90,XC90 Recharge Ultimate Bright Theme,,,
+Volvo,2024,XC90,XC90 Recharge Ultimate Bright Theme,,,
+Volvo,2024,V60,V60 Recharge Polestar Engineered,,,
+Volvo,2024,V60CC,V60 Cross Country Core,,,
+Volvo,2024,V60CC,V60 Cross Country Plus,,,
+Volvo,2024,V60CC,V60 Cross Country Ultimate,,,
+Volvo,2024,S60,S60 Core Dark Theme,,,
+Volvo,2024,S60,S60 Plus Dark Theme,,,
+Volvo,2024,S60,S60 Plus Black Edition,,,
+Volvo,2024,S60,S60 Ultimate Dark Theme,,,
+Volvo,2024,S60,S60 Recharge Plus Dark Theme,,,
+Volvo,2024,S60,S60 Recharge Plus Black Edition,,,
+Volvo,2024,S60,S60 Recharge Ultimate Dark Theme,,,
+Volvo,2024,S60,S60 Recharge Core Dark Theme,,,
+Volvo,2024,S60,S60 Recharge Ultimate Black Edition,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Core,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Plus,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Ultimate,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Core,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Plus,,,
+Volvo,2024,XC40,XC40 Recharge Pure Electric Ultimate,,,
+Volvo,2024,XC40,XC40 Core Dark Theme,,,
+Volvo,2024,XC40,XC40 Plus Dark Theme,,,
+Volvo,2024,XC40,XC40 Plus Bright Theme,,,
+Volvo,2024,XC40,XC40 Ultimate Dark Theme,,,
+Volvo,2024,XC40,XC40 Ultimate Bright Theme,,,
+Volvo,2024,XC40,XC40 Core Bright Theme,,,
+Volvo,2024,S90,S90 Plus Bright Theme,,,
+Volvo,2024,S90,S90 Ultimate Bright Theme,,,
+Volvo,2024,S90,S90 Recharge Plus Bright Theme,,,
+Volvo,2024,S90,S90 Recharge Ultimate Bright Theme,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Core,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Plus,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Ultimate,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Core,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Plus,,,
+Volvo,2024,C40,C40 Recharge Pure Electric Ultimate,,,
+Volvo,2024,V90CC,V90 Cross Country Plus,,,
+Volvo,2024,V90CC,V90 Cross Country Ultimate,,,
+Volvo,2024,XC60,XC60 Ultimate Black Edition,,,
+Volvo,2024,XC60,XC60 Recharge Ultimate Black Edition,,,
+Volvo,2026,XC40,B5 AWD Core,,,476080
+Volvo,2026,XC40,B5 AWD Plus,,,476078
+Volvo,2026,XC40,B5 AWD Ultra,,,476079
+Volvo,2026,XC40,B5 AWD Ultra Black Edition,,,476081
+Volvo,2026,EX40,Twin Motor Core,,,475962
+Volvo,2026,EX40,Twin Motor Plus,,,475963
+Volvo,2026,EX40,Twin Motor Ultra,,,475964
+Volvo,2026,EX40,Twin Motor Ultra Black Edition,,,475965
+Volvo,2026,EC40,Twin Motor Core,,,476062
+Volvo,2026,EC40,Twin Motor Ultra Black Edition,,,476063
+Volvo,2026,V60CC,B5 AWD Ultra,,,476082
+Volvo,2026,XC60,B5 AWD Core,,,476422
+Volvo,2026,XC60,B5 AWD Plus,,,476423
+Volvo,2026,XC60,B5 AWD Ultra,,,476424
+Volvo,2026,XC60,B5 AWD Ultra Black Edition,,,476425
+Volvo,2026,XC60,T8 Core,,,476426
+Volvo,2026,XC60,T8 Plus,,,476427
+Volvo,2026,XC60,T8 Ultra,,,476428
+Volvo,2026,XC60,T8 Ultra Black Edition,,,476429
+Volvo,2026,XC60,T8 eAWD Polestar Engineered,,,476430
+Volvo,2026,V90CC,B6 AWD Ultra,,,476064
+Volvo,2026,EX30,Core (Single Motor Extended Range),,,481024
+Volvo,2026,EX30,Plus (Single Motor Extended Range),,,481025
+Volvo,2026,EX30,Ultra (Single Motor Extended Range),,,481026
+Volvo,2026,EX30,Plus (Twin Motor Performance),,,481022
+Volvo,2026,EX30,Ultra (Twin Motor Performance),,,481023
+Volvo,2026,EX30CC,Ultra (Twin Motor Performance),,,481027
+Volvo,2026,EX90,Plus (Twin Motor Performance),,,
+Volvo,2026,XC90,B6 AWD Core,,,476296
+Volvo,2026,XC90,B6 AWD Plus (Bright),,,476297
+Volvo,2026,XC90,B6 AWD Plus (Dark),,,476300
+Volvo,2026,XC90,B6 AWD Ultra (Bright),,,476298
+Volvo,2026,XC90,B6 AWD Ultra (Dark),,,476301
+Volvo,2026,XC90,B6 AWD Ultra 6 Seater,,,476299
+Volvo,2026,XC90,T8 plug-in hybrid Core,,,476262
+Volvo,2026,XC90,T8 plug-in hybrid Plus (Bright),,,476263
+Volvo,2026,XC90,T8 plug-in hybrid Plus (Dark),,,476266
+Volvo,2026,XC90,T8 plug-in hybrid Ultra (Bright),,,476264
+Volvo,2026,XC90,T8 plug-in hybrid Ultra (Dark),,,476267
+Volvo,2026,XC90,T8 plug-in hybrid Ultra 6 Seater,,,476265

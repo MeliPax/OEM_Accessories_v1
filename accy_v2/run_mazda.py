@@ -1,27 +1,34 @@
 """
 Entry point for the Mazda OEM pipeline.
 
-Usage (run from the OEMAccessories/ directory):
-    python run_mazda.py [path_to_csv_file]
+Usage (run from the project root directory):
+    python accy_v2/run_mazda.py [path_to_csv_file]
 
-If no path is provided, auto-discovers the most recent .csv in data/landing_zone/mazda/.
+If no path is provided, auto-discovers the most recent .csv in landing_zone/mazda/.
 
 Examples:
-    python run_mazda.py
-    python run_mazda.py "data/landing_zone/mazda/Mazda - 20251205-Mazda accessory feed.csv"
+    python accy_v2/run_mazda.py
+    python accy_v2/run_mazda.py "landing_zone/mazda/Mazda - 20251205-Mazda accessory feed.csv"
 """
 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+# Add directories to path for imports
+accy_v2_dir = Path(__file__).parent
+project_root = accy_v2_dir.parent
+model_lookup_dir = project_root / "model_lookup"
+
+sys.path.insert(0, str(accy_v2_dir))      # For core.*, oems.* imports
+sys.path.insert(0, str(model_lookup_dir)) # For model_lookup internal imports
+sys.path.insert(0, str(project_root))     # For model_lookup package import
 
 from oems.mazda.pipeline.orchestrator import MazdaPipeline
 
 CONFIG_PATH = (
-    Path(__file__).parent / "oems" / "mazda" / "config" / "mazda_config.json"
+    accy_v2_dir / "oems" / "mazda" / "config" / "mazda_config.json"
 )
-DEFAULT_DATA_DIR = Path(__file__).parent / "data" / "landing_zone" / "mazda"
+DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "mazda"
 
 
 def main() -> None:

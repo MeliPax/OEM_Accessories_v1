@@ -70,6 +70,19 @@ class BasePipeline(ABC):
         ...
 
     @abstractmethod
+    def run_step3_5_extract_vehicle_year(
+        self,
+        standardized_df: pd.DataFrame,
+        meta_data: Dict,
+        config: Dict,
+        pipeline_logger: PipelineLogger,
+    ) -> pd.DataFrame:
+        """Extract vehicle_year from sheet_name and store in meta_data.
+        Uses valid_year_range from config for validation.
+        Returns: standardized_df (unchanged)."""
+        ...
+
+    @abstractmethod
     def run_step4_transformation(
         self,
         standardized_df: pd.DataFrame,
@@ -80,6 +93,19 @@ class BasePipeline(ABC):
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, pd.DataFrame]:
         """Validate applicability, melt trim columns, return dict of output DataFrames."""
+        ...
+
+    @abstractmethod
+    def run_step4_5_model_enrichment(
+        self,
+        transformed: Dict[str, pd.DataFrame],
+        meta_data: Dict,
+        config: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> Dict[str, pd.DataFrame]:
+        """Enrich with model numbers via lookup and validate.
+        Returns: {language: enriched_DataFrame} with model_number and vehicle_year columns."""
         ...
 
     @abstractmethod
@@ -141,8 +167,11 @@ class BasePipeline(ABC):
 
                 step2_result = self.run_step2_header_normalization(working_df, config, meta_data, dq_logger, pipeline_logger)
                 standardized_df = self.run_step3_standardization(working_df, step2_result, config, meta_data, pipeline_logger)
+                standardized_df = self.run_step3_5_extract_vehicle_year(standardized_df, meta_data, config, pipeline_logger)
+                
                 transformed = self.run_step4_transformation(standardized_df, step2_result, config, meta_data, dq_logger, pipeline_logger)
-                sheet_frames = self.run_step5_output(transformed, meta_data, config, pipeline_logger)
+                enriched = self.run_step4_5_model_enrichment(transformed, meta_data, config, dq_logger, pipeline_logger)
+                sheet_frames = self.run_step5_output(enriched, meta_data, config, pipeline_logger)
 
                 all_output_frames.update(sheet_frames)
                 records_out = sum(len(df) for df in sheet_frames.values())

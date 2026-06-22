@@ -367,6 +367,19 @@ def get_active_unique_manufacturers(engine) -> pd.DataFrame:
     return pd.read_sql(query, engine)
 
 
+def build_word_boundary_pattern(keyword: str) -> str:
+    """
+    Build a regex pattern for exact word matching with word boundaries.
+
+    Args:
+        keyword: The keyword to match
+
+    Returns:
+        str: Regex pattern with word boundaries (e.g., r'\bSE\b')
+    """
+    return rf"\b{keyword}\b"
+
+
 def batch_save_manufacturer_models(
     engine,
     manufacturers: list[str],
@@ -439,11 +452,12 @@ def search_models_by_description(
 ) -> pd.DataFrame:
     """
     Search vehicle models by manufacturer, year, and description keywords.
+    Keywords must match exactly as whole words (e.g., "SE" won't match "SEL").
 
     Args:
         make: Manufacturer name
         year: Model year
-        keywords: List of keywords to match in Description (all must be present)
+        keywords: List of keywords to match in Description as exact words (all must be present)
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
 
@@ -462,14 +476,16 @@ def search_models_by_description(
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
     for keyword in keywords:
+        pattern = build_word_boundary_pattern(keyword)
         df_filtered = df_filtered[
-            df_filtered["Description"].str.contains(keyword, case=False, na=False)
+            df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
         ]
 
     if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in EV_KEYWORDS):
         for ev_keyword in EV_KEYWORDS:
+            pattern = build_word_boundary_pattern(ev_keyword)
             df_filtered = df_filtered[
-                ~df_filtered["Description"].str.contains(ev_keyword, case=False, na=False)
+                ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
             ]
 
     return df_filtered

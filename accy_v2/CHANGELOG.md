@@ -10,31 +10,55 @@ The versions are tracked against the date of release/deployment, and the Unrelea
 
 ### Added
 
+- **Model number lookup integration (Step 4.5):** New pipeline step for enriching accessory data with vehicle model numbers
+  - Batch lookup strategy: one database query per unique trim (not per row), dramatically improving performance
+  - Keyword extraction and combination from multiple sources:
+    - Model name from metadata (extracted in Step 1 from cell A1)
+    - Fuel type from sheet name (if applicable, e.g., PHEV, EV)
+    - Trim names with abbreviation expansion (e.g., "gt-p" → ["gt", "premium"])
+    - Multi-character hyphenated terms preserved as single keywords (e.g., "s-awc" stays as one keyword, not split)
+  - Intelligent trim parsing: single-letter abbreviations expanded via library (p→premium, n→noir), multi-character terms kept intact
+  - Row filtering: rows with missing/ambiguous model lookups excluded from output automatically
+  - `model_number_status` column added to output for visibility ("yes - Model number found" or "no - missing model number")
+  - DQ logging: missing trims flagged with details (keywords searched, lookup result type, rows affected)
+
 - **Raw data folder structure:** `data/landing_zone/{oem}/` folder inside OEMAccessories for storing OEM source Excel files
   - Self-contained project structure: data and code live together
   - One folder per OEM (mitsubishi, honda, mazda, etc.)
   - Pipeline entry point auto-discovers the most recent .xlsx file for convenience
   - Raw data folder excluded from git (sensitive pricing, large binaries)
+
 - **Report sheet in combined output:** All pipeline runs now generate a single Excel file containing:
   - `_Report` sheet (first tab) with Run Summary (metadata), Model Profile (per-model statistics), and DQ Records (all flagged issues with part numbers for quick review)
   - Model data sheets (`{model}_{lang}`) with processed accessory data
-- **Model Profile trim visibility:** Records out breakdown by trim level in the Model Profile table, formatted as multi-line text in the Records Out cell (e.g., `ES (127 EN | 127 FR)` per trim). Keeps the Model Profile table as a clean one-row-per-model structure while providing detailed trim applicability at a glance.
+  - Model Profile trim visibility: Records out breakdown by trim level formatted as multi-line text
+
 - Helper functions in Step 5:
   - `_build_run_summary()` — generates key-value Run Summary table with aggregate stats
   - `_build_model_profile()` — generates one-row-per-model profile with records_in/out (with trim breakdown) and DQ warnings
-  - `_build_trim_records_out_text()` — formats per-trim EN/FR counts as a readable multi-line string for the Records Out cell
-  - `_build_dq_records()` — extracts DQ records into a review-friendly table with issue descriptions and part info
+  - `_build_trim_records_out_text()` — formats per-trim EN/FR counts as readable multi-line string
+  - `_build_dq_records()` — extracts DQ records into review-friendly table
 
 ### Changed
 
+- **Output paths structure:** Changed from `output/` to `accy_v2/output/` in OEM configs for consistency with project structure
+- **Keyword extraction logic:** Model keywords now extracted from meta_data["model_name"] (populated by Step 1) instead of only from sheet name, ensuring complete keyword context even when sheet names are abbreviated
+- **Trim abbreviation parsing:** Single-letter abbreviations (p, n, s) still expand via library, but multi-character hyphenated terms (s-awc, fwd) now stay as single keywords to match database descriptions
+- **CSV path resolution:** Fixed database CSV path computation to use absolute paths from script location, solving portability issues when run from different directories
 - **Step 5 output architecture:** Refactored to separate frame preparation from file writing
   - `run()` → `prepare_frames()` — returns `Dict[str, pd.DataFrame]` without writing to disk
-  - New `write_combined_output()` function — writes all accumulated frames + Report sheet to a single combined Excel file named `{oem}_{run_id}_{timestamp}.xlsx`
-  - `BasePipeline.run()` now collects frames across all sheets before writing once, enabling the Report sheet which requires run-level statistics
-- **Output file strategy:** From "one file per model" to "one file per run" to simplify review and keep output directory clean
+  - New `write_combined_output()` function — writes all accumulated frames + Report sheet to single combined Excel file
+  - `BasePipeline.run()` now collects frames before writing once
 - Abstract method signatures in `BasePipeline`:
   - `run_step5_output()` return type: `None` → `Dict[str, pd.DataFrame]`
   - New abstract method: `run_write_combined_output(all_frames, run_stats, dq_logger, run_id, config, pipeline_logger)`
+  - New abstract method: `run_step4_5_model_enrichment()` for vehicle model lookup
+
+### Fixed
+
+- **Database path resolution:** CSV file not found when running from different working directories — now uses absolute path computed from script location (Path(__file__).parent.parent.parent.parent.parent)
+- **Keyword extraction from sheet names:** Sheet names like "2026 PHEV" (without model name) now correctly extract fuel type while pulling model name from metadata, preventing lookup failures
+- **Trim keyword splitting:** Multi-character hyphenated terms like "s-awc" no longer incorrectly split into separate keywords, matching actual database description format
 
 ---
 

@@ -1,0 +1,6 @@
+ModelYear,CarLineCode,TrimLevel,PartNumber,AccessoryName,AccessoryNameFR,MSRP,StandardInstallTime,RestrictionEN,RestrictionFR
+2026,CX-90,ES,P001,Floor Mats,Tapis de sol,89.99,0.5,,
+2026,CX-90,ES,P002,Roof Rack,Galerie de toit,199.99,2.0,,
+2026,CX-90,SEL,P003,Splash Guards,Garde-boue,79.99,0.75,,
+2026,CX-90,PREFERRED,P004,Hitch Cover,Couvre-attelage,49.99,0.25,,
+2026,CX-90,PREFERRED,P005,Mudflaps,Bavettes,69.99,1.0,,

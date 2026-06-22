@@ -1,0 +1,5 @@
+2026-06-22 12:55:17,427 [INFO] RUN START | oem=mitsubishi | file=C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\landing_zone\mitsubishi\2026_Outlander_ES_EN.xlsx | run_id=a81411bc
+2026-06-22 12:55:17,682 [INFO] SHEET START | sheet=2026_Outlander_ES_EN
+2026-06-22 12:55:17,683 [ERROR] FATAL | sheet=2026_Outlander_ES_EN | step=pipeline | reason=Sheet name '2026_Outlander_ES_EN' does not match expected pattern '^\d{4}\s+.+'
+2026-06-22 12:55:17,708 [INFO] Combined output saved: output\ready_to_upload\mitsubishi\mitsubishi_a81411bc_20260622_185517.xlsx
+2026-06-22 12:55:17,711 [INFO] RUN COMPLETE | sheets_processed=0 | sheets_skipped=1

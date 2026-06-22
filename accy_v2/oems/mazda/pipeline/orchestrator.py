@@ -11,7 +11,9 @@ from oems.mazda.pipeline import (
     step1_validation,
     step2_header_normalization,
     step3_standardization,
+    step3_5_extract_vehicle_year,
     step4_transformation,
+    step4_5_model_enrichment,
     step5_output,
 )
 
@@ -60,6 +62,15 @@ class MazdaPipeline(BasePipeline):
     ) -> pd.DataFrame:
         return step3_standardization.run(working_df, step2_result, config, meta_data, None, pipeline_logger)
 
+    def run_step3_5_extract_vehicle_year(
+        self,
+        standardized_df: pd.DataFrame,
+        meta_data: Dict,
+        config: Dict,
+        pipeline_logger: PipelineLogger,
+    ) -> pd.DataFrame:
+        return step3_5_extract_vehicle_year.run(standardized_df, meta_data, config, pipeline_logger)
+
     def run_step4_transformation(
         self,
         standardized_df: pd.DataFrame,
@@ -70,6 +81,16 @@ class MazdaPipeline(BasePipeline):
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, pd.DataFrame]:
         return step4_transformation.run(standardized_df, step2_result, config, meta_data, dq_logger, pipeline_logger)
+
+    def run_step4_5_model_enrichment(
+        self,
+        transformed: Dict[str, pd.DataFrame],
+        meta_data: Dict,
+        config: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> Dict[str, pd.DataFrame]:
+        return step4_5_model_enrichment.run(transformed, meta_data, config, dq_logger, pipeline_logger)
 
     def run_step5_output(
         self,

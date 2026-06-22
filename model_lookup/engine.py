@@ -15,9 +15,10 @@ def load_env():
     """
     Load environment variables from .env file.
     Must be called explicitly by the application.
+    Looks for .env in model_lookup/creds/ relative to this script.
     """
-    base_dir = Path.cwd()
-    env_path = base_dir.parent / "model_lookup" / "creds" / ".env"
+    script_dir = Path(__file__).parent  # model_lookup directory
+    env_path = script_dir / "creds" / ".env"
 
     load_dotenv(dotenv_path=env_path)
 

@@ -1,0 +1,9 @@
+2026-06-22 14:43:05,096 [INFO] RUN START | oem=mitsubishi | file=C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\data\landing_zone\mitsubishi\Accessory Guide - February26.xlsx | run_id=d8be73c4
+2026-06-22 14:43:05,694 [INFO] SHEET START | sheet=2026 PHEV
+2026-06-22 14:43:05,723 [DEBUG] Column mapping for '2026 PHEV': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'le': None, 'sel': None, 'gt': None, 'gt-p': None, 'gt-n': None, 'image': None, 'install_sheet': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:43:05,724 [DEBUG] Trim candidates for '2026 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:43:05,728 [DEBUG] Valid trim cols for '2026 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:43:05,737 [DEBUG] Extracted vehicle_year: 2026 from sheet '2026 PHEV'
+2026-06-22 14:43:05,753 [DEBUG] Sheet '2026 PHEV': 132 records -> 854 after melt
+2026-06-22 14:43:05,756 [DEBUG] Sheet '2026 PHEV': Unique trims identified: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']
+2026-06-22 14:43:05,756 [WARNING] Sheet name parsing error: Sheet name '2026 PHEV' doesn't match expected format YYYY_ModelName_Language (got 1 parts)

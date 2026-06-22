@@ -12,6 +12,7 @@ def prepare_frames(
 ) -> Dict[str, pd.DataFrame]:
     """
     Prepare output frames: rename columns, enrich with metadata, filter.
+    Preserves model_number, vehicle_year, and model_number_status columns.
     Each language gets its own sheet: <model_name>_EN, <model_name>_FR.
     Returns dict without writing to disk.
     """
@@ -51,4 +52,13 @@ def _filter_to_required_columns(df: pd.DataFrame, required_cols: list) -> pd.Dat
     if not required_cols:
         return df
     existing = [col for col in required_cols if col in df.columns]
-    return df[existing]
+    # Always include model_number and model_number_status if they exist
+    always_include = ["model_number", "model_number_status", "vehicle_year"]
+    cols_to_return = []
+    for col in existing:
+        if col not in cols_to_return:
+            cols_to_return.append(col)
+    for col in always_include:
+        if col in df.columns and col not in cols_to_return:
+            cols_to_return.append(col)
+    return df[cols_to_return]

@@ -1,28 +1,34 @@
 """
 Entry point for the Mitsubishi OEM pipeline.
 
-Usage (run from the OEMAccessories/ directory):
-    python run_mitsubishi.py [path_to_excel_file]
+Usage (run from the project root directory):
+    python accy_v2/run_mitsubishi.py [path_to_excel_file]
 
-If no path is provided, auto-discovers the most recent .xlsx in data/landing_zone/mitsubishi/.
+If no path is provided, auto-discovers the most recent .xlsx in landing_zone/mitsubishi/.
 
 Examples:
-    python run_mitsubishi.py
-    python run_mitsubishi.py "data/landing_zone/mitsubishi/Accessory Guide - February26.xlsx"
+    python accy_v2/run_mitsubishi.py
+    python accy_v2/run_mitsubishi.py "landing_zone/mitsubishi/Accessory Guide - February26.xlsx"
 """
 
 import sys
 from pathlib import Path
 
-# Ensure OEMAccessories/ is on the path so absolute imports (core.*, oems.*) resolve correctly
-sys.path.insert(0, str(Path(__file__).parent))
+# Add directories to path for imports
+accy_v2_dir = Path(__file__).parent
+project_root = accy_v2_dir.parent
+model_lookup_dir = project_root / "model_lookup"
+
+sys.path.insert(0, str(accy_v2_dir))      # For core.*, oems.* imports
+sys.path.insert(0, str(model_lookup_dir)) # For model_lookup internal imports
+sys.path.insert(0, str(project_root))     # For model_lookup package import
 
 from oems.mitsubishi.pipeline.orchestrator import MitsubishiPipeline
 
 CONFIG_PATH = (
-    Path(__file__).parent / "oems" / "mitsubishi" / "config" / "mitsubishi_config.json"
+    accy_v2_dir / "oems" / "mitsubishi" / "config" / "mitsubishi_config.json"
 )
-DEFAULT_DATA_DIR = Path(__file__).parent / "data" / "landing_zone" / "mitsubishi"
+DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "mitsubishi"
 
 
 def main() -> None:

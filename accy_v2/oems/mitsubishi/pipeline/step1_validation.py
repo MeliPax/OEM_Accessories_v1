@@ -28,7 +28,6 @@ def run(
     """
     sheet_name = meta_data["sheet_name"]
 
-    _validate_sheet_name(sheet_name, config)
     _extract_meta_data(df_raw, sheet_name, meta_data)
     _validate_header_keywords(df_raw, sheet_name, config)
     _validate_trim_boundaries(df_raw, sheet_name, config)

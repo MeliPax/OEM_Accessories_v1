@@ -1,0 +1,264 @@
+2026-06-22 14:45:20,570 [INFO] RUN START | oem=mitsubishi | file=C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\data\landing_zone\mitsubishi\Accessory Guide - February26.xlsx | run_id=5b595239
+2026-06-22 14:45:21,063 [INFO] SHEET START | sheet=2026 PHEV
+2026-06-22 14:45:21,079 [DEBUG] Column mapping for '2026 PHEV': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'le': None, 'sel': None, 'gt': None, 'gt-p': None, 'gt-n': None, 'image': None, 'install_sheet': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,080 [DEBUG] Trim candidates for '2026 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:45:21,082 [DEBUG] Valid trim cols for '2026 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:45:21,088 [DEBUG] Extracted vehicle_year: 2026 from sheet '2026 PHEV'
+2026-06-22 14:45:21,101 [DEBUG] Sheet '2026 PHEV': 132 records -> 854 after melt
+2026-06-22 14:45:21,102 [DEBUG] Sheet '2026 PHEV': Unique trims identified: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']
+2026-06-22 14:45:21,102 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,102 [DEBUG] Sheet '2026 PHEV' trim 'es': Searching with keywords=['es', 'phev']
+2026-06-22 14:45:21,103 [WARNING]   ✗ Not found: Mitsubishi 2026 es keywords=['es', 'phev']
+2026-06-22 14:45:21,104 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,104 [DEBUG] Sheet '2026 PHEV' trim 'gt': Searching with keywords=['gt', 'phev']
+2026-06-22 14:45:21,104 [WARNING]   ✗ Not found: Mitsubishi 2026 gt keywords=['gt', 'phev']
+2026-06-22 14:45:21,104 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,104 [DEBUG] Abbreviation matched: '-n' → 'noir'
+2026-06-22 14:45:21,105 [DEBUG] Sheet '2026 PHEV' trim 'gt-n': Searching with keywords=['gt', 'noir', 'phev']
+2026-06-22 14:45:21,105 [WARNING]   ✗ Not found: Mitsubishi 2026 gt-n keywords=['gt', 'noir', 'phev']
+2026-06-22 14:45:21,105 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,105 [DEBUG] Abbreviation matched: '-p' → 'premium'
+2026-06-22 14:45:21,105 [DEBUG] Sheet '2026 PHEV' trim 'gt-p': Searching with keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,106 [WARNING]   ✗ Not found: Mitsubishi 2026 gt-p keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,106 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,106 [DEBUG] Sheet '2026 PHEV' trim 'le': Searching with keywords=['le', 'phev']
+2026-06-22 14:45:21,106 [WARNING]   ✗ Not found: Mitsubishi 2026 le keywords=['le', 'phev']
+2026-06-22 14:45:21,106 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,106 [DEBUG] Sheet '2026 PHEV' trim 'se': Searching with keywords=['se', 'phev']
+2026-06-22 14:45:21,107 [WARNING]   ✗ Not found: Mitsubishi 2026 se keywords=['se', 'phev']
+2026-06-22 14:45:21,107 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,107 [DEBUG] Sheet '2026 PHEV' trim 'sel': Searching with keywords=['sel', 'phev']
+2026-06-22 14:45:21,107 [WARNING]   ✗ Not found: Mitsubishi 2026 sel keywords=['sel', 'phev']
+2026-06-22 14:45:21,112 [DEBUG] Sheet '2026 PHEV': 854 rows before, 854 excluded (missing trims: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,114 [DEBUG] Sheet '2026 PHEV': 854 rows before, 854 excluded (missing trims: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,117 [INFO] SHEET COMPLETE | sheet=2026 PHEV | records_in=134 | records_out=0
+2026-06-22 14:45:21,117 [INFO] SHEET START | sheet=2026 Outlander
+2026-06-22 14:45:21,131 [DEBUG] Column mapping for '2026 Outlander': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es_s-awc': None, 'se_s-awc': None, 'le_s-awc': None, 'sel_s-awc': None, 'gt_s-awc': None, 'gt_prem_s-awc': None, 'photo': None, 'install_sheets': None, 'nan': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,131 [DEBUG] Trim candidates for '2026 Outlander': ['es_s-awc', 'se_s-awc', 'le_s-awc', 'sel_s-awc', 'gt_s-awc', 'gt_prem_s-awc']
+2026-06-22 14:45:21,133 [DEBUG] Valid trim cols for '2026 Outlander': ['es_s-awc', 'se_s-awc', 'le_s-awc', 'sel_s-awc', 'gt_s-awc', 'gt_prem_s-awc']
+2026-06-22 14:45:21,139 [DEBUG] Extracted vehicle_year: 2026 from sheet '2026 Outlander'
+2026-06-22 14:45:21,152 [DEBUG] Sheet '2026 Outlander': 129 records -> 744 after melt
+2026-06-22 14:45:21,153 [DEBUG] Sheet '2026 Outlander': Unique trims identified: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']
+2026-06-22 14:45:21,153 [DEBUG] Sheet '2026 Outlander' trim 'es_s-awc': Searching with keywords=['outlander', 'es', 's', 'awc']
+2026-06-22 14:45:21,154 [WARNING]   ✗ Not found: Mitsubishi 2026 es_s-awc keywords=['outlander', 'es', 's', 'awc']
+2026-06-22 14:45:21,154 [DEBUG] Sheet '2026 Outlander' trim 'gt_prem_s-awc': Searching with keywords=['outlander', 'gt', 'prem', 's', 'awc']
+2026-06-22 14:45:21,154 [WARNING]   ✗ Not found: Mitsubishi 2026 gt_prem_s-awc keywords=['outlander', 'gt', 'prem', 's', 'awc']
+2026-06-22 14:45:21,154 [DEBUG] Sheet '2026 Outlander' trim 'gt_s-awc': Searching with keywords=['outlander', 'gt', 's', 'awc']
+2026-06-22 14:45:21,155 [WARNING]   ✗ Not found: Mitsubishi 2026 gt_s-awc keywords=['outlander', 'gt', 's', 'awc']
+2026-06-22 14:45:21,155 [DEBUG] Sheet '2026 Outlander' trim 'le_s-awc': Searching with keywords=['outlander', 'le', 's', 'awc']
+2026-06-22 14:45:21,155 [WARNING]   ✗ Not found: Mitsubishi 2026 le_s-awc keywords=['outlander', 'le', 's', 'awc']
+2026-06-22 14:45:21,155 [DEBUG] Sheet '2026 Outlander' trim 'se_s-awc': Searching with keywords=['outlander', 'se', 's', 'awc']
+2026-06-22 14:45:21,156 [WARNING]   ✗ Not found: Mitsubishi 2026 se_s-awc keywords=['outlander', 'se', 's', 'awc']
+2026-06-22 14:45:21,156 [DEBUG] Sheet '2026 Outlander' trim 'sel_s-awc': Searching with keywords=['outlander', 'sel', 's', 'awc']
+2026-06-22 14:45:21,156 [WARNING]   ✗ Not found: Mitsubishi 2026 sel_s-awc keywords=['outlander', 'sel', 's', 'awc']
+2026-06-22 14:45:21,158 [DEBUG] Sheet '2026 Outlander': 744 rows before, 744 excluded (missing trims: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']), 0 rows in output
+2026-06-22 14:45:21,160 [DEBUG] Sheet '2026 Outlander': 744 rows before, 744 excluded (missing trims: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']), 0 rows in output
+2026-06-22 14:45:21,162 [INFO] SHEET COMPLETE | sheet=2026 Outlander | records_in=129 | records_out=0
+2026-06-22 14:45:21,162 [INFO] SHEET START | sheet=2026 Eclipse Cross
+2026-06-22 14:45:21,177 [DEBUG] Column mapping for '2026 Eclipse Cross': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'noir': None, 'gt': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,177 [DEBUG] Trim candidates for '2026 Eclipse Cross': ['es', 'se', 'noir', 'gt']
+2026-06-22 14:45:21,179 [DEBUG] Valid trim cols for '2026 Eclipse Cross': ['es', 'se', 'noir', 'gt']
+2026-06-22 14:45:21,183 [DEBUG] Extracted vehicle_year: 2026 from sheet '2026 Eclipse Cross'
+2026-06-22 14:45:21,194 [DEBUG] Sheet '2026 Eclipse Cross': 122 records -> 458 after melt
+2026-06-22 14:45:21,196 [DEBUG] Sheet '2026 Eclipse Cross': Unique trims identified: ['es', 'gt', 'noir', 'se']
+2026-06-22 14:45:21,196 [DEBUG] Sheet '2026 Eclipse Cross' trim 'es': Searching with keywords=['eclipse', 'cross', 'es']
+2026-06-22 14:45:21,196 [WARNING]   ✗ Not found: Mitsubishi 2026 es keywords=['eclipse', 'cross', 'es']
+2026-06-22 14:45:21,196 [DEBUG] Sheet '2026 Eclipse Cross' trim 'gt': Searching with keywords=['eclipse', 'cross', 'gt']
+2026-06-22 14:45:21,197 [WARNING]   ✗ Not found: Mitsubishi 2026 gt keywords=['eclipse', 'cross', 'gt']
+2026-06-22 14:45:21,197 [DEBUG] Sheet '2026 Eclipse Cross' trim 'noir': Searching with keywords=['eclipse', 'cross', 'noir']
+2026-06-22 14:45:21,198 [WARNING]   ✗ Not found: Mitsubishi 2026 noir keywords=['eclipse', 'cross', 'noir']
+2026-06-22 14:45:21,198 [DEBUG] Sheet '2026 Eclipse Cross' trim 'se': Searching with keywords=['eclipse', 'cross', 'se']
+2026-06-22 14:45:21,198 [WARNING]   ✗ Not found: Mitsubishi 2026 se keywords=['eclipse', 'cross', 'se']
+2026-06-22 14:45:21,200 [DEBUG] Sheet '2026 Eclipse Cross': 458 rows before, 458 excluded (missing trims: ['es', 'gt', 'noir', 'se']), 0 rows in output
+2026-06-22 14:45:21,202 [DEBUG] Sheet '2026 Eclipse Cross': 458 rows before, 458 excluded (missing trims: ['es', 'gt', 'noir', 'se']), 0 rows in output
+2026-06-22 14:45:21,204 [INFO] SHEET COMPLETE | sheet=2026 Eclipse Cross | records_in=122 | records_out=0
+2026-06-22 14:45:21,204 [INFO] SHEET START | sheet=2026 RVR
+2026-06-22 14:45:21,218 [DEBUG] Column mapping for '2026 RVR': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es_fwd': None, 'es_awc': None, 'se_awc': None, 'sel_awc': None, 'noir_awc': None, 'gt_awc': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,218 [DEBUG] Trim candidates for '2026 RVR': ['es_fwd', 'es_awc', 'se_awc', 'sel_awc', 'noir_awc', 'gt_awc']
+2026-06-22 14:45:21,220 [DEBUG] Valid trim cols for '2026 RVR': ['es_fwd', 'es_awc', 'se_awc', 'sel_awc', 'noir_awc', 'gt_awc']
+2026-06-22 14:45:21,224 [DEBUG] Extracted vehicle_year: 2026 from sheet '2026 RVR'
+2026-06-22 14:45:21,235 [DEBUG] Sheet '2026 RVR': 111 records -> 623 after melt
+2026-06-22 14:45:21,237 [DEBUG] Sheet '2026 RVR': Unique trims identified: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']
+2026-06-22 14:45:21,237 [DEBUG] Sheet '2026 RVR' trim 'es_awc': Searching with keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,237 [WARNING]   ✗ Not found: Mitsubishi 2026 es_awc keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,237 [DEBUG] Sheet '2026 RVR' trim 'es_fwd': Searching with keywords=['rvr', 'es', 'fwd']
+2026-06-22 14:45:21,238 [WARNING]   ✗ Not found: Mitsubishi 2026 es_fwd keywords=['rvr', 'es', 'fwd']
+2026-06-22 14:45:21,238 [DEBUG] Sheet '2026 RVR' trim 'gt_awc': Searching with keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,238 [WARNING]   ✗ Not found: Mitsubishi 2026 gt_awc keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,238 [DEBUG] Sheet '2026 RVR' trim 'noir_awc': Searching with keywords=['rvr', 'noir', 'awc']
+2026-06-22 14:45:21,238 [WARNING]   ✗ Not found: Mitsubishi 2026 noir_awc keywords=['rvr', 'noir', 'awc']
+2026-06-22 14:45:21,239 [DEBUG] Sheet '2026 RVR' trim 'se_awc': Searching with keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,239 [WARNING]   ✗ Not found: Mitsubishi 2026 se_awc keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,239 [DEBUG] Sheet '2026 RVR' trim 'sel_awc': Searching with keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,239 [WARNING]   ✗ Not found: Mitsubishi 2026 sel_awc keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,241 [DEBUG] Sheet '2026 RVR': 623 rows before, 623 excluded (missing trims: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,243 [DEBUG] Sheet '2026 RVR': 623 rows before, 623 excluded (missing trims: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,245 [INFO] SHEET COMPLETE | sheet=2026 RVR | records_in=111 | records_out=0
+2026-06-22 14:45:21,246 [INFO] SHEET START | sheet=2025 Outlander 
+2026-06-22 14:45:21,260 [DEBUG] Column mapping for '2025 Outlander ': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es_s-awc': None, 'se_s-awc': None, 'le_s-awc': None, 'sel_s-awc': None, 'gt_s-awc': None, 'gt_prem_s-awc': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,260 [DEBUG] Trim candidates for '2025 Outlander ': ['es_s-awc', 'se_s-awc', 'le_s-awc', 'sel_s-awc', 'gt_s-awc', 'gt_prem_s-awc']
+2026-06-22 14:45:21,262 [DEBUG] Valid trim cols for '2025 Outlander ': ['es_s-awc', 'se_s-awc', 'le_s-awc', 'sel_s-awc', 'gt_s-awc', 'gt_prem_s-awc']
+2026-06-22 14:45:21,267 [DEBUG] Extracted vehicle_year: 2025 from sheet '2025 Outlander '
+2026-06-22 14:45:21,279 [DEBUG] Sheet '2025 Outlander ': 130 records -> 750 after melt
+2026-06-22 14:45:21,280 [DEBUG] Sheet '2025 Outlander ': Unique trims identified: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']
+2026-06-22 14:45:21,280 [DEBUG] Sheet '2025 Outlander ' trim 'es_s-awc': Searching with keywords=['outlander', 'es', 's', 'awc']
+2026-06-22 14:45:21,281 [WARNING]   ✗ Not found: Mitsubishi 2025 es_s-awc keywords=['outlander', 'es', 's', 'awc']
+2026-06-22 14:45:21,281 [DEBUG] Sheet '2025 Outlander ' trim 'gt_prem_s-awc': Searching with keywords=['outlander', 'gt', 'prem', 's', 'awc']
+2026-06-22 14:45:21,281 [WARNING]   ✗ Not found: Mitsubishi 2025 gt_prem_s-awc keywords=['outlander', 'gt', 'prem', 's', 'awc']
+2026-06-22 14:45:21,281 [DEBUG] Sheet '2025 Outlander ' trim 'gt_s-awc': Searching with keywords=['outlander', 'gt', 's', 'awc']
+2026-06-22 14:45:21,281 [WARNING]   ✗ Not found: Mitsubishi 2025 gt_s-awc keywords=['outlander', 'gt', 's', 'awc']
+2026-06-22 14:45:21,282 [DEBUG] Sheet '2025 Outlander ' trim 'le_s-awc': Searching with keywords=['outlander', 'le', 's', 'awc']
+2026-06-22 14:45:21,282 [WARNING]   ✗ Not found: Mitsubishi 2025 le_s-awc keywords=['outlander', 'le', 's', 'awc']
+2026-06-22 14:45:21,282 [DEBUG] Sheet '2025 Outlander ' trim 'se_s-awc': Searching with keywords=['outlander', 'se', 's', 'awc']
+2026-06-22 14:45:21,282 [WARNING]   ✗ Not found: Mitsubishi 2025 se_s-awc keywords=['outlander', 'se', 's', 'awc']
+2026-06-22 14:45:21,282 [DEBUG] Sheet '2025 Outlander ' trim 'sel_s-awc': Searching with keywords=['outlander', 'sel', 's', 'awc']
+2026-06-22 14:45:21,283 [WARNING]   ✗ Not found: Mitsubishi 2025 sel_s-awc keywords=['outlander', 'sel', 's', 'awc']
+2026-06-22 14:45:21,285 [DEBUG] Sheet '2025 Outlander ': 750 rows before, 750 excluded (missing trims: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']), 0 rows in output
+2026-06-22 14:45:21,286 [DEBUG] Sheet '2025 Outlander ': 750 rows before, 750 excluded (missing trims: ['es_s-awc', 'gt_prem_s-awc', 'gt_s-awc', 'le_s-awc', 'se_s-awc', 'sel_s-awc']), 0 rows in output
+2026-06-22 14:45:21,288 [INFO] SHEET COMPLETE | sheet=2025 Outlander  | records_in=130 | records_out=0
+2026-06-22 14:45:21,289 [INFO] SHEET START | sheet=2025 PHEV
+2026-06-22 14:45:21,303 [DEBUG] Column mapping for '2025 PHEV': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'le': None, 'sel': None, 'gt': None, 'gt-p': None, 'gt-n': None, 'image': None, 'install_sheet': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,303 [DEBUG] Trim candidates for '2025 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:45:21,306 [DEBUG] Valid trim cols for '2025 PHEV': ['es', 'se', 'le', 'sel', 'gt', 'gt-p', 'gt-n']
+2026-06-22 14:45:21,311 [DEBUG] Extracted vehicle_year: 2025 from sheet '2025 PHEV'
+2026-06-22 14:45:21,323 [DEBUG] Sheet '2025 PHEV': 133 records -> 861 after melt
+2026-06-22 14:45:21,324 [DEBUG] Sheet '2025 PHEV': Unique trims identified: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']
+2026-06-22 14:45:21,324 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,324 [DEBUG] Sheet '2025 PHEV' trim 'es': Searching with keywords=['es', 'phev']
+2026-06-22 14:45:21,325 [WARNING]   ✗ Not found: Mitsubishi 2025 es keywords=['es', 'phev']
+2026-06-22 14:45:21,325 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,325 [DEBUG] Sheet '2025 PHEV' trim 'gt': Searching with keywords=['gt', 'phev']
+2026-06-22 14:45:21,325 [WARNING]   ✗ Not found: Mitsubishi 2025 gt keywords=['gt', 'phev']
+2026-06-22 14:45:21,325 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,325 [DEBUG] Abbreviation matched: '-n' → 'noir'
+2026-06-22 14:45:21,325 [DEBUG] Sheet '2025 PHEV' trim 'gt-n': Searching with keywords=['gt', 'noir', 'phev']
+2026-06-22 14:45:21,326 [WARNING]   ✗ Not found: Mitsubishi 2025 gt-n keywords=['gt', 'noir', 'phev']
+2026-06-22 14:45:21,326 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,326 [DEBUG] Abbreviation matched: '-p' → 'premium'
+2026-06-22 14:45:21,326 [DEBUG] Sheet '2025 PHEV' trim 'gt-p': Searching with keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,326 [WARNING]   ✗ Not found: Mitsubishi 2025 gt-p keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,326 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,326 [DEBUG] Sheet '2025 PHEV' trim 'le': Searching with keywords=['le', 'phev']
+2026-06-22 14:45:21,327 [WARNING]   ✗ Not found: Mitsubishi 2025 le keywords=['le', 'phev']
+2026-06-22 14:45:21,327 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,327 [DEBUG] Sheet '2025 PHEV' trim 'se': Searching with keywords=['se', 'phev']
+2026-06-22 14:45:21,327 [WARNING]   ✗ Not found: Mitsubishi 2025 se keywords=['se', 'phev']
+2026-06-22 14:45:21,327 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,328 [DEBUG] Sheet '2025 PHEV' trim 'sel': Searching with keywords=['sel', 'phev']
+2026-06-22 14:45:21,328 [WARNING]   ✗ Not found: Mitsubishi 2025 sel keywords=['sel', 'phev']
+2026-06-22 14:45:21,330 [DEBUG] Sheet '2025 PHEV': 861 rows before, 861 excluded (missing trims: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,332 [DEBUG] Sheet '2025 PHEV': 861 rows before, 861 excluded (missing trims: ['es', 'gt', 'gt-n', 'gt-p', 'le', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,334 [INFO] SHEET COMPLETE | sheet=2025 PHEV | records_in=133 | records_out=0
+2026-06-22 14:45:21,334 [INFO] SHEET START | sheet=2025 Eclipse Cross
+2026-06-22 14:45:21,347 [DEBUG] Column mapping for '2025 Eclipse Cross': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'sel': None, 'noir': None, 'gt': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,348 [DEBUG] Trim candidates for '2025 Eclipse Cross': ['es', 'se', 'sel', 'noir', 'gt']
+2026-06-22 14:45:21,349 [DEBUG] Valid trim cols for '2025 Eclipse Cross': ['es', 'se', 'sel', 'noir', 'gt']
+2026-06-22 14:45:21,354 [DEBUG] Extracted vehicle_year: 2025 from sheet '2025 Eclipse Cross'
+2026-06-22 14:45:21,365 [DEBUG] Sheet '2025 Eclipse Cross': 121 records -> 574 after melt
+2026-06-22 14:45:21,366 [DEBUG] Sheet '2025 Eclipse Cross': Unique trims identified: ['es', 'gt', 'noir', 'se', 'sel']
+2026-06-22 14:45:21,366 [DEBUG] Sheet '2025 Eclipse Cross' trim 'es': Searching with keywords=['eclipse', 'cross', 'es']
+2026-06-22 14:45:21,367 [WARNING]   ✗ Not found: Mitsubishi 2025 es keywords=['eclipse', 'cross', 'es']
+2026-06-22 14:45:21,367 [DEBUG] Sheet '2025 Eclipse Cross' trim 'gt': Searching with keywords=['eclipse', 'cross', 'gt']
+2026-06-22 14:45:21,367 [WARNING]   ✗ Not found: Mitsubishi 2025 gt keywords=['eclipse', 'cross', 'gt']
+2026-06-22 14:45:21,367 [DEBUG] Sheet '2025 Eclipse Cross' trim 'noir': Searching with keywords=['eclipse', 'cross', 'noir']
+2026-06-22 14:45:21,368 [WARNING]   ✗ Not found: Mitsubishi 2025 noir keywords=['eclipse', 'cross', 'noir']
+2026-06-22 14:45:21,368 [DEBUG] Sheet '2025 Eclipse Cross' trim 'se': Searching with keywords=['eclipse', 'cross', 'se']
+2026-06-22 14:45:21,368 [WARNING]   ✗ Not found: Mitsubishi 2025 se keywords=['eclipse', 'cross', 'se']
+2026-06-22 14:45:21,369 [DEBUG] Sheet '2025 Eclipse Cross' trim 'sel': Searching with keywords=['eclipse', 'cross', 'sel']
+2026-06-22 14:45:21,369 [WARNING]   ✗ Not found: Mitsubishi 2025 sel keywords=['eclipse', 'cross', 'sel']
+2026-06-22 14:45:21,371 [DEBUG] Sheet '2025 Eclipse Cross': 574 rows before, 574 excluded (missing trims: ['es', 'gt', 'noir', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,373 [DEBUG] Sheet '2025 Eclipse Cross': 574 rows before, 574 excluded (missing trims: ['es', 'gt', 'noir', 'se', 'sel']), 0 rows in output
+2026-06-22 14:45:21,375 [INFO] SHEET COMPLETE | sheet=2025 Eclipse Cross | records_in=121 | records_out=0
+2026-06-22 14:45:21,375 [INFO] SHEET START | sheet=2025 RVR
+2026-06-22 14:45:21,388 [DEBUG] Column mapping for '2025 RVR': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es_fwd': None, 'es_awc': None, 'se_awc': None, 'sel_awc': None, 'noir_awc': None, 'gt_awc': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,388 [DEBUG] Trim candidates for '2025 RVR': ['es_fwd', 'es_awc', 'se_awc', 'sel_awc', 'noir_awc', 'gt_awc']
+2026-06-22 14:45:21,390 [DEBUG] Valid trim cols for '2025 RVR': ['es_fwd', 'es_awc', 'se_awc', 'sel_awc', 'noir_awc', 'gt_awc']
+2026-06-22 14:45:21,395 [DEBUG] Extracted vehicle_year: 2025 from sheet '2025 RVR'
+2026-06-22 14:45:21,406 [DEBUG] Sheet '2025 RVR': 111 records -> 627 after melt
+2026-06-22 14:45:21,407 [DEBUG] Sheet '2025 RVR': Unique trims identified: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']
+2026-06-22 14:45:21,407 [DEBUG] Sheet '2025 RVR' trim 'es_awc': Searching with keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,407 [WARNING]   ✗ Not found: Mitsubishi 2025 es_awc keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,408 [DEBUG] Sheet '2025 RVR' trim 'es_fwd': Searching with keywords=['rvr', 'es', 'fwd']
+2026-06-22 14:45:21,408 [WARNING]   ✗ Not found: Mitsubishi 2025 es_fwd keywords=['rvr', 'es', 'fwd']
+2026-06-22 14:45:21,408 [DEBUG] Sheet '2025 RVR' trim 'gt_awc': Searching with keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,408 [WARNING]   ✗ Not found: Mitsubishi 2025 gt_awc keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,408 [DEBUG] Sheet '2025 RVR' trim 'noir_awc': Searching with keywords=['rvr', 'noir', 'awc']
+2026-06-22 14:45:21,409 [WARNING]   ✗ Not found: Mitsubishi 2025 noir_awc keywords=['rvr', 'noir', 'awc']
+2026-06-22 14:45:21,409 [DEBUG] Sheet '2025 RVR' trim 'se_awc': Searching with keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,409 [WARNING]   ✗ Not found: Mitsubishi 2025 se_awc keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,409 [DEBUG] Sheet '2025 RVR' trim 'sel_awc': Searching with keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,410 [WARNING]   ✗ Not found: Mitsubishi 2025 sel_awc keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,412 [DEBUG] Sheet '2025 RVR': 627 rows before, 627 excluded (missing trims: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,414 [DEBUG] Sheet '2025 RVR': 627 rows before, 627 excluded (missing trims: ['es_awc', 'es_fwd', 'gt_awc', 'noir_awc', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,415 [INFO] SHEET COMPLETE | sheet=2025 RVR | records_in=111 | records_out=0
+2026-06-22 14:45:21,415 [INFO] SHEET START | sheet=2024 PHEV
+2026-06-22 14:45:21,430 [DEBUG] Column mapping for '2024 PHEV': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'le': None, 'sel': None, 'gt': None, 'gt-premium': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,430 [DEBUG] Trim candidates for '2024 PHEV': ['es', 'le', 'sel', 'gt', 'gt-premium']
+2026-06-22 14:45:21,431 [DEBUG] Valid trim cols for '2024 PHEV': ['es', 'le', 'sel', 'gt', 'gt-premium']
+2026-06-22 14:45:21,436 [DEBUG] Extracted vehicle_year: 2024 from sheet '2024 PHEV'
+2026-06-22 14:45:21,448 [DEBUG] Sheet '2024 PHEV': 136 records -> 636 after melt
+2026-06-22 14:45:21,449 [DEBUG] Sheet '2024 PHEV': Unique trims identified: ['es', 'gt', 'gt-premium', 'le', 'sel']
+2026-06-22 14:45:21,449 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,449 [DEBUG] Sheet '2024 PHEV' trim 'es': Searching with keywords=['es', 'phev']
+2026-06-22 14:45:21,450 [WARNING]   ✗ Not found: Mitsubishi 2024 es keywords=['es', 'phev']
+2026-06-22 14:45:21,450 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,450 [DEBUG] Sheet '2024 PHEV' trim 'gt': Searching with keywords=['gt', 'phev']
+2026-06-22 14:45:21,450 [WARNING]   ✗ Not found: Mitsubishi 2024 gt keywords=['gt', 'phev']
+2026-06-22 14:45:21,451 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,451 [DEBUG] Sheet '2024 PHEV' trim 'gt-premium': Searching with keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,451 [WARNING]   ✗ Not found: Mitsubishi 2024 gt-premium keywords=['gt', 'premium', 'phev']
+2026-06-22 14:45:21,451 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,451 [DEBUG] Sheet '2024 PHEV' trim 'le': Searching with keywords=['le', 'phev']
+2026-06-22 14:45:21,452 [WARNING]   ✗ Not found: Mitsubishi 2024 le keywords=['le', 'phev']
+2026-06-22 14:45:21,452 [DEBUG] Detected fuel type: PHEV
+2026-06-22 14:45:21,452 [DEBUG] Sheet '2024 PHEV' trim 'sel': Searching with keywords=['sel', 'phev']
+2026-06-22 14:45:21,452 [WARNING]   ✗ Not found: Mitsubishi 2024 sel keywords=['sel', 'phev']
+2026-06-22 14:45:21,454 [DEBUG] Sheet '2024 PHEV': 636 rows before, 636 excluded (missing trims: ['es', 'gt', 'gt-premium', 'le', 'sel']), 0 rows in output
+2026-06-22 14:45:21,456 [DEBUG] Sheet '2024 PHEV': 636 rows before, 636 excluded (missing trims: ['es', 'gt', 'gt-premium', 'le', 'sel']), 0 rows in output
+2026-06-22 14:45:21,458 [INFO] SHEET COMPLETE | sheet=2024 PHEV | records_in=136 | records_out=0
+2026-06-22 14:45:21,458 [INFO] SHEET START | sheet=2024 Mirage
+2026-06-22 14:45:21,473 [DEBUG] Column mapping for '2024 Mirage': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es_cvt': None, 'noir_cvt': None, 'gt_cvt': None, 'photo': None, 'install_sheets': None, 'category': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None}
+2026-06-22 14:45:21,473 [DEBUG] Trim candidates for '2024 Mirage': ['es_cvt', 'noir_cvt', 'gt_cvt']
+2026-06-22 14:45:21,474 [DEBUG] Valid trim cols for '2024 Mirage': ['es_cvt', 'noir_cvt', 'gt_cvt']
+2026-06-22 14:45:21,478 [DEBUG] Extracted vehicle_year: 2024 from sheet '2024 Mirage'
+2026-06-22 14:45:21,489 [DEBUG] Sheet '2024 Mirage': 114 records -> 280 after melt
+2026-06-22 14:45:21,490 [DEBUG] Sheet '2024 Mirage': Unique trims identified: ['es_cvt', 'gt_cvt', 'noir_cvt']
+2026-06-22 14:45:21,490 [DEBUG] Sheet '2024 Mirage' trim 'es_cvt': Searching with keywords=['mirage', 'es', 'cvt']
+2026-06-22 14:45:21,491 [WARNING]   ✗ Not found: Mitsubishi 2024 es_cvt keywords=['mirage', 'es', 'cvt']
+2026-06-22 14:45:21,491 [DEBUG] Sheet '2024 Mirage' trim 'gt_cvt': Searching with keywords=['mirage', 'gt', 'cvt']
+2026-06-22 14:45:21,491 [WARNING]   ✗ Not found: Mitsubishi 2024 gt_cvt keywords=['mirage', 'gt', 'cvt']
+2026-06-22 14:45:21,491 [DEBUG] Sheet '2024 Mirage' trim 'noir_cvt': Searching with keywords=['mirage', 'noir', 'cvt']
+2026-06-22 14:45:21,492 [WARNING]   ✗ Not found: Mitsubishi 2024 noir_cvt keywords=['mirage', 'noir', 'cvt']
+2026-06-22 14:45:21,493 [DEBUG] Sheet '2024 Mirage': 280 rows before, 280 excluded (missing trims: ['es_cvt', 'gt_cvt', 'noir_cvt']), 0 rows in output
+2026-06-22 14:45:21,495 [DEBUG] Sheet '2024 Mirage': 280 rows before, 280 excluded (missing trims: ['es_cvt', 'gt_cvt', 'noir_cvt']), 0 rows in output
+2026-06-22 14:45:21,497 [INFO] SHEET COMPLETE | sheet=2024 Mirage | records_in=115 | records_out=0
+2026-06-22 14:45:21,497 [INFO] SHEET START | sheet=2020 RVR
+2026-06-22 14:45:21,523 [DEBUG] Column mapping for '2020 RVR': {'part_number': 'part_number', 'english_description': 'english_description', 'french_description': 'french_description', 'remarks': 'remarks', 'es': None, 'se': None, 'es_awc': None, 'se_awc': None, 'sel_awc': None, 'limited_edition_awc': None, 'gt_awc': None, 'category': None, 'photo': None, 'dnp_$': 'dnp', 'msrp_$': 'msrp', 'install_time': 'install_time', 'labour_rate': 'labour_rate', 'installed_price': None, 'imc': None, 'oh+oh': None}
+2026-06-22 14:45:21,523 [DEBUG] Trim candidates for '2020 RVR': ['es', 'se', 'es_awc', 'se_awc', 'sel_awc', 'limited_edition_awc', 'gt_awc', 'category']
+2026-06-22 14:45:21,525 [DEBUG] Valid trim cols for '2020 RVR': ['es', 'se', 'es_awc', 'se_awc', 'sel_awc', 'limited_edition_awc', 'gt_awc']
+2026-06-22 14:45:21,530 [DEBUG] Extracted vehicle_year: 2020 from sheet '2020 RVR'
+2026-06-22 14:45:21,541 [DEBUG] Sheet '2020 RVR': 119 records -> 809 after melt
+2026-06-22 14:45:21,543 [DEBUG] Sheet '2020 RVR': Unique trims identified: ['es', 'es_awc', 'gt_awc', 'limited_edition_awc', 'se', 'se_awc', 'sel_awc']
+2026-06-22 14:45:21,543 [DEBUG] Sheet '2020 RVR' trim 'es': Searching with keywords=['rvr', 'es']
+2026-06-22 14:45:21,543 [WARNING]   ✗ Not found: Mitsubishi 2020 es keywords=['rvr', 'es']
+2026-06-22 14:45:21,543 [DEBUG] Sheet '2020 RVR' trim 'es_awc': Searching with keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,544 [WARNING]   ✗ Not found: Mitsubishi 2020 es_awc keywords=['rvr', 'es', 'awc']
+2026-06-22 14:45:21,544 [DEBUG] Sheet '2020 RVR' trim 'gt_awc': Searching with keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,544 [WARNING]   ✗ Not found: Mitsubishi 2020 gt_awc keywords=['rvr', 'gt', 'awc']
+2026-06-22 14:45:21,544 [DEBUG] Sheet '2020 RVR' trim 'limited_edition_awc': Searching with keywords=['rvr', 'limited', 'edition', 'awc']
+2026-06-22 14:45:21,545 [WARNING]   ✗ Not found: Mitsubishi 2020 limited_edition_awc keywords=['rvr', 'limited', 'edition', 'awc']
+2026-06-22 14:45:21,545 [DEBUG] Sheet '2020 RVR' trim 'se': Searching with keywords=['rvr', 'se']
+2026-06-22 14:45:21,545 [WARNING]   ✗ Not found: Mitsubishi 2020 se keywords=['rvr', 'se']
+2026-06-22 14:45:21,545 [DEBUG] Sheet '2020 RVR' trim 'se_awc': Searching with keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,546 [WARNING]   ✗ Not found: Mitsubishi 2020 se_awc keywords=['rvr', 'se', 'awc']
+2026-06-22 14:45:21,546 [DEBUG] Sheet '2020 RVR' trim 'sel_awc': Searching with keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,546 [WARNING]   ✗ Not found: Mitsubishi 2020 sel_awc keywords=['rvr', 'sel', 'awc']
+2026-06-22 14:45:21,548 [DEBUG] Sheet '2020 RVR': 809 rows before, 809 excluded (missing trims: ['es', 'es_awc', 'gt_awc', 'limited_edition_awc', 'se', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,550 [DEBUG] Sheet '2020 RVR': 809 rows before, 809 excluded (missing trims: ['es', 'es_awc', 'gt_awc', 'limited_edition_awc', 'se', 'se_awc', 'sel_awc']), 0 rows in output
+2026-06-22 14:45:21,552 [INFO] SHEET COMPLETE | sheet=2020 RVR | records_in=119 | records_out=0
+2026-06-22 14:45:21,552 [INFO] SHEET START | sheet=Luxwood English
+2026-06-22 14:45:21,552 [ERROR] FATAL | sheet=Luxwood English | step=pipeline | reason=Sheet name 'Luxwood English' does not match expected pattern '^\d{4}\s+.+'
+2026-06-22 14:45:21,552 [INFO] SHEET START | sheet=Luxwood French
+2026-06-22 14:45:21,552 [ERROR] FATAL | sheet=Luxwood French | step=pipeline | reason=Sheet name 'Luxwood French' does not match expected pattern '^\d{4}\s+.+'
+2026-06-22 14:45:21,658 [INFO] Combined output saved: output\ready_to_upload\mitsubishi\mitsubishi_5b595239_20260622_204521.xlsx
+2026-06-22 14:45:21,665 [INFO] RUN COMPLETE | sheets_processed=11 | sheets_skipped=2
