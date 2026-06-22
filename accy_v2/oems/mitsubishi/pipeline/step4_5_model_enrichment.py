@@ -79,6 +79,7 @@ def run(
         # Split model_name which is already normalized (e.g., "outlander_phev" or "outlander_es")
         # Remove the year (first part if it's all digits) as it's used for filtering only
         parts = [kw.strip() for kw in model_name.lower().replace("-", "_").split("_") if kw.strip()]
+
         # Filter out year keywords (4-digit numbers)
         model_keywords_from_data = [kw for kw in parts if not (len(kw) == 4 and kw.isdigit())]
 

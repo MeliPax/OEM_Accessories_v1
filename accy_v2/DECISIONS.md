@@ -247,6 +247,105 @@ OEMAccessories/
 
 ---
 
+## [011] Batch model lookup: one database query per unique trim
+
+**Date:** 2026-06-22
+
+**Context:** Model number lookup was initially implemented as per-row lookups: for every row in the melted dataframe, query the vehicle model database. This meant 100+ database queries for a single part list. Performance was acceptable for small datasets but would degrade rapidly at scale. Additionally, the same trim (e.g., "ES") across 45 rows resulted in 45 identical queries.
+
+**Decision:** Implement batch model lookup at the trim level: identify all unique trims from the standardized data (before melting), perform ONE database query per unique trim, and cache the results. Then apply the cached model number to all rows with that trim during melting/enrichment.
+
+**Rationale:**
+- **Dramatic performance improvement:** 100 rows with 3 trims = 3 queries instead of 100 queries (33x improvement).
+- **Reduced database load:** Each trim is looked up exactly once, independent of how many rows use that trim.
+- **Deterministic lookup:** Trims are identified once, results are cached; no risk of inconsistent lookups across rows.
+- **Natural data point:** Trim is an OEM-specific classification that semantically represents a distinct vehicle variant; it's the natural unit for model lookup.
+
+**Trade-offs:**
+- **Earlier trim identification:** Requires identifying all applicable trims before lookup, but trims are already identified in Step 2 (Header Normalization).
+- **Cache invalidation not needed:** Since we lookup before melting, cache is immutable during row processing.
+
+**Files affected:**
+- `core/base_pipeline.py` — added `run_step3_5_extract_vehicle_year()` to extract year before model lookup
+- `core/base_pipeline.py` — added `run_step4_5_model_enrichment()` step for batch model lookup
+- `oems/mitsubishi/pipeline/step4_5_model_enrichment.py` — implemented batch lookup: identify unique trims, query once per trim, cache results
+- `oems/mazda/pipeline/step4_5_model_enrichment.py` — same batch approach for Mazda
+
+---
+
+## [012] Keyword combination strategy: model_name from metadata + trim keywords + fuel_type
+
+**Date:** 2026-06-22
+
+**Context:** Sheet names vary in format: some include model name ("2026 Outlander PHEV"), others only year and fuel type ("2026 PHEV"). Initial keyword extraction attempted to extract everything from sheet_name, failing for abbreviated sheet names like "2026 PHEV" where "Outlander" was never present in the name.
+
+**Decision:** Combine keywords from THREE sources:
+1. **Model name** from `meta_data["model_name"]` (extracted in Step 1 from cell A1 of the sheet)
+2. **Fuel type** from sheet_name parsing (if applicable: EV, PHEV, HEV, etc.)
+3. **Trim keywords** from the trim column value, with abbreviation expansion
+
+**Rationale:**
+- **Completeness:** Step 1 always extracts a model name from cell A1 (e.g., "Outlander ES"); this is more reliable than parsing sheet names which vary by OEM.
+- **Layered information:** Combining model (A1) + fuel type (sheet name) + trim ensures we capture all disambiguating context.
+- **Robustness to format variance:** Works even if sheet names are abbreviated ("2026 PHEV") because model name comes from data, not filename.
+- **Single truth per step:** Each step contributes its natural domain: Step 1 has model name (from data), sheet name has fuel type, trim column has trim.
+
+**Trade-offs:**
+- **Dependency on Step 1:** Requires that Step 1 correctly extract model_name from cell A1. If this fails, model lookup has incomplete context. (Already a requirement, so minimal new risk.)
+
+**Files affected:**
+- `oems/mitsubishi/pipeline/step4_5_model_enrichment.py` — extract model_name from meta_data, combine with fuel_type and trim keywords
+- `oems/mazda/pipeline/step4_5_model_enrichment.py` — same approach for Mazda
+- `core/helpers/keyword_extractor.py` — added `extract_keywords_for_model_lookup()` convenience method
+
+---
+
+## [013] Trim keyword parsing: single-letter abbreviations expanded, multi-char hyphenated terms preserved
+
+**Date:** 2026-06-22
+
+**Context:** Initial trim parsing split all hyphenated terms into separate keywords: "gt-p" → ["gt", "p"]; "s-awc" → ["s", "awc"]. This caused lookup failures: "s-awc" became keywords ["s", "awc"], but database descriptions contained "S-AWC" (single hyphenated term), so keyword search for separate ["s", "awc"] wouldn't match.
+
+**Decision:** Parse trim keywords with two rules:
+1. **Single-letter abbreviations** after hyphen are expanded via abbreviation library: "gt-p" → ["gt", "premium"] (if "p" in library)
+2. **Multi-character hyphenated terms** stay intact: "s-awc" → ["s-awc"] (one keyword), matching how database stores the term
+
+**Rationale:**
+- **Matches database format:** Database uses "S-AWC" as a single term in descriptions; keeping "s-awc" as one keyword matches this.
+- **Semantic accuracy:** "S-AWC" is a branded feature name (Super All-Wheel Control), not two separate concepts ("s" + "awc").
+- **Supports abbreviation expansion:** Single-letter abbreviations (p→premium, n→noir) are common OEM shorthand; expanding them improves match rates.
+- **Keeps logic simple:** Clear rule: if it's single-letter AFTER a dash, expand it; otherwise, keep as-is.
+
+**Trade-offs:**
+- **Abbreviation library dependency:** Expansion only works if abbreviation is in the config library. Unknown abbreviations are logged and kept as-is (safe fallback).
+
+**Files affected:**
+- `core/helpers/keyword_extractor.py` — rewrote `_process_component()` to distinguish single-letter vs. multi-char hyphenated terms
+- `oems/mitsubishi/config/mitsubishi_config.json` — trim_abbreviation_library defines which single letters expand
+
+---
+
+## Adding a New Decision
+
+When a significant design or architecture decision is made, add a new entry to this document:
+
+1. Increment the decision number
+2. Include: Date, Context, Decision, Rationale, Files affected
+3. Keep entries concise but complete — future readers should understand the decision without asking
+
+Examples of decisions worth documenting:
+- Architectural choices (what to abstract, how to structure)
+- Trade-offs between approaches (why this solution over that)
+- Constraints or assumptions (why we can't do X)
+- Bug fixes that inform future design (what we learned)
+
+Non-examples (don't document):
+- Routine code changes
+- Bug fixes that are obvious from the commit message
+- Temporary debugging or exploration
+
+---
+
 ## Adding a New Decision
 
 When a significant design or architecture decision is made, add a new entry to this document:
