@@ -1,0 +1,38 @@
+# Normalize line endings across platforms
+# Default: LF in repo, system-native on checkout
+* text=auto
+
+# Python: always LF
+*.py text eol=lf
+*.pyx text eol=lf
+*.pxd text eol=lf
+
+# Text files: always LF
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.xml text eol=lf
+*.csv text eol=lf
+
+# Jupyter notebooks: treat as text, always LF (diffs work)
+*.ipynb text eol=lf
+
+# Binary files: no line ending conversion, suppress diffs
+*.xlsx binary
+*.xls binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.jar binary
+*.zip binary
+*.tar binary
+*.gz binary

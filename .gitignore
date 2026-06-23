@@ -1,1 +1,61 @@
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.egg-info/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+.jupyterlab.config
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE settings (but allow extensions)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/
+
+# Secrets & credentials (never commit)
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*secret*
+*credentials*
+*password*
+
+# Output directories (already managed, excluded as precaution)
 ready_to_upload/
+accy_v2/output/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+.directory
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp
+.cache
+
+# macOS
+.AppleDouble
+.LSOverride
+._*

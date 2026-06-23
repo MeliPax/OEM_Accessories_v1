@@ -698,6 +698,91 @@ git merge --no-ff feature/your-feature-name
 
 ---
 
+## Data & Push Safety
+
+### What Belongs in Git
+
+| Category | In Git? | Notes |
+|----------|---------|-------|
+| Python source (`.py`) | ✓ Yes | All application code, modules, helpers |
+| Config JSON (`.json`) | ✓ Yes | Translator configs, classification configs, pipeline configs |
+| Reference Data (CSV) | ✓ Yes | `accy_v2/model_lookup/db/db_vehicle_models.csv` — this is static reference data |
+| Jupyter notebooks (`.ipynb`) | ✓ Yes | But **clear outputs before committing** (see below) |
+| OEM input Excel files | ✓ Yes | Landing zone files are tracked — they are small, single inputs |
+| **Markdown docs** (`.md`) | ✓ Yes | All documentation |
+| **Python bytecode** | ✗ **No** | `__pycache__/`, `*.pyc`, `*.pyo` — auto-excluded |
+| **Jupyter checkpoints** | ✗ **No** | `.ipynb_checkpoints/` — auto-excluded |
+| **Output files** | ✗ **No** | `accy_v2/output/ready_to_upload/` — auto-excluded |
+| **Secrets/credentials** | ✗ **No** | `.env`, `*.pem`, `*secret*`, `*.key` — auto-excluded |
+| **OS junk** | ✗ **No** | `.DS_Store`, `Thumbs.db` — auto-excluded |
+
+**Rationale:** Git stores bytecode, checkpoints, and secrets *forever*. History rewriting is hard. Instead, we exclude at the source with `.gitignore` and `.gitattributes`.
+
+### Pre-Push Checklist
+
+**Before every `git push origin <branch>`:**
+
+```
+[ ] Code changes are intentional (git diff --stat looks right)
+[ ] No secrets staged (git status: no .env, *.pem, *secret* files)
+[ ] No bytecode staged (git status: no __pycache__, *.pyc)
+[ ] Notebook outputs cleared (see below)
+[ ] All tests pass locally
+[ ] Branch is up to date with main (git rebase or merge origin/main)
+[ ] Commit messages clear and reference docs/issues
+```
+
+### Clearing Notebook Outputs Before Committing
+
+Jupyter notebooks embed cell outputs (large DataFrames, print results, plots) directly in the `.ipynb` JSON. These can:
+- Bloat the repository
+- Leak sensitive data from intermediate calculations
+- Make diffs unreadable (full notebook re-serializes)
+
+**Solution: Clear outputs before adding `.ipynb` to git**
+
+#### Option 1: Using Jupyter CLI
+
+```bash
+# Clear outputs from a single notebook
+jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace accy_v2/model_lookup/veh_model_service.ipynb
+```
+
+#### Option 2: Using Jupyter Lab / Jupyter Notebook UI
+
+1. Open notebook in Jupyter
+2. Menu: **Edit** → **Clear All Outputs**
+3. **File** → **Save Notebook**
+
+#### Option 3: Before Staging (Shell Alias)
+
+Add to your `.bashrc` or PowerShell profile for convenience:
+
+```bash
+# Bash
+clear-nb() { jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace "$1"; }
+
+# PowerShell
+function Clear-Notebook { jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace $args[0] }
+```
+
+Then:
+```bash
+clear-nb accy_v2/model_lookup/veh_model_service.ipynb
+git add accy_v2/model_lookup/veh_model_service.ipynb
+```
+
+### Line Ending Safety
+
+This project includes `.gitattributes` to handle line ending normalization:
+
+- **Python, JSON, Markdown, shell scripts:** Always stored as LF (`\n`) in Git, checked out as system-default on your machine
+- **Binary files (`.xlsx`, `.pdf`, `.png`):** No line ending conversion; marked `binary` to prevent noisy diffs
+
+**Why?** Windows/Mac users can both work on the same branch without accidental line-ending noise. Read: [git-scm.com/book/.../gitattributes](https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes)
+
+---
+
 ## Quality Checklist
 
 ### Before Pushing PR
