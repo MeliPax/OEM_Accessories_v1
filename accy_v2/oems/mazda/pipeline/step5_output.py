@@ -52,8 +52,8 @@ def _filter_to_required_columns(df: pd.DataFrame, required_cols: list) -> pd.Dat
     if not required_cols:
         return df
     existing = [col for col in required_cols if col in df.columns]
-    # Always include model_number and model_number_status if they exist
-    always_include = ["model_number", "model_number_status", "vehicle_year"]
+    # Always include model_number and vehicle_year if they exist (but NOT model_number_status)
+    always_include = ["model_number", "vehicle_year"]
     cols_to_return = []
     for col in existing:
         if col not in cols_to_return:
