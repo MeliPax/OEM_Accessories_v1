@@ -96,7 +96,7 @@ DESIGN PRINCIPLES:
   ✓ Easy to maintain and extend
 """
 
-from model_lookup.core import (
+from .core import (
     search,
     SearchResult,
     save_models,

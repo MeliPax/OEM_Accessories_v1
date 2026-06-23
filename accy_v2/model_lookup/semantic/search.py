@@ -5,11 +5,11 @@ from pathlib import Path
 
 try:
     # When imported as package (from accy_v2)
-    from model_lookup.core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
-    from model_lookup.core.database import load_models
-    from model_lookup.core.vocabulary import load_vocabulary
+    from ..core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
+    from ..core.database import load_models
+    from ..core.vocabulary import load_vocabulary
 except ImportError:
-    # When imported from model_lookup directory
+    # When imported from model_lookup directory (relative imports don't work)
     from core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
     from core.database import load_models
     from core.vocabulary import load_vocabulary

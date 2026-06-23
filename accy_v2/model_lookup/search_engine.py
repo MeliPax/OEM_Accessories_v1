@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 import pandas as pd
 
-from .translator import load_oem_translator, translate_keywords
-from .classifier import load_classification_config, classify_tokens
-from .scorer import CATEGORY_WEIGHTS, MINIMUM_SCORE, compute_score, compute_confidence
+from .semantic.translator import load_oem_translator, translate_keywords
+from .semantic.classifier import load_classification_config, classify_tokens
+from .semantic.scorer import CATEGORY_WEIGHTS, MINIMUM_SCORE, compute_score, compute_confidence
+
 from .models.manufacture_module import search_models_by_description
 
 
