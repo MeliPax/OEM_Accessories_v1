@@ -1,0 +1,21 @@
+{
+  "make": "Mazda",
+  "version": "1.0",
+  "description": "Mazda-specific keyword translation rules. Applied before classification.",
+  "translations": {
+    "i-activ": "awd",
+    "awd": "awd",
+    "4wd": "awd",
+    "prem": "premium",
+    "pkg": "package",
+    "bev": "ev",
+    "p": "preferred",
+    "s": "sport",
+    "mhev": "hybrid",
+    "hev": "hybrid",
+    "ivt": "cvt",
+    "dct": "dsg",
+    "mt": "manual",
+    "at": "auto"
+  }
+}
