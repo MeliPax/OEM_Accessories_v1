@@ -209,16 +209,35 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
         # Rebuild vocab for any manufacturers in the saved data
         unique_makes = df_valid["Manufacturer"].unique().tolist()
         vocab_rebuilt = []
+        classification_rebuilt = []
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
         for make in unique_makes:
             try:
-                vocab_result = build_manufacturer_keyword_vocab(make, csv_path)
+                vocab_result = build_manufacturer_keyword_vocab(make, csv_path, configs_dir)
                 if vocab_result.get("saved", False):
                     vocab_rebuilt.append(make)
-            except Exception as e:
+            except Exception:
                 # Log vocab rebuild errors but don't fail the save
                 pass
 
+            # Rebuild classification config after vocab
+            try:
+                from model_lookup.classifier import build_classification_config
+
+                class_result = build_classification_config(make, csv_path, configs_dir)
+                if class_result.get("saved", False):
+                    classification_rebuilt.append(make)
+                # Log any unclassified tokens as warnings (non-fatal)
+                unclassified = class_result.get("unclassified", [])
+                if unclassified:
+                    pass  # Unclassified tokens logged during build
+            except Exception:
+                # Don't fail the save if classification rebuild fails
+                pass
+
         result["vocab_rebuilt"] = vocab_rebuilt
+        result["classification_rebuilt"] = classification_rebuilt
 
     except Exception as e:
         result["message"] = f"Error saving to CSV: {str(e)}"
@@ -612,19 +631,35 @@ def batch_save_manufacturer_models(
     return results
 
 
-def _get_trim_discriminator_keywords() -> set[str]:
+def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) -> set[str]:
     """
     Return a set of keywords that discriminate between trim levels.
     These are actual trim variant names, not transmission/drive specifications.
 
-    Non-discriminators (specs that appear in most/all trims):
-    - Drive types: fwd, awc, s-awc, awd, rwd, 4wd
-    - Transmissions: manual, cvt, at, auto, dsg
-    - Packages/misc: pkg, avail*, *ltd, w/tech, edition, carbon, black
+    Prefers to load from classification config if available, falls back to hardcoded set.
+
+    Args:
+        make: Manufacturer name (optional, enables config-driven lookup)
+        configs_dir: Directory with classification configs (optional)
 
     Returns:
         set of known trim discriminator keywords
     """
+    # Try to load from classification config
+    if make:
+        try:
+            from model_lookup.classifier import load_classification_config
+
+            config = load_classification_config(make, configs_dir)
+            trim_tokens = {
+                token for token, category in config.get("token_map", {}).items() if category == "TRIM"
+            }
+            if trim_tokens:
+                return trim_tokens
+        except Exception:
+            pass  # Fall through to hardcoded set
+
+    # Fallback to hardcoded set (backward compatibility)
     return {
         "premium", "noir", "se", "es", "gt", "le", "limited", "touring", "sel",
         "ex", "ex-l", "lx", "sx", "sport", "l", "s", "plus", "ta",
@@ -683,7 +718,7 @@ def search_models_by_description(
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
-        trim_discriminators = _get_trim_discriminator_keywords()
+        trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
         search_kw_set = {kw.lower() for kw in keywords}
 
         def _has_extra_discriminator_keywords(desc: str) -> bool:

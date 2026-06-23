@@ -6,7 +6,7 @@ import pandas as pd
 from core.helpers.dq_logger import DQLogger
 from core.helpers.keyword_extractor import KeywordExtractor
 from core.helpers.pipeline_logger import PipelineLogger
-from model_lookup.models.manufacture_module import search_models_by_description
+from model_lookup.search_engine import VehicleSearchEngine
 
 
 def run(
@@ -152,6 +152,11 @@ def _batch_lookup_model_numbers(
     model_mapping = {}
     missing_trims = []
 
+    # Initialize search engine once for this batch of lookups
+    csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
+    configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
+    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config={}, pipeline_logger=pipeline_logger)
+
     for trim in trims:
         # Extract trim keywords and combine with model + fuel_type keywords
         trim_keywords = extractor.extract_from_trim(trim)
@@ -176,23 +181,20 @@ def _batch_lookup_model_numbers(
             f"Sheet '{sheet_name}' trim '{trim}': Searching with keywords={keywords}"
         )
 
-        # Search for model number
+        # Search for model number using new search engine
         try:
-            # Path: accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py
-            # Up 4 levels to accy_v2, then to model_lookup/db
-            csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
-            results = search_models_by_description(
-                make=vehicle_make, year=int(year), keywords=keywords, csv_path=csv_path
-            )
+            result = engine.search(make=vehicle_make, year=int(year), raw_keywords=keywords)
 
-            if len(results) == 1:
-                model_number = results.iloc[0]["ModelNumber"]
+            if result is not None:
+                model_number = result.model_number
                 model_mapping[trim] = model_number
                 pipeline_logger.debug(
-                    f"  ✓ Found model_number='{model_number}' for {vehicle_make} {year} {trim}"
+                    f"  [OK] Found model_number='{model_number}' confidence={result.confidence:.2f} "
+                    f"for {vehicle_make} {year} {trim}"
                 )
 
-            elif len(results) == 0:
+            else:
+                # No match or ambiguous (confidence = 0)
                 missing_trims.append(trim)
                 dq_logger.log_warning(
                     sheet_name=sheet_name,
@@ -201,30 +203,12 @@ def _batch_lookup_model_numbers(
                     record_snapshot={"trim": trim, "keywords": keywords},
                     rule_violated="model_number_lookup_rule",
                     issue_description=(
-                        f"No model number found for {vehicle_make} {year} {trim} "
+                        f"No confident model number match for {vehicle_make} {year} {trim} "
                         f"with keywords: {keywords}"
                     ),
                 )
                 pipeline_logger.warning(
-                    f"  ✗ Not found: {vehicle_make} {year} {trim} keywords={keywords}"
-                )
-
-            else:
-                missing_trims.append(trim)
-                matching_models = results["ModelNumber"].tolist()
-                dq_logger.log_warning(
-                    sheet_name=sheet_name,
-                    model_name=model_name,
-                    record_index=None,
-                    record_snapshot={"trim": trim, "keywords": keywords},
-                    rule_violated="model_number_lookup_rule",
-                    issue_description=(
-                        f"Ambiguous match: {len(results)} model numbers found for "
-                        f"{vehicle_make} {year} {trim} with keywords {keywords}: {matching_models}"
-                    ),
-                )
-                pipeline_logger.warning(
-                    f"  ✗ Ambiguous ({len(results)} matches): {vehicle_make} {year} {trim}"
+                    f"  [NOT_FOUND] {vehicle_make} {year} {trim} keywords={keywords}"
                 )
 
         except Exception as e:
@@ -238,7 +222,7 @@ def _batch_lookup_model_numbers(
                 issue_description=f"Error during model number lookup for trim '{trim}': {str(e)}",
             )
             pipeline_logger.warning(
-                f"  ✗ Error: {vehicle_make} {year} {trim}: {str(e)}"
+                f"  [ERROR] {vehicle_make} {year} {trim}: {str(e)}"
             )
 
     return model_mapping, missing_trims
