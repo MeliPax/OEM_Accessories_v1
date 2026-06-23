@@ -3,9 +3,17 @@
 from typing import Dict, List, Optional
 from pathlib import Path
 
-from model_lookup.core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
-from model_lookup.core.database import load_models
-from model_lookup.core.vocabulary import load_vocabulary
+try:
+    # When imported as package (from accy_v2)
+    from model_lookup.core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
+    from model_lookup.core.database import load_models
+    from model_lookup.core.vocabulary import load_vocabulary
+except ImportError:
+    # When imported from model_lookup directory
+    from core.search import SearchResult, _extract_description_tokens, _build_word_boundary_pattern
+    from core.database import load_models
+    from core.vocabulary import load_vocabulary
+
 from .translator import load_oem_translator, translate_keywords
 from .classifier import load_classification_config, classify_tokens
 from .scorer import compute_score, compute_confidence, CATEGORY_WEIGHTS, MINIMUM_SCORE

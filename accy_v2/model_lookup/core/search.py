@@ -49,7 +49,10 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
     # Try to load from classification config
     if make:
         try:
-            from model_lookup.semantic.classifier import load_classification_config
+            try:
+                from model_lookup.semantic.classifier import load_classification_config
+            except ImportError:
+                from semantic.classifier import load_classification_config
 
             config = load_classification_config(make, configs_dir)
             trim_tokens = {
@@ -105,7 +108,10 @@ def search(
 
     # If semantic processing requested, use it
     if use_semantic:
-        from model_lookup.semantic import search as semantic_search
+        try:
+            from model_lookup.semantic import search as semantic_search
+        except ImportError:
+            from semantic import search as semantic_search
 
         return semantic_search(make, year, keywords, csv_path, exclude_ev, configs_dir)
 
