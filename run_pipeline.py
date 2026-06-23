@@ -19,7 +19,6 @@ from datetime import datetime
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "accy_v2"))
-sys.path.insert(0, str(project_root / "model_lookup"))
 
 from accy_v2.oems.mitsubishi.pipeline.orchestrator import MitsubishiPipeline
 from accy_v2.oems.mazda.pipeline.orchestrator import MazdaPipeline

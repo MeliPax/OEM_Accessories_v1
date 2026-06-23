@@ -11,7 +11,7 @@ def test_import_from_accy_v2():
     sys.path.insert(0, str(Path(__file__).parent / "accy_v2"))
 
     try:
-        from model_lookup.models.manufacture_module import search_models_by_description
+        from accy_v2.model_lookup.models.manufacture_module import search_models_by_description
         print("  [OK] Import successful")
         return True
     except Exception as e:
@@ -23,7 +23,7 @@ def test_search_function():
     """Test the search function works."""
     print("\nTest 2: Search function")
     try:
-        from model_lookup.models.manufacture_module import search_models_by_description
+        from accy_v2.model_lookup.models.manufacture_module import search_models_by_description
 
         result = search_models_by_description(
             "Mitsubishi", 2026, ["outlander", "phev", "gt"]
@@ -44,7 +44,7 @@ def test_vocabulary_loading():
     """Test vocabulary loading."""
     print("\nTest 3: Vocabulary loading")
     try:
-        from model_lookup.models.manufacture_module import load_manufacturer_keyword_vocab
+        from accy_v2.model_lookup.models.manufacture_module import load_manufacturer_keyword_vocab
 
         vocab = load_manufacturer_keyword_vocab("Mitsubishi")
         if len(vocab) > 0:

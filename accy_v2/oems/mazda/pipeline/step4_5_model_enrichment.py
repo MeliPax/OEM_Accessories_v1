@@ -6,7 +6,7 @@ import pandas as pd
 from core.helpers.dq_logger import DQLogger
 from core.helpers.keyword_extractor import KeywordExtractor
 from core.helpers.pipeline_logger import PipelineLogger
-from model_lookup.search_engine import VehicleSearchEngine
+from accy_v2.model_lookup.search_engine import VehicleSearchEngine
 
 
 def run(

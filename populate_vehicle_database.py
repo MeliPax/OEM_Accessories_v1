@@ -21,14 +21,14 @@ from datetime import datetime
 def setup_paths():
     """Setup Python paths for imports."""
     project_root = Path(__file__).parent
-    sys.path.insert(0, str(project_root / "model_lookup"))
     sys.path.insert(0, str(project_root))
+    sys.path.insert(0, str(project_root / "accy_v2"))
     return project_root
 
 
 def list_manufacturers():
     """List all available manufacturers in database."""
-    from model_lookup.engine import load_env, create_engine_from_env
+    from accy_v2.model_lookup.engine import load_env, create_engine_from_env
     from sqlalchemy import text
 
     try:
@@ -62,10 +62,10 @@ def list_manufacturers():
         return []
 
 
-def populate_database(manufacturers, csv_path="model_lookup/db/db_vehicle_models.csv"):
+def populate_database(manufacturers, csv_path="accy_v2/model_lookup/db/db_vehicle_models.csv"):
     """Populate vehicle database for given manufacturers."""
-    from model_lookup.engine import load_env, create_engine_from_env
-    from model_lookup.models.manufacture_module import batch_save_manufacturer_models
+    from accy_v2.model_lookup.engine import load_env, create_engine_from_env
+    from accy_v2.model_lookup.models.manufacture_module import batch_save_manufacturer_models
 
     try:
         # Load environment
