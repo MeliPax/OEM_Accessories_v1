@@ -14,6 +14,7 @@ import json
 from typing import Union, Any
 import os
 from datetime import datetime
+from pathlib import Path
 
 MANUFACTURER_SEARCH_CONFIG = {
     "default": {
@@ -201,6 +202,21 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
         result["success"] = True
         result["file_created"] = not os.path.exists(csv_path) or mode == "w"
         result["message"] = f"Successfully saved {len(df_valid)} records"
+
+        # Rebuild vocab for any manufacturers in the saved data
+        unique_makes = df_valid["Manufacturer"].unique().tolist()
+        vocab_rebuilt = []
+        for make in unique_makes:
+            try:
+                vocab_result = build_manufacturer_keyword_vocab(make, csv_path)
+                if vocab_result.get("saved", False):
+                    vocab_rebuilt.append(make)
+            except Exception as e:
+                # Log vocab rebuild errors but don't fail the save
+                pass
+
+        result["vocab_rebuilt"] = vocab_rebuilt
+
     except Exception as e:
         result["message"] = f"Error saving to CSV: {str(e)}"
 
@@ -380,6 +396,152 @@ def build_word_boundary_pattern(keyword: str) -> str:
     return rf"\b{keyword}\b"
 
 
+def _extract_description_tokens(description: str) -> list[str]:
+    """
+    Whitespace-split description into lowercase tokens.
+    Preserves hyphenated terms as single tokens (e.g., "S-AWC" stays as one token).
+
+    Args:
+        description: Description string from CSV
+
+    Returns:
+        List of lowercase tokens
+    """
+    if not description or not isinstance(description, str):
+        return []
+    return [t.lower() for t in description.split() if t]
+
+
+def build_manufacturer_keyword_vocab(
+    make: str, csv_path: str = None, configs_dir: str = None
+) -> dict:
+    """
+    Build and save a keyword vocabulary JSON for a manufacturer.
+
+    Extracts all unique tokens from Description values for the given make,
+    sorts them, and writes to {configs_dir}/{make.lower()}_keywords.json.
+
+    Args:
+        make: Manufacturer name
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for JSON files (defaults to model_lookup/configs/)
+
+    Returns:
+        dict with make, generated_at, keyword_count, keywords list
+    """
+    if csv_path is None:
+        csv_path = "db/db_vehicle_models.csv"
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    df = load_existing_csv(csv_path)
+
+    if df.empty:
+        return {"make": make, "keywords": [], "keyword_count": 0, "message": "CSV is empty"}
+
+    df_make = df[df["Manufacturer"] == make].copy()
+
+    if df_make.empty:
+        return {
+            "make": make,
+            "keywords": [],
+            "keyword_count": 0,
+            "message": f"No records found for manufacturer: {make}",
+        }
+
+    all_tokens = set()
+    for desc in df_make["Description"].dropna():
+        tokens = _extract_description_tokens(desc)
+        all_tokens.update(tokens)
+
+    sorted_keywords = sorted(list(all_tokens))
+
+    os.makedirs(configs_dir, exist_ok=True)
+    vocab_path = os.path.join(configs_dir, f"{make.lower()}_keywords.json")
+
+    vocab_dict = {
+        "make": make,
+        "generated_at": datetime.now().isoformat(),
+        "keyword_count": len(sorted_keywords),
+        "keywords": sorted_keywords,
+    }
+
+    try:
+        with open(vocab_path, "w") as f:
+            json.dump(vocab_dict, f, indent=2)
+        vocab_dict["file_path"] = vocab_path
+        vocab_dict["saved"] = True
+        return vocab_dict
+    except Exception as e:
+        vocab_dict["saved"] = False
+        vocab_dict["error"] = str(e)
+        return vocab_dict
+
+
+def load_manufacturer_keyword_vocab(make: str, configs_dir: str = None) -> set[str]:
+    """
+    Load keyword vocabulary for a manufacturer from JSON.
+
+    Returns empty set if file not found (graceful fallback — no extra filtering applied).
+
+    Args:
+        make: Manufacturer name
+        configs_dir: Directory for JSON files (defaults to model_lookup/configs/)
+
+    Returns:
+        set of lowercase keywords
+    """
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    vocab_path = os.path.join(configs_dir, f"{make.lower()}_keywords.json")
+
+    if not os.path.exists(vocab_path):
+        return set()
+
+    try:
+        with open(vocab_path, "r") as f:
+            vocab_dict = json.load(f)
+        return set(vocab_dict.get("keywords", []))
+    except Exception:
+        return set()
+
+
+def bootstrap_all_vocabs(csv_path: str = None, configs_dir: str = None) -> dict:
+    """
+    Bootstrap keyword vocabularies for all manufacturers in the CSV.
+
+    Builds vocab JSON for each unique Manufacturer value.
+
+    Args:
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for JSON files (defaults to model_lookup/configs/)
+
+    Returns:
+        dict with {make: result_dict} for each manufacturer
+    """
+    if csv_path is None:
+        csv_path = "db/db_vehicle_models.csv"
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    df = load_existing_csv(csv_path)
+
+    if df.empty:
+        return {"status": "error", "message": "CSV is empty"}
+
+    manufacturers = sorted(df["Manufacturer"].unique().tolist())
+
+    results = {}
+    for make in manufacturers:
+        result = build_manufacturer_keyword_vocab(make, csv_path, configs_dir)
+        results[make] = result
+
+    return {"status": "success", "manufacturers": results}
+
+
 def batch_save_manufacturer_models(
     engine,
     manufacturers: list[str],
@@ -447,12 +609,35 @@ def batch_save_manufacturer_models(
     return results
 
 
+def _get_trim_discriminator_keywords() -> set[str]:
+    """
+    Return a set of keywords that discriminate between trim levels.
+    These are actual trim variant names, not transmission/drive specifications.
+
+    Non-discriminators (specs that appear in most/all trims):
+    - Drive types: fwd, awc, s-awc, awd, rwd, 4wd
+    - Transmissions: manual, cvt, at, auto, dsg
+    - Packages/misc: pkg, avail*, *ltd, w/tech, edition, carbon, black
+
+    Returns:
+        set of known trim discriminator keywords
+    """
+    return {
+        "premium", "noir", "se", "es", "gt", "le", "limited", "touring", "sel",
+        "ex", "ex-l", "lx", "sx", "sport", "l", "s", "plus", "ta",
+        "glx", "sport touring", "ex-l", "high line", "highline", "execline",
+        "comfortline", "trendline", "gli", "jetta",
+    }
+
+
 def search_models_by_description(
-    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None
 ) -> pd.DataFrame:
     """
     Search vehicle models by manufacturer, year, and description keywords.
     Keywords must match exactly as whole words (e.g., "SE" won't match "SEL").
+    Filters out results that contain additional TRIM DISCRIMINATOR keywords not in the search list,
+    while ignoring non-discriminating specification keywords (drive types, transmissions, packages).
 
     Args:
         make: Manufacturer name
@@ -460,12 +645,16 @@ def search_models_by_description(
         keywords: List of keywords to match in Description as exact words (all must be present)
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
+        configs_dir: Directory for keyword vocab JSONs (defaults to model_lookup/configs/)
 
     Returns:
         DataFrame with matching records
     """
     if csv_path is None:
         csv_path = "db/db_vehicle_models.csv"
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
     df = load_existing_csv(csv_path)
 
@@ -487,6 +676,20 @@ def search_models_by_description(
             df_filtered = df_filtered[
                 ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
             ]
+
+    # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
+    vocab = load_manufacturer_keyword_vocab(make, configs_dir)
+    if vocab:
+        trim_discriminators = _get_trim_discriminator_keywords()
+        search_kw_set = {kw.lower() for kw in keywords}
+
+        def _has_extra_discriminator_keywords(desc: str) -> bool:
+            tokens = set(_extract_description_tokens(desc))
+            discriminator_tokens = tokens & trim_discriminators
+            extra_discriminators = discriminator_tokens - search_kw_set
+            return bool(extra_discriminators)
+
+        df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
 
     return df_filtered
 
