@@ -179,8 +179,8 @@ def _batch_lookup_model_numbers(
         # Search for model number
         try:
             # Path: accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py
-            # Up 4 levels to accy_v2, then up 1 more to project root
-            csv_path = str(Path(__file__).parent.parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
+            # Up 4 levels to accy_v2, then to model_lookup/db
+            csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
             results = search_models_by_description(
                 make=vehicle_make, year=int(year), keywords=keywords, csv_path=csv_path
             )
