@@ -3,9 +3,10 @@
   "version": "1.0",
   "description": "Mitsubishi-specific keyword translation rules. Applied before classification.",
   "translations": {
-    "s-awc": "awd",
-    "awc": "awd",
-    "4wd": "awd",
+    "s-awc": "s-awc",
+    "awc": "s-awc",
+    "4wd": "s-awc",
+    "awd": "s-awc",
     "prem": "premium",
     "pkg": "package",
     "bev": "ev",

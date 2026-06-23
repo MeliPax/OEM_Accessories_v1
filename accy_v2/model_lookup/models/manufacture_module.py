@@ -677,10 +677,13 @@ def search_models_by_description(
     Filters out results that contain additional TRIM DISCRIMINATOR keywords not in the search list,
     while ignoring non-discriminating specification keywords (drive types, transmissions, packages).
 
+    Automatically translates OEM-specific abbreviations (e.g., 'prem' → 'premium', 's-awc' → 'awd').
+
     Args:
         make: Manufacturer name
         year: Model year
         keywords: List of keywords to match in Description as exact words (all must be present)
+                  OEM abbreviations are automatically translated (e.g., 'prem', 's-awc', 'p', 'n')
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
         configs_dir: Directory for keyword vocab JSONs (defaults to model_lookup/configs/)
@@ -693,6 +696,22 @@ def search_models_by_description(
 
     if configs_dir is None:
         configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    # Translate OEM-specific abbreviations before searching
+    try:
+        try:
+            # Try relative import first (when called from accy_v2 package)
+            from model_lookup.semantic.translator import load_oem_translator, translate_keywords
+        except ImportError:
+            # Fall back to direct import (when called from model_lookup directory)
+            from semantic.translator import load_oem_translator, translate_keywords
+
+        translator = load_oem_translator(make, configs_dir)
+        if translator:
+            keywords = translate_keywords(keywords, translator)
+    except Exception as e:
+        # If translator not available, continue with original keywords
+        pass
 
     df = load_existing_csv(csv_path)
 
