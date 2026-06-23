@@ -1,0 +1,15 @@
+# FIXED IMPORT CELL FOR NOTEBOOK
+# Replace the first cell in veh_model_service.ipynb with this:
+
+import pandas as pd
+from engine import load_env, create_engine_from_env
+from models.manufacture_module import (
+    search_models_by_description,
+    save_vehicle_models_to_csv,
+    batch_save_manufacturer_models
+)
+
+print("Imports successful! You can now use:")
+print("- search_models_by_description(make, year, keywords)")
+print("- save_vehicle_models_to_csv(df)")
+print("- batch_save_manufacturer_models(engine, manufactures)")
