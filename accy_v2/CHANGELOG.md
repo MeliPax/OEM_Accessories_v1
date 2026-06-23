@@ -19,8 +19,20 @@ The versions are tracked against the date of release/deployment, and the Unrelea
     - Multi-character hyphenated terms preserved as single keywords (e.g., "s-awc" stays as one keyword, not split)
   - Intelligent trim parsing: single-letter abbreviations expanded via library (p→premium, n→noir), multi-character terms kept intact
   - Row filtering: rows with missing/ambiguous model lookups excluded from output automatically
-  - `model_number_status` column added to output for visibility ("yes - Model number found" or "no - missing model number")
   - DQ logging: missing trims flagged with details (keywords searched, lookup result type, rows affected)
+
+- **Per-manufacturer vocabulary filtering (June 23, 2026):** Solved model lookup false positives
+  - Vocabulary JSON files generated for each manufacturer containing all unique tokens from Description column
+  - Trim discriminator categorization: separates trim-level identifiers (premium, noir, se, es, gt) from specifications (fwd, awc, s-awc, manual, cvt)
+  - Post-filter in search: excludes results with extra trim discriminators but allows specification variations
+  - Auto-regenerating vocabularies: vocabularies rebuild whenever CSV database is updated
+  - Exact matching behavior: `["outlander", "phev", "gt"]` returns only GT variant, not GT-Premium
+
+- **model_lookup module relocated (June 23, 2026):** Moved from project root into accy_v2
+  - Better project organization: colocate vehicle model database with pipeline code
+  - All paths automatically resolve using Path(__file__).parent relative navigation
+  - Dual-import support: works both from accy_v2 and model_lookup/ directories
+  - Package structure: added __init__.py files for proper Python package support
 
 - **Raw data folder structure:** `data/landing_zone/{oem}/` folder inside OEMAccessories for storing OEM source Excel files
   - Self-contained project structure: data and code live together
@@ -40,6 +52,10 @@ The versions are tracked against the date of release/deployment, and the Unrelea
   - `_build_dq_records()` — extracts DQ records into review-friendly table
 
 ### Changed
+
+- **Output columns (June 23, 2026):** Removed `model_number_status` from final export
+  - Output now contains: Part Description, Comments, Price, Hours, Trim, model_number (cleaner parts list)
+  - Status still generated internally for DQ reporting, but filtered out before Excel export
 
 - **Output paths structure:** Changed from `output/` to `accy_v2/output/` in OEM configs for consistency with project structure
 - **Keyword extraction logic:** Model keywords now extracted from meta_data["model_name"] (populated by Step 1) instead of only from sheet name, ensuring complete keyword context even when sheet names are abbreviated
