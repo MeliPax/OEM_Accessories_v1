@@ -35,6 +35,7 @@ def write_combined_output(
     try:
         with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
             _write_report_sheet(writer, run_stats, dq_logger, run_id, all_frames, profile_col)
+            _write_data_issues_sheet(writer, dq_logger)
             for sheet_name, df in all_frames.items():
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
         pipeline_logger.info(f"Combined output saved: {file_path}")
@@ -56,7 +57,7 @@ def _write_report_sheet(
     all_frames: Dict[str, pd.DataFrame],
     profile_col: str = "Trim",
 ) -> None:
-    """Write _Report sheet with Run Summary, Model Profile, and DQ Records."""
+    """Write _Report sheet with Run Summary and Model Profile (management dashboard view)."""
     from openpyxl.styles import Alignment
     startrow = 0
 
@@ -83,16 +84,6 @@ def _write_report_sheet(
             trim_text = profile_df.iloc[row_offset]["Records Out"]
             line_count = trim_text.count("\n") + 1 if trim_text else 1
             ws.row_dimensions[data_row].height = max(18, line_count * 15 + 6)
-        startrow += len(profile_df) + 2
-
-    # Section 3: DQ Records
-    dq_records_df = _build_dq_records(dq_logger)
-    if not dq_records_df.empty:
-        dq_records_df.to_excel(writer, sheet_name="_Report", startrow=startrow, index=False)
-        dq_header_row = startrow + 1
-        ws.row_dimensions[dq_header_row].height = 20
-        for row_offset in range(len(dq_records_df)):
-            ws.row_dimensions[dq_header_row + 1 + row_offset].height = 18
 
 
 def _build_run_summary(
@@ -176,8 +167,38 @@ def _build_trim_records_out_text(lang_frames: Dict[str, pd.DataFrame], profile_c
     return "\n".join(lines)
 
 
+def _write_data_issues_sheet(
+    writer: pd.ExcelWriter,
+    dq_logger: DQLogger,
+) -> None:
+    """Write _Data_Issues sheet with DQ Records table (data steward view). Skip if no issues."""
+    dq_records_df = _build_dq_records(dq_logger)
+    if dq_records_df.empty:
+        return
+
+    dq_records_df.to_excel(writer, sheet_name="_Data_Issues", index=False, startrow=0)
+    ws = writer.sheets["_Data_Issues"]
+
+    # Column widths
+    ws.set_column("A:A", 25)   # Sheet
+    ws.set_column("B:B", 20)   # Model
+    ws.set_column("C:C", 12)   # Record Index
+    ws.set_column("D:D", 25)   # Rule
+    ws.set_column("E:E", 60)   # Issue (wide — holds detailed failure messages)
+    ws.set_column("F:F", 18)   # Part Number
+    ws.set_column("G:G", 45)   # Description
+
+    # Format header row
+    header_row = 1
+    ws.row_dimensions[header_row].height = 20
+
+    # Format data rows
+    for row_offset in range(len(dq_records_df)):
+        ws.row_dimensions[header_row + 1 + row_offset].height = 18
+
+
 def _build_dq_records(dq_logger: DQLogger) -> pd.DataFrame:
-    """Build DQ Records section: all issues requiring review."""
+    """Build DQ Records table: all issues requiring review."""
     if not dq_logger.records:
         return pd.DataFrame()
 
