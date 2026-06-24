@@ -91,21 +91,43 @@ def _build_run_summary(
     dq_logger: DQLogger,
     run_id: str,
 ) -> pd.DataFrame:
-    """Build Run Summary section: key-value table with aggregate stats."""
+    """Build Run Summary section: key-value table with aggregate stats + manager insights."""
+    from collections import Counter
+
     source_file = run_stats[0].get("source_file", "unknown") if run_stats else "unknown"
     sheets_processed = len(run_stats)
     total_warnings = dq_logger.warning_count
     total_records_in = sum(s.get("records_in", 0) for s in run_stats)
     total_records_out = sum(s.get("records_out", 0) for s in run_stats)
-    pct = round(total_warnings / total_records_in * 100) if total_records_in > 0 else 0
+    records_excluded = total_records_in - total_records_out
+    pct_warnings = round(total_warnings / total_records_in * 100) if total_records_in > 0 else 0
+    pct_excluded = round(records_excluded / total_records_in * 100, 1) if total_records_in > 0 else 0
+
+    # Manager analytics
+    unique_models = len({s.get("model_name") for s in run_stats if s.get("model_name")})
+    sheets_with_issues = len({r["sheet_name"] for r in dq_logger.records})
+    sheets_clean = sheets_processed - sheets_with_issues
+
+    # DQ warnings by rule (most common first)
+    if dq_logger.records:
+        rule_counts = Counter(r["rule_violated"] for r in dq_logger.records)
+        dq_by_rule = " | ".join(f"{rule}: {count}" for rule, count in rule_counts.most_common())
+    else:
+        dq_by_rule = "None"
 
     summary_data = [
         ["Run ID", run_id],
         ["Source File", source_file],
         ["Generated At", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")],
         ["Sheets Processed", sheets_processed],
-        ["Total DQ Warnings", f"{total_warnings} ({pct}% of processed records)"],
+        ["Models Processed", unique_models],
+        ["Total Records In", total_records_in],
         ["Total Records Out", total_records_out],
+        ["Records Excluded", f"{records_excluded} ({pct_excluded}% of input)"],
+        ["Total DQ Warnings", f"{total_warnings} ({pct_warnings}% of processed records)"],
+        ["DQ Warnings by Rule", dq_by_rule],
+        ["Sheets with Issues", f"{sheets_with_issues} of {sheets_processed}"],
+        ["Clean Sheets", f"{sheets_clean} of {sheets_processed}"],
     ]
     return pd.DataFrame(summary_data, columns=["Key", "Value"])
 
@@ -179,14 +201,14 @@ def _write_data_issues_sheet(
     dq_records_df.to_excel(writer, sheet_name="_Data_Issues", index=False, startrow=0)
     ws = writer.sheets["_Data_Issues"]
 
-    # Column widths
-    ws.set_column("A:A", 25)   # Sheet
-    ws.set_column("B:B", 20)   # Model
-    ws.set_column("C:C", 12)   # Record Index
-    ws.set_column("D:D", 25)   # Rule
-    ws.set_column("E:E", 60)   # Issue (wide — holds detailed failure messages)
-    ws.set_column("F:F", 18)   # Part Number
-    ws.set_column("G:G", 45)   # Description
+    # Column widths (openpyxl API, not XlsxWriter)
+    ws.column_dimensions["A"].width = 25   # Sheet
+    ws.column_dimensions["B"].width = 20   # Model
+    ws.column_dimensions["C"].width = 12   # Record Index
+    ws.column_dimensions["D"].width = 25   # Rule
+    ws.column_dimensions["E"].width = 60   # Issue (wide — holds detailed failure messages)
+    ws.column_dimensions["F"].width = 18   # Part Number
+    ws.column_dimensions["G"].width = 45   # Description
 
     # Format header row
     header_row = 1
