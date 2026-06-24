@@ -46,10 +46,18 @@ The versions are tracked against the date of release/deployment, and the Unrelea
   - Model Profile trim visibility: Records out breakdown by trim level formatted as multi-line text
 
 - Helper functions in Step 5:
-  - `_build_run_summary()` — generates key-value Run Summary table with aggregate stats
+  - `_build_run_summary()` — generates key-value Run Summary table with aggregate stats and manager analytics
   - `_build_model_profile()` — generates one-row-per-model profile with records_in/out (with trim breakdown) and DQ warnings
   - `_build_trim_records_out_text()` — formats per-trim EN/FR counts as readable multi-line string
   - `_build_dq_records()` — extracts DQ records into review-friendly table
+
+- **Manager analytics in Run Summary (June 24, 2026):** Enhanced dashboard with strategic health indicators
+  - Sheets/Models Processed: consolidated metric showing processing scope
+  - Source Accessories / Output Records: distinct units clearly labeled
+  - Trim Coverage: percentage of model-trim lookups that succeeded
+  - DQ Warnings by Rule: breakdown showing which issue types dominate
+  - Model Lookup Issues: categorized by failure type (No Match, No Keywords, Lookup Error) with percentages
+  - Sheet health metrics: sheets with issues and clean sheets as % of total
 
 ### Changed
 
@@ -72,6 +80,11 @@ The versions are tracked against the date of release/deployment, and the Unrelea
 
 ### Fixed
 
+- **Run Summary "Records Excluded" metric (June 24, 2026):** Replaced incompatible unit comparison with honest metrics
+  - Root cause: `records_in` (wide-format, one row per accessory) vs `records_out` (long-format, EN+FR×trim combinations) are incompatible units — always produced negative values (-876%)
+  - Solution: Added `Source Accessories` and `Output Records` with explicit unit labels, plus `Trim Coverage` (successful trim lookups / total trims attempted) at the grain where exclusions actually happen
+  - Result: Managers now see sensible metrics (e.g., "57 of 62 unique model-trim combos matched (91.9%)")
+- **DQ Warnings by Rule breakdown:** Now includes percentage breakdown per rule type (e.g., "non_null_column_rule: 82 (61%) | profitability_rule: 44 (33%)")
 - **Database path resolution:** CSV file not found when running from different working directories — now uses absolute path computed from script location (Path(__file__).parent.parent.parent.parent.parent)
 - **Keyword extraction from sheet names:** Sheet names like "2026 PHEV" (without model name) now correctly extract fuel type while pulling model name from metadata, preventing lookup failures
 - **Trim keyword splitting:** Multi-character hyphenated terms like "s-awc" no longer incorrectly split into separate keywords, matching actual database description format
