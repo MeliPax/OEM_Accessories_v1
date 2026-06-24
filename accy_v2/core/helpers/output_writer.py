@@ -62,7 +62,7 @@ def _write_report_sheet(
     startrow = 0
 
     # Section 1: Run Summary (key-value pairs)
-    summary_df = _build_run_summary(run_stats, dq_logger, run_id)
+    summary_df = _build_run_summary(run_stats, dq_logger, run_id, all_frames)
     summary_df.to_excel(writer, sheet_name="_Report", startrow=startrow, index=False, header=False)
     ws = writer.sheets["_Report"]
     for row_offset in range(len(summary_df)):
@@ -90,6 +90,7 @@ def _build_run_summary(
     run_stats: List[Dict],
     dq_logger: DQLogger,
     run_id: str,
+    all_frames: Dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
     """Build Run Summary section: key-value table with aggregate stats + manager insights."""
     from collections import Counter
@@ -99,35 +100,81 @@ def _build_run_summary(
     total_warnings = dq_logger.warning_count
     total_records_in = sum(s.get("records_in", 0) for s in run_stats)
     total_records_out = sum(s.get("records_out", 0) for s in run_stats)
-    records_excluded = total_records_in - total_records_out
     pct_warnings = round(total_warnings / total_records_in * 100) if total_records_in > 0 else 0
-    pct_excluded = round(records_excluded / total_records_in * 100, 1) if total_records_in > 0 else 0
 
     # Manager analytics
     unique_models = len({s.get("model_name") for s in run_stats if s.get("model_name")})
     sheets_with_issues = len({r["sheet_name"] for r in dq_logger.records})
     sheets_clean = sheets_processed - sheets_with_issues
 
-    # DQ warnings by rule (most common first)
+    # Trim coverage: successful trims vs failed trim lookups
+    successful_trims = sum(
+        df["Trim"].nunique()
+        for key, df in all_frames.items()
+        if key.endswith("_EN") and "Trim" in df.columns
+    )
+    failed_trims = sum(
+        1 for r in dq_logger.records
+        if r["rule_violated"] == "model_number_lookup_rule"
+    )
+    total_trims = successful_trims + failed_trims
+    pct_trim_coverage = round(successful_trims / total_trims * 100, 1) if total_trims > 0 else 100.0
+
+    # DQ warnings by rule with percentages (most common first)
     if dq_logger.records:
         rule_counts = Counter(r["rule_violated"] for r in dq_logger.records)
-        dq_by_rule = " | ".join(f"{rule}: {count}" for rule, count in rule_counts.most_common())
+        dq_by_rule = " | ".join(
+            f"{rule}: {count} ({round(count / total_warnings * 100)}%)"
+            for rule, count in rule_counts.most_common()
+        )
     else:
         dq_by_rule = "None"
+
+    # Model lookup issues by type (categorized by issue_description prefix)
+    lookup_records = [r for r in dq_logger.records if r["rule_violated"] == "model_number_lookup_rule"]
+    if lookup_records:
+        total_lookup = len(lookup_records)
+        def _categorize_lookup_issue(issue: str) -> str:
+            if issue.startswith("No keywords"):
+                return "No Keywords"
+            if issue.startswith("No confident"):
+                return "No Match"
+            if issue.startswith("Error"):
+                return "Lookup Error"
+            return "Other"
+        lookup_counts = Counter(_categorize_lookup_issue(r["issue_description"]) for r in lookup_records)
+        lookup_by_type = " | ".join(
+            f"{cat}: {count} ({round(count / total_lookup * 100)}%)"
+            for cat, count in lookup_counts.most_common()
+        )
+    else:
+        lookup_by_type = "None"
+
+    # Sheets/Models label: collapse if they're the same, otherwise show both
+    if sheets_processed == unique_models:
+        sheets_models_label = "Sheets/Models Processed"
+        sheets_models_value = f"{sheets_processed} (1 model per sheet)"
+    else:
+        sheets_models_label = "Sheets/Models Processed"
+        sheets_models_value = f"{sheets_processed} sheets, {unique_models} unique models"
+
+    # Sheet issue percentages
+    pct_sheets_with_issues = round(sheets_with_issues / sheets_processed * 100) if sheets_processed > 0 else 0
+    pct_sheets_clean = round(sheets_clean / sheets_processed * 100) if sheets_processed > 0 else 0
 
     summary_data = [
         ["Run ID", run_id],
         ["Source File", source_file],
         ["Generated At", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")],
-        ["Sheets Processed", sheets_processed],
-        ["Models Processed", unique_models],
-        ["Total Records In", total_records_in],
-        ["Total Records Out", total_records_out],
-        ["Records Excluded", f"{records_excluded} ({pct_excluded}% of input)"],
-        ["Total DQ Warnings", f"{total_warnings} ({pct_warnings}% of processed records)"],
+        [sheets_models_label, sheets_models_value],
+        ["Source Accessories", f"{total_records_in} rows (wide-format input, after step 1 validation)"],
+        ["Output Records", f"{total_records_out} rows (EN + FR trim-level combinations, post-processing)"],
+        ["Trim Coverage", f"{successful_trims} of {total_trims} unique model-trim combos matched ({pct_trim_coverage}%)"] if total_trims > 0 else ["Trim Coverage", "No trims processed"],
+        ["Total DQ Warnings", f"{total_warnings} ({pct_warnings}% of source accessories)"],
         ["DQ Warnings by Rule", dq_by_rule],
-        ["Sheets with Issues", f"{sheets_with_issues} of {sheets_processed}"],
-        ["Clean Sheets", f"{sheets_clean} of {sheets_processed}"],
+        ["Model Lookup Issues", lookup_by_type],
+        ["Sheets with Issues", f"{sheets_with_issues} of {sheets_processed} sheets ({pct_sheets_with_issues}%)"],
+        ["Clean Sheets", f"{sheets_clean} of {sheets_processed} sheets ({pct_sheets_clean}%)"],
     ]
     return pd.DataFrame(summary_data, columns=["Key", "Value"])
 
