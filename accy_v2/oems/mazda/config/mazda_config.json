@@ -1,5 +1,6 @@
 {
   "non_null_threshold": 0.5,
+  "use_model_lookup": false,
 
   "column_definition": {
     "model_year": {
@@ -98,7 +99,7 @@
         "s": "sport"
       },
       "fields": ["trim", "model", "fuel_type"],
-      "trim_column": "trim_level",
+      "trim_column": "Package",
       "exclude_keywords": []
     }
   }

@@ -171,7 +171,14 @@ class BasePipeline(ABC):
                 standardized_df = self.run_step3_5_extract_vehicle_year(standardized_df, meta_data, config, pipeline_logger)
                 
                 transformed = self.run_step4_transformation(standardized_df, step2_result, config, meta_data, dq_logger, pipeline_logger)
-                enriched = self.run_step4_5_model_enrichment(transformed, meta_data, config, dq_logger, pipeline_logger)
+
+                if config.get("use_model_lookup", True):
+                    pipeline_logger.info(f"Step 4.5: model_lookup enrichment | sheet='{sheet_name}'")
+                    enriched = self.run_step4_5_model_enrichment(transformed, meta_data, config, dq_logger, pipeline_logger)
+                else:
+                    pipeline_logger.info(f"Step 4.5: SKIPPED (use_model_lookup=false) | sheet='{sheet_name}'")
+                    enriched = transformed
+
                 sheet_frames = self.run_step5_output(enriched, meta_data, config, pipeline_logger)
 
                 all_output_frames.update(sheet_frames)

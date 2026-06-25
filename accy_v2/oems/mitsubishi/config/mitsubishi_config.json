@@ -1,5 +1,6 @@
 {
   "non_null_threshold": 0.5,
+  "use_model_lookup": true,
 
   "column_definition": {
     "part_number": {
