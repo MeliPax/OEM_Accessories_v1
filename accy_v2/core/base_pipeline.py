@@ -64,6 +64,7 @@ class BasePipeline(ABC):
         step2_result: Dict,
         config: Dict,
         meta_data: Dict,
+        dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> pd.DataFrame:
         """Apply column mapping, enforce data types, standardize trim values."""
@@ -166,7 +167,7 @@ class BasePipeline(ABC):
                 records_in = len(working_df)
 
                 step2_result = self.run_step2_header_normalization(working_df, config, meta_data, dq_logger, pipeline_logger)
-                standardized_df = self.run_step3_standardization(working_df, step2_result, config, meta_data, pipeline_logger)
+                standardized_df = self.run_step3_standardization(working_df, step2_result, config, meta_data, dq_logger, pipeline_logger)
                 standardized_df = self.run_step3_5_extract_vehicle_year(standardized_df, meta_data, config, pipeline_logger)
                 
                 transformed = self.run_step4_transformation(standardized_df, step2_result, config, meta_data, dq_logger, pipeline_logger)

@@ -5,7 +5,8 @@
       "Bash(python populate_vehicle_database.py --help)",
       "Bash(python -c ' *)",
       "Bash(pip install *)",
-      "PowerShell(\\(Get-Content 'c:\\\\Users\\\\paxm\\\\OneDrive - PBS SYSTEMS\\\\Desktop\\\\Office\\\\Projects\\\\OEM Accessory project\\\\OEM_Accessories_v1\\\\model_lookup\\\\db\\\\db_vehicle_models.csv' | Measure-Object -Line\\).Lines)"
+      "PowerShell(\\(Get-Content 'c:\\\\Users\\\\paxm\\\\OneDrive - PBS SYSTEMS\\\\Desktop\\\\Office\\\\Projects\\\\OEM Accessory project\\\\OEM_Accessories_v1\\\\model_lookup\\\\db\\\\db_vehicle_models.csv' | Measure-Object -Line\\).Lines)",
+      "Bash(python)"
     ]
   }
 }

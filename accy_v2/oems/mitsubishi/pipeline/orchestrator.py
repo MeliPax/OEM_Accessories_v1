@@ -58,6 +58,7 @@ class MitsubishiPipeline(BasePipeline):
         step2_result: Dict,
         config: Dict,
         meta_data: Dict,
+        dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> pd.DataFrame:
         return step3_standardization.run(working_df, step2_result, config, meta_data, pipeline_logger)
