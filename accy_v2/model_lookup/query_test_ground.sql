@@ -1,1 +1,0 @@
-SELECT TOP (1) * FROM Bulletin bull WHERE bull.BulletinStatus = 1 ORDER BY bull.BulletinEnd desc
