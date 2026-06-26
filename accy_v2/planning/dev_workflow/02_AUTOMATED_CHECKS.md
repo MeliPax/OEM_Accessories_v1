@@ -1,8 +1,8 @@
 # Automated Checks Specification
 
-**Document:** Planning  
-**Created:** June 26, 2026  
-**Status:** Draft - For Review  
+**Document:** Planning
+**Created:** June 26, 2026
+**Status:** Draft - For Review
 **Related:** `01_CI_CD_STRATEGY.md`
 
 ---
@@ -30,6 +30,7 @@ All checks are organized by category and run **on every push** to any branch.
 **Config File:** `.flakeo8`
 
 **What it checks:**
+
 - PEP 8 style violations (line length, indentation, spacing)
 - Unused imports
 - Undefined names
@@ -38,6 +39,7 @@ All checks are organized by category and run **on every push** to any branch.
 **Triggers failure:** Any violation (unless specifically ignored)
 
 **Local run:**
+
 ```bash
 flake8 accy_v2/
 ```
@@ -47,6 +49,7 @@ flake8 accy_v2/
 **Estimated time:** <5 seconds
 
 **Ignore patterns:**
+
 - `E501` (line too long) — handled by Black
 - `W503` (line break before binary operator) — modern style
 
@@ -59,6 +62,7 @@ flake8 accy_v2/
 **Config File:** `pyproject.toml` (under `[tool.black]`)
 
 **What it checks:**
+
 - Consistent indentation (4 spaces)
 - Quote style (double quotes)
 - Line length (88 chars)
@@ -67,11 +71,13 @@ flake8 accy_v2/
 **Triggers failure:** File not formatted per Black style
 
 **Local run:**
+
 ```bash
 black --check accy_v2/
 ```
 
 **Auto-fix locally:**
+
 ```bash
 black accy_v2/
 ```
@@ -81,6 +87,7 @@ black accy_v2/
 **Estimated time:** <5 seconds
 
 **Config target:**
+
 ```toml
 [tool.black]
 line-length = 88
@@ -100,6 +107,7 @@ extend-exclude = '''
 **Config File:** `pyproject.toml` (under `[tool.isort]`)
 
 **What it checks:**
+
 - Imports organized in standard order: stdlib → third-party → local
 - No duplicate imports
 - Consistent import formatting
@@ -107,11 +115,13 @@ extend-exclude = '''
 **Triggers failure:** Imports not sorted correctly
 
 **Local run:**
+
 ```bash
 isort --check-only accy_v2/
 ```
 
 **Auto-fix locally:**
+
 ```bash
 isort accy_v2/
 ```
@@ -121,6 +131,7 @@ isort accy_v2/
 **Estimated time:** <5 seconds
 
 **Config target:**
+
 ```toml
 [tool.isort]
 profile = "black"
@@ -140,6 +151,7 @@ line_length = 88
 **Config File:** `mypy.ini`
 
 **What it checks:**
+
 - Functions have proper type hints
 - Type mismatches detected
 - Missing optional[] for nullable values
@@ -148,6 +160,7 @@ line_length = 88
 **Triggers failure:** Type errors or missing type hints
 
 **Local run:**
+
 ```bash
 mypy accy_v2/
 ```
@@ -157,6 +170,7 @@ mypy accy_v2/
 **Estimated time:** 10-15 seconds
 
 **Config target:**
+
 ```ini
 [mypy]
 python_version = 3.9
@@ -181,17 +195,20 @@ warn_no_return = True
 **Config File:** `pytest.ini`
 
 **What it checks:**
+
 - All unit tests pass
 - Code coverage meets threshold (>80%)
 - No test collection errors
 - Assertions pass
 
 **Triggers failure:**
+
 - Any test fails
 - Coverage < 80%
 - Collection errors
 
 **Local run:**
+
 ```bash
 pytest accy_v2/tests/unit/ -v --cov=accy_v2 --cov-report=term
 ```
@@ -201,6 +218,7 @@ pytest accy_v2/tests/unit/ -v --cov=accy_v2 --cov-report=term
 **Estimated time:** 15-20 seconds
 
 **Test structure:**
+
 ```
 accy_v2/tests/
 ├── unit/
@@ -219,7 +237,8 @@ accy_v2/tests/
 ```
 
 **Config target:**
-```ini
+
+```Shell
 [pytest]
 testpaths = accy_v2/tests/unit
 python_files = test_*.py
@@ -239,6 +258,7 @@ addopts = -v --strict-markers --tb=short
 **Trigger:** Only on merge to staging (not on every push)
 
 **What it checks:**
+
 - Mitsubishi pipeline with sample data succeeds
 - Mazda pipeline with sample data succeeds
 - Output files have correct schema
@@ -246,6 +266,7 @@ addopts = -v --strict-markers --tb=short
 - No unexpected regressions
 
 **Local run:**
+
 ```bash
 pytest accy_v2/tests/integration/ -v --timeout=60
 ```
@@ -267,6 +288,7 @@ pytest accy_v2/tests/integration/ -v --timeout=60
 **Config File:** `.secretsignore`
 
 **What it checks:**
+
 - No AWS keys, API tokens, passwords
 - No database connection strings
 - No private keys
@@ -274,6 +296,7 @@ pytest accy_v2/tests/integration/ -v --timeout=60
 **Triggers failure:** Secret detected
 
 **Local run:**
+
 ```bash
 detect-secrets scan --baseline .secrets.baseline
 ```
@@ -289,6 +312,7 @@ detect-secrets scan --baseline .secrets.baseline
 **Tool:** `safety` (checks for known vulnerabilities in dependencies)
 
 **What it checks:**
+
 - All pip packages checked against security database
 - Known CVEs detected
 - Outdated package versions flagged
@@ -296,6 +320,7 @@ detect-secrets scan --baseline .secrets.baseline
 **Triggers failure:** Medium+ severity vulnerability found
 
 **Local run:**
+
 ```bash
 safety check --json
 ```
@@ -313,6 +338,7 @@ safety check --json
 **Config File:** `.bandit`
 
 **What it checks:**
+
 - Hardcoded passwords/secrets
 - SQL injection vectors
 - Insecure deserialization
@@ -322,6 +348,7 @@ safety check --json
 **Triggers failure:** High severity issue found
 
 **Local run:**
+
 ```bash
 bandit -r accy_v2/ -f json
 ```
@@ -331,6 +358,7 @@ bandit -r accy_v2/ -f json
 **Estimated time:** <5 seconds
 
 **Config target:**
+
 ```yaml
 # .bandit
 exclude_dirs:
@@ -348,6 +376,7 @@ skips: []
 **Tool:** `pydocstyle` (checks docstring format)
 
 **What it checks:**
+
 - Functions have docstrings
 - Docstrings follow PEP 257 convention
 - Docstrings are not empty
@@ -355,6 +384,7 @@ skips: []
 **Triggers failure:** Missing or malformed docstrings
 
 **Local run:**
+
 ```bash
 pydocstyle accy_v2/ --ignore=D100,D101,D102
 ```
@@ -364,6 +394,7 @@ pydocstyle accy_v2/ --ignore=D100,D101,D102
 **Estimated time:** <5 seconds
 
 **Ignore rules:**
+
 - `D100` — Missing module docstring (optional for __init__.py)
 - `D101` — Missing class docstring (okay for simple classes)
 
@@ -374,6 +405,7 @@ pydocstyle accy_v2/ --ignore=D100,D101,D102
 **Tool:** Custom Python script
 
 **What it checks:**
+
 - CHANGELOG.md mentions changes made in this PR
 - README.md links to relevant documentation
 - No broken links in documentation
@@ -381,6 +413,7 @@ pydocstyle accy_v2/ --ignore=D100,D101,D102
 **Triggers failure:** If PR adds code but doesn't update docs
 
 **Local run:**
+
 ```bash
 python scripts/validate_docs.py
 ```
@@ -400,12 +433,14 @@ python scripts/validate_docs.py
 **Trigger:** On merge to staging
 
 **What it checks:**
+
 - Pipeline runs without FATAL errors on sample data
 - Output file generated with correct sheet names
 - DQ report generated in valid JSON format
 - No new DQ warning categories introduced
 
 **Local run:**
+
 ```bash
 python scripts/smoke_test.py
 ```
@@ -418,21 +453,21 @@ python scripts/smoke_test.py
 
 ## Run Time Summary
 
-| Check | Time | Trigger |
-|-------|------|---------|
-| flake8 | <5s | Every push |
-| black | <5s | Every push |
-| isort | <5s | Every push |
-| mypy | 10-15s | Every push |
-| pytest (unit) | 15-20s | Every push |
+| Check                | Time   | Trigger          |
+| -------------------- | ------ | ---------------- |
+| flake8               | <5s    | Every push       |
+| black                | <5s    | Every push       |
+| isort                | <5s    | Every push       |
+| mypy                 | 10-15s | Every push       |
+| pytest (unit)        | 15-20s | Every push       |
 | pytest (integration) | 30-45s | Merge to staging |
-| detect-secrets | <5s | Every push |
-| safety | 5-10s | Every push |
-| bandit | <5s | Every push |
-| pydocstyle | <5s | Every push |
-| smoke test | 20-30s | Merge to staging |
+| detect-secrets       | <5s    | Every push       |
+| safety               | 5-10s  | Every push       |
+| bandit               | <5s    | Every push       |
+| pydocstyle           | <5s    | Every push       |
+| smoke test           | 20-30s | Merge to staging |
 
-**Total time (every push):** ~60 seconds  
+**Total time (every push):** ~60 seconds
 **Total time (merge to staging):** ~150 seconds (2.5 minutes)
 
 ---
@@ -471,5 +506,5 @@ Or use a pre-commit hook (see `04_DEVELOPER_SETUP.md`).
 
 ---
 
-**Next Document:** `03_GITHUB_ACTIONS_SETUP.md` — Concrete workflow files  
+**Next Document:** `03_GITHUB_ACTIONS_SETUP.md` — Concrete workflow files
 **Related:** `01_CI_CD_STRATEGY.md`, `05_TEST_STRATEGY.md`

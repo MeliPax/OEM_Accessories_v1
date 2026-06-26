@@ -1,12 +1,28 @@
 # Planning Documents
 
-This folder contains all strategic and architectural planning documents for the OEM Accessory Pipeline CI/CD and development process improvements.
+This folder contains all strategic and architectural planning documents organized by topic.
 
 ---
 
-## Document Index
+## Folder Structure
 
-### 1. 📋 [CI/CD Strategy](01_CI_CD_STRATEGY.md) — **Status: Draft**
+```
+accy_v2/planning/
+├── README.md                    (this file)
+├── dev_workflow/                (CI/CD and development process)
+│   ├── 01_CI_CD_STRATEGY.md
+│   ├── 02_AUTOMATED_CHECKS.md
+│   ├── 03_BRANCH_PROTECTION.md
+│   └── 04_TEST_STRATEGY.md
+└── oem_pipeline/                (OEM pipeline modernization)
+    └── 05_HONDA_HYUNDAI_V2_PORT.md
+```
+
+---
+
+## Development Workflow Documents
+
+### 1. 📋 [CI/CD Strategy](dev_workflow/01_CI_CD_STRATEGY.md) — **Status: Draft**
 
 **Overview:** High-level strategy for implementing a two-tier branching workflow with automated checks and staged deployments.
 
@@ -26,7 +42,7 @@ This folder contains all strategic and architectural planning documents for the 
 
 ---
 
-### 2. 🔍 [Automated Checks Specification](02_AUTOMATED_CHECKS.md) — **Status: Draft**
+### 2. 🔍 [Automated Checks Specification](dev_workflow/02_AUTOMATED_CHECKS.md) — **Status: Draft**
 
 **Overview:** Concrete specification for every check that runs in CI: which tool, what it checks, how to run locally, expected time.
 
@@ -48,7 +64,7 @@ This folder contains all strategic and architectural planning documents for the 
 
 ---
 
-### 3. 🔐 [Branch Protection Rules](03_BRANCH_PROTECTION.md) — **Status: Draft**
+### 3. 🔐 [Branch Protection Rules](dev_workflow/03_BRANCH_PROTECTION.md) — **Status: Draft**
 
 **Overview:** GitHub branch protection rules to enforce on `staging` and `main` branches.
 
@@ -67,7 +83,7 @@ This folder contains all strategic and architectural planning documents for the 
 
 ---
 
-### 4. 🧪 [Test Strategy](04_TEST_STRATEGY.md) — **Status: Draft**
+### 4. 🧪 [Test Strategy](dev_workflow/04_TEST_STRATEGY.md) — **Status: Draft**
 
 **Overview:** Testing strategy for the pipeline: where to put tests, what to test, coverage targets, fixtures.
 
@@ -88,72 +104,100 @@ This folder contains all strategic and architectural planning documents for the 
 
 ---
 
+## OEM Pipeline Modernization Documents
+
+### 5. 🏭 [Honda & Hyundai v2 Port](oem_pipeline/05_HONDA_HYUNDAI_V2_PORT.md) — **Status: Approved**
+
+**Overview:** Plan to bring Honda and Hyundai pipelines into the `accy_v2` modular architecture.
+
+**Contains:**
+- Current state of Honda (3,298-line script) and Hyundai (flat notebooks)
+- Design decisions: dynamic trim detection, directory-based loading, FR integration
+- Hyundai Phase 1 (3–4 days): flat master sheet → modular pipeline
+- Honda Phase 2 (5–7 days): multi-file loading with 6 sections per sheet
+- Step-by-step implementation guide for both OEMs
+- Prerequisite: Hyundai model data migration into unified DB
+
+**Audience:** Implementation team (tech-focused)
+
+**Next step:** Execute Phase 1 (Hyundai data migration + pipeline build)
+
+---
+
 ## How to Use These Documents
 
-### For Decision-Makers
-1. Read `01_CI_CD_STRATEGY.md` cover-to-cover
+### For Decision-Makers (Development Workflow)
+1. Read `dev_workflow/01_CI_CD_STRATEGY.md` cover-to-cover
 2. Review the "Questions for Team" section
 3. Discuss with team and document decisions
-4. Mark document status as "Approved"
+
+### For Decision-Makers (OEM Modernization)
+1. Read `oem_pipeline/05_HONDA_HYUNDAI_V2_PORT.md` for context
+2. Review all design decisions (marked ✅ as approved)
+3. Approve implementation sequence (Hyundai → Honda)
 
 ### For Developers Implementing CI/CD
-1. Read `01_CI_CD_STRATEGY.md` for context
-2. Use `02_AUTOMATED_CHECKS.md` to understand each check
-3. Use `03_BRANCH_PROTECTION.md` to understand GitHub rules
-4. Use `04_TEST_STRATEGY.md` to write tests
+1. Read `dev_workflow/01_CI_CD_STRATEGY.md` for context
+2. Use `dev_workflow/02_AUTOMATED_CHECKS.md` to understand each check
+3. Use `dev_workflow/03_BRANCH_PROTECTION.md` to understand GitHub rules
+4. Use `dev_workflow/04_TEST_STRATEGY.md` to write tests
 
-### For Repository Admins
-1. Read `03_BRANCH_PROTECTION.md`
+### For Developers Porting OEM Pipelines
+1. Read `oem_pipeline/05_HONDA_HYUNDAI_V2_PORT.md` cover-to-cover
+2. Follow Phase 1 (Hyundai) implementation guide
+3. Use `accy_v2/oems/mitsubishi/` and `accy_v2/oems/mazda/` as blueprint
+4. Consult `accy_v2/core/base_pipeline.py` for shared base class
+
+### For Repository Admins (Branches)
+1. Read `dev_workflow/03_BRANCH_PROTECTION.md`
 2. Configure rules in GitHub using provided JSON
 3. Create `.github/CODEOWNERS` file if appropriate
 
 ### For Code Reviewers
-1. Understand expectations from `02_AUTOMATED_CHECKS.md`
-2. Know branch protection requirements from `03_BRANCH_PROTECTION.md`
-3. Use test strategy from `04_TEST_STRATEGY.md` when reviewing PRs
+1. Understand expectations from `dev_workflow/02_AUTOMATED_CHECKS.md`
+2. Know branch protection requirements from `dev_workflow/03_BRANCH_PROTECTION.md`
+3. Use test strategy from `dev_workflow/04_TEST_STRATEGY.md` when reviewing PRs
 
 ---
 
 ## Status Tracking
 
-| Document | Status | Last Updated | Owner | Approval |
-|----------|--------|--------------|-------|----------|
-| 01_CI_CD_STRATEGY.md | Draft | 2026-06-26 | Dev Team | ⏳ Pending |
-| 02_AUTOMATED_CHECKS.md | Draft | 2026-06-26 | Dev Team | ⏳ Pending |
-| 03_BRANCH_PROTECTION.md | Draft | 2026-06-26 | Dev Team | ⏳ Pending |
-| 04_TEST_STRATEGY.md | Draft | 2026-06-26 | Dev Team | ⏳ Pending |
+### Development Workflow (CI/CD)
+
+| Document | Status | Last Updated | Approval |
+|----------|--------|--------------|----------|
+| dev_workflow/01_CI_CD_STRATEGY.md | Draft | 2026-06-26 | ⏳ Pending |
+| dev_workflow/02_AUTOMATED_CHECKS.md | Draft | 2026-06-26 | ⏳ Pending |
+| dev_workflow/03_BRANCH_PROTECTION.md | Draft | 2026-06-26 | ⏳ Pending |
+| dev_workflow/04_TEST_STRATEGY.md | Draft | 2026-06-26 | ⏳ Pending |
+
+### OEM Pipeline Modernization
+
+| Document | Status | Last Updated | Approval |
+|----------|--------|--------------|----------|
+| oem_pipeline/05_HONDA_HYUNDAI_V2_PORT.md | Approved | 2026-06-26 | ✅ Approved |
 
 ---
 
 ## Implementation Roadmap
 
-### Phase 1: Decision & Planning (Week 1)
-- [ ] Read all documents
-- [ ] Answer "Questions for Team" in each doc
-- [ ] Mark documents as "Approved"
-- [ ] Assign owners for implementation
+### Development Workflow (CI/CD Setup)
 
-### Phase 2: GitHub Configuration (Week 2)
-- [ ] Set up branch protection rules
-- [ ] Create `.github/CODEOWNERS` file
-- [ ] Configure webhook for CI/CD platform
+| Phase | Timeline | Tasks |
+|-------|----------|-------|
+| 1: Decision & Planning | Week 1 | Read all docs, answer team questions, mark approved |
+| 2: GitHub Configuration | Week 2 | Branch protection rules, CODEOWNERS file, webhook setup |
+| 3: CI/CD Scripts & Tests | Weeks 3–4 | Write lint/test scripts, unit tests, fixtures, coverage |
+| 4: GitHub Actions Workflows | Weeks 5–6 | CI workflow, staging workflow, release workflow |
+| 5: Team Onboarding | Week 7 | Training, troubleshooting docs, health monitoring |
 
-### Phase 3: CI/CD Scripts & Tests (Weeks 3-4)
-- [ ] Create `scripts/lint.sh`, `scripts/test.sh`, etc.
-- [ ] Write unit tests following `04_TEST_STRATEGY.md`
-- [ ] Create test fixtures
-- [ ] Set up coverage reporting
+### OEM Pipeline Modernization
 
-### Phase 4: GitHub Actions Workflows (Weeks 5-6)
-- [ ] Create `.github/workflows/ci.yml`
-- [ ] Create `.github/workflows/staging.yml`
-- [ ] Create `.github/workflows/release.yml`
-- [ ] Test workflows on feature branch
-
-### Phase 5: Team Onboarding (Week 7)
-- [ ] Train team on new workflow
-- [ ] Document troubleshooting
-- [ ] Monitor CI/CD health
+| Phase | Timeline | Tasks |
+|-------|----------|-------|
+| 0: Planning Folder Reorganization | ✅ **Done** | Created dev_workflow/ and oem_pipeline/ subfolders |
+| 1: Hyundai Port | ~3–4 days | Data migration + 5-step pipeline build |
+| 2: Honda Port | ~5–7 days | Directory-based loading, section extraction, FR integration |
 
 ---
 
