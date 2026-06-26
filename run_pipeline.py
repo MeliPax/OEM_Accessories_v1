@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 """
-Run the accessory pipeline end-to-end with production data.
+Run the accessory pipeline end-to-end with actual data.
 
-Data files must be placed in accy_v2/data/landing_zone/{oem}/ directory:
-- Mazda: accy_v2/data/landing_zone/mazda/*.csv
-- Mitsubishi: accy_v2/data/landing_zone/mitsubishi/*.xlsx
-
-The script processes the most recent file in the OEM's landing zone directory.
+This script processes files from landing_zone and produces output files with model numbers.
+Uses actual pipeline data flow - no test files created.
 
 Usage:
     python run_pipeline.py mitsubishi
-    python run_pipeline.py mitsubishi "accy_v2/data/landing_zone/mitsubishi/Accessory Guide - February26.xlsx"
+    python run_pipeline.py mitsubishi "accy_v2/data/landing_zone/mitsubishi/2026_Outlander_ES_EN.xlsx"
     python run_pipeline.py mazda
-
-Output:
-    - Ready to upload: accy_v2/output/ready_to_upload/{oem}/{oem}_{run_id}_{timestamp}.xlsx
-    - DQ Report: accy_v2/output/dq_reports/{oem}/{oem}_{run_id}_{timestamp}.json
-    - Pipeline Log: accy_v2/output/pipeline_logs/{oem}/pipeline_{run_id}_{timestamp}.log
+    python run_pipeline.py hyundai
+    python run_pipeline.py honda
 """
 
 import sys
@@ -38,10 +32,7 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
     landing_zone = project_root / "accy_v2" / "data" / "landing_zone" / oem.lower()
 
     if not landing_zone.exists():
-        raise FileNotFoundError(
-            f"Landing zone directory not found: {landing_zone}\n"
-            f"Create it and place data files there: {landing_zone}/"
-        )
+        raise FileNotFoundError(f"Landing zone directory not found: {landing_zone}")
 
     if file_path:
         # Specific file requested
@@ -57,10 +48,7 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
 
     if not all_files:
         raise FileNotFoundError(
-            f"No Excel/CSV files found in {landing_zone}\n"
-            f"Expected file formats:\n"
-            f"  - Mazda: *.csv (e.g., Mazda_accessory_feed.csv)\n"
-            f"  - Mitsubishi: *.xlsx (e.g., Accessory Guide - February26.xlsx)"
+            f"No Excel/CSV files found in {landing_zone}"
         )
 
     # Return most recent file
@@ -75,8 +63,20 @@ def get_pipeline_class(oem: str):
         return MitsubishiPipeline
     elif oem_lower == "mazda":
         return MazdaPipeline
+    elif oem_lower == "hyundai":
+        try:
+            from accy_v2.oems.hyundai.pipeline.orchestrator import HyundaiPipeline
+            return HyundaiPipeline
+        except ImportError:
+            raise ImportError(f"Hyundai pipeline not yet implemented. Please check accy_v2/oems/hyundai/")
+    elif oem_lower == "honda":
+        try:
+            from accy_v2.oems.honda.pipeline.orchestrator import HondaPipeline
+            return HondaPipeline
+        except ImportError:
+            raise ImportError(f"Honda pipeline not yet implemented. Please check accy_v2/oems/honda/")
     else:
-        raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda")
+        raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda, hyundai, honda")
 
 
 def get_config_path(oem: str) -> str:
@@ -134,9 +134,9 @@ def main():
         print("[OK] PIPELINE EXECUTION COMPLETE")
         print("=" * 80)
         print("\nNext steps:")
-        print("1. Check output files in: accy_v2/output/ready_to_upload/{oem}/")
-        print("2. Review DQ report in: accy_v2/output/dq_reports/{oem}/")
-        print("3. Check pipeline log in: accy_v2/output/pipeline_logs/{oem}/")
+        print(f"1. Check output files in: accy_v2/output/ready_to_upload/{oem.lower()}/")
+        print(f"2. Review DQ report in: accy_v2/output/dq_reports/{oem.lower()}/")
+        print(f"3. Check pipeline log in: accy_v2/output/pipeline_logs/{oem.lower()}/")
         print()
 
     except Exception as e:
