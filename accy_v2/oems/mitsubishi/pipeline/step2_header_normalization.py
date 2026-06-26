@@ -47,6 +47,16 @@ def run(
 
     pipeline_logger.debug(f"Trim candidates for '{sheet_name}': {candidates}")
 
+    # Filter out structural category-header columns that are never valid trim levels
+    exclusion_keywords = [k.lower() for k in config.get("trim_exclusion_keywords", [])]
+    if exclusion_keywords:
+        excluded = [c for c in candidates if any(k in c.lower() for k in exclusion_keywords)]
+        candidates = [c for c in candidates if c not in excluded]
+        if excluded:
+            pipeline_logger.debug(
+                f"Sheet '{sheet_name}': excluded {len(excluded)} category column(s) from trim candidates: {excluded}"
+            )
+
     # Validate candidates by data content
     valid_trim_cols, trim_log = validate_trim_by_datatype(
         working_df, candidates, config["trim_validation_config"]

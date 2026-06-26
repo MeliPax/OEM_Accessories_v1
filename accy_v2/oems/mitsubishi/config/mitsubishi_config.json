@@ -53,6 +53,8 @@
     "must_have_only": { "expected_value_types": ["X", "", "__na__"] }
   },
 
+  "trim_exclusion_keywords": ["category", "electronics", "interior", "exterior", "cargo", "general"],
+
   "non_acceptable_sheet_names": ["meta_data", "luxwood"],
 
   "sheet_name_pattern": "^\\d{4}\\s+.+",
