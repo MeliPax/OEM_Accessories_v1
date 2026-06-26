@@ -2,7 +2,7 @@
 
 **Audience:** AI agents, developers, and contributors  
 **Purpose:** Provide clear instructions for making code changes while maintaining quality, consistency, and documentation  
-**Last Updated:** June 23, 2026
+**Last Updated:** June 26, 2026
 
 ---
 
@@ -34,7 +34,7 @@ Before making any code changes, **read the relevant documentation:**
 - **Config changes:** → Read [docs/config_schema.md](docs/config_schema.md)
 - **Output/DQ changes:** → Read [docs/dq_report_guide.md](docs/dq_report_guide.md)
 - **Adding new OEM:** → Read [docs/adding_new_oem.md](docs/adding_new_oem.md) (if exists)
-- **Recent updates:** → Read [UPDATES_YYYY-MM-DD.md](UPDATES_2026-06-23.md)
+- **Recent updates:** → Read [UPDATES_YYYY-MM-DD.md](UPDATES_2026-06-26.md) (or [UPDATES_2026-06-23.md](UPDATES_2026-06-23.md))
 
 **Why?** Documentation gives you:
 - **Context:** Why this code exists and what problem it solves

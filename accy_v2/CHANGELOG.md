@@ -10,6 +10,14 @@ The versions are tracked against the date of release/deployment, and the Unrelea
 
 ### Added
 
+- **Trim exclusion keywords filter (June 26, 2026):** Configurable exclusion list for structural category-header columns
+  - New config key: `trim_exclusion_keywords` in OEM config files
+  - Filters candidate trim columns BEFORE validation, preventing spurious DQ warnings
+  - Substring + case-insensitive matching (e.g., "category" matches "CATEGORY", "CARGO" matches "CARGO_ITEMS")
+  - Applied to Mitsubishi: ["category", "electronics", "interior", "exterior", "cargo", "general"]
+  - Reduces `trim_candidate_failed_validation` DQ noise while maintaining clean trim detection
+  - Default-safe: empty list = no filtering; OEMs without key unaffected
+
 - **Model number lookup integration (Step 4.5):** New pipeline step for enriching accessory data with vehicle model numbers
   - Batch lookup strategy: one database query per unique trim (not per row), dramatically improving performance
   - Keyword extraction and combination from multiple sources:
@@ -79,6 +87,19 @@ The versions are tracked against the date of release/deployment, and the Unrelea
   - New abstract method: `run_step4_5_model_enrichment()` for vehicle model lookup
 
 ### Fixed
+
+- **Data boundary detection: use ALL required fields, not just part_number (June 26, 2026):** Incomplete tail rows now properly removed
+  - Root cause: `_trim_to_data_range()` only checked part_number presence, allowing rows with part# but missing description/msrp/install_time
+  - Solution: Expanded legit_mask to check ALL `non_null_columns` from config (part_number, english_description, msrp, install_time)
+  - Impact: Tail rows with partial data now removed in Step 1 (data cleaning), not left for DQ warnings later
+  - Example: 2024 Mirage — 40 non_null_column DQ violations → 0 (all incomplete rows trimmed)
+  - Boundary detection now correctly identifies last row with ALL required fields, not just any part number
+
+- **Execution order: drop brochures before trimming data range (June 26, 2026):** Last-row detection now lands on real accessories, not brochures
+  - Root cause: Brochure records (YYYY*BROE/BROF) have part numbers, so `_trim_to_data_range()` treated them as real data when finding last_idx
+  - Solution: Swapped execution order in step1 — `_drop_brochure_records()` now runs BEFORE `_trim_to_data_range()`
+  - Benefit: After brochures removed, last_idx correctly identifies last real accessory; any brochures or notes after it become proper "tail"
+  - Example: 2026 Eclipse Cross — boundary moved [0–123] → [0–121]; 2024 Mirage [0–127] → [0–114] + 11 tail rows detected
 
 - **Run Summary "Records Excluded" metric (June 24, 2026):** Replaced incompatible unit comparison with honest metrics
   - Root cause: `records_in` (wide-format, one row per accessory) vs `records_out` (long-format, EN+FR×trim combinations) are incompatible units — always produced negative values (-876%)
