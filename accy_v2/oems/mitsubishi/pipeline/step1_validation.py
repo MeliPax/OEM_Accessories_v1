@@ -239,53 +239,44 @@ def _trim_to_data_range(
     sheet_name: str,
 ) -> pd.DataFrame:
     """
-    Remove tail rows (after last data row) and scattered empty rows within the data range.
-    Uses configured required_columns as anchor columns to detect where real data exists.
+    Remove tail rows (after last legit part record) and any rows without a part number.
+    Part Number is the primary anchor: every real accessory record must have one.
+    Notes, footers, disclaimers with only description text are excluded.
     """
     df = working_df.copy()
     col_lower = {c.lower(): c for c in df.columns}
 
-    # Resolve anchor columns from config
-    anchor_cols = []
-    for std_col in config["required_columns"]:
-        actual_col = next(
-            (orig for lower, orig in col_lower.items() if std_col in lower), None
-        )
-        if actual_col is not None:
-            anchor_cols.append(actual_col)
+    # Find part_number column specifically
+    part_col = next(
+        (orig for lower, orig in col_lower.items()
+         if "part" in lower and "number" in lower), None
+    )
 
-    if not anchor_cols:
-        pipeline_logger.debug(f"Sheet '{sheet_name}': no anchor columns found, skipping trim")
+    if part_col is None:
+        pipeline_logger.debug(f"Sheet '{sheet_name}': part_number column not found, skipping trim")
         return df
 
-    # Build mask: row has at least one non-null, non-empty value in any anchor column
-    has_data_mask = pd.Series(False, index=df.index)
-    for col in anchor_cols:
-        non_empty = ~(df[col].isna() | (df[col].astype(str).str.strip() == ""))
-        has_data_mask |= non_empty
+    # Build mask: row has non-null, non-empty part number
+    legit_mask = ~(df[part_col].isna() | (df[part_col].astype(str).str.strip() == ""))
 
-    if not has_data_mask.any():
-        raise PipelineFatalError(f"Sheet '{sheet_name}': no data rows found (all anchor columns empty)")
+    if not legit_mask.any():
+        raise PipelineFatalError(f"Sheet '{sheet_name}': no records with part numbers found")
 
-    first_idx = has_data_mask.idxmax()
-    last_idx = has_data_mask[::-1].idxmax()
+    first_idx = legit_mask.idxmax()
+    last_idx = legit_mask[::-1].idxmax()
 
-    # Slice to data range
-    df_trimmed = df.loc[first_idx:last_idx].copy()
+    # Slice to boundary range [first_idx : last_idx]
+    df_bounded = df.loc[first_idx:last_idx].copy()
     n_tail = len(df) - (last_idx - first_idx + 1)
 
-    # Drop scattered empty rows within range (rows with no data in any anchor column)
-    has_data_in_range = pd.Series(False, index=df_trimmed.index)
-    for col in anchor_cols:
-        non_empty = ~(df_trimmed[col].isna() | (df_trimmed[col].astype(str).str.strip() == ""))
-        has_data_in_range |= non_empty
-
-    df_trimmed = df_trimmed[has_data_in_range].reset_index(drop=True)
-    n_empty = len(df.loc[first_idx:last_idx]) - len(df_trimmed)
+    # Within the bounded range, keep only rows that have a part number (exclude notes/text rows)
+    legit_in_range = ~(df_bounded[part_col].isna() | (df_bounded[part_col].astype(str).str.strip() == ""))
+    df_trimmed = df_bounded[legit_in_range].reset_index(drop=True)
+    n_non_part = len(df_bounded) - len(df_trimmed)
 
     pipeline_logger.info(
-        f"Sheet '{sheet_name}': trimmed to rows [{first_idx}–{last_idx}], "
-        f"dropped {n_tail} tail rows + {n_empty} empty rows within range"
+        f"Sheet '{sheet_name}': boundary rows [{first_idx}–{last_idx}], "
+        f"dropped {n_tail} tail/note rows + {n_non_part} non-part rows within range"
     )
 
     return df_trimmed
