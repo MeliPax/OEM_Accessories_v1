@@ -239,28 +239,35 @@ def _trim_to_data_range(
     sheet_name: str,
 ) -> pd.DataFrame:
     """
-    Remove tail rows (after last legit part record) and any rows without a part number.
-    Part Number is the primary anchor: every real accessory record must have one.
-    Notes, footers, disclaimers with only description text are excluded.
+    Remove tail rows (after last legit part record) by checking ALL required non-null columns.
+    A row is "legitimate" only if it has part_number AND all other required fields populated.
     """
     df = working_df.copy()
     col_lower = {c.lower(): c for c in df.columns}
 
-    # Find part_number column specifically
-    part_col = next(
-        (orig for lower, orig in col_lower.items()
-         if "part" in lower and "number" in lower), None
-    )
+    # Map required non-null columns to their actual column names
+    required_cols = config.get("non_null_columns", ["part_number"])
+    actual_cols = {}
 
-    if part_col is None:
-        pipeline_logger.debug(f"Sheet '{sheet_name}': part_number column not found, skipping trim")
-        return df
+    for req_col in required_cols:
+        actual_col = next(
+            (orig for lower, orig in col_lower.items() if req_col in lower), None
+        )
+        if actual_col is None:
+            pipeline_logger.debug(
+                f"Sheet '{sheet_name}': required column '{req_col}' not found, skipping trim"
+            )
+            return df
+        actual_cols[req_col] = actual_col
 
-    # Build mask: row has non-null, non-empty part number
-    legit_mask = ~(df[part_col].isna() | (df[part_col].astype(str).str.strip() == ""))
+    # Build mask: row has ALL required fields non-null and non-empty
+    legit_mask = pd.Series(True, index=df.index)
+    for req_col, actual_col in actual_cols.items():
+        col_mask = ~(df[actual_col].isna() | (df[actual_col].astype(str).str.strip() == ""))
+        legit_mask = legit_mask & col_mask
 
     if not legit_mask.any():
-        raise PipelineFatalError(f"Sheet '{sheet_name}': no records with part numbers found")
+        raise PipelineFatalError(f"Sheet '{sheet_name}': no records with all required fields found")
 
     first_idx = legit_mask.idxmax()
     last_idx = legit_mask[::-1].idxmax()
@@ -269,14 +276,18 @@ def _trim_to_data_range(
     df_bounded = df.loc[first_idx:last_idx].copy()
     n_tail = len(df) - (last_idx - first_idx + 1)
 
-    # Within the bounded range, keep only rows that have a part number (exclude notes/text rows)
-    legit_in_range = ~(df_bounded[part_col].isna() | (df_bounded[part_col].astype(str).str.strip() == ""))
+    # Within the bounded range, keep only rows with ALL required fields (exclude tail/partial rows)
+    legit_in_range = pd.Series(True, index=df_bounded.index)
+    for req_col, actual_col in actual_cols.items():
+        col_mask = ~(df_bounded[actual_col].isna() | (df_bounded[actual_col].astype(str).str.strip() == ""))
+        legit_in_range = legit_in_range & col_mask
+
     df_trimmed = df_bounded[legit_in_range].reset_index(drop=True)
-    n_non_part = len(df_bounded) - len(df_trimmed)
+    n_non_legit = len(df_bounded) - len(df_trimmed)
 
     pipeline_logger.info(
         f"Sheet '{sheet_name}': boundary rows [{first_idx}–{last_idx}], "
-        f"dropped {n_tail} tail/note rows + {n_non_part} non-part rows within range"
+        f"dropped {n_tail} tail rows + {n_non_legit} incomplete rows within range"
     )
 
     return df_trimmed

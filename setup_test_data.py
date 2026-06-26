@@ -1,13 +1,13 @@
 """
-Prepare test data directories and sample files for pipeline testing.
+Prepare directories for pipeline testing.
 
 Usage:
     python setup_test_data.py
 
 This script:
 - Creates landing_zone directories for each OEM
-- Provides instructions for adding test files
-- Validates directory structure
+- Creates output/dq_reports, output/pipeline_logs, output/ready_to_upload directories
+- For production runs, place actual data files in accy_v2/data/landing_zone/{oem}/
 """
 
 import sys
@@ -157,17 +157,9 @@ def main():
     # Create directories
     setup_directories()
 
-    # Create sample files
-    print("Creating sample data files...")
-    try:
-        create_sample_mitsubishi()
-    except Exception as e:
-        print(f"[WARNING] Failed to create Mitsubishi sample: {e}")
-
-    try:
-        create_sample_mazda()
-    except Exception as e:
-        print(f"[WARNING] Failed to create Mazda sample: {e}")
+    # Note: Sample file creation is disabled for production use.
+    # Place real data files in accy_v2/data/landing_zone/{oem}/
+    print("(Sample file creation disabled for production)\n")
 
     # Print instructions
     print("\n" + "="*80)

@@ -6,7 +6,11 @@
       "Bash(python -c ' *)",
       "Bash(pip install *)",
       "PowerShell(\\(Get-Content 'c:\\\\Users\\\\paxm\\\\OneDrive - PBS SYSTEMS\\\\Desktop\\\\Office\\\\Projects\\\\OEM Accessory project\\\\OEM_Accessories_v1\\\\model_lookup\\\\db\\\\db_vehicle_models.csv' | Measure-Object -Line\\).Lines)",
-      "Bash(python)"
+      "Bash(python)",
+      "Bash(python run_pipeline.py mazda)",
+      "Bash(python run_pipeline.py mitsubishi)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
