@@ -33,6 +33,8 @@ def run(
     _validate_trim_boundaries(df_raw, sheet_name, config)
 
     working_df = _build_working_df(df_raw)
+    working_df = _trim_to_data_range(working_df, config, pipeline_logger, sheet_name)
+    working_df = _drop_brochure_records(working_df, config, pipeline_logger, sheet_name)
 
     working_df = _validate_non_null_columns(working_df, sheet_name, meta_data, config, dq_logger)
     _validate_data_types(working_df, sheet_name, config)
@@ -228,3 +230,121 @@ def _check_profitability(
                 rule_violated="profitability_rule",
                 issue_description=f"MSRP ({msrp}) must be greater than DNP ({dnp})",
             )
+
+
+def _trim_to_data_range(
+    working_df: pd.DataFrame,
+    config: dict,
+    pipeline_logger: PipelineLogger,
+    sheet_name: str,
+) -> pd.DataFrame:
+    """
+    Remove tail rows (after last data row) and scattered empty rows within the data range.
+    Uses configured required_columns as anchor columns to detect where real data exists.
+    """
+    df = working_df.copy()
+    col_lower = {c.lower(): c for c in df.columns}
+
+    # Resolve anchor columns from config
+    anchor_cols = []
+    for std_col in config["required_columns"]:
+        actual_col = next(
+            (orig for lower, orig in col_lower.items() if std_col in lower), None
+        )
+        if actual_col is not None:
+            anchor_cols.append(actual_col)
+
+    if not anchor_cols:
+        pipeline_logger.debug(f"Sheet '{sheet_name}': no anchor columns found, skipping trim")
+        return df
+
+    # Build mask: row has at least one non-null, non-empty value in any anchor column
+    has_data_mask = pd.Series(False, index=df.index)
+    for col in anchor_cols:
+        non_empty = ~(df[col].isna() | (df[col].astype(str).str.strip() == ""))
+        has_data_mask |= non_empty
+
+    if not has_data_mask.any():
+        raise PipelineFatalError(f"Sheet '{sheet_name}': no data rows found (all anchor columns empty)")
+
+    first_idx = has_data_mask.idxmax()
+    last_idx = has_data_mask[::-1].idxmax()
+
+    # Slice to data range
+    df_trimmed = df.loc[first_idx:last_idx].copy()
+    n_tail = len(df) - (last_idx - first_idx + 1)
+
+    # Drop scattered empty rows within range (rows with no data in any anchor column)
+    has_data_in_range = pd.Series(False, index=df_trimmed.index)
+    for col in anchor_cols:
+        non_empty = ~(df_trimmed[col].isna() | (df_trimmed[col].astype(str).str.strip() == ""))
+        has_data_in_range |= non_empty
+
+    df_trimmed = df_trimmed[has_data_in_range].reset_index(drop=True)
+    n_empty = len(df.loc[first_idx:last_idx]) - len(df_trimmed)
+
+    pipeline_logger.info(
+        f"Sheet '{sheet_name}': trimmed to rows [{first_idx}–{last_idx}], "
+        f"dropped {n_tail} tail rows + {n_empty} empty rows within range"
+    )
+
+    return df_trimmed
+
+
+def _drop_brochure_records(
+    working_df: pd.DataFrame,
+    config: dict,
+    pipeline_logger: PipelineLogger,
+    sheet_name: str,
+) -> pd.DataFrame:
+    """
+    Remove brochure records: rows where Part Number matches YYYY*BROE/BROF pattern,
+    Description contains 'BROCHURE' and language keyword, and pricing (MSRP/DNP) is null or N/A.
+    """
+    df = working_df.copy()
+    col_lower = {c.lower(): c for c in df.columns}
+
+    # Find required columns for brochure detection
+    part_col = next(
+        (orig for lower, orig in col_lower.items() if "part" in lower and "number" in lower), None
+    )
+    desc_col = next(
+        (orig for lower, orig in col_lower.items() if "description" in lower and "english" in lower), None
+    )
+    msrp_col = next((orig for lower, orig in col_lower.items() if "msrp" in lower), None)
+    dnp_col = next((orig for lower, orig in col_lower.items() if "dnp" in lower), None)
+
+    # If any key column missing, skip brochure check
+    if part_col is None or desc_col is None or msrp_col is None or dnp_col is None:
+        pipeline_logger.debug(
+            f"Sheet '{sheet_name}': brochure detection skipped (missing required columns)"
+        )
+        return df
+
+    def is_null_or_na(val) -> bool:
+        return pd.isna(val) or str(val).strip().upper() in ("N/A", "N\\A", "")
+
+    def is_brochure(row) -> bool:
+        # Condition 1: Part number matches YYYY*BROE or YYYY*BROF (case-insensitive)
+        part = str(row[part_col]).strip()
+        if not re.match(r"^\d{4}.*bro[ef]$", part, re.IGNORECASE):
+            return False
+
+        # Condition 2: Description contains "BROCHURE" and ("English" or "French")
+        desc = str(row[desc_col]).strip().upper()
+        if "BROCHURE" not in desc or not ("ENGLISH" in desc or "FRENCH" in desc):
+            return False
+
+        # Condition 3: Both MSRP and DNP are null or "N/A"
+        if not (is_null_or_na(row[msrp_col]) and is_null_or_na(row[dnp_col])):
+            return False
+
+        return True
+
+    brochure_mask = df.apply(is_brochure, axis=1)
+    n_brochures = brochure_mask.sum()
+
+    if n_brochures > 0:
+        pipeline_logger.info(f"Sheet '{sheet_name}': dropped {n_brochures} brochure record(s)")
+
+    return df[~brochure_mask].reset_index(drop=True)
