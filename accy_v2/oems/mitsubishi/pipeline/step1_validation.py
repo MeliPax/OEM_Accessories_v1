@@ -33,8 +33,8 @@ def run(
     _validate_trim_boundaries(df_raw, sheet_name, config)
 
     working_df = _build_working_df(df_raw)
-    working_df = _trim_to_data_range(working_df, config, pipeline_logger, sheet_name)
     working_df = _drop_brochure_records(working_df, config, pipeline_logger, sheet_name)
+    working_df = _trim_to_data_range(working_df, config, pipeline_logger, sheet_name)
 
     working_df = _validate_non_null_columns(working_df, sheet_name, meta_data, config, dq_logger)
     _validate_data_types(working_df, sheet_name, config)
