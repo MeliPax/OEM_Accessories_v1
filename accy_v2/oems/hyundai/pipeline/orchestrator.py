@@ -63,16 +63,34 @@ class HyundaiPipeline(BasePipeline):
         # Sanitize column names (lowercase, spaces→underscores, etc.)
         working.columns = [clean_column_name(str(c)) for c in working.columns]
 
+        # DEBUG: print all columns
+        print(f"\n[DEBUG] All columns after cleaning ({len(working.columns)} total):")
+        for i, col in enumerate(working.columns):
+            print(f"  [{i}] {col}")
+
         # Load config to get genesis_models list for manufacturer routing
-        import json
         config_path = Path(__file__).parent.parent / "config" / "hyundai_config.json"
         with open(config_path) as f:
             config = json.load(f)
         genesis_models = config.get("genesis_models", [])
 
-        # Group by (Model Year From, Model) and return one DataFrame per group
+        # Find the actual year and model columns
+        col_lower = {c.lower(): c for c in working.columns}
+        year_col = next((c for c in col_lower.keys() if "year" in c and "from" in c), None)
+        model_col = next((c for c in col_lower.keys() if c == "model"), None)
+
+        if not year_col or not model_col:
+            raise ValueError(
+                f"Required columns not found. Looking for 'year_from' and 'model'. "
+                f"Found columns: {working.columns.tolist()}"
+            )
+
+        year_col = col_lower[year_col]
+        model_col = col_lower[model_col]
+
+        # Group by (year, model) using actual column names
         groups = {}
-        for (year, model), group_df in working.groupby(["model_year_from", "model"]):
+        for (year, model), group_df in working.groupby([year_col, model_col]):
             model_slug = str(model).strip().replace(" ", "_").lower()
             key = f"{int(year)}_{model_slug}"
 
