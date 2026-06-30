@@ -53,6 +53,20 @@
 
   "trim_exclusion_keywords": ["category", "category_(en)", "group", "group_(en)"],
 
+  "trim_bounds_config": {
+    "left_bound": { "must_contain": [], "must_contain_one_of": [] },
+    "right_bound": { "must_contain": [], "must_contain_one_of": [] }
+  },
+
+  "trim_validation_config": {
+    "expected_data": { "data": "X", "perc_thresh": 60 },
+    "must_have_only": { "expected_value_types": ["X", "", "__na__"] }
+  },
+
+  "non_acceptable_sheet_names": [],
+
+  "sheet_name_pattern": ".*",
+
   "drop_columns": [],
 
   "language_columns": {

@@ -16,7 +16,7 @@ def run(
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
 ) -> Dict[str, Any]:
-    """
+    r"""
     Map columns to standard names and identify valid trim columns via dynamic regex.
 
     Hyundai differs from Mitsubishi: trim columns are identified by name pattern
@@ -69,7 +69,7 @@ def _identify_trim_columns_by_regex(
     group_key: str,
     pipeline_logger: PipelineLogger,
 ) -> list:
-    """
+    r"""
     Identify trim columns by regex pattern: ^Trim\s+\d+$ (case-insensitive).
     Filter to only columns with at least one non-null, non-empty value.
     """
