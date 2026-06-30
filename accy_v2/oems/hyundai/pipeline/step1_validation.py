@@ -3,6 +3,7 @@ from typing import Any, Dict
 import pandas as pd
 
 from core.base_pipeline import PipelineFatalError
+from core.helpers.column_mapper import column_type_finder
 from core.helpers.dq_logger import DQLogger
 from core.helpers.header_helpers import strip_df_string_values
 from core.helpers.pipeline_logger import PipelineLogger
@@ -55,7 +56,7 @@ def run(
     _validate_required_columns(working_df, group_key, config)
     working_df = _validate_non_null_columns(working_df, group_key, model_name, config, dq_logger)
     _validate_data_types(working_df, group_key, config)
-    _check_profitability(working_df, group_key, model_name, dq_logger)
+    _check_profitability(working_df, group_key, model_name, dq_logger, config)
 
     return working_df
 
@@ -96,15 +97,19 @@ def _validate_non_null_columns(
     dq_logger: DQLogger,
 ) -> pd.DataFrame:
     df = working_df.copy()
-    col_lower = {c.lower(): c for c in df.columns}
     threshold = config.get("non_null_threshold", 0.5)
     exclude_mask = pd.Series(False, index=df.index)
 
+    # Use column_type_finder to map semantic names to actual column names
+    col_mapping = {}
+    for std_col, keywords_def in config["column_definition"].items():
+        found_col = column_type_finder(df, keywords_def["key_words"])
+        if found_col:
+            col_mapping[std_col] = found_col
+
     for std_col in config["non_null_columns"]:
-        # Find actual column matching std_col
-        actual_col = next(
-            (orig for lower, orig in col_lower.items() if std_col in lower), None
-        )
+        # Find actual column using mapping from column_type_finder
+        actual_col = col_mapping.get(std_col)
         if actual_col is None:
             raise PipelineFatalError(
                 f"Group '{group_key}': expected non-null column '{std_col}' not found"
@@ -138,12 +143,15 @@ def _validate_non_null_columns(
 def _validate_data_types(
     working_df: pd.DataFrame, group_key: str, config: dict
 ) -> None:
-    col_lower = {c.lower(): c for c in working_df.columns}
+    # Use column mapping to find columns
+    col_mapping = {}
+    for std_col, keywords_def in config["column_definition"].items():
+        found_col = column_type_finder(working_df, keywords_def["key_words"])
+        if found_col:
+            col_mapping[std_col] = found_col
 
     for std_col in config["col_data_type_dict"].get("to_float", []):
-        actual_col = next(
-            (orig for lower, orig in col_lower.items() if std_col in lower), None
-        )
+        actual_col = col_mapping.get(std_col)
         if actual_col is None:
             continue
 
@@ -161,12 +169,17 @@ def _check_profitability(
     group_key: str,
     model_name: str,
     dq_logger: DQLogger,
+    config: dict,
 ) -> None:
-    col_lower = {c.lower(): c for c in working_df.columns}
-    dnet_col = next((orig for lower, orig in col_lower.items() if "dnet" in lower), None)
-    msrp_col = next(
-        (orig for lower, orig in col_lower.items() if "msrp" in lower), None
-    )
+    # Use column mapping to find dnet and msrp columns
+    col_mapping = {}
+    for std_col, keywords_def in config["column_definition"].items():
+        found_col = column_type_finder(working_df, keywords_def["key_words"])
+        if found_col:
+            col_mapping[std_col] = found_col
+
+    dnet_col = col_mapping.get("dnet")
+    msrp_col = col_mapping.get("msrp")
 
     if dnet_col is None or msrp_col is None:
         return
