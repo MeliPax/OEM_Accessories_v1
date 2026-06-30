@@ -1,0 +1,67 @@
+{
+  "make": "Hyundai",
+  "version": "1.0",
+  "description": "Hyundai-specific keyword translation rules, organized by category for maintainability. Flattened into one lookup table at load time. Applied before classification.",
+  "categories": {
+    "trim_levels": {
+      "pref": "preferred",
+      "ess": "essential",
+      "calli": "calligraphy",
+      "lux": "luxury",
+      "ult": "ultimate",
+      "adv": "advanced",
+      "ed": "edition",
+      "sport": "sport",
+      "tech": "tech",
+      "trend": "trend",
+      "plus": "plus",
+      "prestige": "prestige",
+      "le": "le",
+      "night": "night",
+      "performance": "performance",
+      "pkg": "pkg"
+    },
+    "fuel_drivetrain": {
+      "hev": "hybrid",
+      "phev": "plug-in",
+      "ev": "electric",
+      "ice": "ice",
+      "turbo": "turbo",
+      "2.0l": "2.0l",
+      "2.5t": "2.5t",
+      "3.3t": "3.3t",
+      "3.5t": "3.5t",
+      "awd": "awd",
+      "fwd": "fwd",
+      "manual": "manual",
+      "dct": "dct",
+      "ivt": "ivt"
+    },
+    "body_style": {
+      "coupe": "coupe",
+      "5p": "5p",
+      "7p": "7p"
+    },
+    "technology": {
+      "n-line": "n-line",
+      "nhl": "nhl",
+      "xrt": "xrt",
+      "e-sc": "e-sc",
+      "elsd": "elsd"
+    },
+    "range_options": {
+      "long": "long",
+      "range": "range",
+      "urban": "urban"
+    },
+    "data_artifacts": {
+      "pref*": "preferred",
+      "trend*": "trend",
+      "plug-in": "plug-in",
+      "plug-in hybrid": "plug-in",
+      "n": "n",
+      "gt": "gt",
+      "black": "black"
+    }
+  }
+}

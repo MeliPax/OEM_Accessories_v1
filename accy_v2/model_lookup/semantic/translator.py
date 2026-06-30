@@ -10,11 +10,13 @@ def load_oem_translator(make: str, configs_dir: str = None) -> Dict[str, str]:
     Load OEM-specific translator config.
 
     Args:
-        make: Manufacturer name (e.g., "Mitsubishi", "Mazda")
+        make: Manufacturer name (e.g., "Mitsubishi", "Mazda", "Hyundai")
         configs_dir: Directory containing translator JSON files. Defaults to model_lookup/configs/
 
     Returns:
         Dictionary mapping tokens to normalized forms (e.g., {"s-awc": "awd"}).
+        Supports both flat "translations" key (Mitsubishi/Mazda style) and
+        "categories" key with nested groups (Hyundai/Genesis style), flattening the latter.
         Returns empty dict if config file is missing (graceful degradation).
     """
     if configs_dir is None:
@@ -25,6 +27,12 @@ def load_oem_translator(make: str, configs_dir: str = None) -> Dict[str, str]:
     try:
         with open(translator_path, "r") as f:
             config = json.load(f)
+            # Support categorized structure (new style: nested groups) with fallback to flat (old style)
+            if "categories" in config:
+                flat = {}
+                for group in config["categories"].values():
+                    flat.update(group)
+                return flat
             return config.get("translations", {})
     except FileNotFoundError:
         # No config for this make — return empty dict (no translations applied)
