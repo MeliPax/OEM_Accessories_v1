@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pandas as pd
 
 from core.base_pipeline import PipelineFatalError
-from core.helpers.column_mapper import column_type_finder
+from core.helpers.column_mapper import map_all_columns
 from core.helpers.dq_logger import DQLogger
 from core.helpers.header_helpers import strip_df_string_values
 from core.helpers.pipeline_logger import PipelineLogger
@@ -100,15 +100,11 @@ def _validate_non_null_columns(
     threshold = config.get("non_null_threshold", 0.5)
     exclude_mask = pd.Series(False, index=df.index)
 
-    # Use column_type_finder to map semantic names to actual column names
-    col_mapping = {}
-    for std_col, keywords_def in config["column_definition"].items():
-        found_col = column_type_finder(df, keywords_def["key_words"])
-        if found_col:
-            col_mapping[std_col] = found_col
+    # Use map_all_columns to map semantic names to actual column names
+    col_mapping = map_all_columns(df, config["column_definition"])
 
     for std_col in config["non_null_columns"]:
-        # Find actual column using mapping from column_type_finder
+        # Find actual column using mapping from map_all_columns
         actual_col = col_mapping.get(std_col)
         if actual_col is None:
             raise PipelineFatalError(
@@ -143,12 +139,8 @@ def _validate_non_null_columns(
 def _validate_data_types(
     working_df: pd.DataFrame, group_key: str, config: dict
 ) -> None:
-    # Use column mapping to find columns
-    col_mapping = {}
-    for std_col, keywords_def in config["column_definition"].items():
-        found_col = column_type_finder(working_df, keywords_def["key_words"])
-        if found_col:
-            col_mapping[std_col] = found_col
+    # Use map_all_columns to find columns
+    col_mapping = map_all_columns(working_df, config["column_definition"])
 
     for std_col in config["col_data_type_dict"].get("to_float", []):
         actual_col = col_mapping.get(std_col)
@@ -171,12 +163,8 @@ def _check_profitability(
     dq_logger: DQLogger,
     config: dict,
 ) -> None:
-    # Use column mapping to find dnet and msrp columns
-    col_mapping = {}
-    for std_col, keywords_def in config["column_definition"].items():
-        found_col = column_type_finder(working_df, keywords_def["key_words"])
-        if found_col:
-            col_mapping[std_col] = found_col
+    # Use map_all_columns to find dnet and msrp columns
+    col_mapping = map_all_columns(working_df, config["column_definition"])
 
     dnet_col = col_mapping.get("dnet")
     msrp_col = col_mapping.get("msrp")
