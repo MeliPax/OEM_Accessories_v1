@@ -50,12 +50,16 @@ def _melt_trim_cols(
     """
     Melt trim columns. Keep only rows where the melted trim value is non-null/non-empty
     (since the cell *is* the trim name, not an applicability marker).
+
+    Note: var_name uses "trim_column" (not "trim_level") to avoid collision when
+    renaming trim_value to trim_level. Final output has "trim_level" (values) and
+    "trim_column" (original column names like Trim_1, Trim_2).
     """
     id_vars = [col for col in df.columns if col not in valid_trim_cols]
     melted = df.melt(
         id_vars=id_vars,
         value_vars=valid_trim_cols,
-        var_name="trim_level",
+        var_name="trim_column",
         value_name="trim_value",
     )
 
@@ -75,7 +79,7 @@ def _melt_trim_cols(
             issue_description="Trim value is null/empty — record excluded from output",
         )
 
-    # Rename trim_value to trim_level (keeps standard naming)
+    # Rename trim_value to trim_level (the standard name expected by downstream steps)
     melted_filtered = melted[trim_mask].copy()
     melted_filtered = melted_filtered.rename(columns={"trim_value": "trim_level"})
 
