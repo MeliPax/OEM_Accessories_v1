@@ -13,10 +13,10 @@
       "key_words": { "must_have": ["part", "number"], "must_have_one_of": [], "not_have": [] }
     },
     "english_description": {
-      "key_words": { "must_have": ["accessory", "description"], "must_have_one_of": [], "not_have": ["fr"] }
+      "key_words": { "must_have": ["accessory", "description"], "must_have_one_of": [], "not_have": ["(fr)"] }
     },
     "french_description": {
-      "key_words": { "must_have": ["accessory", "description", "fr"], "must_have_one_of": [], "not_have": [] }
+      "key_words": { "must_have": ["accessory", "description", "(fr)"], "must_have_one_of": [], "not_have": [] }
     },
     "msrp": {
       "key_words": { "must_have": ["msrp"], "must_have_one_of": [], "not_have": [] }
@@ -31,10 +31,10 @@
       "key_words": { "must_have": ["labour", "hours"], "must_have_one_of": [], "not_have": [] }
     },
     "comments_en": {
-      "key_words": { "must_have": ["comments"], "must_have_one_of": [], "not_have": ["fr"] }
+      "key_words": { "must_have": ["comments"], "must_have_one_of": [], "not_have": ["(fr)"] }
     },
     "comments_fr": {
-      "key_words": { "must_have": ["comments", "fr"], "must_have_one_of": [], "not_have": [] }
+      "key_words": { "must_have": ["comments", "(fr)"], "must_have_one_of": [], "not_have": [] }
     }
   },
 
@@ -50,8 +50,6 @@
     "to_string": ["part_number", "english_description", "french_description", "comments_en", "comments_fr"],
     "to_float": ["msrp", "dnet", "labour_rate", "labour_hours"]
   },
-
-  "trim_exclusion_keywords": ["category", "category_(en)", "group", "group_(en)"],
 
   "trim_bounds_config": {
     "left_bound": { "must_contain": [], "must_contain_one_of": [] },

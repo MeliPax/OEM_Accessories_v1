@@ -63,11 +63,6 @@ class HyundaiPipeline(BasePipeline):
         # Sanitize column names (lowercase, spaces→underscores, etc.)
         working.columns = [clean_column_name(str(c)) for c in working.columns]
 
-        # DEBUG: print all columns
-        print(f"\n[DEBUG] All columns after cleaning ({len(working.columns)} total):")
-        for i, col in enumerate(working.columns):
-            print(f"  [{i}] {col}")
-
         # Load config to get genesis_models list for manufacturer routing
         config_path = Path(__file__).parent.parent / "config" / "hyundai_config.json"
         with open(config_path) as f:

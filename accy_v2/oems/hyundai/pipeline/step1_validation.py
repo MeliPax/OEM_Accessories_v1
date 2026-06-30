@@ -40,6 +40,9 @@ def run(
 
     group_key = meta_data.get("group_key", "unknown")
     model_name = meta_data.get("model_name", "unknown")
+    manufacturer = meta_data.get("manufacturer", "unknown")
+
+    pipeline_logger.debug(f"Group '{group_key}' (model '{model_name}'): routed to manufacturer '{manufacturer}'")
 
     # Remove metadata columns from the dataframe
     working_df = working_df.drop(
@@ -53,10 +56,15 @@ def run(
     if len(working_df) == 0:
         raise PipelineFatalError(f"Group '{group_key}': no data rows after cleanup")
 
-    _validate_required_columns(working_df, group_key, config)
-    working_df = _validate_non_null_columns(working_df, group_key, model_name, config, dq_logger)
-    _validate_data_types(working_df, group_key, config)
-    _check_profitability(working_df, group_key, model_name, dq_logger, config)
+    # Map columns once for reuse across validation steps
+    col_mapping = map_all_columns(working_df, config["column_definition"])
+    # Reverse the mapping: {standard_name: original_column_name} for lookup by semantic name
+    reverse_mapping = {std: orig for orig, std in col_mapping.items() if std is not None}
+
+    _validate_required_columns(reverse_mapping, group_key, config)
+    working_df = _validate_non_null_columns(working_df, group_key, model_name, config, dq_logger, reverse_mapping)
+    _validate_data_types(working_df, group_key, config, reverse_mapping)
+    _check_profitability(working_df, group_key, model_name, dq_logger, config, reverse_mapping)
 
     return working_df
 
@@ -67,25 +75,13 @@ def run(
 
 
 def _validate_required_columns(
-    working_df: pd.DataFrame, group_key: str, config: dict
+    col_mapping: Dict[str, str], group_key: str, config: dict
 ) -> None:
-    col_lower = {c.lower(): c for c in working_df.columns}
-    column_definition = config["column_definition"]
-
+    """Verify all required columns were found by map_all_columns."""
     for std_col in config["required_columns"]:
-        if std_col not in column_definition:
-            continue
-        key_words = column_definition[std_col]["key_words"]["must_have"]
-        must_have = [k.lower() for k in key_words]
-
-        found = any(
-            all(kw in cell_lower for kw in must_have)
-            for cell_lower in col_lower.keys()
-        )
-        if not found:
+        if col_mapping.get(std_col) is None:
             raise PipelineFatalError(
-                f"Group '{group_key}': required column '{std_col}' "
-                f"(keywords: {must_have}) not found in header row"
+                f"Group '{group_key}': required column '{std_col}' not found in header"
             )
 
 
@@ -95,13 +91,11 @@ def _validate_non_null_columns(
     model_name: str,
     config: dict,
     dq_logger: DQLogger,
+    col_mapping: Dict[str, str],
 ) -> pd.DataFrame:
     df = working_df.copy()
     threshold = config.get("non_null_threshold", 0.5)
     exclude_mask = pd.Series(False, index=df.index)
-
-    # Use map_all_columns to map semantic names to actual column names
-    col_mapping = map_all_columns(df, config["column_definition"])
 
     for std_col in config["non_null_columns"]:
         # Find actual column using mapping from map_all_columns
@@ -137,11 +131,8 @@ def _validate_non_null_columns(
 
 
 def _validate_data_types(
-    working_df: pd.DataFrame, group_key: str, config: dict
+    working_df: pd.DataFrame, group_key: str, config: dict, col_mapping: Dict[str, str]
 ) -> None:
-    # Use map_all_columns to find columns
-    col_mapping = map_all_columns(working_df, config["column_definition"])
-
     for std_col in config["col_data_type_dict"].get("to_float", []):
         actual_col = col_mapping.get(std_col)
         if actual_col is None:
@@ -162,12 +153,10 @@ def _check_profitability(
     model_name: str,
     dq_logger: DQLogger,
     config: dict,
+    reverse_mapping: Dict[str, str],
 ) -> None:
-    # Use map_all_columns to find dnet and msrp columns
-    col_mapping = map_all_columns(working_df, config["column_definition"])
-
-    dnet_col = col_mapping.get("dnet")
-    msrp_col = col_mapping.get("msrp")
+    dnet_col = reverse_mapping.get("dnet")
+    msrp_col = reverse_mapping.get("msrp")
 
     if dnet_col is None or msrp_col is None:
         return
