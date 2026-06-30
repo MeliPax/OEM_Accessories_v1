@@ -20,7 +20,8 @@ def run(
     Map columns to standard names and identify valid trim columns via dynamic regex.
 
     Hyundai differs from Mitsubishi: trim columns are identified by name pattern
-    (^Trim\s+\d+$) + presence of data, not by column position + "X" sentinel validation.
+    (^Trim_\d+$) + presence of data, not by column position + "X" sentinel validation.
+    Note: After clean_column_name(), "Trim 1" becomes "Trim_1" (space→underscore).
 
     Returns:
         {
@@ -42,12 +43,12 @@ def run(
     except ValueError as exc:
         raise PipelineFatalError(str(exc)) from exc
 
-    # Identify trim columns via dynamic regex: ^Trim\s+\d+$ + has non-empty data
+    # Identify trim columns via dynamic regex: ^Trim_\d+$ + has non-empty data
     valid_trim_cols = _identify_trim_columns_by_regex(working_df, group_key, pipeline_logger)
 
     if not valid_trim_cols:
         raise PipelineFatalError(
-            f"Group '{group_key}': no valid trim columns found matching pattern '^Trim \\d+$' with data"
+            f"Group '{group_key}': no valid trim columns found matching pattern '^Trim_\\d+$' with data"
         )
 
     pipeline_logger.debug(f"Valid trim cols for '{group_key}': {valid_trim_cols}")
@@ -70,14 +71,15 @@ def _identify_trim_columns_by_regex(
     pipeline_logger: PipelineLogger,
 ) -> list:
     r"""
-    Identify trim columns by regex pattern: ^Trim\s+\d+$ (case-insensitive).
+    Identify trim columns by regex pattern: ^Trim_\d+$ (case-insensitive).
+    After clean_column_name(), "Trim 1" becomes "Trim_1" (space→underscore).
     Filter to only columns with at least one non-null, non-empty value.
     """
     trim_cols = []
 
     for col in working_df.columns:
-        # Check name pattern
-        if not re.match(r"^trim\s+\d+$", col, re.IGNORECASE):
+        # Check name pattern (space or underscore after "Trim")
+        if not re.match(r"^trim[\s_]\d+$", col, re.IGNORECASE):
             continue
 
         # Check for data: at least one non-null, non-empty cell
