@@ -434,6 +434,27 @@ def _extract_description_tokens(description: str) -> list[str]:
     return [t.lower() for t in description.split() if t]
 
 
+def _standardize_description(description: str, oem_translator: dict) -> str:
+    """
+    Standardize database description by translating all tokens using OEM translator.
+    Applies the same translation rules used for search keywords to ensure consistent
+    vocabulary between search input and database (e.g., "ult" → "ultimate").
+
+    Args:
+        description: Description string from CSV
+        oem_translator: Translation dict from load_oem_translator()
+
+    Returns:
+        Standardized description with translated tokens, or original if no translator
+    """
+    if not oem_translator or not description or not isinstance(description, str):
+        return description
+
+    tokens = _extract_description_tokens(description)
+    translated_tokens = [oem_translator.get(token, token) for token in tokens]
+    return " ".join(translated_tokens)
+
+
 def build_manufacturer_keyword_vocab(
     make: str, csv_path: str = None, configs_dir: str = None
 ) -> dict:
@@ -711,9 +732,16 @@ def search_models_by_description(
             keywords = translate_keywords(keywords, translator)
     except Exception as e:
         # If translator not available, continue with original keywords
-        pass
+        translator = {}
 
     df = load_existing_csv(csv_path)
+
+    # Standardize database descriptions using same translator rules as search keywords
+    # Ensures consistent vocabulary (e.g., DB "ult" becomes "ultimate" like search input)
+    if translator and not df.empty and "Description" in df.columns:
+        df["Description"] = df["Description"].apply(
+            lambda desc: _standardize_description(desc, translator)
+        )
 
     if df.empty:
         return pd.DataFrame()

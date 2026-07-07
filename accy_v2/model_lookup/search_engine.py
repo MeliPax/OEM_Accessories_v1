@@ -124,13 +124,8 @@ class VehicleSearchEngine:
         if self.logger:
             self.logger.debug(f"Score: {score} (minimum: {MINIMUM_SCORE})")
 
-        # 5. Gate
-        if score < MINIMUM_SCORE:
-            if self.logger:
-                self.logger.debug(f"Score {score} below minimum {MINIMUM_SCORE}")
-            return None
-
-        # 6. Search database with filtered keywords (cosmetic keywords removed)
+        # 5. Search database with filtered keywords (cosmetic keywords removed)
+        # Note: We defer the score gate until after we know candidate_count (adaptive threshold)
         results = search_models_by_description(
             make=make,
             year=year,
@@ -144,6 +139,19 @@ class VehicleSearchEngine:
 
         if self.logger:
             self.logger.debug(f"Database search returned {candidate_count} candidates")
+
+        # 6. Adaptive score gate: requirement depends on candidate count
+        # - Unambiguous (1 candidate): always pass (we found THE vehicle)
+        # - Low ambiguity (2-3 candidates): require score ≥ 12 (can resolve as duplicates)
+        # - High ambiguity (4+ candidates): require stricter score ≥ 14
+        min_score_required = self._get_adaptive_minimum_score(candidate_count)
+        if score < min_score_required:
+            if self.logger:
+                self.logger.debug(
+                    f"Score {score} below adaptive minimum {min_score_required} "
+                    f"for {candidate_count} candidates"
+                )
+            return None
 
         # 7. Compute confidence
         confidence = compute_confidence(score, MINIMUM_SCORE, candidate_count)
@@ -192,6 +200,28 @@ class VehicleSearchEngine:
                 )
 
         return None
+
+    def _get_adaptive_minimum_score(self, candidate_count: int) -> int:
+        """
+        Compute adaptive minimum score threshold based on candidate count.
+
+        Rationale: Specificity of score requirement should inverse with result ambiguity:
+        - 1 candidate: unambiguous, accept any score (the search found THE vehicle)
+        - 2-3 candidates: low ambiguity, can resolve as duplicate codes, require score ≥ 12
+        - 4+ candidates: high ambiguity, need higher specificity, require score ≥ 14
+
+        Args:
+            candidate_count: Number of candidates returned from database
+
+        Returns:
+            Minimum required score for this candidate count
+        """
+        if candidate_count == 1:
+            return 0  # Unambiguous match — accept any score
+        elif candidate_count <= 3:
+            return 12  # Low ambiguity — standard threshold
+        else:
+            return 14  # High ambiguity — stricter threshold
 
     def _filter_ignored_categories(self, classified: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """

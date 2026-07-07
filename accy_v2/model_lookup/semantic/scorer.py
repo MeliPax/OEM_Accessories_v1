@@ -6,11 +6,11 @@ from typing import Dict, List
 CATEGORY_WEIGHTS = {
     "MODEL": 10,
     "ENGINE_TYPE": 8,
-    "POWERTRAIN_TYPE": 8,  # Fuel type (HEV, PHEV, EV)
+    "POWERTRAIN_TYPE": 10,  # Fuel type (HEV, PHEV, EV) — increased to 10 (critical for accessory compatibility)
     "ENGINE_SPEC": 7,  # Specific engine specs (2.5T, 3.3T, etc.)
     "DRIVETRAIN": 6,
     "TRIM": 5,
-    "TRIM_VARIANT": 5,  # Trim variants (N, N-Line)
+    "TRIM_VARIANT": 6,  # Trim variants (N, N-Line) — increased to 6 (important for specificity)
     "BODY_STYLE": 4,  # Body type (sedan, suv, hatchback)
     "TRANSMISSION": 3,
     "SEATING": 2,  # Passenger count
