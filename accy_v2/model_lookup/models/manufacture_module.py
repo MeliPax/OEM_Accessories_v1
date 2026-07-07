@@ -136,19 +136,26 @@ def check_duplicate_record(
     )
 
 
-def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
+def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_dir: str = None) -> dict:
     """
-    Save vehicle models to CSV with validation and deduplication.
+    Save vehicle models to CSV with validation, standardization, and deduplication.
+
+    Standardizes descriptions at ingestion time (clean punctuation + translate OEM abbreviations)
+    so the database file is always consistent and searches don't need to re-standardize every time.
 
     Args:
         df: DataFrame with vehicle model data
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
 
     Returns:
         dict with save status, records saved, duplicates skipped, etc.
     """
     if csv_path is None:
         csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
     result = {
         "success": False,
@@ -190,6 +197,24 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
         return result
 
     df_valid = pd.DataFrame(valid_records)
+
+    # Standardize descriptions at ingestion: clean punctuation + translate OEM abbreviations
+    try:
+        try:
+            from model_lookup.semantic.translator import load_oem_translator
+        except ImportError:
+            from semantic.translator import load_oem_translator
+
+        for make in df_valid["Manufacturer"].unique():
+            translator = load_oem_translator(make, configs_dir)
+            if translator:
+                mask = df_valid["Manufacturer"] == make
+                df_valid.loc[mask, "Description"] = df_valid.loc[mask, "Description"].apply(
+                    lambda d: _standardize_description(d, translator)
+                )
+    except Exception as e:
+        # Log warning but don't fail the save if standardization has issues
+        pass
 
     df_existing = load_existing_csv(csv_path)
 
@@ -477,17 +502,18 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     """
     Standardize database description by:
     1. Cleaning punctuation that breaks tokenization
-    2. Translating all tokens using OEM translator
+    2. Translating tokens using OEM translator while preserving original casing
 
     Applies the same translation rules used for search keywords to ensure consistent
     vocabulary between search input and database (e.g., "ult" → "ultimate").
+    Tokens not found in translator pass through unchanged, preserving their original case.
 
     Args:
         description: Description string from CSV
         oem_translator: Translation dict from load_oem_translator()
 
     Returns:
-        Standardized description with cleaned and translated tokens, or original if no translator
+        Standardized description with cleaned punctuation and translated tokens, or original if no translator
     """
     if not description or not isinstance(description, str):
         return description
@@ -495,13 +521,20 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     # Step 1: Clean punctuation first (so "(Two Tone Interior)" becomes "Two Tone Interior")
     cleaned = _clean_description_punctuation(description)
 
-    # Step 2: Extract and translate tokens
+    # Step 2: Translate tokens while preserving original casing for untranslated words
     if not oem_translator:
         return cleaned
 
-    tokens = _extract_description_tokens(cleaned)
-    translated_tokens = [oem_translator.get(token, token) for token in tokens]
-    return " ".join(translated_tokens)
+    import re
+
+    def _replace_token(match: "re.Match") -> str:
+        word = match.group(0)
+        # Look up lowercase version of word in translator, but return the translated version as-is
+        # (untranslated words pass through with original case/hyphenation preserved)
+        return oem_translator.get(word.lower(), word)
+
+    # Replace each whitespace-separated token (already normalized to single spaces by _clean_description_punctuation)
+    return re.sub(r"\S+", _replace_token, cleaned)
 
 
 def build_manufacturer_keyword_vocab(
@@ -634,24 +667,89 @@ def bootstrap_all_vocabs(csv_path: str = None, configs_dir: str = None) -> dict:
     return {"status": "success", "manufacturers": results}
 
 
+def standardize_existing_database(csv_path: str = None, configs_dir: str = None) -> dict:
+    """
+    One-time migration: standardize all existing DB descriptions in place.
+
+    Applies description cleaning (punctuation removal, spacing normalization)
+    and OEM translator rules to every row in db_vehicle_models.csv, writing the
+    standardized descriptions back to the file.
+
+    **IMPORTANT:** Back up db_vehicle_models.csv before running this function.
+
+    Args:
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
+
+    Returns:
+        dict with success status and count of standardized rows
+    """
+    if csv_path is None:
+        csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    try:
+        try:
+            from model_lookup.semantic.translator import load_oem_translator
+        except ImportError:
+            from semantic.translator import load_oem_translator
+    except ImportError:
+        return {"success": False, "message": "Could not import translator"}
+
+    df = load_existing_csv(csv_path)
+    if df.empty:
+        return {"success": False, "message": "CSV is empty"}
+
+    standardized_count = 0
+
+    for make in df["Manufacturer"].unique():
+        translator = load_oem_translator(make, configs_dir)
+        if translator:
+            mask = df["Manufacturer"] == make
+            df.loc[mask, "Description"] = df.loc[mask, "Description"].apply(
+                lambda d: _standardize_description(d, translator)
+            )
+            standardized_count += mask.sum()
+
+    try:
+        df.to_csv(csv_path, index=False)
+        return {
+            "success": True,
+            "message": f"Standardized {standardized_count} rows",
+            "rows_standardized": standardized_count,
+            "total_rows": len(df),
+            "file_path": csv_path,
+        }
+    except Exception as e:
+        return {"success": False, "message": f"Error writing CSV: {str(e)}"}
+
+
 def batch_save_manufacturer_models(
     engine,
     manufacturers: list[str],
     csv_path: str = None,
+    configs_dir: str = None,
 ) -> dict:
     """
     Fetch and save vehicle models for multiple manufacturers.
+    Standardizes descriptions at ingestion (clean + translate per OEM translator).
 
     Args:
         engine: SQLAlchemy engine for database connection
         manufacturers: List of manufacturer names
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
 
     Returns:
         dict with results for each manufacturer and summary totals
     """
     if csv_path is None:
         csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
     results = {
         "manufacturers": {},
@@ -682,7 +780,7 @@ def batch_save_manufacturer_models(
                 }
                 continue
 
-            save_result = save_vehicle_models_to_csv(df_models, csv_path)
+            save_result = save_vehicle_models_to_csv(df_models, csv_path, configs_dir)
             results["manufacturers"][make] = save_result
 
             results["summary"]["total_processed"] += save_result["total_records"]
@@ -784,13 +882,6 @@ def search_models_by_description(
         translator = {}
 
     df = load_existing_csv(csv_path)
-
-    # Standardize database descriptions using same translator rules as search keywords
-    # Ensures consistent vocabulary (e.g., DB "ult" becomes "ultimate" like search input)
-    if translator and not df.empty and "Description" in df.columns:
-        df["Description"] = df["Description"].apply(
-            lambda desc: _standardize_description(desc, translator)
-        )
 
     if df.empty:
         return pd.DataFrame()
