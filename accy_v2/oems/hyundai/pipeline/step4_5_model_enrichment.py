@@ -145,7 +145,13 @@ def _batch_lookup_model_numbers(
     # Initialize search engine once for this batch of lookups
     csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
     configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
-    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config=oem_config, pipeline_logger=pipeline_logger)
+    engine = VehicleSearchEngine(
+        csv_path=csv_path,
+        configs_dir=configs_dir,
+        oem_config=oem_config,
+        ignore_keyword_categories=oem_config.get("ignore_keyword_categories", []),
+        pipeline_logger=pipeline_logger,
+    )
 
     for trim in trims:
         # Preprocess trim: spaces -> underscores (Hyundai trims are space-separated like "Ult HEV", "3.5T Sport")

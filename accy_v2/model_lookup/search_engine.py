@@ -8,7 +8,7 @@ from .semantic.translator import load_oem_translator, translate_keywords
 from .semantic.classifier import load_classification_config, classify_tokens
 from .semantic.scorer import CATEGORY_WEIGHTS, MINIMUM_SCORE, compute_score, compute_confidence
 
-from .models.manufacture_module import search_models_by_description
+from .models.manufacture_module import search_models_by_description, _extract_description_tokens
 
 
 @dataclass
@@ -43,6 +43,7 @@ class VehicleSearchEngine:
         csv_path: str,
         configs_dir: str,
         oem_config: Dict = None,
+        ignore_keyword_categories: List[str] = None,
         pipeline_logger=None,
     ):
         """
@@ -52,11 +53,13 @@ class VehicleSearchEngine:
             csv_path: Path to vehicle models CSV (model_lookup/db/db_vehicle_models.csv)
             configs_dir: Directory containing translator and classification JSONs
             oem_config: OEM config dict (optional, used for single-char abbreviations)
+            ignore_keyword_categories: Categories to exclude from search (e.g., INTERIOR, EXTERIOR_COLOR)
             pipeline_logger: Logger for debug messages (optional)
         """
         self.csv_path = csv_path
         self.configs_dir = configs_dir
         self.oem_config = oem_config or {}
+        self.ignore_keyword_categories = ignore_keyword_categories or []
         self.logger = pipeline_logger
 
     def search(
@@ -102,6 +105,12 @@ class VehicleSearchEngine:
         if self.logger:
             self.logger.debug(f"Classified tokens: {classified}")
 
+        # 2.5 Filter ignored categories (INTERIOR, EXTERIOR_COLOR, etc.)
+        classified = self._filter_ignored_categories(classified)
+        filtered_keywords = [tok for toks in classified.values() for tok in toks if toks]
+        if self.logger:
+            self.logger.debug(f"After filtering ignored categories {self.ignore_keyword_categories}: {classified}")
+
         # 3. Validate search profile
         is_valid, reason = self._validate_search_profile(classified)
         if not is_valid:
@@ -121,11 +130,11 @@ class VehicleSearchEngine:
                 self.logger.debug(f"Score {score} below minimum {MINIMUM_SCORE}")
             return None
 
-        # 6. Search database with translated keywords
+        # 6. Search database with filtered keywords (cosmetic keywords removed)
         results = search_models_by_description(
             make=make,
             year=year,
-            keywords=translated,
+            keywords=filtered_keywords,
             csv_path=self.csv_path,
             exclude_ev=exclude_ev,
             configs_dir=self.configs_dir,
@@ -158,15 +167,18 @@ class VehicleSearchEngine:
         # Same vehicle re-coded under multiple model numbers: not real ambiguity.
         # (Only applied if OEM config explicitly enables this behavior.)
         if candidate_count > 1 and self.oem_config.get("allow_duplicate_model_numbers", False):
-            normalized_desc = results["Description"].str.strip().str.lower()
-            if normalized_desc.nunique() == 1:
-                # All candidates describe the same vehicle (case-insensitive, after strip).
-                # Treat as a single match with multiple model codes.
+            # Normalize each candidate description by filtering ignored categories
+            normalized_keys = [
+                self._normalize_description(desc, classification_config)
+                for desc in results["Description"]
+            ]
+            # If all normalized descriptions match, treat as duplicate codes for one vehicle
+            if len(set(normalized_keys)) == 1:
                 resolved_confidence = compute_confidence(score, MINIMUM_SCORE, candidate_count=1)
                 if self.logger:
                     self.logger.debug(
                         f"Resolved {candidate_count} candidates to single vehicle with multiple "
-                        f"model numbers: {results['ModelNumber'].tolist()}"
+                        f"model numbers (ignoring {self.ignore_keyword_categories}): {results['ModelNumber'].tolist()}"
                     )
                 return SearchResult(
                     match=results.iloc[0]["Description"],
@@ -180,6 +192,39 @@ class VehicleSearchEngine:
                 )
 
         return None
+
+    def _filter_ignored_categories(self, classified: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """
+        Remove tokens in ignored categories from classified dict.
+
+        Args:
+            classified: Output from classify_tokens()
+
+        Returns:
+            filtered dict with ignored categories emptied
+        """
+        return {
+            cat: (toks if cat not in self.ignore_keyword_categories else [])
+            for cat, toks in classified.items()
+        }
+
+    def _normalize_description(self, description: str, classification_config: Dict) -> frozenset:
+        """
+        Normalize DB description by extracting tokens, classifying, and filtering ignored categories.
+
+        Used for comparing candidate rows when detecting duplicate model codes.
+
+        Args:
+            description: DB description string
+            classification_config: Classification config for this OEM
+
+        Returns:
+            frozenset of remaining tokens after filtering
+        """
+        tokens = _extract_description_tokens(description)
+        classified = classify_tokens(tokens, classification_config, self.logger)
+        filtered = self._filter_ignored_categories(classified)
+        return frozenset(tok for toks in filtered.values() for tok in toks if toks)
 
     @staticmethod
     def _validate_search_profile(classified: Dict[str, List[str]]) -> tuple[bool, str]:
