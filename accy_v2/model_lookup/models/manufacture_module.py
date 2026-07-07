@@ -89,11 +89,20 @@ def validate_row_not_null(row: dict, required_fields: list[str] = None) -> bool:
 
 def load_existing_csv(csv_path: str) -> pd.DataFrame:
     """
-    Load existing CSV file. Returns empty DataFrame if file doesn't exist.
+    Load existing CSV file and clean description punctuation.
+    Returns empty DataFrame if file doesn't exist.
+
+    Applies description cleaning to normalize cosmetic info in all loaded data:
+    - Removes parentheses/brackets that interfere with tokenization
+    - Normalizes spacing patterns (e.g., "Two Tone" → "two-tone")
     """
     if os.path.exists(csv_path):
         try:
-            return pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path)
+            # Clean descriptions for all loaded data (not just search results)
+            if not df.empty and "Description" in df.columns:
+                df["Description"] = df["Description"].apply(_clean_description_punctuation)
+            return df
         except Exception as e:
             print(f"Warning: Could not read existing CSV: {e}")
             return pd.DataFrame()
