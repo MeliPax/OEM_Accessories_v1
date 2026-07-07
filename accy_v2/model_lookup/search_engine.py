@@ -16,11 +16,13 @@ class SearchResult:
     """Result of a successful model search."""
 
     match: str  # Human-readable description (e.g., "Outlander PHEV GT S-AWC")
-    model_number: str  # OEM model number (e.g., "COEV-X")
+    model_number: str  # Primary OEM model number (e.g., "COEV-X")
+    model_numbers: List[str]  # All model numbers for this match (len 1 normally; >1 for duplicate codes)
     confidence: float  # 0.0 to 1.0
     score: int  # Raw weighted score
     tokens_matched: Dict[str, List[str]]  # Classified tokens used for matching
-    candidate_count: int  # Number of DB rows considered (should be 1 for successful match)
+    candidate_count: int  # Number of DB rows considered (raw count, unaffected by duplicate grouping)
+    is_duplicate_group: bool = False  # True when multiple model numbers map to same vehicle
 
 
 class VehicleSearchEngine:
@@ -146,11 +148,36 @@ class VehicleSearchEngine:
             return SearchResult(
                 match=row["Description"],
                 model_number=row["ModelNumber"],
+                model_numbers=[row["ModelNumber"]],
                 confidence=confidence,
                 score=score,
                 tokens_matched=classified,
                 candidate_count=candidate_count,
             )
+
+        # Same vehicle re-coded under multiple model numbers: not real ambiguity.
+        # (Only applied if OEM config explicitly enables this behavior.)
+        if candidate_count > 1 and self.oem_config.get("allow_duplicate_model_numbers", False):
+            normalized_desc = results["Description"].str.strip().str.lower()
+            if normalized_desc.nunique() == 1:
+                # All candidates describe the same vehicle (case-insensitive, after strip).
+                # Treat as a single match with multiple model codes.
+                resolved_confidence = compute_confidence(score, MINIMUM_SCORE, candidate_count=1)
+                if self.logger:
+                    self.logger.debug(
+                        f"Resolved {candidate_count} candidates to single vehicle with multiple "
+                        f"model numbers: {results['ModelNumber'].tolist()}"
+                    )
+                return SearchResult(
+                    match=results.iloc[0]["Description"],
+                    model_number=results.iloc[0]["ModelNumber"],
+                    model_numbers=results["ModelNumber"].tolist(),
+                    confidence=resolved_confidence,
+                    score=score,
+                    tokens_matched=classified,
+                    candidate_count=candidate_count,
+                    is_duplicate_group=True,
+                )
 
         return None
 

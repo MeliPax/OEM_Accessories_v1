@@ -103,7 +103,8 @@
       "trim_abbreviation_library": {},
       "fields": ["trim", "model"],
       "trim_column": "trim_level",
-      "exclude_keywords": []
+      "exclude_keywords": [],
+      "allow_duplicate_model_numbers": true
     },
     "Genesis": {
       "valid_year_range": {
@@ -114,7 +115,8 @@
       "trim_abbreviation_library": {},
       "fields": ["trim", "model"],
       "trim_column": "trim_level",
-      "exclude_keywords": []
+      "exclude_keywords": [],
+      "allow_duplicate_model_numbers": false
     }
   }
 }

@@ -73,7 +73,7 @@ def run(
     )
 
     # Batch lookup: one per unique trim
-    model_mapping, missing_trims = _batch_lookup_model_numbers(
+    model_mapping, duplicate_trims, missing_trims = _batch_lookup_model_numbers(
         year=vehicle_year,
         model_name=model_name,
         group_key=group_key,
@@ -82,6 +82,7 @@ def run(
         fuel_type=fuel_type,
         extractor=extractor,
         vehicle_make=vehicle_make,
+        oem_config=oem_config,
         dq_logger=dq_logger,
         pipeline_logger=pipeline_logger,
     )
@@ -92,6 +93,7 @@ def run(
         enriched_df = _add_model_number_columns(
             df=df,
             model_mapping=model_mapping,
+            duplicate_trims=duplicate_trims,
             missing_trims=missing_trims,
             vehicle_year=vehicle_year,
             trim_col=trim_col,
@@ -119,9 +121,10 @@ def _batch_lookup_model_numbers(
     fuel_type: str,
     extractor: KeywordExtractor,
     vehicle_make: str,
+    oem_config: Dict[str, any],
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
-) -> Tuple[Dict[str, str], List[str]]:
+) -> Tuple[Dict[str, List[str]], set, List[str]]:
     """
     Lookup model number for each unique trim (one lookup per trim, not per row).
 
@@ -131,16 +134,18 @@ def _batch_lookup_model_numbers(
     - trim_keywords: from trim column (preprocessed: spaces -> underscores)
 
     Returns:
-        - model_mapping: {trim: model_number} where model_number is string or None
+        - model_mapping: {trim: [model_number, ...]} where model_numbers is a list (len 1 normally, >1 for duplicates)
+        - duplicate_trims: set of trims resolved via the duplicate-code path
         - missing_trims: [trim1, trim2] where lookup failed
     """
     model_mapping = {}
+    duplicate_trims = set()
     missing_trims = []
 
     # Initialize search engine once for this batch of lookups
     csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
     configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
-    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config={}, pipeline_logger=pipeline_logger)
+    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config=oem_config, pipeline_logger=pipeline_logger)
 
     for trim in trims:
         # Preprocess trim: spaces -> underscores (Hyundai trims are space-separated like "Ult HEV", "3.5T Sport")
@@ -174,10 +179,11 @@ def _batch_lookup_model_numbers(
             result = engine.search(make=vehicle_make, year=int(year), raw_keywords=keywords)
 
             if result is not None:
-                model_number = result.model_number
-                model_mapping[trim] = model_number
+                model_mapping[trim] = result.model_numbers
+                if result.is_duplicate_group:
+                    duplicate_trims.add(trim)
                 pipeline_logger.debug(
-                    f"  [OK] Found model_number='{model_number}' confidence={result.confidence:.2f} "
+                    f"  [OK] Found model_number(s)={result.model_numbers} confidence={result.confidence:.2f} "
                     f"for {vehicle_make} {year} {trim}"
                 )
 
@@ -213,12 +219,13 @@ def _batch_lookup_model_numbers(
                 f"  [ERROR] {vehicle_make} {year} {trim}: {str(e)}"
             )
 
-    return model_mapping, missing_trims
+    return model_mapping, duplicate_trims, missing_trims
 
 
 def _add_model_number_columns(
     df: pd.DataFrame,
-    model_mapping: Dict[str, str],
+    model_mapping: Dict[str, List[str]],
+    duplicate_trims: set,
     missing_trims: List[str],
     vehicle_year: int,
     trim_col: str,
@@ -229,17 +236,32 @@ def _add_model_number_columns(
 ) -> pd.DataFrame:
     """
     Add model_number and model_number_status columns to DataFrame.
+    For duplicate-code trims, explode rows (one output per model number).
     Exclude rows where trim is in missing_trims.
     """
     df = df.copy()
 
-    # Map model_number based on trim
+    # Map trim -> list of model numbers (len 1 normally, >1 for duplicate codes)
     df["model_number"] = df[trim_col].map(model_mapping)
+
+    # Flag rows resolved via the duplicate-model-number path, before exploding
+    df["_is_duplicate_match"] = df[trim_col].isin(duplicate_trims)
+
+    # Explode: one output row per model number (no-op for length-1 lists)
+    df = df.explode("model_number", ignore_index=True)
 
     # Add status column
     df["model_number_status"] = df["model_number"].apply(
         lambda x: "yes - Model number found" if pd.notna(x) else "no - missing model number"
     )
+
+    # For duplicate-matched rows, update the status to distinguish them for QA
+    df.loc[df["_is_duplicate_match"] & df["model_number"].notna(), "model_number_status"] = (
+        "yes - Model number found (duplicate model code)"
+    )
+
+    # Remove the internal flag column
+    df = df.drop(columns=["_is_duplicate_match"])
 
     # Count before exclusion
     rows_before = len(df)

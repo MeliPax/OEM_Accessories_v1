@@ -71,7 +71,7 @@
     "sage-green": "EXTERIOR_COLOR",
     "grey-lime": "EXTERIOR_COLOR",
     "lime": "EXTERIOR_COLOR",
-    
+
     "sedan": "BODY_STYLE",
     "hatchback": "BODY_STYLE",
     "suv": "BODY_STYLE",
