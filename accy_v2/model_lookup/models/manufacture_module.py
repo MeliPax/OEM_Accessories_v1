@@ -434,9 +434,42 @@ def _extract_description_tokens(description: str) -> list[str]:
     return [t.lower() for t in description.split() if t]
 
 
+def _clean_description_punctuation(description: str) -> str:
+    """
+    Clean database description by removing/normalizing problematic punctuation and spacing.
+    Converts "(Two Tone Interior)" → "two-tone interior" so tokens classify properly.
+    Normalizes common space-separated pairs to hyphenated form matching classifier vocab.
+
+    Args:
+        description: Description string from CSV
+
+    Returns:
+        Cleaned description with normalized punctuation and spacing
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    import re
+
+    # Step 1: Remove parentheses, brackets that interfere with tokenization
+    cleaned = re.sub(r'[()[\]{}]', '', description)
+
+    # Step 2: Normalize common two-word patterns to hyphenated form
+    # (must match classifier vocab like "two-tone" which is classified as INTERIOR)
+    cleaned = re.sub(r'\btwo\s+tone\b', 'two-tone', cleaned, flags=re.IGNORECASE)
+
+    # Step 3: Normalize whitespace
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    return cleaned
+
+
 def _standardize_description(description: str, oem_translator: dict) -> str:
     """
-    Standardize database description by translating all tokens using OEM translator.
+    Standardize database description by:
+    1. Cleaning punctuation that breaks tokenization
+    2. Translating all tokens using OEM translator
+
     Applies the same translation rules used for search keywords to ensure consistent
     vocabulary between search input and database (e.g., "ult" → "ultimate").
 
@@ -445,12 +478,19 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
         oem_translator: Translation dict from load_oem_translator()
 
     Returns:
-        Standardized description with translated tokens, or original if no translator
+        Standardized description with cleaned and translated tokens, or original if no translator
     """
-    if not oem_translator or not description or not isinstance(description, str):
+    if not description or not isinstance(description, str):
         return description
 
-    tokens = _extract_description_tokens(description)
+    # Step 1: Clean punctuation first (so "(Two Tone Interior)" becomes "Two Tone Interior")
+    cleaned = _clean_description_punctuation(description)
+
+    # Step 2: Extract and translate tokens
+    if not oem_translator:
+        return cleaned
+
+    tokens = _extract_description_tokens(cleaned)
     translated_tokens = [oem_translator.get(token, token) for token in tokens]
     return " ".join(translated_tokens)
 
