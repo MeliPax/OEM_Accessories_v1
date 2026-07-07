@@ -6,9 +6,16 @@ from typing import Dict, List
 CATEGORY_WEIGHTS = {
     "MODEL": 10,
     "ENGINE_TYPE": 8,
+    "POWERTRAIN_TYPE": 8,  # Fuel type (HEV, PHEV, EV)
+    "ENGINE_SPEC": 7,  # Specific engine specs (2.5T, 3.3T, etc.)
     "DRIVETRAIN": 6,
     "TRIM": 5,
+    "TRIM_VARIANT": 5,  # Trim variants (N, N-Line)
+    "BODY_STYLE": 4,  # Body type (sedan, suv, hatchback)
     "TRANSMISSION": 3,
+    "SEATING": 2,  # Passenger count
+    "INTERIOR": 1,  # Interior cosmetics (filtered in search)
+    "EXTERIOR_COLOR": 1,  # Exterior cosmetics (filtered in search)
     "PACKAGE": 1,
     "UNCLASSIFIED": 0,  # Unclassified tokens contribute zero to score
 }
