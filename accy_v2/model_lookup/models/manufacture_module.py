@@ -198,6 +198,13 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_d
 
     df_valid = pd.DataFrame(valid_records)
 
+    # Format ModelNumber and Manufacturer columns for consistency
+    if not df_valid.empty:
+        if "ModelNumber" in df_valid.columns:
+            df_valid["ModelNumber"] = df_valid["ModelNumber"].apply(_format_model_number)
+        if "Manufacturer" in df_valid.columns:
+            df_valid["Manufacturer"] = df_valid["Manufacturer"].apply(_format_manufacturer)
+
     # Standardize descriptions at ingestion: clean punctuation + translate OEM abbreviations
     try:
         try:
@@ -526,6 +533,38 @@ def _deduplicate_description_words(description: str) -> str:
     return " ".join(result)
 
 
+def _format_model_number(model_number: str) -> str:
+    """
+    Format model number to uppercase.
+
+    Args:
+        model_number: Model number string
+
+    Returns:
+        Model number in uppercase (e.g., "elcs4v2bes00" → "ELCS4V2BES00")
+    """
+    if not model_number or not isinstance(model_number, str):
+        return model_number
+    return model_number.upper().strip()
+
+
+def _format_manufacturer(manufacturer: str) -> str:
+    """
+    Format manufacturer name to proper case (capitalize each word).
+
+    Args:
+        manufacturer: Manufacturer name string
+
+    Returns:
+        Manufacturer name with first letter capitalized (e.g., "hyundai" → "Hyundai")
+    """
+    if not manufacturer or not isinstance(manufacturer, str):
+        return manufacturer
+    # Capitalize first letter, lowercase rest (e.g., "hyundai" -> "Hyundai", "HYUNDAI" -> "Hyundai")
+    name = manufacturer.strip()
+    return name[0].upper() + name[1:].lower() if name else name
+
+
 def _apply_title_case(description: str) -> str:
     """
     Apply title case formatting: capitalize first letter of each word, lowercase the rest.
@@ -744,11 +783,14 @@ def bootstrap_all_vocabs(csv_path: str = None, configs_dir: str = None) -> dict:
 
 def standardize_existing_database(csv_path: str = None, configs_dir: str = None) -> dict:
     """
-    One-time migration: standardize all existing DB descriptions in place.
+    One-time migration: standardize all existing DB data in place.
 
-    Applies description cleaning (punctuation removal, spacing normalization)
-    and OEM translator rules to every row in db_vehicle_models.csv, writing the
-    standardized descriptions back to the file.
+    Applies complete standardization to every row in db_vehicle_models.csv:
+    - Description: clean punctuation + translate OEM abbreviations + deduplicate + title case
+    - ModelNumber: uppercase formatting (e.g., "elcs4v2bes00" → "ELCS4V2BES00")
+    - Manufacturer: proper case formatting (e.g., "hyundai" → "Hyundai")
+
+    Writes standardized rows back to the file.
 
     **IMPORTANT:** Back up db_vehicle_models.csv before running this function.
 
@@ -787,6 +829,13 @@ def standardize_existing_database(csv_path: str = None, configs_dir: str = None)
                 lambda d: _standardize_description(d, translator)
             )
             standardized_count += mask.sum()
+
+    # Format ModelNumber and Manufacturer columns for consistency
+    if not df.empty:
+        if "ModelNumber" in df.columns:
+            df["ModelNumber"] = df["ModelNumber"].apply(_format_model_number)
+        if "Manufacturer" in df.columns:
+            df["Manufacturer"] = df["Manufacturer"].apply(_format_manufacturer)
 
     try:
         df.to_csv(csv_path, index=False)
