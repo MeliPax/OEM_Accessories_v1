@@ -1009,7 +1009,7 @@ def search_models_by_description(
     if df.empty:
         return pd.DataFrame()
 
-    df_filtered = df[df["Manufacturer"] == make].copy()
+    df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
     for keyword in keywords:
