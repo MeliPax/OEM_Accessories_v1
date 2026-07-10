@@ -35,6 +35,10 @@
     },
     "data_artifacts": {
       "plug-in": "plug-in"
+    },
+    "Extras": {
+      "w/": "with"
     }
+
   }
 }

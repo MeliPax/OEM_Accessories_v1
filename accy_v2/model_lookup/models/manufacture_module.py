@@ -550,19 +550,18 @@ def _format_model_number(model_number: str) -> str:
 
 def _format_manufacturer(manufacturer: str) -> str:
     """
-    Format manufacturer name to proper case (capitalize each word).
+    Format manufacturer name to uppercase for consistency.
 
     Args:
         manufacturer: Manufacturer name string
 
     Returns:
-        Manufacturer name with first letter capitalized (e.g., "hyundai" → "Hyundai")
+        Manufacturer name in uppercase (e.g., "hyundai" → "HYUNDAI", "Genesis" → "GENESIS")
     """
     if not manufacturer or not isinstance(manufacturer, str):
         return manufacturer
-    # Capitalize first letter, lowercase rest (e.g., "hyundai" -> "Hyundai", "HYUNDAI" -> "Hyundai")
-    name = manufacturer.strip()
-    return name[0].upper() + name[1:].lower() if name else name
+    # Convert to uppercase (e.g., "hyundai" -> "HYUNDAI", "Genesis" -> "GENESIS")
+    return manufacturer.strip().upper()
 
 
 def _apply_title_case(description: str) -> str:
