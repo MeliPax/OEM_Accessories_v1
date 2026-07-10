@@ -11,7 +11,8 @@
       "ult": "ultimate",
       "adv": "advanced",
       "ed": "edition",
-      "pkg": "package"
+      "pkg": "package",
+      "pckg": "package"
     },
     "fuel_drivetrain": {
       "hev": "hybrid",

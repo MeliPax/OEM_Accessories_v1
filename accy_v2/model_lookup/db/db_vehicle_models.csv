@@ -5,10 +5,10 @@ Hyundai,2025,ELCS4V2BPRTE,Elantra with Tech package,,,
 Hyundai,2025,ELCS4V2BLU00,Elantra Luxury,,,
 Hyundai,2025,ELCS4V2BLUME,Elantra Luxury Two-Tone Interior,,,
 Hyundai,2025,ELCS4U1ANLUL,Elantra N-Line Ultimate,,,
-Hyundai,2025,ELHS4T1BLUHE,Elantra hybrid hybrid Luxury,,,
-Hyundai,2025,ELHS4T1BLUHM,Elantra hybrid hybrid Luxury Two-Tone Interior,,,
-Hyundai,2025,ELCS472ANN00,Elantra N N M/T,,,
-Hyundai,2025,ELCS4M2ANN00,Elantra N N DCT,,,
+Hyundai,2025,ELHS4T1BLUHE,Elantra hybrid Luxury,,,
+Hyundai,2025,ELHS4T1BLUHM,Elantra hybrid Luxury Two-Tone Interior,,,
+Hyundai,2025,ELCS472ANN00,Elantra N M/T,,,
+Hyundai,2025,ELCS4M2ANN00,Elantra N DCT,,,
 Hyundai,2025,SOCS4J2EPRTR,Sonata Preferred-Trend FWD,,,
 Hyundai,2025,SOCS4K2EPRTR,Sonata Preferred-Trend AWD,,,
 Hyundai,2025,SOCS4M2DNL00,Sonata N-Line,,,
@@ -31,7 +31,7 @@ Hyundai,2025,KOCW5K1ANLBA,Kona 1.6T N Line Ultimate AWD w/ Two-tone,,,
 Hyundai,2025,KEEW5ZE4PR00,Kona electric Preferred,,,
 Hyundai,2025,KEEW5ZE4PRTR,Kona electric Preferred with Trend package,,,
 Hyundai,2025,KEEW5ZE4PRUP,Kona electric Preferred with Ultimate package,,,
-Hyundai,2025,KEEW5ZE4PRUT,Kona electric Preferred with Ultimate package with two-tone,,,
+Hyundai,2025,KEEW5ZE4PRUT,Kona electric Preferred with Ultimate package two-tone,,,
 Hyundai,2025,KEEW5ZE4PRUG,Kona electric Preferred with Ultimate package Green Interior,,,
 Hyundai,2025,KEEW5ZE4PRNU,Kona electric Preferred N-Line with Ultimate Pk,,,
 Hyundai,2025,KE2SEFEME400,Kona electric Ultimate,,,
@@ -41,9 +41,9 @@ Hyundai,2025,KE2SEFEMEO20,Kona electric N Line Ultimate,,,
 Hyundai,2025,TUCWDK2EPR00,Tucson Preferred,,,
 Hyundai,2025,TUCWDK2EPRTR,Tucson Trend,,,
 Hyundai,2025,TUCWDK2EXR00,Tucson xrt,,,
-Hyundai,2025,TUHWDG1ANLHE,Tucson hybrid N Line hybrid,,,
-Hyundai,2025,TUHWDG1AULHE,Tucson hybrid Ultimate hybrid,,,
-Hyundai,2025,TUPWDG1AULPH,Tucson plug-in Ultimate plug-in,,,
+Hyundai,2025,TUHWDG1ANLHE,Tucson hybrid N Line,,,
+Hyundai,2025,TUHWDG1AULHE,Tucson hybrid Ultimate,,,
+Hyundai,2025,TUPWDG1AULPH,Tucson plug-in Ultimate,,,
 Hyundai,2025,SAHW7G1APRHE,Santa Fe 1.6T Preferred Hybrid AWD 7-Pass,,,
 Hyundai,2025,SAHW7G1APRTH,Santa Fe 1.6T Preferred Hybrid w/Trend package AWD 7-Pass,,,
 Hyundai,2025,SACW7N2DXR00,Santa Fe 2.5T xrt AWD 7-Pass,,,
@@ -67,7 +67,7 @@ Hyundai,2025,I5EW5ZE4PRPR,Ioniq 5 Preferred RWD Standard Range,,,
 Hyundai,2025,I6ES4ZE4PRLR,Ioniq 6 Preferred RWD long Range,,,
 Hyundai,2025,I6ES4ZE2PRLR,Ioniq 6 Preferred AWD long Range,,,
 Hyundai,2025,I6ES4ZE2PRUP,Ioniq 6 Preferred AWD long Range with Ultimate Package,,,
-Hyundai,2025,I5EW5ZE3NN00,Ioniq 5 N Ioniq 5 N,,,
+Hyundai,2025,I5EW5ZE3NN00,Ioniq 5 N,,,
 Hyundai,2025,NXFW5ZH1PR00,NEXO Preferred FWD,,,
 Hyundai,2025,NXFW5ZH1UL00,NEXO Ultimate FWD,,,
 Hyundai,2024,ELCS4V2BES00,Elantra Essential IVT,,,
@@ -76,10 +76,10 @@ Hyundai,2024,ELCS4V2BPRTE,Elantra Preferred with Sun & Tech package IVT,,,
 Hyundai,2024,ELCS4V2BLU00,Elantra Luxury IVT,,,
 Hyundai,2024,ELCS4V2BLUME,Elantra Luxury IVT two-tone Interior,,,
 Hyundai,2024,ELCS4U1ANLUL,Elantra N-Line DCT,,,
-Hyundai,2024,ELHS4T1BLUHE,Elantra hybrid Hybrid Luxury,,,
-Hyundai,2024,ELHS4T1BLUHM,Elantra hybrid Hybrid Luxury Two-Tone Interior,,,
-Hyundai,2024,ELCS472ANN00,Elantra N Elantra N MT,,,
-Hyundai,2024,ELCS4M2ANN00,Elantra N Elantra N DCT,,,
+Hyundai,2024,ELHS4T1BLUHE,Elantra hybrid Luxury,,,
+Hyundai,2024,ELHS4T1BLUHM,Elantra hybrid Luxury Two-Tone Interior,,,
+Hyundai,2024,ELCS472ANN00,Elantra N MT,,,
+Hyundai,2024,ELCS4M2ANN00,Elantra N DCT,,,
 Hyundai,2024,SOCS4J2EPRTR,Sonata Preferred-Trend FWD,,,
 Hyundai,2024,SOCS4K2EPRTR,Sonata Preferred-Trend AWD,,,
 Hyundai,2024,SOCS4M2DNL00,Sonata N-Line,,,
@@ -104,13 +104,13 @@ Hyundai,2024,KEEW5ZE4ULTT,Kona electric Ultimate w/ Two-tone Ext.,,,
 Hyundai,2024,KEEW5ZE4ULBF,Kona electric Ultimate w/ Sage-Green Int.,,,
 Hyundai,2024,TUCWDK2EPR00,Tucson Preferred,,,
 Hyundai,2024,TUCWDK2EPRTR,Tucson Trend,,,
-Hyundai,2024,TUHWDG1ALUHE,Tucson hybrid Luxury hybrid,,,
-Hyundai,2024,TUHWDG1ANLHE,Tucson hybrid N-Line hybrid,,,
-Hyundai,2024,TUHWDG1AULHE,Tucson hybrid Ultimate hybrid,,,
-Hyundai,2024,TUPWDG1AULPH,Tucson plug-in Ultimate plug-in,,,
-Hyundai,2024,SAHW7G1APRHE,Santa Fe Hybrid 1.6T Preferred Hybrid AWD 7-Pass,,,
-Hyundai,2024,SAHW7G1APRTH,Santa Fe Hybrid 1.6T Preferred Hybrid w/Trend package AWD 7-Pass,,,
-Hyundai,2024,SAHW6G1AULCS,Santa Fe Hybrid 1.6T Ultimate Calligraphy hybrid 6P Special Edition nhl,,,
+Hyundai,2024,TUHWDG1ALUHE,Tucson hybrid Luxury,,,
+Hyundai,2024,TUHWDG1ANLHE,Tucson hybrid N-Line,,,
+Hyundai,2024,TUHWDG1AULHE,Tucson hybrid Ultimate,,,
+Hyundai,2024,TUPWDG1AULPH,Tucson plug-in Ultimate,,,
+Hyundai,2024,SAHW7G1APRHE,Santa Fe Hybrid 1.6T Preferred AWD 7-Pass,,,
+Hyundai,2024,SAHW7G1APRTH,Santa Fe Hybrid 1.6T Preferred w/Trend package AWD 7-Pass,,,
+Hyundai,2024,SAHW6G1AULCS,Santa Fe Hybrid 1.6T Ultimate Calligraphy 6P Special Edition nhl,,,
 Hyundai,2024,SACW7N2DXR00,Santa Fe 2.5T xrt AWD 7-Pass,,,
 Hyundai,2024,SACW7N2DLU00,Santa Fe 2.5T Luxury AWD 7-pass,,,
 Hyundai,2024,SACW6N2DULBG,Santa Fe 2.5T Ultimate Calligraphy AWD 6-Pass,,,
@@ -144,10 +144,10 @@ Hyundai,2025,EL74IF20A283,Elantra with Tech package,,,
 Hyundai,2025,EL74IF20A300,Elantra Luxury,,,
 Hyundai,2025,EL74IF20A354,Elantra Luxury Two-Tone Interior,,,
 Hyundai,2025,EL74DF16DO20,Elantra N-Line Ultimate,,,
-Hyundai,2025,EL74DF16I3AA,Elantra hybrid hybrid Luxury,,,
-Hyundai,2025,EL74DF16I3AC,Elantra hybrid hybrid Luxury Two-Tone Interior,,,
-Hyundai,2025,EL74MF20DX39,Elantra N N M/T,,,
-Hyundai,2025,EL74DF20DX39,Elantra N N DCT,,,
+Hyundai,2025,EL74DF16I3AA,Elantra hybrid Luxury,,,
+Hyundai,2025,EL74DF16I3AC,Elantra hybrid Luxury Two-Tone Interior,,,
+Hyundai,2025,EL74MF20DX39,Elantra N M/T,,,
+Hyundai,2025,EL74DF20DX39,Elantra N DCT,,,
 Hyundai,2025,SO84AF25B241,Sonata Preferred-Trend FWD,,,
 Hyundai,2025,SO84DF25DO00,Sonata Preferred-Trend AWD,,,
 Hyundai,2025,SO84AA25B241,Sonata N-Line,,,
@@ -170,15 +170,15 @@ Hyundai,2025,KO2SAA16DOBA,Kona 1.6T N Line Ultimate AWD w/ Two-tone,,,
 Hyundai,2025,KE2SEFEME200,Kona electric Preferred,,,
 Hyundai,2025,KE2SEFEME241,Kona electric Preferred with Trend package,,,
 Hyundai,2025,KE2SEFEME2AV,Kona electric Preferred with Ultimate package,,,
-Hyundai,2025,KE2SEFEME2BM,Kona electric Preferred with Ultimate package with two-tone,,,
+Hyundai,2025,KE2SEFEME2BM,Kona electric Preferred with Ultimate package two-tone,,,
 Hyundai,2025,KE2SEFEME2BN,Kona electric Preferred with Ultimate package Green Interior,,,
 Hyundai,2025,KE2SEFEME2BO,Kona electric Preferred N-Line with Ultimate Pk,,,
 Hyundai,2025,TU4SAA25B200,Tucson Preferred,,,
 Hyundai,2025,TU4SAA25B241,Tucson Trend,,,
 Hyundai,2025,TU4SAA25BN00,Tucson xrt,,,
-Hyundai,2025,TU4SAA16GOAA,Tucson hybrid N Line hybrid,,,
-Hyundai,2025,TU4SAA16G4AA,Tucson hybrid Ultimate hybrid,,,
-Hyundai,2025,TU4SAA16J4AB,Tucson plug-in Ultimate plug-in,,,
+Hyundai,2025,TU4SAA16GOAA,Tucson hybrid N Line,,,
+Hyundai,2025,TU4SAA16G4AA,Tucson hybrid Ultimate,,,
+Hyundai,2025,TU4SAA16J4AB,Tucson plug-in Ultimate,,,
 Hyundai,2025,SA5SAA16G2AA,Santa Fe 1.6T Preferred Hybrid AWD 7-Pass,,,
 Hyundai,2025,SA5SAA16G2AD,Santa Fe 1.6T Preferred Hybrid w/Trend package AWD 7-Pass,,,
 Hyundai,2025,SA5SDA25DN00,Santa Fe 2.5T xrt AWD 7-Pass,,,
@@ -202,7 +202,7 @@ Hyundai,2025,I51SEREME242,Ioniq 5 Preferred RWD Standard Range,,,
 Hyundai,2025,I614EREME2AK,Ioniq 6 Preferred RWD long Range,,,
 Hyundai,2025,I614EAEME2AK,Ioniq 6 Preferred AWD long Range,,,
 Hyundai,2025,I614EAEME2AV,Ioniq 6 Preferred AWD long Range with Ultimate Package,,,
-Hyundai,2025,I51SEAEMEX39,Ioniq 5 N Ioniq 5 N,,,
+Hyundai,2025,I51SEAEMEX39,Ioniq 5 N,,,
 Hyundai,2025,NX1SEFEMF200,NEXO Preferred FWD,,,
 Hyundai,2025,NX1SEFEMF400,NEXO Ultimate FWD,,,
 Hyundai,2024,EL74IF20A100,Elantra Essential IVT,,,
@@ -211,10 +211,10 @@ Hyundai,2024,EL74IF20A283,Elantra Preferred with Sun & Tech package IVT,,,
 Hyundai,2024,EL74IF20A300,Elantra Luxury IVT,,,
 Hyundai,2024,EL74IF20A354,Elantra Luxury IVT two-tone Interior,,,
 Hyundai,2024,EL74DF16DO20,Elantra N-Line DCT,,,
-Hyundai,2024,EL74DF16I3AA,Elantra hybrid Hybrid Luxury,,,
-Hyundai,2024,EL74DF16I3AC,Elantra hybrid Hybrid Luxury Two-Tone Interior,,,
-Hyundai,2024,EL74MF20DX39,Elantra N Elantra N MT,,,
-Hyundai,2024,EL74DF20DX39,Elantra N Elantra N DCT,,,
+Hyundai,2024,EL74DF16I3AA,Elantra hybrid Luxury,,,
+Hyundai,2024,EL74DF16I3AC,Elantra hybrid Luxury Two-Tone Interior,,,
+Hyundai,2024,EL74MF20DX39,Elantra N MT,,,
+Hyundai,2024,EL74DF20DX39,Elantra N DCT,,,
 Hyundai,2024,SO84AF25B241,Sonata Preferred-Trend FWD,,,
 Hyundai,2024,SO84AA25B241,Sonata Preferred-Trend AWD,,,
 Hyundai,2024,SO84DF25DO00,Sonata N-Line,,,
@@ -239,13 +239,13 @@ Hyundai,2024,KE2SEFEME466,Kona electric Ultimate w/ Two-tone Ext.,,,
 Hyundai,2024,KE2SEFEME4BF,Kona electric Ultimate w/ Sage-Green Int.,,,
 Hyundai,2024,TU4SAA25B200,Tucson Preferred,,,
 Hyundai,2024,TU4SAA25B241,Tucson Trend,,,
-Hyundai,2024,TU4SAA16G3AA,Tucson hybrid Luxury hybrid,,,
-Hyundai,2024,TU4SAA16GOAA,Tucson hybrid N-Line hybrid,,,
-Hyundai,2024,TU4SAA16G4AA,Tucson hybrid Ultimate hybrid,,,
-Hyundai,2024,TU4SAA16J4AB,Tucson plug-in Ultimate plug-in,,,
-Hyundai,2024,SA5SAA16G2AA,Santa Fe Hybrid 1.6T Preferred Hybrid AWD 7-Pass,,,
-Hyundai,2024,SA5SAA16G2AD,Santa Fe Hybrid 1.6T Preferred Hybrid w/Trend package AWD 7-Pass,,,
-Hyundai,2024,SA5SAA16G4BI,Santa Fe Hybrid 1.6T Ultimate Calligraphy hybrid 6P Special Edition nhl,,,
+Hyundai,2024,TU4SAA16G3AA,Tucson hybrid Luxury,,,
+Hyundai,2024,TU4SAA16GOAA,Tucson hybrid N-Line,,,
+Hyundai,2024,TU4SAA16G4AA,Tucson hybrid Ultimate,,,
+Hyundai,2024,TU4SAA16J4AB,Tucson plug-in Ultimate,,,
+Hyundai,2024,SA5SAA16G2AA,Santa Fe Hybrid 1.6T Preferred AWD 7-Pass,,,
+Hyundai,2024,SA5SAA16G2AD,Santa Fe Hybrid 1.6T Preferred w/Trend package AWD 7-Pass,,,
+Hyundai,2024,SA5SAA16G4BI,Santa Fe Hybrid 1.6T Ultimate Calligraphy 6P Special Edition nhl,,,
 Hyundai,2024,SA5SDA25DN00,Santa Fe 2.5T xrt AWD 7-Pass,,,
 Hyundai,2024,SA5SDA25D300,Santa Fe 2.5T Luxury AWD 7-pass,,,
 Hyundai,2024,SA5SDA25D4BG,Santa Fe 2.5T Ultimate Calligraphy AWD 6-Pass,,,
@@ -540,14 +540,14 @@ Hyundai,2023,EL74IF20A283,Elantra Preferred with Sun & Tech package IVT,,,
 Hyundai,2023,EL74IF20A300,Elantra Luxury IVT,,,
 Hyundai,2023,EL74IF20A354,Elantra Luxury IVT two-tone Int.,,,
 Hyundai,2023,EL74DF16DO20,Elantra N-Line DCT,,,
-Hyundai,2023,EL74DF16I3AA,Elantra hybrid Hybrid Luxury,,,
-Hyundai,2023,EL74DF16I3AC,Elantra hybrid Hybrid Luxury two-tone Int.,,,
-Hyundai,2023,EL74MF20DX39,Elantra N N M/T,,,
-Hyundai,2023,EL74DF20DX39,Elantra N N DCT,,,
+Hyundai,2023,EL74DF16I3AA,Elantra hybrid Luxury,,,
+Hyundai,2023,EL74DF16I3AC,Elantra hybrid Luxury two-tone Int.,,,
+Hyundai,2023,EL74MF20DX39,Elantra N M/T,,,
+Hyundai,2023,EL74DF20DX39,Elantra N DCT,,,
 Hyundai,2023,SO84AF25B200,Sonata Preferred,,,
 Hyundai,2023,SO84AF16DS00,Sonata Preferred Sport,,,
 Hyundai,2023,SO84DF25DO00,Sonata N Line,,,
-Hyundai,2023,SH84AF20I4AA,Sonata hybrid Ultimate hybrid,,,
+Hyundai,2023,SH84AF20I4AA,Sonata hybrid Ultimate,,,
 Hyundai,2023,I614EREME2AK,Ioniq 6 Preferred RWD long Range,,,
 Hyundai,2023,I614EAEME2AK,Ioniq 6 Preferred AWD long Range,,,
 Hyundai,2023,I614EAEME2AV,Ioniq 6 Ultimate AWD long Range,,,
@@ -565,9 +565,9 @@ Hyundai,2023,KO1SAA20A268,Kona Preferred w/ Sun and Leather Package,,,
 Hyundai,2023,KO1SDA16DO00,Kona N-Line,,,
 Hyundai,2023,KO1SDA16DO66,Kona N-Line w/two-tone,,,
 Hyundai,2023,KO1SDA16DO20,Kona N-Line Ultimate Package,,,
-Hyundai,2023,KE1SEFEME200,Kona electric electric Preferred,,,
-Hyundai,2023,KE1SEFEME266,Kona electric electric Preferred Two-Tone,,,
-Hyundai,2023,KE1SEFEME400,Kona electric electric Ultimate,,,
+Hyundai,2023,KE1SEFEME200,Kona electric Preferred,,,
+Hyundai,2023,KE1SEFEME266,Kona electric Preferred Two-Tone,,,
+Hyundai,2023,KE1SEFEME400,Kona electric Ultimate,,,
 Hyundai,2023,KO1SDF20DX39,Kona N DCT,,,
 Hyundai,2023,I51SEREME200,Ioniq 5 Preferred,,,
 Hyundai,2023,I51SEREME2AK,Ioniq 5 Preferred long Range,,,
@@ -581,10 +581,10 @@ Hyundai,2023,TU4SAA25B200,Tucson Preferred AWD,,,
 Hyundai,2023,TU4SAA25B241,Tucson Preferred AWD w/ Trend Package,,,
 Hyundai,2023,TU4SAA25BY00,Tucson Urban AWD,,,
 Hyundai,2023,TU4SAA25BO00,Tucson N Line AWD,,,
-Hyundai,2023,TU4SAA16G3AA,Tucson hybrid 1.6T Luxury hybrid AWD,,,
-Hyundai,2023,TU4SAA16G4AA,Tucson hybrid 1.6T Ultimate hybrid AWD,,,
-Hyundai,2023,TU4SAA16J3AB,Tucson plug-in Luxury plug-in AWD,,,
-Hyundai,2023,TU4SAA16J4AB,Tucson plug-in Ultimate plug-in AWD,,,
+Hyundai,2023,TU4SAA16G3AA,Tucson hybrid 1.6T Luxury AWD,,,
+Hyundai,2023,TU4SAA16G4AA,Tucson hybrid 1.6T Ultimate AWD,,,
+Hyundai,2023,TU4SAA16J3AB,Tucson plug-in Luxury AWD,,,
+Hyundai,2023,TU4SAA16J4AB,Tucson plug-in Ultimate AWD,,,
 Hyundai,2023,SZ1SDA25D200,Santa Cruz Preferred AWD,,,
 Hyundai,2023,SZ1SDA25D241,Santa Cruz Preferred AWD w/Trend,,,
 Hyundai,2023,SZ1SDA25D400,Santa Cruz Ultimate AWD,,,
@@ -593,8 +593,8 @@ Hyundai,2023,SA4SAA25B200,Santa Fe 2.5L Preferred AWD,,,
 Hyundai,2023,SA4SAA25B241,Santa Fe 2.5L Preferred AWD w/ Trend,,,
 Hyundai,2023,SA4SAA25DY00,Santa Fe 2.5T Preferred AWD Urban Package,,,
 Hyundai,2023,SA4SAA25D469,Santa Fe 2.5T Ultimate Calligraphy AWD,,,
-Hyundai,2023,SA4SAA16G3AA,Santa Fe hybrid 1.6T Luxury AWD hybrid,,,
-Hyundai,2023,SA4SAA16J3AB,Santa Fe plug-in Luxury plug-in AWD,,,
+Hyundai,2023,SA4SAA16G3AA,Santa Fe hybrid 1.6T Luxury AWD,,,
+Hyundai,2023,SA4SAA16J3AB,Santa Fe plug-in Luxury AWD,,,
 Hyundai,2023,PA1LAA38B200,Palisade Preferred AWD,,,
 Hyundai,2023,PA1LAA38BY00,Palisade Urban AWD 8-Pass,,,
 Hyundai,2023,PA1LAA38BY91,Palisade Urban AWD 7-Pass,,,
@@ -608,8 +608,8 @@ Hyundai,2026,ELCS4V2BPRTE,Elantra with Tech package,,,
 Hyundai,2026,ELCS4V2BLU00,Elantra Luxury,,,
 Hyundai,2026,ELCS4V2BLUME,Elantra Luxury Two-Tone Interior,,,
 Hyundai,2026,ELCS4U1ANLUL,Elantra N-Line Ultimate,,,
-Hyundai,2026,ELHS4T1BLUHE,Elantra hybrid hybrid Luxury,,,
-Hyundai,2026,ELHS4T1BLUHM,Elantra hybrid hybrid Luxury Two-Tone Interior,,,
+Hyundai,2026,ELHS4T1BLUHE,Elantra hybrid Luxury,,,
+Hyundai,2026,ELHS4T1BLUHM,Elantra hybrid Luxury Two-Tone Interior,,,
 Hyundai,2026,ELCS472ANN00,Elantra N Manual,,,
 Hyundai,2026,ELCS4M2ANN00,Elantra N DCT,,,
 Hyundai,2026,ELCS472ANNTC,Elantra N TCR Manual,,,
@@ -1622,14 +1622,14 @@ Mazda,2020,DVXK80,Mazda3 GX Auto FWD,,,
 Mazda,2020,DVSK60,Mazda3 GS Manual FWD,,,
 Mazda,2020,DVSL80,Mazda3 GS Auto FWD,,,
 Mazda,2020,DVTN80,Mazda3 GT Auto FWD,,,
-Mazda,2020,DXSN80,Mazda3 GS Auto awd awd,,,
-Mazda,2020,DXTN80,Mazda3 GT Auto awd awd,,,
+Mazda,2020,DXSN80,Mazda3 GS Auto awd,,,
+Mazda,2020,DXTN80,Mazda3 GT Auto awd,,,
 Mazda,2020,SVXK60,Mazda3 Sport GX Manual FWD,,,
 Mazda,2020,SVXK80,Mazda3 Sport GX Auto FWD,,,
 Mazda,2020,SVSN60,Mazda3 Sport GS Manual FWD,,,
 Mazda,2020,SVSN80,Mazda3 Sport GS Auto FWD,,,
-Mazda,2020,SXSN80,Mazda3 Sport GS Auto awd awd,,,
-Mazda,2020,SXTN80,Mazda3 Sport GT Auto awd awd,,,
+Mazda,2020,SXSN80,Mazda3 Sport GS Auto awd,,,
+Mazda,2020,SXTN80,Mazda3 Sport GT Auto awd,,,
 Mazda,2020,SVTN80,Mazda3 Sport GT Auto FWD,,,
 Mazda,2020,SVTN60,Mazda3 Sport GT Manual FWD,,,
 Mazda,2020,G4SN80,Mazda6 GS Auto,,,
@@ -1678,20 +1678,20 @@ Mazda,2021,DVXK81,Mazda3 GX Auto FWD,,,
 Mazda,2021,DVSK61,Mazda3 GS Manual FWD,,,
 Mazda,2021,DVSL81,Mazda3 GS Auto FWD,,,
 Mazda,2021,DVTL81,Mazda3 GT Auto FWD,,,
-Mazda,2021,DXSL81,Mazda3 GS Auto awd awd,,,
-Mazda,2021,DXTL81,Mazda3 GT Auto awd awd,,,
-Mazda,2021,DXTM81,Mazda3 GT w/Turbo Auto awd awd,,,
-Mazda,2021,DXEM81,Mazda3 100th Anniversary Edition Auto awd awd,,,
+Mazda,2021,DXSL81,Mazda3 GS Auto awd,,,
+Mazda,2021,DXTL81,Mazda3 GT Auto awd,,,
+Mazda,2021,DXTM81,Mazda3 GT w/Turbo Auto awd,,,
+Mazda,2021,DXEM81,Mazda3 100th Anniversary Edition Auto awd,,,
 Mazda,2021,SVXK61,Mazda3 Sport GX Manual FWD,,,
 Mazda,2021,SVXK81,Mazda3 Sport GX Auto FWD,,,
 Mazda,2021,SVSL61,Mazda3 Sport GS Manual FWD,,,
 Mazda,2021,SVSL81,Mazda3 Sport GS Auto FWD,,,
 Mazda,2021,SVTL81,Mazda3 Sport GT Auto FWD,,,
 Mazda,2021,SVTL61,Mazda3 Sport GT Manual FWD,,,
-Mazda,2021,SXSL81,Mazda3 Sport GS Auto awd awd,,,
-Mazda,2021,SXTL81,Mazda3 Sport GT Auto awd awd,,,
-Mazda,2021,SXTM81,Mazda3 Sport GT w/Turbo Auto awd awd,,,
-Mazda,2021,SXEM81,Mazda3 Sport 100th Anniversary Edition Auto awd awd,,,
+Mazda,2021,SXSL81,Mazda3 Sport GS Auto awd,,,
+Mazda,2021,SXTL81,Mazda3 Sport GT Auto awd,,,
+Mazda,2021,SXTM81,Mazda3 Sport GT w/Turbo Auto awd,,,
+Mazda,2021,SXEM81,Mazda3 Sport 100th Anniversary Edition Auto awd,,,
 Mazda,2021,G4SN81,Mazda6 GS Auto,,,
 Mazda,2021,G4LN81,Mazda6 GS-L Auto,,,
 Mazda,2021,G4TN81,Mazda6 GT Auto,,,
@@ -1736,18 +1736,18 @@ Mazda,2022,DVXK62,Mazda3 GX Manual FWD,,,
 Mazda,2022,DVXK82,Mazda3 GX Auto FWD,,,
 Mazda,2022,DVSL82,Mazda3 GS Auto FWD,,,
 Mazda,2022,DVTL82,Mazda3 GT Auto FWD,,,
-Mazda,2022,DXSL82,Mazda3 GS Auto awd awd,,,
-Mazda,2022,DXTL82,Mazda3 GT Auto awd awd,,,
-Mazda,2022,DXTM82,Mazda3 GT w/Turbo Auto awd awd,,,
+Mazda,2022,DXSL82,Mazda3 GS Auto awd,,,
+Mazda,2022,DXTL82,Mazda3 GT Auto awd,,,
+Mazda,2022,DXTM82,Mazda3 GT w/Turbo Auto awd,,,
 Mazda,2022,SVXK62,Mazda3 Sport GX Manual FWD,,,
 Mazda,2022,SVXK82,Mazda3 Sport GX Auto FWD,,,
 Mazda,2022,SVSL62,Mazda3 Sport GS Manual FWD,,,
 Mazda,2022,SVSL82,Mazda3 Sport GS Auto FWD,,,
 Mazda,2022,SVTL82,Mazda3 Sport GT Auto FWD,,,
 Mazda,2022,SVTL62,Mazda3 Sport GT Manual FWD,,,
-Mazda,2022,SXSL82,Mazda3 Sport GS Auto awd awd,,,
-Mazda,2022,SXTL82,Mazda3 Sport GT Auto awd awd,,,
-Mazda,2022,SXTM82,Mazda3 Sport GT w/Turbo Auto awd awd,,,
+Mazda,2022,SXSL82,Mazda3 Sport GS Auto awd,,,
+Mazda,2022,SXTL82,Mazda3 Sport GT Auto awd,,,
+Mazda,2022,SXTM82,Mazda3 Sport GT w/Turbo Auto awd,,,
 Mazda,2022,KVSB82,MX-30 EV GS FWD,,,
 Mazda,2022,KVTB82,MX-30 EV GT FWD,,,
 Mazda,2022,L2SK62,MX-5 GS Manual,,,
@@ -1783,18 +1783,18 @@ Mazda,2023,DVXK63,Mazda3 GX Manual FWD,,,
 Mazda,2023,DVXK83,Mazda3 GX Auto FWD,,,
 Mazda,2023,DVSK83,Mazda3 GS Auto FWD,,,
 Mazda,2023,DVTL83,Mazda3 GT Auto FWD,,,
-Mazda,2023,DXSL83,Mazda3 GS Auto awd awd,,,
-Mazda,2023,DXTL83,Mazda3 GT Auto awd awd,,,
-Mazda,2023,DXTM83,Mazda3 GT w/Turbo Auto awd awd,,,
+Mazda,2023,DXSL83,Mazda3 GS Auto awd,,,
+Mazda,2023,DXTL83,Mazda3 GT Auto awd,,,
+Mazda,2023,DXTM83,Mazda3 GT w/Turbo Auto awd,,,
 Mazda,2023,SVXK63,Mazda3 Sport GX Manual FWD,,,
 Mazda,2023,SVXK83,Mazda3 Sport GX Auto FWD,,,
 Mazda,2023,SVSK63,Mazda3 Sport GS Manual FWD,,,
 Mazda,2023,SVSK83,Mazda3 Sport GS Auto FWD,,,
 Mazda,2023,SVTL83,Mazda3 Sport GT Auto FWD,,,
 Mazda,2023,SVTL63,Mazda3 Sport GT Manual FWD,,,
-Mazda,2023,SXSL83,Mazda3 Sport GS Auto awd awd,,,
-Mazda,2023,SXTL83,Mazda3 Sport GT Auto awd awd,,,
-Mazda,2023,SXTM83,Mazda3 Sport GT w/Turbo Auto awd awd,,,
+Mazda,2023,SXSL83,Mazda3 Sport GS Auto awd,,,
+Mazda,2023,SXTL83,Mazda3 Sport GT Auto awd,,,
+Mazda,2023,SXTM83,Mazda3 Sport GT w/Turbo Auto awd,,,
 Mazda,2023,KVSB83,MX-30 EV GS FWD,,,
 Mazda,2023,KVTB83,MX-30 EV GT FWD,,,
 Mazda,2023,L2SK63,MX-5 GS Manual,,,
@@ -1806,185 +1806,185 @@ Mazda,2023,L3PK63,MX-5 RF GS-P Manual,,,
 Mazda,2023,L3PK83,MX-5 RF GS-P Auto,,,
 Mazda,2023,L3TK63,MX-5 RF GT Manual,,,
 Mazda,2023,L3TK83,MX-5 RF GT Auto,,,
-Mazda,2025,DVXL85,Mazda3 GX auto GX - 6AT,,AA00,461087
-Mazda,2025,DVSL85,Mazda3 GS auto GS - 6AT,,AA00,461088
-Mazda,2025,DVSL85,Mazda3 GS auto Lux package GS-6AT Luxury Package,,LP00,461088
-Mazda,2025,DXSL85,"Mazda3 GS auto awd Lux package GS - 6AT, awd awd Lux package",,LP00,461090
-Mazda,2025,DVTL85,Mazda3 GT auto GT - 6AT,,AA00,461089
-Mazda,2025,DXTL85,"Mazda3 GT AT, awd GT - 6AT, awd awd",,AA00,461091
-Mazda,2025,DXTM85,"Mazda3 GT AT, AWD, T GT - 6AT, AWD, Turbo",,AA00,461092
-Mazda,2025,SVXL85,Mazda3 Sport GX auto GX - 6AT,,AA00,461093
-Mazda,2025,SVSL85,Mazda3 Sport GS auto GS - 6AT,,AA00,461094
-Mazda,2025,SVSL85,"Mazda3 Sport GS auto Lux package GS - 6AT, Luxury Package",,LP00,461094
-Mazda,2025,SXSL85,"Mazda3 Sport GS AT, awd Lux package GS - 6AT, awd awd",,LP00,461097
-Mazda,2025,SVTL65,Mazda3 Sport GT manual GT - 6MT,,AA00,461095
+Mazda,2025,DVXL85,Mazda3 GX auto - 6AT,,AA00,461087
+Mazda,2025,DVSL85,Mazda3 GS auto - 6AT,,AA00,461088
+Mazda,2025,DVSL85,Mazda3 GS auto Lux package GS-6AT Luxury,,LP00,461088
+Mazda,2025,DXSL85,"Mazda3 GS auto awd Lux package - 6AT,",,LP00,461090
+Mazda,2025,DVTL85,Mazda3 GT auto - 6AT,,AA00,461089
+Mazda,2025,DXTL85,"Mazda3 GT AT, awd - 6AT,",,AA00,461091
+Mazda,2025,DXTM85,"Mazda3 GT AT, AWD, T - 6AT, Turbo",,AA00,461092
+Mazda,2025,SVXL85,Mazda3 Sport GX auto - 6AT,,AA00,461093
+Mazda,2025,SVSL85,Mazda3 Sport GS auto - 6AT,,AA00,461094
+Mazda,2025,SVSL85,"Mazda3 Sport GS auto Lux package - 6AT, Luxury",,LP00,461094
+Mazda,2025,SXSL85,"Mazda3 Sport GS AT, awd Lux package - 6AT,",,LP00,461097
+Mazda,2025,SVTL65,Mazda3 Sport GT manual - 6MT,,AA00,461095
 Mazda,2025,SVTL85,Mazda3 Sport GT auto GT-6AT,,AA00,461096
-Mazda,2025,SXTL85,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV awd",,AA00,461098
-Mazda,2025,SXTM85,"Mazda3 Sport GT AT, AWD, T GT-6AT, AWD, Turbo",,AA00,461099
-Mazda,2025,SXUM85,"Mazda3 Sport Suna AT, AWD, T Suna-6AT, AWD, Turbo",,SE00,461100
-Mazda,2025,L2SK65,MX-5 GS 6MT GS - 6MT,,AA00,470171
-Mazda,2025,L2PK65,MX-5 GS-P 6MT GS-P -6MT,,AA00,470172
-Mazda,2025,L2PK65,MX-5 GS-P 6MT GS-P -6MT Sport Package,,SP00,470172
-Mazda,2025,L2PK85,MX-5 GS-P 6AT GS-P -6AT,,AA00,470173
-Mazda,2025,L2TK65,"MX-5 GT 6MT GT - 6MT, Black Leather",,AA00,470174
-Mazda,2025,L2TK85,"MX-5 GT 6AT GT - 6AT, Black Leather",,AA00,470175
-Mazda,2025,L2EK65,"MX-5 35th Anniversary 6MT 35th Anniversary - 6MT, Tan Leather",,AE35,470780
-Mazda,2025,L3PK65,MX-5 RF GS-P 6MT GS-P - 6MT,,AA00,469862
-Mazda,2025,L3PK65,MX-5 RF GS-P 6MT GS-P - 6MT Sport Package,,SP00,469862
-Mazda,2025,L3PK85,MX-5 RF GS-P 6AT GS-P - 6AT,,AA00,469863
-Mazda,2025,L3TK65,"MX-5 RF GT 6MT GT - 6MT, Black Leather",,AA00,469864
-Mazda,2025,L3TK65,"MX-5 RF GT 6MT GT - 6MT, Grand Sport Package",,GR00,469864
-Mazda,2025,L3TK85,"MX-5 RF GT 6AT GT - 6AT, Black Leather",,AA00,469865
-Mazda,2025,ZXXL85,CX-30 GX auto awd CX-30 GX auto awd,,AA00,463053
-Mazda,2025,ZXSL85,CX-30 GS auto awd CX-30 GS auto awd,,AA00,463054
-Mazda,2025,ZXSL85,"CX-30 GS auto awd CX-30 GS auto AWD, Luxury Package",,LP00,463054
-Mazda,2025,ZXTL85,CX-30 GT auto awd CX-30 GT auto awd,,AA00,463055
-Mazda,2025,ZXTM85,"CX-30 GT auto AWD, T CX-30 GT auto AWD, Turbo",,AA00,463056
-Mazda,2025,ZXUM85,"CX-30 GT auto AWD, T, Suna CX-30 GT auto AWD, Turbo Suna",,SE00,463057
-Mazda,2025,NXXL85,"CX-5 GX auto awd GX - 6AT, awd",,AA00,461688
-Mazda,2025,NXSL85,"CX-5 GS auto awd GS - 6AT, awd",,AA00,461689
-Mazda,2025,NXSL85,"CX-5 GS auto AWD, Comfort package GS - 6AT, AWD, CD, Comfort Package",,CM00,461689
-Mazda,2025,NXBN85,"CX-5 Kuro auto awd Kuro - 6AT, awd",,KE00,461690
-Mazda,2025,NXTN85,"CX-5 GT auto awd GT - 6AT, awd",,AA00,461691
-Mazda,2025,NXDM85,"CX-5 Sport Design auto AWD, T Sport Design - 6AT, AWD, T",,SD00,461692
-Mazda,2025,NXUM85,"CX-5 Suna auto AWD, T Suna - 6AT, AWD,T",,SE00,461693
-Mazda,2025,NXKM85,"CX-5 Signature auto AWD,T Signature - 6AT, AWD, T",,AA00,461694
-Mazda,2025,JXLN85,CX-50 GS-L awd CX-50 GS-L awd,,AA00,461996
-Mazda,2025,JXTN85,CX-50 GT awd CX-50 GT awd,,AA00,461997
-Mazda,2025,JXTM85,"CX-50 GT AWD, Turbo CX-50 GT AWD, Turbo",,AA00,461998
-Mazda,2025,JXTM85,"CX-50 Meridian AWD, Turbo CX-50 Meridian AWD, Turbo",,MP00,461999
-Mazda,2025,JXTM85,"CX-50 Meridian AWD, Turbo, Apex package CX-50 Meridian AWD, Turbo, Apex package",,AP00,461999
-Mazda,2025,MXLH85,CX-50 GS-L Hybrid CX-50 GS-L Hybrid,,AA00,462388
-Mazda,2025,MXBH85,CX-50 Kuro Hybrid CX-50 Kuro Hybrid,,KE00,462389
-Mazda,2025,MXTH85,CX-50 GT Hybrid CX-50 GT Hybrid,,AA00,462390
-Mazda,2025,XXLF85,CX-70 GS-L - M Hybrid CX-70 GS-L - M Hybrid,,AA00,453634
-Mazda,2025,XXTF85,CX-70 GT- M Hybrid CX-70 GT- M Hybrid,,AA00,453635
-Mazda,2025,XXPG85,CX-70 GT-P - M Hybrid CX-70 GT-P - M Hybrid,,AA00,453636
-Mazda,2025,XXKG85,CX-70 Signature - M Hybrid CX-70 Signature - M Hybrid,,AA00,453637
-Mazda,2025,YXLP85,CX-70 GS-L - PHEV CX-70 GS-L - PHEV,,AA00,453632
-Mazda,2025,YXTP85,CX-70 GT - PHEV CX-70 GT - PHEV,,AA00,453633
-Mazda,2025,WXSF85,"CX-90 GS - M Hybrid GS - AWD, M Hybrid",,AA00,461802
-Mazda,2025,WXLF85,"CX-90 GS-L - M Hybrid GS-L - AWD, M Hybrid",,AA00,461803
-Mazda,2025,WXLF85,"CX-90 GS-L - M Hybrid, Captain's chairs GS-L - AWD, M Hybrid, Captain's chairs",,CC00,461803
-Mazda,2025,WXTF85,"CX-90 GT- M Hybrid GT- AWD, M Hybrid",,AA00,461804
-Mazda,2025,WXTF85,"CX-90 GT- M Hybrid, Captain's chairs GT- AWD, M Hybrid",,CC00,461804
-Mazda,2025,WXPG85,"CX-90 GT-P - M Hybrid GT-P - AWD, M Hybrid",,AA00,461805
-Mazda,2025,WXPG85,"CX-90 GT-P - M Hybrid, Captain's chairs GT-P - AWD, M Hybrid",,CC00,461805
-Mazda,2025,WXKG85,"CX-90 Signature - M Hybrid Signature - AWD, M Hybrid",,AA00,461806
-Mazda,2025,VXSP85,"CX-90 GS - PHEV GS - AWD, PHEV",,AA00,461700
-Mazda,2025,VXLP85,"CX-90 GS-L - PHEV GS-L - AWD, PHEV",,AA00,461701
-Mazda,2025,VXTP85,"CX-90 GT - PHEV GT - AWD, PHEV",,AA00,461702
-Mazda,2024,L2SK64,MX-5 GS 6MT GS - 6MT AA00,,,453418
-Mazda,2024,L2PK64,MX-5 GS-P 6MT GS-P -6MT AA00,,,453419
-Mazda,2024,L2PK84,MX-5 GS-P 6AT GS-P -6AT AA00,,,453420
-Mazda,2024,L2TK64,"MX-5 GT 6MT GT - 6MT, Black Leather AA00",,,453421
-Mazda,2024,L2TK84,"MX-5 GT 6AT GT - 6AT, Black Leather AA00",,,453422
-Mazda,2024,L3PK64,MX-5 RF GS-P 6MT GS-P - 6MT AA00,,,453423
-Mazda,2024,L3PK84,MX-5 RF GS-P 6AT GS-P - 6AT AA00,,,453424
-Mazda,2024,L3TK64,"MX-5 RF GT 6MT GT - 6MT, Black Leather AA00",,,453425
-Mazda,2024,L3TK84,"MX-5 RF GT 6AT GT - 6AT, Black Leather AA00",,,453426
-Mazda,2024,KVSB84,MX-30 EV GS MX-30 ev GS AA00,,,453513
-Mazda,2024,KVTB84,MX-30 EV GT MX-30 ev GT AA00,,,453514
-Mazda,2024,ZXXL84,CX-30 GX auto awd CX-30 GX auto awd AA00,,,447804
-Mazda,2024,ZXSL84,CX-30 GS auto awd CX-30 GS auto awd AA00,,,447805
-Mazda,2024,ZXTL84,CX-30 GT auto awd CX-30 GT auto awd AA00,,,447806
-Mazda,2024,ZXTM84,"CX-30 GT auto AWD, T CX-30 GT auto AWD, Turbo AA00",,,447807
-Mazda,2024,ZXUM84,"CX-30 GT auto AWD, T, Suna CX-30 GT auto AWD, Turbo Suna SE00",,,447808
-Mazda,2024,NXXN84,"CX-5 GX auto awd GX - 6AT, awd AA00",,,445370
-Mazda,2024,NXXL84,"CX-5 GX auto awd w/o CD GX - 6AT, awd w/o CD AA00",,,451113
-Mazda,2024,NXSN84,"CX-5 GS auto awd GS - 6AT, awd AA00",,,445371
-Mazda,2024,NXSL84,"CX-5 GS auto awd w/o CD GS - 6AT, awd w/o CD AA00",,,451114
-Mazda,2024,NXBN84,"CX-5 Kuro auto awd Kuro - 6AT, awd KE00",,,445372
-Mazda,2024,NXTN84,"CX-5 GT auto awd GT - 6AT, awd AA00",,,445373
-Mazda,2024,NXDM84,"CX-5 Sport Design auto AWD, T Sport Design - 6AT, AWD, T SD00",,,445374
-Mazda,2024,NXUM84,"CX-5 Suna auto AWD, T Suna - 6AT, AWD,T SE00",,,445376
-Mazda,2024,NXKM84,"CX-5 Signature auto AWD,T Signature - 6AT, AWD, T AA00",,,445375
-Mazda,2024,JXLN84,CX-50 GS-L awd CX-50 GS-L awd AA00,,,444168
-Mazda,2024,JXTN84,CX-50 GT awd CX-50 GT awd AA00,,,444169
-Mazda,2024,JXTM84,"CX-50 GT AWD, Turbo CX-50 GT AWD, Turbo AA00",,,444170
-Mazda,2024,JXTM84,"CX-50 Meridian AWD, Turbo CX-50 Meridian AWD, Turbo MP00",,,444171
-Mazda,2024,WXSF84,"CX-90 GS - M Hybrid GS - AWD, M Hybrid AA00",,,438890
-Mazda,2024,WXLF84,"CX-90 GS-L - M Hybrid GS-L - AWD, M Hybrid AA00",,,438891
-Mazda,2024,WXTF84,"CX-90 GT- M Hybrid GT- AWD, M Hybrid AA00",,,438892
-Mazda,2024,WXPG84,"CX-90 GT-P - M Hybrid GT-P - AWD, M Hybrid AA00",,,438893
-Mazda,2024,WXKG84,"CX-90 Signature - M Hybrid Signature - AWD, M Hybrid AA00",,,438894
-Mazda,2024,VXSP84,"CX-90 GS - PHEV GS - AWD, PHEV AA00",,,438887
-Mazda,2024,VXLP84,"CX-90 GS-L - PHEV GS-L - AWD, PHEV AA00",,,438888
-Mazda,2024,VXTP84,"CX-90 GT - PHEV GT - AWD, PHEV AA00",,,438889
-Mazda,2024,DVXL84,Mazda3 GX auto GX - 6AT AA00,,,444021
-Mazda,2024,DVSL84,Mazda3 GS auto GS - 6AT AA00,,,444022
-Mazda,2024,DXSL84,"Mazda3 GS auto awd Lux package GS - 6AT, awd awd Lux package LP00",,,444024
-Mazda,2024,DVTL84,Mazda3 GT auto GT - 6AT AA00,,,444023
-Mazda,2024,DXTL84,"Mazda3 GT AT, awd GT - 6AT, awd awd AA00",,,444025
-Mazda,2024,DXTM84,"Mazda3 GT AT, AWD, T GT - 6AT, AWD, Turbo AA00",,,444026
-Mazda,2024,SVXL84,Mazda3 Sport GX auto GX - 6AT AA00,,,444918
-Mazda,2024,SVSL84,Mazda3 Sport GS auto GS - 6AT AA00,,,444919
-Mazda,2024,SXSL84,"Mazda3 Sport GS AT, awd Lux package GS - 6AT, awd awd LP00",,,444922
-Mazda,2024,SVTL64,Mazda3 Sport GT manual GT - 6MT AA00,,,444920
+Mazda,2025,SXTL85,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV",,AA00,461098
+Mazda,2025,SXTM85,"Mazda3 Sport GT AT, AWD, T GT-6AT, Turbo",,AA00,461099
+Mazda,2025,SXUM85,"Mazda3 Sport Suna AT, AWD, T Suna-6AT, Turbo",,SE00,461100
+Mazda,2025,L2SK65,MX-5 GS 6MT -,,AA00,470171
+Mazda,2025,L2PK65,MX-5 GS-P 6MT -6MT,,AA00,470172
+Mazda,2025,L2PK65,MX-5 GS-P 6MT -6MT Sport Package,,SP00,470172
+Mazda,2025,L2PK85,MX-5 GS-P 6AT -6AT,,AA00,470173
+Mazda,2025,L2TK65,"MX-5 GT 6MT - 6MT, Black Leather",,AA00,470174
+Mazda,2025,L2TK85,"MX-5 GT 6AT - 6AT, Black Leather",,AA00,470175
+Mazda,2025,L2EK65,"MX-5 35th Anniversary 6MT - 6MT, Tan Leather",,AE35,470780
+Mazda,2025,L3PK65,MX-5 RF GS-P 6MT -,,AA00,469862
+Mazda,2025,L3PK65,MX-5 RF GS-P 6MT - Sport Package,,SP00,469862
+Mazda,2025,L3PK85,MX-5 RF GS-P 6AT -,,AA00,469863
+Mazda,2025,L3TK65,"MX-5 RF GT 6MT - 6MT, Black Leather",,AA00,469864
+Mazda,2025,L3TK65,"MX-5 RF GT 6MT - 6MT, Grand Sport Package",,GR00,469864
+Mazda,2025,L3TK85,"MX-5 RF GT 6AT - 6AT, Black Leather",,AA00,469865
+Mazda,2025,ZXXL85,CX-30 GX auto awd,,AA00,463053
+Mazda,2025,ZXSL85,CX-30 GS auto awd,,AA00,463054
+Mazda,2025,ZXSL85,"CX-30 GS auto awd AWD, Luxury Package",,LP00,463054
+Mazda,2025,ZXTL85,CX-30 GT auto awd,,AA00,463055
+Mazda,2025,ZXTM85,"CX-30 GT auto AWD, T Turbo",,AA00,463056
+Mazda,2025,ZXUM85,"CX-30 GT auto AWD, T, Suna Turbo",,SE00,463057
+Mazda,2025,NXXL85,"CX-5 GX auto awd - 6AT,",,AA00,461688
+Mazda,2025,NXSL85,"CX-5 GS auto awd - 6AT,",,AA00,461689
+Mazda,2025,NXSL85,"CX-5 GS auto AWD, Comfort package - 6AT, CD,",,CM00,461689
+Mazda,2025,NXBN85,"CX-5 Kuro auto awd - 6AT,",,KE00,461690
+Mazda,2025,NXTN85,"CX-5 GT auto awd - 6AT,",,AA00,461691
+Mazda,2025,NXDM85,"CX-5 Sport Design auto AWD, T - 6AT,",,SD00,461692
+Mazda,2025,NXUM85,"CX-5 Suna auto AWD, T - 6AT, AWD,T",,SE00,461693
+Mazda,2025,NXKM85,"CX-5 Signature auto AWD,T - 6AT, AWD, T",,AA00,461694
+Mazda,2025,JXLN85,CX-50 GS-L awd,,AA00,461996
+Mazda,2025,JXTN85,CX-50 GT awd,,AA00,461997
+Mazda,2025,JXTM85,"CX-50 GT AWD, Turbo",,AA00,461998
+Mazda,2025,JXTM85,"CX-50 Meridian AWD, Turbo",,MP00,461999
+Mazda,2025,JXTM85,"CX-50 Meridian AWD, Turbo, Apex package",,AP00,461999
+Mazda,2025,MXLH85,CX-50 GS-L Hybrid,,AA00,462388
+Mazda,2025,MXBH85,CX-50 Kuro Hybrid,,KE00,462389
+Mazda,2025,MXTH85,CX-50 GT Hybrid,,AA00,462390
+Mazda,2025,XXLF85,CX-70 GS-L - M Hybrid,,AA00,453634
+Mazda,2025,XXTF85,CX-70 GT- M Hybrid,,AA00,453635
+Mazda,2025,XXPG85,CX-70 GT-P - M Hybrid,,AA00,453636
+Mazda,2025,XXKG85,CX-70 Signature - M Hybrid,,AA00,453637
+Mazda,2025,YXLP85,CX-70 GS-L - PHEV,,AA00,453632
+Mazda,2025,YXTP85,CX-70 GT - PHEV,,AA00,453633
+Mazda,2025,WXSF85,"CX-90 GS - M Hybrid AWD,",,AA00,461802
+Mazda,2025,WXLF85,"CX-90 GS-L - M Hybrid AWD,",,AA00,461803
+Mazda,2025,WXLF85,"CX-90 GS-L - M Hybrid, Captain's chairs AWD,",,CC00,461803
+Mazda,2025,WXTF85,"CX-90 GT- M Hybrid AWD,",,AA00,461804
+Mazda,2025,WXTF85,"CX-90 GT- M Hybrid, Captain's chairs AWD, Hybrid",,CC00,461804
+Mazda,2025,WXPG85,"CX-90 GT-P - M Hybrid AWD,",,AA00,461805
+Mazda,2025,WXPG85,"CX-90 GT-P - M Hybrid, Captain's chairs AWD, Hybrid",,CC00,461805
+Mazda,2025,WXKG85,"CX-90 Signature - M Hybrid AWD,",,AA00,461806
+Mazda,2025,VXSP85,"CX-90 GS - PHEV AWD,",,AA00,461700
+Mazda,2025,VXLP85,"CX-90 GS-L - PHEV AWD,",,AA00,461701
+Mazda,2025,VXTP85,"CX-90 GT - PHEV AWD,",,AA00,461702
+Mazda,2024,L2SK64,MX-5 GS 6MT - AA00,,,453418
+Mazda,2024,L2PK64,MX-5 GS-P 6MT -6MT AA00,,,453419
+Mazda,2024,L2PK84,MX-5 GS-P 6AT -6AT AA00,,,453420
+Mazda,2024,L2TK64,"MX-5 GT 6MT - 6MT, Black Leather AA00",,,453421
+Mazda,2024,L2TK84,"MX-5 GT 6AT - 6AT, Black Leather AA00",,,453422
+Mazda,2024,L3PK64,MX-5 RF GS-P 6MT - AA00,,,453423
+Mazda,2024,L3PK84,MX-5 RF GS-P 6AT - AA00,,,453424
+Mazda,2024,L3TK64,"MX-5 RF GT 6MT - 6MT, Black Leather AA00",,,453425
+Mazda,2024,L3TK84,"MX-5 RF GT 6AT - 6AT, Black Leather AA00",,,453426
+Mazda,2024,KVSB84,MX-30 EV GS AA00,,,453513
+Mazda,2024,KVTB84,MX-30 EV GT AA00,,,453514
+Mazda,2024,ZXXL84,CX-30 GX auto awd AA00,,,447804
+Mazda,2024,ZXSL84,CX-30 GS auto awd AA00,,,447805
+Mazda,2024,ZXTL84,CX-30 GT auto awd AA00,,,447806
+Mazda,2024,ZXTM84,"CX-30 GT auto AWD, T Turbo AA00",,,447807
+Mazda,2024,ZXUM84,"CX-30 GT auto AWD, T, Suna Turbo SE00",,,447808
+Mazda,2024,NXXN84,"CX-5 GX auto awd - 6AT, AA00",,,445370
+Mazda,2024,NXXL84,"CX-5 GX auto awd w/o CD - 6AT, AA00",,,451113
+Mazda,2024,NXSN84,"CX-5 GS auto awd - 6AT, AA00",,,445371
+Mazda,2024,NXSL84,"CX-5 GS auto awd w/o CD - 6AT, AA00",,,451114
+Mazda,2024,NXBN84,"CX-5 Kuro auto awd - 6AT, KE00",,,445372
+Mazda,2024,NXTN84,"CX-5 GT auto awd - 6AT, AA00",,,445373
+Mazda,2024,NXDM84,"CX-5 Sport Design auto AWD, T - 6AT, SD00",,,445374
+Mazda,2024,NXUM84,"CX-5 Suna auto AWD, T - 6AT, AWD,T SE00",,,445376
+Mazda,2024,NXKM84,"CX-5 Signature auto AWD,T - 6AT, AWD, T AA00",,,445375
+Mazda,2024,JXLN84,CX-50 GS-L awd AA00,,,444168
+Mazda,2024,JXTN84,CX-50 GT awd AA00,,,444169
+Mazda,2024,JXTM84,"CX-50 GT AWD, Turbo AA00",,,444170
+Mazda,2024,JXTM84,"CX-50 Meridian AWD, Turbo MP00",,,444171
+Mazda,2024,WXSF84,"CX-90 GS - M Hybrid AWD, AA00",,,438890
+Mazda,2024,WXLF84,"CX-90 GS-L - M Hybrid AWD, AA00",,,438891
+Mazda,2024,WXTF84,"CX-90 GT- M Hybrid AWD, AA00",,,438892
+Mazda,2024,WXPG84,"CX-90 GT-P - M Hybrid AWD, AA00",,,438893
+Mazda,2024,WXKG84,"CX-90 Signature - M Hybrid AWD, AA00",,,438894
+Mazda,2024,VXSP84,"CX-90 GS - PHEV AWD, AA00",,,438887
+Mazda,2024,VXLP84,"CX-90 GS-L - PHEV AWD, AA00",,,438888
+Mazda,2024,VXTP84,"CX-90 GT - PHEV AWD, AA00",,,438889
+Mazda,2024,DVXL84,Mazda3 GX auto - 6AT AA00,,,444021
+Mazda,2024,DVSL84,Mazda3 GS auto - 6AT AA00,,,444022
+Mazda,2024,DXSL84,"Mazda3 GS auto awd Lux package - 6AT, LP00",,,444024
+Mazda,2024,DVTL84,Mazda3 GT auto - 6AT AA00,,,444023
+Mazda,2024,DXTL84,"Mazda3 GT AT, awd - 6AT, AA00",,,444025
+Mazda,2024,DXTM84,"Mazda3 GT AT, AWD, T - 6AT, Turbo AA00",,,444026
+Mazda,2024,SVXL84,Mazda3 Sport GX auto - 6AT AA00,,,444918
+Mazda,2024,SVSL84,Mazda3 Sport GS auto - 6AT AA00,,,444919
+Mazda,2024,SXSL84,"Mazda3 Sport GS AT, awd Lux package - 6AT, LP00",,,444922
+Mazda,2024,SVTL64,Mazda3 Sport GT manual - 6MT AA00,,,444920
 Mazda,2024,SVTL84,Mazda3 Sport GT auto GT-6AT AA00,,,444921
-Mazda,2024,SXTL84,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV awd AA00",,,444923
-Mazda,2024,SXTM84,"Mazda3 Sport GT AT, AWD, T GT-6AT, AWD, Turbo AA00",,,444924
-Mazda,2024,SXUM84,"Mazda3 Sport Suna AT, AWD, T Suna-6AT, AWD, Turbo SE00",,,444925
-Mazda,2026,DVXL86,Mazda3 GX auto GX - 6AT,,AA00,
-Mazda,2026,DVSL86,Mazda3 GS auto GS - 6AT,,AA00,
-Mazda,2026,DVSL86,Mazda3 GS auto Lux package GS-6AT Luxury Package,,LP00,
-Mazda,2026,DXSL86,"Mazda3 GS auto awd Lux package GS - 6AT, awd awd Lux package",,LP00,
-Mazda,2026,DVTL86,Mazda3 GT auto GT - 6AT,,AA00,
-Mazda,2026,DXTL86,"Mazda3 GT AT, awd GT - 6AT, awd awd",,AA00,
-Mazda,2026,DXTM86,"Mazda3 GT AT, AWD, T GT - 6AT, AWD, Turbo",,AA00,
-Mazda,2026,SVXL86,Mazda3 Sport GX auto GX - 6AT,,AA00,
-Mazda,2026,SVSL86,Mazda3 Sport GS auto GS - 6AT,,AA00,
-Mazda,2026,SVSL86,"Mazda3 Sport GS auto Lux package GS - 6AT, Luxury Package",,LP00,
-Mazda,2026,SXSL86,"Mazda3 Sport GS AT, awd Lux package GS - 6AT, Luxury Package, awd awd",,LP00,
-Mazda,2026,SVTL66,Mazda3 Sport GT manual GT - 6MT,,AA00,
+Mazda,2024,SXTL84,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV AA00",,,444923
+Mazda,2024,SXTM84,"Mazda3 Sport GT AT, AWD, T GT-6AT, Turbo AA00",,,444924
+Mazda,2024,SXUM84,"Mazda3 Sport Suna AT, AWD, T Suna-6AT, Turbo SE00",,,444925
+Mazda,2026,DVXL86,Mazda3 GX auto - 6AT,,AA00,
+Mazda,2026,DVSL86,Mazda3 GS auto - 6AT,,AA00,
+Mazda,2026,DVSL86,Mazda3 GS auto Lux package GS-6AT Luxury,,LP00,
+Mazda,2026,DXSL86,"Mazda3 GS auto awd Lux package - 6AT,",,LP00,
+Mazda,2026,DVTL86,Mazda3 GT auto - 6AT,,AA00,
+Mazda,2026,DXTL86,"Mazda3 GT AT, awd - 6AT,",,AA00,
+Mazda,2026,DXTM86,"Mazda3 GT AT, AWD, T - 6AT, Turbo",,AA00,
+Mazda,2026,SVXL86,Mazda3 Sport GX auto - 6AT,,AA00,
+Mazda,2026,SVSL86,Mazda3 Sport GS auto - 6AT,,AA00,
+Mazda,2026,SVSL86,"Mazda3 Sport GS auto Lux package - 6AT, Luxury",,LP00,
+Mazda,2026,SXSL86,"Mazda3 Sport GS AT, awd Lux package - 6AT, Luxury Package,",,LP00,
+Mazda,2026,SVTL66,Mazda3 Sport GT manual - 6MT,,AA00,
 Mazda,2026,SVTL86,Mazda3 Sport GT auto GT-6AT,,AA00,
-Mazda,2026,SXTL86,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV awd",,AA00,
-Mazda,2026,SXTM86,"Mazda3 Sport GT AT, AWD, T GT-6AT, AWD, Turbo",,AA00,
-Mazda,2026,ZXXL86,CX-30 GX auto awd CX-30 GX auto awd,,AA00,
-Mazda,2026,ZXSL86,CX-30 GS auto awd CX-30 GS auto awd,,AA00,
-Mazda,2026,ZXSL86,CX-30 GS Kuro auto awd CX-30 GS Kuro auto awd,,KE00,
-Mazda,2026,ZXTL86,CX-30 GT auto awd CX-30 GT auto awd,,AA00,
-Mazda,2026,ZXTM86,"CX-30 GT auto AWD, Turbo CX-30 GT auto AWD, Turbo",,AA00,
-Mazda,2026,ZXTM86,"CX-30 GT Kuro auto AWD, Turbo CX-30 GT Kuro auto AWD, Turbo",,KE00,
-Mazda,2026,XXLF86,CX-70 GS-L hybrid CX-70 GS-L hybrid,,AA00,
-Mazda,2026,XXTF86,CX-70 GT hybrid CX-70 GT hybrid,,AA00,
-Mazda,2026,XXPG86,CX-70 GT-P hybrid CX-70 GT-P hybrid,,AA00,
-Mazda,2026,XXKG86,CX-70 SIGNATURE hybrid CX-70 SIGNATURE hybrid,,AA00,
-Mazda,2026,YXCP86,CX-70 GS-SC PHEV CX-70 GS-SC PHEV,,AA00,
-Mazda,2026,YXHP86,CX-70 GS-L SC PHEV CX-70 GS-L SC PHEV,,AA00,
-Mazda,2026,YXTP86,CX-70 GT PHEV CX-70 GT PHEV,,AA00,
-Mazda,2026,YXKP86,CX-70 Signature PHEV CX-70 Signature PHEV,,AA00,
-Mazda,2026,WXSF86,CX-90 hybrid CX-90 GS hybrid,,AA00,
-Mazda,2026,WXLF86,CX-90 hybrid CX-90 GS-L hybrid,,AA00,
-Mazda,2026,WXLF86,CX-90 hybrid CX-90 GS-L hybrid with Captain's Chairs,,CC00,
-Mazda,2026,WXTF86,CX-90 hybrid CX-90 GT hybrid,,AA00,
-Mazda,2026,WXTF86,CX-90 hybrid CX-90 GT hybrid with Captain's Chairs,,CC00,
-Mazda,2026,WXPG86,CX-90 hybrid CX-90 GT-P hybrid,,AA00,
-Mazda,2026,WXPG86,CX-90 hybrid CX-90 GT-P hybrid with Captain's Chairs,,CC00,
-Mazda,2026,WXKG86,CX-90 hybrid CX-90 SIGNATURE hybrid,,AA00,
-Mazda,2026,VXSP86,CX-90 PHEV CX-90 GS PHEV,,AA00,
-Mazda,2026,VXLP86,CX-90 PHEV CX-90 GS-L PHEV,,AA00,
-Mazda,2026,VXLP86,CX-90 PHEV CX-90 GS-L PHEV with Captain's Chairs,,CC00,
-Mazda,2026,VXTP86,CX-90 PHEV CX-90 GT PHEV,,AA00,
-Mazda,2026,VXTP86,CX-90 PHEV CX-90 GT PHEV with Captain's Chairs,,CC00,
-Mazda,2026,VXKP86,CX-90 PHEV CX-90 SIGNATURE PHEV,,AA00,
+Mazda,2026,SXTL86,"Mazda3 Sport GT AT, awd GT-6AT,i-ACTIV",,AA00,
+Mazda,2026,SXTM86,"Mazda3 Sport GT AT, AWD, T GT-6AT, Turbo",,AA00,
+Mazda,2026,ZXXL86,CX-30 GX auto awd,,AA00,
+Mazda,2026,ZXSL86,CX-30 GS auto awd,,AA00,
+Mazda,2026,ZXSL86,CX-30 GS Kuro auto awd,,KE00,
+Mazda,2026,ZXTL86,CX-30 GT auto awd,,AA00,
+Mazda,2026,ZXTM86,"CX-30 GT auto AWD, Turbo",,AA00,
+Mazda,2026,ZXTM86,"CX-30 GT Kuro auto AWD, Turbo",,KE00,
+Mazda,2026,XXLF86,CX-70 GS-L hybrid,,AA00,
+Mazda,2026,XXTF86,CX-70 GT hybrid,,AA00,
+Mazda,2026,XXPG86,CX-70 GT-P hybrid,,AA00,
+Mazda,2026,XXKG86,CX-70 SIGNATURE hybrid,,AA00,
+Mazda,2026,YXCP86,CX-70 GS-SC PHEV,,AA00,
+Mazda,2026,YXHP86,CX-70 GS-L SC PHEV,,AA00,
+Mazda,2026,YXTP86,CX-70 GT PHEV,,AA00,
+Mazda,2026,YXKP86,CX-70 Signature PHEV,,AA00,
+Mazda,2026,WXSF86,CX-90 hybrid GS,,AA00,
+Mazda,2026,WXLF86,CX-90 hybrid GS-L,,AA00,
+Mazda,2026,WXLF86,CX-90 hybrid GS-L with Captain's Chairs,,CC00,
+Mazda,2026,WXTF86,CX-90 hybrid GT,,AA00,
+Mazda,2026,WXTF86,CX-90 hybrid GT with Captain's Chairs,,CC00,
+Mazda,2026,WXPG86,CX-90 hybrid GT-P,,AA00,
+Mazda,2026,WXPG86,CX-90 hybrid GT-P with Captain's Chairs,,CC00,
+Mazda,2026,WXKG86,CX-90 hybrid SIGNATURE,,AA00,
+Mazda,2026,VXSP86,CX-90 PHEV GS,,AA00,
+Mazda,2026,VXLP86,CX-90 PHEV GS-L,,AA00,
+Mazda,2026,VXLP86,CX-90 PHEV GS-L with Captain's Chairs,,CC00,
+Mazda,2026,VXTP86,CX-90 PHEV GT,,AA00,
+Mazda,2026,VXTP86,CX-90 PHEV GT with Captain's Chairs,,CC00,
+Mazda,2026,VXKP86,CX-90 PHEV SIGNATURE,,AA00,
 Mazda,2026,NXXL86,CX-5 GX awd GX-6AT,,AA00,
 Mazda,2026,NXSL86,CX-5 GS awd GS-6AT,,AA00,
 Mazda,2026,NXTL86,CX-5 GT awd GT-6AT,,AA00,
 Mazda,2026,NXTL86,CX-5 GT awd Panoramic Roof GT-6AT,,PA00,
 Mazda,2026,NXTL86,CX-5 GT awd Premium GT-6AT,,PR00,
-Mazda,2026,L2SK66,MX-5 GS 6MT GS - 6MT,,AA00,
-Mazda,2026,L2PK66,MX-5 GS-P 6MT GS-P -6MT,,AA00,
-Mazda,2026,L2PK66,MX-5 GS-P 6MT GS-P -6MT Sport Package,,SP00,
-Mazda,2026,L2PK86,MX-5 GS-P 6AT GS-P -6AT,,AA00,
-Mazda,2026,L2TK66,MX-5 GT 6MT GT - 6MT,,AA00,
-Mazda,2026,L2TK86,MX-5 GT 6AT GT - 6AT,,AA00,
-Mazda,2026,L3PK66,MX-5 RF GS-P 6MT GS-P - 6MT,,AA00,
-Mazda,2026,L3PK66,MX-5 RF GS-P 6MT GS-P - 6MT Sport Package,,SP00,
-Mazda,2026,L3PK86,MX-5 RF GS-P 6AT GS-P - 6AT,,AA00,
-Mazda,2026,L3TK66,MX-5 RF GT 6MT GT - 6MT,,AA00,
-Mazda,2026,L3TK66,"MX-5 RF GT 6MT GT - 6MT, Grand Sport Package",,GR00,
-Mazda,2026,L3TK86,MX-5 RF GT 6AT GT - 6AT,,AA00,
+Mazda,2026,L2SK66,MX-5 GS 6MT -,,AA00,
+Mazda,2026,L2PK66,MX-5 GS-P 6MT -6MT,,AA00,
+Mazda,2026,L2PK66,MX-5 GS-P 6MT -6MT Sport Package,,SP00,
+Mazda,2026,L2PK86,MX-5 GS-P 6AT -6AT,,AA00,
+Mazda,2026,L2TK66,MX-5 GT 6MT -,,AA00,
+Mazda,2026,L2TK86,MX-5 GT 6AT -,,AA00,
+Mazda,2026,L3PK66,MX-5 RF GS-P 6MT -,,AA00,
+Mazda,2026,L3PK66,MX-5 RF GS-P 6MT - Sport Package,,SP00,
+Mazda,2026,L3PK86,MX-5 RF GS-P 6AT -,,AA00,
+Mazda,2026,L3TK66,MX-5 RF GT 6MT -,,AA00,
+Mazda,2026,L3TK66,"MX-5 RF GT 6MT - 6MT, Grand Sport Package",,GR00,
+Mazda,2026,L3TK86,MX-5 RF GT 6AT -,,AA00,
 Genesis,2023,G714AA20DX53,G70 2.0t select awd,,,427598
 Genesis,2023,G714AA20DX61,G70 2.0t advanced awd,,,427599
 Genesis,2023,G714AA20DX63,G70 2.0t prestige awd,,,427600

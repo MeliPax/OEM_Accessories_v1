@@ -526,12 +526,46 @@ def _deduplicate_description_words(description: str) -> str:
     return " ".join(result)
 
 
+def _apply_title_case(description: str) -> str:
+    """
+    Apply title case formatting: capitalize first letter of each word, lowercase the rest.
+
+    Examples:
+        "elantra ultimate black" → "Elantra Ultimate Black"
+        "kona EV preferred" → "Kona Ev Preferred"
+        "two-tone interior" → "Two-Tone Interior" (hyphens preserved, each part capitalized)
+
+    Args:
+        description: Description string
+
+    Returns:
+        Description with title case applied to each whitespace-separated word
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    def capitalize_word(word: str) -> str:
+        """Capitalize first letter, lowercase rest, handling hyphenated words."""
+        if not word:
+            return word
+        # For hyphenated words (e.g., "two-tone"), capitalize each part
+        if "-" in word:
+            parts = word.split("-")
+            return "-".join(part.capitalize() for part in parts if part)
+        # Normal word: first letter uppercase, rest lowercase
+        return word[0].upper() + word[1:].lower() if word else word
+
+    words = description.split()
+    return " ".join(capitalize_word(word) for word in words)
+
+
 def _standardize_description(description: str, oem_translator: dict) -> str:
     """
     Standardize database description by:
     1. Cleaning punctuation that breaks tokenization
     2. Translating tokens using OEM translator while preserving original casing
     3. Removing duplicate words (case-insensitive) introduced by translation
+    4. Applying title case (capitalize first letter of each word, lowercase the rest)
 
     Applies the same translation rules used for search keywords to ensure consistent
     vocabulary between search input and database (e.g., "ult" → "ultimate").
@@ -540,12 +574,15 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     Duplicate removal prevents artifacts like "Elantra HEV Hybrid Luxury" → "Elantra hybrid Luxury"
     when the translator maps HEV → hybrid and the source already contains "Hybrid".
 
+    Title case ensures consistent formatting: "Elantra Ultimate Black" (not "elantra ultimate black").
+
     Args:
         description: Description string from CSV
         oem_translator: Translation dict from load_oem_translator()
 
     Returns:
-        Standardized description with cleaned punctuation, translated tokens, and deduplicated words
+        Standardized description with cleaned punctuation, translated tokens, deduplicated words,
+        and title case formatting applied
     """
     if not description or not isinstance(description, str):
         return description
@@ -569,7 +606,10 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
         translated = cleaned
 
     # Step 3: Remove duplicate words introduced by translation (case-insensitive, first occurrence wins)
-    return _deduplicate_description_words(translated)
+    deduplicated = _deduplicate_description_words(translated)
+
+    # Step 4: Apply title case (capitalize first letter of each word, lowercase the rest)
+    return _apply_title_case(deduplicated)
 
 
 def build_manufacturer_keyword_vocab(
