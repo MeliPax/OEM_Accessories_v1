@@ -36,8 +36,9 @@ def prepare_frames(
 
 def _enrich_with_metadata(df: pd.DataFrame, meta_data: Dict[str, Any]) -> pd.DataFrame:
     df = df.copy()
-    df.insert(0, "model_name", meta_data.get("model_name", "unknown"))
-    df.insert(1, "group_key", meta_data.get("group_key", "unknown"))
+    df.insert(0, "vehicle_year", meta_data.get("vehicle_year", "unknown"))
+    df.insert(1, "model_name", meta_data.get("model_name", "unknown"))
+    df.insert(2, "group_key", meta_data.get("group_key", "unknown"))
     return df
 
 
