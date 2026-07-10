@@ -106,7 +106,7 @@
     "rio5": "MODEL",
     "light": "MODEL",
     "1": "MODEL",
-    "(mb)": "MODEL",
+    "mb": "MODEL",
     "forte": "MODEL",
     "sedona": "MODEL",
     "20th": "MODEL",
@@ -114,7 +114,7 @@
     "int.)": "MODEL",
     "wave": "MODEL",
     "w/sunroof": "MODEL",
-    "(lr)": "MODEL"
+    "lr": "MODEL"
   },
   "unclassified": [
     "(bli)",

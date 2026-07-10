@@ -11,31 +11,12 @@
       "ult": "ultimate",
       "adv": "advanced",
       "ed": "edition",
-      "sport": "sport",
-      "tech": "tech",
-      "trend": "trend",
-      "plus": "plus",
-      "prestige": "prestige",
-      "le": "le",
-      "night": "night",
-      "performance": "performance",
-      "pkg": "pkg"
+      "pkg": "package"
     },
     "fuel_drivetrain": {
       "hev": "hybrid",
       "phev": "plug-in",
-      "ev": "electric",
-      "ice": "ice",
-      "turbo": "turbo",
-      "2.0l": "2.0l",
-      "2.5t": "2.5t",
-      "3.3t": "3.3t",
-      "3.5t": "3.5t",
-      "awd": "awd",
-      "fwd": "fwd",
-      "manual": "manual",
-      "dct": "dct",
-      "ivt": "ivt"
+      "ev": "electric"
     },
     "body_style": {
       "coupe": "coupe",
@@ -43,25 +24,16 @@
       "7p": "7p"
     },
     "technology": {
-      "n-line": "n-line",
       "nhl": "nhl",
       "xrt": "xrt",
       "e-sc": "e-sc",
       "elsd": "elsd"
     },
     "range_options": {
-      "long": "long",
-      "range": "range",
-      "urban": "urban"
+      "long": "long"
     },
     "data_artifacts": {
-      "pref*": "preferred",
-      "trend*": "trend",
-      "plug-in": "plug-in",
-      "plug-in hybrid": "plug-in",
-      "n": "n",
-      "gt": "gt",
-      "black": "black"
+      "plug-in": "plug-in"
     }
   }
 }

@@ -498,22 +498,54 @@ def _clean_description_punctuation(description: str) -> str:
     return cleaned
 
 
+def _deduplicate_description_words(description: str) -> str:
+    """
+    Remove duplicate words from a description, case-insensitively, keeping first occurrence.
+
+    Prevents artifacts like "Elantra HEV Hybrid Luxury" → "Elantra hybrid Luxury"
+    after translation (HEV → hybrid) when the source already spelled out the translated term.
+    Preserves order and first occurrence's casing.
+
+    Args:
+        description: Description string (already cleaned/translated)
+
+    Returns:
+        Description with duplicate words removed, preserving order and first occurrence's casing
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    seen = set()
+    result = []
+    for word in description.split():
+        key = word.lower()
+        if key not in seen:
+            seen.add(key)
+            result.append(word)
+
+    return " ".join(result)
+
+
 def _standardize_description(description: str, oem_translator: dict) -> str:
     """
     Standardize database description by:
     1. Cleaning punctuation that breaks tokenization
     2. Translating tokens using OEM translator while preserving original casing
+    3. Removing duplicate words (case-insensitive) introduced by translation
 
     Applies the same translation rules used for search keywords to ensure consistent
     vocabulary between search input and database (e.g., "ult" → "ultimate").
     Tokens not found in translator pass through unchanged, preserving their original case.
+
+    Duplicate removal prevents artifacts like "Elantra HEV Hybrid Luxury" → "Elantra hybrid Luxury"
+    when the translator maps HEV → hybrid and the source already contains "Hybrid".
 
     Args:
         description: Description string from CSV
         oem_translator: Translation dict from load_oem_translator()
 
     Returns:
-        Standardized description with cleaned punctuation and translated tokens, or original if no translator
+        Standardized description with cleaned punctuation, translated tokens, and deduplicated words
     """
     if not description or not isinstance(description, str):
         return description
@@ -522,19 +554,22 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     cleaned = _clean_description_punctuation(description)
 
     # Step 2: Translate tokens while preserving original casing for untranslated words
-    if not oem_translator:
-        return cleaned
+    if oem_translator:
+        import re
 
-    import re
+        def _replace_token(match: "re.Match") -> str:
+            word = match.group(0)
+            # Look up lowercase version of word in translator, but return the translated version as-is
+            # (untranslated words pass through with original case/hyphenation preserved)
+            return oem_translator.get(word.lower(), word)
 
-    def _replace_token(match: "re.Match") -> str:
-        word = match.group(0)
-        # Look up lowercase version of word in translator, but return the translated version as-is
-        # (untranslated words pass through with original case/hyphenation preserved)
-        return oem_translator.get(word.lower(), word)
+        # Replace each whitespace-separated token (already normalized to single spaces)
+        translated = re.sub(r"\S+", _replace_token, cleaned)
+    else:
+        translated = cleaned
 
-    # Replace each whitespace-separated token (already normalized to single spaces by _clean_description_punctuation)
-    return re.sub(r"\S+", _replace_token, cleaned)
+    # Step 3: Remove duplicate words introduced by translation (case-insensitive, first occurrence wins)
+    return _deduplicate_description_words(translated)
 
 
 def build_manufacturer_keyword_vocab(
