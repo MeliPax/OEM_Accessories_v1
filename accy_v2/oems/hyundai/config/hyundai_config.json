@@ -81,7 +81,7 @@
     "trim_level":   "Trim"
   },
 
-  "rate_import_required_columns": ["Part", "Description", "Comments", "Price", "Hours", "Trim"],
+  "rate_import_required_columns": ["Year", "Part", "Description", "Comments", "Price", "Hours", "Trim"],
 
   "output": {
     "ready_to_upload_path": "accy_v2/output/ready_to_upload/hyundai/",
