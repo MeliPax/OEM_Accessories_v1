@@ -109,7 +109,7 @@ def _validate_trim_applicability(
             model_name=model_name,
             record_index=int(idx),
             record_snapshot=row.to_dict(),
-            rule_violated="trim_column_required_rule",
+            rule_violated="trim_applicability_required_rule",
             issue_description=(
                 f"All trim columns ({', '.join(trim_cols)}) are empty — "
                 "part has no applicable vehicle trim, record excluded from output"

@@ -22,14 +22,12 @@ def run(
     not an "X" marker. Filter after melt by non-null/non-empty trim value, not equality to "X".
     """
     valid_trim_cols = step2_result["valid_trim_cols"]
-    group_key = meta_data.get("group_key", "unknown")
-    model_name = meta_data.get("model_name", "unknown")
 
-    # For Hyundai: don't pre-filter on trim applicability (all rows have at least one populated trim col by design)
-    melted_df = _melt_trim_cols(standardized_df, valid_trim_cols, group_key, model_name, dq_logger)
+    # step3 already validated that all rows have at least one populated trim col via trim_applicability_required_rule
+    melted_df = _melt_trim_cols(standardized_df, valid_trim_cols)
 
     pipeline_logger.debug(
-        f"Group '{group_key}': {len(standardized_df)} records -> {len(melted_df)} after melt"
+        f"{len(standardized_df)} records -> {len(melted_df)} after melt"
     )
 
     return _split_by_language(melted_df, config)
@@ -43,15 +41,17 @@ def run(
 def _melt_trim_cols(
     df: pd.DataFrame,
     valid_trim_cols: List[str],
-    group_key: str,
-    model_name: str,
-    dq_logger: DQLogger,
 ) -> pd.DataFrame:
     """
     Melt trim columns. Keep only rows where the melted trim value is non-null/non-empty
     (since the cell *is* the trim name, not an applicability marker).
 
-    Note: var_name uses "trim_column" (not "trim_level") to avoid collision when
+    Note: After step3's trim_applicability_required_rule validates that every record has
+    at least one populated trim column, empty trim values here are expected (parts may
+    apply to only some trim levels, not all). These are silently filtered as normal
+    reshape behavior, not DQ violations.
+
+    var_name uses "trim_column" (not "trim_level") to avoid collision when
     renaming trim_value to trim_level. Final output has "trim_level" (values) and
     "trim_column" (original column names like Trim_1, Trim_2).
     """
@@ -64,20 +64,11 @@ def _melt_trim_cols(
     )
 
     # Keep only rows where trim_value is non-null/non-empty
+    # (parts may apply to only some trim levels; empty cells are normal filtering, not DQ issues)
     trim_mask = (
         melted["trim_value"].notna()
         & (melted["trim_value"].astype(str).str.strip().str.len() > 0)
     )
-
-    for idx, row in melted[~trim_mask].iterrows():
-        dq_logger.log_warning(
-            sheet_name=group_key,
-            model_name=model_name,
-            record_index=int(idx),
-            record_snapshot=row.to_dict(),
-            rule_violated="trim_applicability_rule",
-            issue_description="Trim value is null/empty — record excluded from output",
-        )
 
     # Rename trim_value to trim_level (the standard name expected by downstream steps)
     melted_filtered = melted[trim_mask].copy()
