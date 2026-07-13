@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 
 from core.base_pipeline import PipelineFatalError
+from core.helpers.dq_logger import DQLogger
 from core.helpers.pipeline_logger import PipelineLogger
 
 
@@ -11,6 +12,7 @@ def run(
     step2_result: Dict[str, Any],
     config: dict,
     meta_data: Dict[str, Any],
+    dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
 ) -> pd.DataFrame:
     """
@@ -24,10 +26,12 @@ def run(
     col_mapping = step2_result["col_mapping"]
     valid_trim_cols = step2_result["valid_trim_cols"]
     group_key = meta_data.get("group_key", "unknown")
+    model_name = meta_data.get("model_name", "unknown")
 
     df = _apply_col_mapping(working_df, col_mapping, valid_trim_cols)
     df = _enforce_data_types(df, config["col_data_type_dict"], group_key)
     df = _normalize_trim_values(df, valid_trim_cols)
+    df = _validate_trim_applicability(df, valid_trim_cols, group_key, model_name, dq_logger)
     df = _drop_unwanted_columns(df, config, valid_trim_cols)
 
     return df
@@ -84,6 +88,35 @@ def _normalize_trim_values(df: pd.DataFrame, trim_cols: List[str]) -> pd.DataFra
                 lambda v: str(v).strip() if isinstance(v, str) else v
             )
     return df
+
+
+def _validate_trim_applicability(
+    df: pd.DataFrame,
+    trim_cols: List[str],
+    group_key: str,
+    model_name: str,
+    dq_logger: DQLogger,
+) -> pd.DataFrame:
+    """Flag + exclude records where every trim column is empty (part has no applicable vehicle trim)."""
+    def _is_empty(v) -> bool:
+        return pd.isna(v) or (isinstance(v, str) and v.strip() == "")
+
+    all_empty_mask = df[trim_cols].apply(lambda row: all(_is_empty(v) for v in row), axis=1)
+
+    for idx, row in df[all_empty_mask].iterrows():
+        dq_logger.log_warning(
+            sheet_name=group_key,
+            model_name=model_name,
+            record_index=int(idx),
+            record_snapshot=row.to_dict(),
+            rule_violated="trim_column_required_rule",
+            issue_description=(
+                f"All trim columns ({', '.join(trim_cols)}) are empty — "
+                "part has no applicable vehicle trim, record excluded from output"
+            ),
+        )
+
+    return df[~all_empty_mask].reset_index(drop=True)
 
 
 def _drop_unwanted_columns(

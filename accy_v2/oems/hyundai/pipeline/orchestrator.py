@@ -131,7 +131,7 @@ class HyundaiPipeline(BasePipeline):
         dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> pd.DataFrame:
-        return step3_standardization.run(working_df, step2_result, config, meta_data, pipeline_logger)
+        return step3_standardization.run(working_df, step2_result, config, meta_data, dq_logger, pipeline_logger)
 
     def run_step3_5_extract_vehicle_year(
         self,
