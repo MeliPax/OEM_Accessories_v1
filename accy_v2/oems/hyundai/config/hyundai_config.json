@@ -67,6 +67,10 @@
 
   "drop_columns": [],
 
+  "trim_column_patterns": [
+    "^trim[\\s_]\\d+$"
+  ],
+
   "language_columns": {
     "EN": ["english_description", "comments_en"],
     "FR": ["french_description", "comments_fr"]
