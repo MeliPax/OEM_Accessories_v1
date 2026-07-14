@@ -27,7 +27,7 @@
     "suede": "INTERIOR",
     "wood": "INTERIOR",
     "w/navy": "INTERIOR",
-    "electrified": "ENGINE_TYPE",
+    "electrified": "POWERTRAIN_TYPE",
     "awd": "DRIVETRAIN",
     "rwd": "DRIVETRAIN",
     "3.3t": "ENGINE_TYPE",

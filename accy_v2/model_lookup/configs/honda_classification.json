@@ -10,7 +10,7 @@
     "edition": "PACKAGE",
     "ex": "TRIM",
     "ex-l": "TRIM",
-    "hybrid": "ENGINE_TYPE",
+    "hybrid": "POWERTRAIN_TYPE",
     "lx": "TRIM",
     "mt": "TRANSMISSION",
     "se": "TRIM",

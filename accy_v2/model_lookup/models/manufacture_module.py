@@ -965,7 +965,7 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
 
 
 def search_models_by_description(
-    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None, oem_config: dict = None
 ) -> pd.DataFrame:
     """
     Search vehicle models by manufacturer, year, and description keywords.
@@ -1023,9 +1023,14 @@ def search_models_by_description(
             df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
         ]
 
-    if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in EV_KEYWORDS):
-        for ev_keyword in EV_KEYWORDS:
-            pattern = build_word_boundary_pattern(ev_keyword)
+    # Get OEM-specific fuel type keywords; fallback to hardcoded default for backward compatibility
+    oem_config = oem_config or {}
+    oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+    fuel_type_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
+
+    if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in fuel_type_keywords):
+        for fuel_keyword in fuel_type_keywords:
+            pattern = build_word_boundary_pattern(fuel_keyword)
             df_filtered = df_filtered[
                 ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
             ]
