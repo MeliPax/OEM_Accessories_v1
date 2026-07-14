@@ -58,14 +58,12 @@
     "safety": "PACKAGE",
     "package": "PACKAGE",
     "pkg": "PACKAGE",
-    "black": "PACKAGE",
     "edition": "PACKAGE",
     "nhl": "PACKAGE",
-    
+
     "two-tone": "INTERIOR",
-    "two tone": "INTERIOR",
     "beige": "INTERIOR",
-    "black interior": "INTERIOR",
+    "black": "INTERIOR",
     "leather": "INTERIOR",
     "denim": "EXTERIOR_COLOR",
     "sage-green": "EXTERIOR_COLOR",
