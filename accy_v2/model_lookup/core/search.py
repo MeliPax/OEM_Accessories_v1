@@ -58,7 +58,7 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
             trim_tokens = {
                 token
                 for token, category in config.get("token_map", {}).items()
-                if category == "TRIM"
+                if category in ("TRIM", "POWERTRAIN_TYPE")
             }
             if trim_tokens:
                 return trim_tokens

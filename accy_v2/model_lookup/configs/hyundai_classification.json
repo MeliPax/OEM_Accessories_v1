@@ -64,6 +64,7 @@
     "two-tone": "INTERIOR",
     "beige": "INTERIOR",
     "black": "INTERIOR",
+    "interior": "INTERIOR",
     "leather": "INTERIOR",
     "denim": "EXTERIOR_COLOR",
     "sage-green": "EXTERIOR_COLOR",
@@ -79,5 +80,5 @@
     "8-passenger": "SEATING"
 
   },
-  "unclassified": ["tone", "interior","two"]
+  "unclassified": ["tone", "two"]
 }

@@ -939,11 +939,16 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
     # Try to load from classification config
     if make:
         try:
-            from model_lookup.classifier import load_classification_config
+            try:
+                # Try relative import first (when called from accy_v2 package)
+                from model_lookup.semantic.classifier import load_classification_config
+            except ImportError:
+                # Fall back to direct import (when called from model_lookup directory)
+                from semantic.classifier import load_classification_config
 
             config = load_classification_config(make, configs_dir)
             trim_tokens = {
-                token for token, category in config.get("token_map", {}).items() if category == "TRIM"
+                token for token, category in config.get("token_map", {}).items() if category in ("TRIM", "POWERTRAIN_TYPE")
             }
             if trim_tokens:
                 return trim_tokens
