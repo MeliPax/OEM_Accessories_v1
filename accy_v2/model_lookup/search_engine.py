@@ -133,7 +133,6 @@ class VehicleSearchEngine:
             csv_path=self.csv_path,
             exclude_ev=exclude_ev,
             configs_dir=self.configs_dir,
-            oem_config=self.oem_config,
         )
 
         candidate_count = len(results)

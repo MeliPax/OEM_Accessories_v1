@@ -11,7 +11,7 @@
     "edition": "PACKAGE",
     "fwd": "DRIVETRAIN",
     "gt": "TRIM",
-    "hybrid": "POWERTRAIN_TYPE",
+    "hybrid": "ENGINE_TYPE",
     "limited": "TRIM",
     "manual": "TRANSMISSION",
     "mt": "TRANSMISSION",

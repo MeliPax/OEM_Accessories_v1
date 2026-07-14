@@ -19,7 +19,7 @@
     "limited": "TRIM",
     "manual": "TRANSMISSION",
     "noir": "TRIM",
-    "phev": "POWERTRAIN_TYPE",
+    "phev": "ENGINE_TYPE",
     "pkg": "PACKAGE",
     "plus": "TRIM",
     "premium": "TRIM",
