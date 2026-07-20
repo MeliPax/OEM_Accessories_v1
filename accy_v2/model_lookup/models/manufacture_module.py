@@ -925,7 +925,13 @@ def batch_save_manufacturer_models(
 def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) -> set[str]:
     """
     Return a set of keywords that discriminate between trim levels.
-    These are actual trim variant names, not transmission/drive specifications.
+    These are actual trim variant names and TRIM_VARIANT tokens (like "N", "N-Line"),
+    not fuel types (POWERTRAIN_TYPE) or transmission/drive specifications.
+
+    Fuel types (POWERTRAIN_TYPE: hybrid, hev, phev, ev) are excluded because they are
+    handled separately by the earlier EV-exclusion logic in search_models_by_description().
+    Treating them as trim discriminators would incorrectly require users to specify trim
+    names when searching by fuel type.
 
     Prefers to load from classification config if available, falls back to hardcoded set.
 
@@ -934,7 +940,7 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
         configs_dir: Directory with classification configs (optional)
 
     Returns:
-        set of known trim discriminator keywords
+        set of known trim discriminator keywords (excluding POWERTRAIN_TYPE)
     """
     # Try to load from classification config
     if make:
@@ -947,8 +953,9 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
                 from semantic.classifier import load_classification_config
 
             config = load_classification_config(make, configs_dir)
+            # Include TRIM and TRIM_VARIANT, but NOT POWERTRAIN_TYPE (handled by EV-exclusion logic)
             trim_tokens = {
-                token for token, category in config.get("token_map", {}).items() if category in ("TRIM", "POWERTRAIN_TYPE")
+                token for token, category in config.get("token_map", {}).items() if category in ("TRIM", "TRIM_VARIANT")
             }
             if trim_tokens:
                 return trim_tokens
@@ -965,7 +972,7 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
 
 
 def search_models_by_description(
-    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None, oem_config: dict = None
 ) -> pd.DataFrame:
     """
     Search vehicle models by manufacturer, year, and description keywords.
@@ -1023,26 +1030,47 @@ def search_models_by_description(
             df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
         ]
 
-    if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in EV_KEYWORDS):
-        for ev_keyword in EV_KEYWORDS:
-            pattern = build_word_boundary_pattern(ev_keyword)
+    # Get fuel type keywords from OEM config, translate through the same translator,
+    # then exclude those fuel types if none were explicitly requested in the search
+    oem_config = oem_config or {}
+    oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+    raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
+
+    # Translate fuel keywords through the same translator used for search keywords
+    # (ensures we match against DB text that was ingested, not against config spellings)
+    fuel_type_keywords = translate_keywords([kw.lower() for kw in raw_fuel_keywords], translator) if translator else [kw.lower() for kw in raw_fuel_keywords]
+
+    # Check if user explicitly requested any fuel type
+    search_kw_lower = [k.lower() for k in keywords]
+    if exclude_ev and not any(kw in search_kw_lower for kw in fuel_type_keywords):
+        # No fuel type keyword found in search — exclude all configured fuel types
+        for fuel_keyword in fuel_type_keywords:
+            pattern = build_word_boundary_pattern(fuel_keyword)
             df_filtered = df_filtered[
                 ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
             ]
 
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
+    # However: if any POWERTRAIN_TYPE keyword (fuel type) was explicitly requested in the search,
+    # skip discriminator filtering for TRIM tokens, because the user is searching by fuel type
+    # and should get all trim levels of that fuel type (not just ones they explicitly named).
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
-        trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
-        search_kw_set = {kw.lower() for kw in keywords}
+        # Check if any fuel-type keyword was in the search (before translation)
+        user_requested_fuel_type = any(kw.lower() in fuel_type_keywords for kw in keywords)
 
-        def _has_extra_discriminator_keywords(desc: str) -> bool:
-            tokens = set(_extract_description_tokens(desc))
-            discriminator_tokens = tokens & trim_discriminators
-            extra_discriminators = discriminator_tokens - search_kw_set
-            return bool(extra_discriminators)
+        # Only apply trim discriminator filtering if no fuel type was explicitly requested
+        if not user_requested_fuel_type:
+            trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
+            search_kw_set = {kw.lower() for kw in keywords}
 
-        df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+            def _has_extra_discriminator_keywords(desc: str) -> bool:
+                tokens = set(_extract_description_tokens(desc))
+                discriminator_tokens = tokens & trim_discriminators
+                extra_discriminators = discriminator_tokens - search_kw_set
+                return bool(extra_discriminators)
+
+            df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
 
     return df_filtered
 
