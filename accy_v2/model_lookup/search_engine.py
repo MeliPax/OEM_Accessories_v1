@@ -175,7 +175,8 @@ class VehicleSearchEngine:
 
         # Same vehicle re-coded under multiple model numbers: not real ambiguity.
         # (Only applied if OEM config explicitly enables this behavior.)
-        if candidate_count > 1 and self.oem_config.get("allow_duplicate_model_numbers", False):
+        oem_allow_duplicates = self.oem_config.get("model_lookup_rules", {}).get(make, {}).get("allow_duplicate_model_numbers", False)
+        if candidate_count > 1 and oem_allow_duplicates:
             # Normalize each candidate description by filtering ignored categories
             normalized_keys = [
                 self._normalize_description(desc, classification_config)
