@@ -11,10 +11,11 @@ def prepare_frames(
     """
     Prepare output frames: rename columns, enrich with metadata, filter.
     Preserves model_number and Year columns.
-    Each language gets its own sheet: <model_name>_EN, <model_name>_FR.
+    Each language gets its own sheet: <year>_<model_name>_EN, <year>_<model_name>_FR.
     Returns dict without writing to disk.
     """
     model_name = meta_data.get("model_name", "unknown")
+    vehicle_year = meta_data.get("vehicle_year", "unknown")
     col_mapping = config.get("rate_import_column_mapping", {})
     required_cols = config.get("rate_import_required_columns", [])
 
@@ -23,7 +24,7 @@ def prepare_frames(
         df = _enrich_with_metadata(df, meta_data)
         df = _apply_rate_import_mapping(df, col_mapping)
         df = _filter_to_required_columns(df, required_cols)
-        sheet_key = f"{model_name}_{lang}"[:31]
+        sheet_key = f"{vehicle_year}_{model_name}_{lang}"[:31]
         frames[sheet_key] = df
 
     return frames
