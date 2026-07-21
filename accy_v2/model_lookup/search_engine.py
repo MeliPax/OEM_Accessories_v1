@@ -206,6 +206,29 @@ class VehicleSearchEngine:
                     is_duplicate_group=True,
                 )
 
+        # Multiple unique variants: not ambiguity, but variant handling (e.g., Manual/DCT, TCR variants).
+        # Accept if all model numbers are unique, indicating distinct trim/variant combinations.
+        # This handles cases like "Elantra N" returning both N Manual and N DCT with different model numbers.
+        if candidate_count > 1:
+            model_numbers = results["ModelNumber"].tolist()
+            if len(set(model_numbers)) == candidate_count:
+                # All model numbers are unique — these are variant combinations, not ambiguous
+                if self.logger:
+                    self.logger.debug(
+                        f"Accepted {candidate_count} candidates with unique model numbers (variant handling): "
+                        f"{model_numbers}"
+                    )
+                return SearchResult(
+                    match=results.iloc[0]["Description"],
+                    model_number=model_numbers[0],  # Primary model number
+                    model_numbers=model_numbers,  # ALL model numbers
+                    confidence=confidence,
+                    score=score,
+                    tokens_matched=classified,
+                    candidate_count=candidate_count,
+                    is_duplicate_group=False,  # Not duplicate codes, variant handling
+                )
+
         return None
 
     def _get_adaptive_minimum_score(self, candidate_count: int) -> int:
