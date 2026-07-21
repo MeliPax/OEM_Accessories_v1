@@ -181,7 +181,14 @@ class BasePipeline(ABC):
 
                 sheet_frames = self.run_step5_output(enriched, meta_data, config, pipeline_logger)
 
-                all_output_frames.update(sheet_frames)
+                # Merge frames: if a sheet key exists from prior groups (e.g., different years of same model),
+                # concatenate instead of overwriting. This allows consolidating multi-year data into single sheets.
+                for key, df in sheet_frames.items():
+                    if key in all_output_frames:
+                        all_output_frames[key] = pd.concat([all_output_frames[key], df], ignore_index=True)
+                    else:
+                        all_output_frames[key] = df
+
                 records_out = sum(len(df) for df in sheet_frames.values())
 
                 model_run_stats.append({
