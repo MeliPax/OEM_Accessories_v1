@@ -1024,24 +1024,31 @@ def search_models_by_description(
     df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
-    for keyword in keywords:
-        pattern = build_word_boundary_pattern(keyword)
-        df_filtered = df_filtered[
-            df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-        ]
-
-    # Get fuel type keywords from OEM config, translate through the same translator,
-    # then exclude those fuel types if none were explicitly requested in the search
+    # Parse OEM config to get search behavior flags
     oem_config = oem_config or {}
-
-    # Handle both cases:
-    # 1. Full config with model_lookup_rules key (passed by direct callers)
-    # 2. OEM-specific rules dict (passed by pipeline which pre-extracts from model_lookup_rules)
     if "model_lookup_rules" in oem_config:
         oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
     else:
-        # Assume oem_config IS the OEM-specific rules dict
         oem_rules = oem_config
+
+    use_single_char_token_matching = oem_rules.get("use_single_char_token_matching", False)
+
+    for keyword in keywords:
+        if use_single_char_token_matching and len(keyword) == 1:
+            # For single-char keywords: strict token matching (exact word, not part of hyphenated term)
+            df_filtered = df_filtered[
+                df_filtered["Description"].apply(
+                    lambda desc: keyword.lower() in _extract_description_tokens(desc)
+                )
+            ]
+        else:
+            # For multi-char keywords: use regex word boundary logic
+            pattern = build_word_boundary_pattern(keyword)
+            df_filtered = df_filtered[
+                df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
+            ]
+
+    # Get fuel type keywords from OEM config (already parsed above)
 
     raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
 

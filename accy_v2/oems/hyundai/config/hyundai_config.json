@@ -109,7 +109,8 @@
       "trim_column": "trim_level",
       "exclude_keywords": [],
       "allow_duplicate_model_numbers": true,
-      "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR"]
+      "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR"],
+      "use_single_char_token_matching": true
     },
     "Genesis": {
       "valid_year_range": {
@@ -122,7 +123,8 @@
       "trim_column": "trim_level",
       "exclude_keywords": [],
       "allow_duplicate_model_numbers": true,
-      "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR"]
+      "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR"],
+      "use_single_char_token_matching": true
     }
   }
 }
