@@ -1033,7 +1033,16 @@ def search_models_by_description(
     # Get fuel type keywords from OEM config, translate through the same translator,
     # then exclude those fuel types if none were explicitly requested in the search
     oem_config = oem_config or {}
-    oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+
+    # Handle both cases:
+    # 1. Full config with model_lookup_rules key (passed by direct callers)
+    # 2. OEM-specific rules dict (passed by pipeline which pre-extracts from model_lookup_rules)
+    if "model_lookup_rules" in oem_config:
+        oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+    else:
+        # Assume oem_config IS the OEM-specific rules dict
+        oem_rules = oem_config
+
     raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
 
     # Translate fuel keywords through the same translator used for search keywords
