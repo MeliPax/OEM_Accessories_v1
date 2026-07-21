@@ -171,7 +171,11 @@ def _batch_lookup_model_numbers(
                 record_index=None,
                 record_snapshot={"trim": trim},
                 rule_violated="model_number_lookup_rule",
-                issue_description=f"No keywords extracted for trim '{trim}'",
+                issue_description=(
+                    f"[KEYWORD_EXTRACTION_FAILED] {vehicle_make} {year} {trim}: "
+                    f"No keywords extracted from trim value. The trim field may be empty, "
+                    f"contain only ignored tokens (e.g., interior colors), or have unrecognized abbreviations."
+                ),
             )
             missing_trims.append(trim)
             continue
@@ -196,16 +200,19 @@ def _batch_lookup_model_numbers(
             else:
                 # No match or ambiguous (confidence = 0)
                 missing_trims.append(trim)
+                diagnostic = _categorize_search_failure(
+                    vehicle_make=vehicle_make,
+                    year=year,
+                    trim=trim,
+                    keywords=keywords,
+                )
                 dq_logger.log_warning(
                     sheet_name=group_key,
                     model_name=model_name,
                     record_index=None,
                     record_snapshot={"trim": trim, "keywords": keywords},
                     rule_violated="model_number_lookup_rule",
-                    issue_description=(
-                        f"No confident model number match for {vehicle_make} {year} {trim} "
-                        f"with keywords: {keywords}"
-                    ),
+                    issue_description=diagnostic,
                 )
                 pipeline_logger.warning(
                     f"  [NOT_FOUND] {vehicle_make} {year} {trim} keywords={keywords}"
@@ -219,7 +226,11 @@ def _batch_lookup_model_numbers(
                 record_index=None,
                 record_snapshot={"trim": trim, "keywords": keywords},
                 rule_violated="model_number_lookup_rule",
-                issue_description=f"Error during model number lookup for trim '{trim}': {str(e)}",
+                issue_description=(
+                    f"[LOOKUP_ERROR] {vehicle_make} {year} {trim}: "
+                    f"Unexpected error during model lookup: {str(e)}. "
+                    f"Keywords searched: {keywords}. Check logs for full stack trace."
+                ),
             )
             pipeline_logger.warning(
                 f"  [ERROR] {vehicle_make} {year} {trim}: {str(e)}"
@@ -286,3 +297,39 @@ def _add_model_number_columns(
     )
 
     return df_filtered
+
+
+def _categorize_search_failure(
+    vehicle_make: str,
+    year: int,
+    trim: str,
+    keywords: list,
+) -> str:
+    """
+    Create diagnostic error message categorizing why model lookup failed.
+
+    Message format: [CATEGORY] Description with actionable info
+
+    Categories:
+    - DATABASE_NO_MATCH: Keywords translated/classified correctly, but no database records
+    - POSSIBLE_DATA_MISMATCH: Trim requested but not in database for this model/year
+    - AMBIGUOUS_SEARCH: Multiple candidates, couldn't resolve to single model
+
+    Args:
+        vehicle_make: "Hyundai" or "Genesis"
+        year: Model year (2024, 2025, etc.)
+        trim: Trim name as requested (e.g., "Ultimate", "Trend")
+        keywords: Translated/classified keywords used for search
+
+    Returns:
+        Detailed diagnostic message suitable for Excel _Data_Issues sheet
+    """
+    # Construct message with category prefix
+    message = (
+        f"[DATABASE_NO_MATCH] {vehicle_make} {year} {trim}: "
+        f"No model number found. Keywords searched: {keywords}. "
+        f"→ This model/trim combination may not exist in the vehicle database for {year}. "
+        f"Verify: (1) trim name is correct, (2) this year/model combo is in DB, "
+        f"(3) trim is not listed as a package modifier."
+    )
+    return message
