@@ -120,7 +120,7 @@ class KeywordExtractor:
             return []
 
         try:
-            trim_value = trim_value.strip().lower()
+            trim_value = trim_value.strip().rstrip("*").strip().lower()
 
             if not trim_value:
                 return []

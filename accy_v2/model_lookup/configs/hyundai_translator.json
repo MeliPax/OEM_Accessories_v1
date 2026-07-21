@@ -11,13 +11,16 @@
       "ult": "ultimate",
       "adv": "advanced",
       "ed": "edition",
+      "edt": "edition",
       "pkg": "package",
-      "pckg": "package"
+      "pckg": "package",
+      "urban": "urban"
     },
     "fuel_drivetrain": {
       "hev": "hybrid",
       "phev": "plug-in",
-      "ev": "electric"
+      "ev": "electric",
+      "ice": "combustion"
     },
     "body_style": {
       "coupe": "coupe",
