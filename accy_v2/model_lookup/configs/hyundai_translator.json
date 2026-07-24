@@ -19,8 +19,7 @@
     "fuel_drivetrain": {
       "hev": "hybrid",
       "phev": "plug-in",
-      "ev": "electric",
-      "ice": "combustion"
+      "ev": "electric"
     },
     "body_style": {
       "coupe": "coupe",

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python run_mitsubishi.py \"../landing_zone/2026/Mitsubishi/Accessory Guide - February26.xlsx\")",
-      "Bash(git add *)"    
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [
       "Read(**/.env*)",

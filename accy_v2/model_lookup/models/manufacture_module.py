@@ -456,7 +456,9 @@ def build_word_boundary_pattern(keyword: str) -> str:
     Returns:
         str: Regex pattern with word boundaries (e.g., r'\bSE\b')
     """
-    return rf"\b{keyword}\b"
+    import re as regex_module
+    escaped_keyword = regex_module.escape(keyword)
+    return rf"\b{escaped_keyword}\b"
 
 
 def _extract_description_tokens(description: str) -> list[str]:
@@ -1024,6 +1026,13 @@ def search_models_by_description(
     df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
+    # DEBUG: Log the search parameters at entry
+    import sys
+    if make.lower() == 'hyundai' and 'pref' in [k.lower() for k in keywords]:
+        print(f"\n[SEARCH_DEBUG] search_models_by_description() called:", file=sys.stderr)
+        print(f"  make={make}, year={year}, keywords={keywords}", file=sys.stderr)
+        print(f"  Initial candidates: {len(df_filtered)}", file=sys.stderr)
+
     # Parse OEM config to get search behavior flags
     oem_config = oem_config or {}
     if "model_lookup_rules" in oem_config:
@@ -1047,6 +1056,9 @@ def search_models_by_description(
             df_filtered = df_filtered[
                 df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
             ]
+        # DEBUG: Track how many records remain after each keyword filter
+        import sys
+        print(f"[SEARCH_DEBUG] After keyword '{keyword}': {len(df_filtered)} records", file=sys.stderr)
 
     # Get fuel type keywords from OEM config (already parsed above)
 
@@ -1067,19 +1079,22 @@ def search_models_by_description(
             ]
 
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
-    # However: if any POWERTRAIN_TYPE keyword (fuel type) was explicitly requested in the search,
-    # skip discriminator filtering for TRIM tokens, because the user is searching by fuel type
-    # and should get all trim levels of that fuel type (not just ones they explicitly named).
+    # However: if any POWERTRAIN_TYPE keyword (fuel type) OR a TRIM keyword was explicitly requested,
+    # skip discriminator filtering because the user is searching for a fuel type or trim
+    # and should get all variants of that fuel type/trim (not just ones they explicitly named).
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
+        trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
+        search_kw_set = {kw.lower() for kw in keywords}
+
         # Check if any fuel-type keyword was in the search (before translation)
         user_requested_fuel_type = any(kw.lower() in fuel_type_keywords for kw in keywords)
 
-        # Only apply trim discriminator filtering if no fuel type was explicitly requested
-        if not user_requested_fuel_type:
-            trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
-            search_kw_set = {kw.lower() for kw in keywords}
+        # Check if any trim keyword was in the search
+        trim_kw_requested = bool(search_kw_set & trim_discriminators)
 
+        # Only apply trim discriminator filtering if neither fuel type nor trim keyword was explicitly requested
+        if not user_requested_fuel_type and not trim_kw_requested:
             def _has_extra_discriminator_keywords(desc: str) -> bool:
                 tokens = set(_extract_description_tokens(desc))
                 discriminator_tokens = tokens & trim_discriminators
@@ -1087,6 +1102,14 @@ def search_models_by_description(
                 return bool(extra_discriminators)
 
             df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+
+    # DEBUG: Log results at exit
+    if make.lower() == 'hyundai' and 'pref' in [k.lower() for k in keywords]:
+        print(f"  Final candidates: {len(df_filtered)}", file=sys.stderr)
+        if len(df_filtered) > 0:
+            for idx, row in df_filtered.iterrows():
+                print(f"    - {row['Description'][:70]}", file=sys.stderr)
+        print(f"[END_SEARCH_DEBUG]\n", file=sys.stderr)
 
     return df_filtered
 

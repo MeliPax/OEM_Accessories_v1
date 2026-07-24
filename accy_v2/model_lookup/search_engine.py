@@ -111,6 +111,18 @@ class VehicleSearchEngine:
         if self.logger:
             self.logger.debug(f"After filtering ignored categories {self.ignore_keyword_categories}: {classified}")
 
+        # 2.75 Filter excluded keywords (ICE, combustion, etc. — keywords with no DB presence)
+        if "model_lookup_rules" in self.oem_config:
+            oem_rules = self.oem_config.get("model_lookup_rules", {}).get(make, {})
+        else:
+            oem_rules = self.oem_config
+        excluded_kws = oem_rules.get("exclude_keywords", [])
+        if excluded_kws:
+            excluded_set = {kw.lower() for kw in excluded_kws}
+            filtered_keywords = [kw for kw in filtered_keywords if kw.lower() not in excluded_set]
+            if self.logger:
+                self.logger.debug(f"After filtering excluded keywords {excluded_kws}: {filtered_keywords}")
+
         # 3. Validate search profile
         is_valid, reason = self._validate_search_profile(classified)
         if not is_valid:

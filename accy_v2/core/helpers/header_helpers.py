@@ -15,10 +15,11 @@ def promote_header_row(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_column_name(name: str) -> str:
-    """Normalize a column name: collapse hyphen spacing, collapse spaces, replace spaces with underscores."""
+    """Normalize a column name: handle newlines, collapse hyphen spacing, collapse spaces, replace spaces with underscores."""
     if not isinstance(name, str):
         return str(name)
-    cleaned = re.sub(r"\s*-\s*", "-", name)
+    cleaned = re.sub(r"\n", " ", name)  # Replace newlines with spaces
+    cleaned = re.sub(r"\s*-\s*", "-", cleaned)
     cleaned = re.sub(r"\s{2,}", " ", cleaned)
     return cleaned.strip().replace(" ", "_")
 

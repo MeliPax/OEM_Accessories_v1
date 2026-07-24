@@ -20,8 +20,9 @@ CATEGORY_WEIGHTS = {
     "UNCLASSIFIED": 0,  # Unclassified tokens contribute zero to score
 }
 
-# Minimum passing score: requires MODEL (10) + at least one other signal (2+)
-MINIMUM_SCORE = 12
+# Minimum passing score: requires MODEL alone (10)
+# Previously required MODEL + TRIM/ENGINE_SPEC, but engine specs are now ignored by design
+MINIMUM_SCORE = 10
 
 
 def compute_score(classified: Dict[str, List[str]], weights: Dict[str, int] = None) -> int:
