@@ -27,10 +27,9 @@ def test_schema():
         "ModelYear",
         "ModelNumber",
         "Description",
-        "Description2",
+        "TrimName",
         "Package",
         "Style_ID",
-        "StyleID",
         "Drivetrain",
         "PassDoors",
     ]
@@ -38,7 +37,7 @@ def test_schema():
     print("\n[1/2] Checking all columns present...")
     actual_cols = list(df.columns)
     assert actual_cols == expected_cols, f"Column mismatch.\nExpected: {expected_cols}\nActual: {actual_cols}"
-    print("  [OK] All 10 columns present in correct order")
+    print("  [OK] All 9 columns present in correct order")
 
     print("\n[2/2] Checking data population...")
     for col in expected_cols:
@@ -55,7 +54,7 @@ def test_schema():
         ("ModelYear", "int64"),
         ("ModelNumber", "object"),
         ("Description", "object"),
-        ("StyleID", "int64"),
+        ("Package", "int64"),
         ("PassDoors", "int64"),
     ]
 

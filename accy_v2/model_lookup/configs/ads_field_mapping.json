@@ -1,0 +1,159 @@
+{
+  "mapping_contract": {
+    "version": "1.0",
+    "description": "ADS API response field → CSV database column mapping contract",
+    "last_updated": "2026-07-27",
+    "incoming_source": "AutoData Solutions (ADS) API",
+    "output_format": "CSV database (db_vehicle_models.csv)",
+    "pipeline_phase": "Model enrichment (data ingestion)"
+  },
+  "required_incoming_fields": {
+    "modelYear": {
+      "type": "integer",
+      "description": "Vehicle model year from ADS",
+      "example": 2026,
+      "required": true
+    },
+    "name": {
+      "type": "string",
+      "description": "Full trim name from ADS (e.g., 'Essential IVT')",
+      "example": "Essential IVT",
+      "required": true
+    },
+    "mfrModelCode": {
+      "type": "string",
+      "description": "Manufacturer's model code from ADS",
+      "example": "ELCS4V2BES00",
+      "required": true
+    },
+    "trim": {
+      "type": "string",
+      "description": "Trim level from ADS (e.g., 'Essential', 'Preferred')",
+      "example": "Essential",
+      "required": false
+    },
+    "id": {
+      "type": "integer",
+      "description": "ADS numeric style ID (unique identifier for trim configuration)",
+      "example": 481251,
+      "required": false
+    },
+    "bodyType": {
+      "type": "array",
+      "description": "Body type array from ADS (primary value extracted)",
+      "example": [{"value": "4dr Car", "primary": true}],
+      "required": false
+    },
+    "drivetrain": {
+      "type": "string",
+      "description": "Drivetrain type from ADS",
+      "example": "FRONT_WHEEL_DRIVE",
+      "required": false
+    },
+    "passDoors": {
+      "type": "integer",
+      "description": "Number of passenger doors from ADS",
+      "example": 4,
+      "required": false
+    }
+  },
+  "field_mappings": [
+    {
+      "incoming_field": "modelYear",
+      "output_column": "ModelYear",
+      "data_type": "integer",
+      "transformation": "direct_cast"
+    },
+    {
+      "incoming_field": "name",
+      "output_column": "Description",
+      "data_type": "string",
+      "transformation": "direct_copy"
+    },
+    {
+      "incoming_field": "mfrModelCode",
+      "output_column": "ModelNumber",
+      "data_type": "string",
+      "transformation": "direct_copy"
+    },
+    {
+      "incoming_field": "trim",
+      "output_column": "TrimName",
+      "data_type": "string",
+      "transformation": "direct_copy",
+      "default": ""
+    },
+    {
+      "incoming_field": "id",
+      "output_column": "Package",
+      "data_type": "integer|string",
+      "transformation": "direct_copy",
+      "default": ""
+    },
+    {
+      "incoming_field": "bodyType[].value",
+      "output_column": "Style_ID",
+      "data_type": "string",
+      "transformation": "extract_primary_body_type"
+    },
+    {
+      "incoming_field": "drivetrain",
+      "output_column": "Drivetrain",
+      "data_type": "string",
+      "transformation": "direct_copy",
+      "default": ""
+    },
+    {
+      "incoming_field": "passDoors",
+      "output_column": "PassDoors",
+      "data_type": "integer|string",
+      "transformation": "direct_copy",
+      "default": ""
+    },
+    {
+      "incoming_field": "make_name_map()",
+      "output_column": "Manufacturer",
+      "data_type": "string",
+      "transformation": "normalized_manufacturer_lookup"
+    }
+  ],
+  "output_schema": {
+    "column_count": 9,
+    "columns": [
+      "Manufacturer",
+      "ModelYear",
+      "ModelNumber",
+      "Description",
+      "TrimName",
+      "Package",
+      "Style_ID",
+      "Drivetrain",
+      "PassDoors"
+    ],
+    "column_order": "REQUIRED_FOR_CSV"
+  },
+  "validation_rules": {
+    "null_checks": [
+      "modelYear: required",
+      "name: required",
+      "mfrModelCode: required"
+    ],
+    "uniqueness_check": {
+      "key_columns": ["Manufacturer", "ModelYear", "ModelNumber", "Package"],
+      "scope": "within_batch_and_against_existing_csv",
+      "duplicate_action": "drop_duplicate_log_warning"
+    },
+    "data_quality_logging": {
+      "logger": "DQLogger",
+      "categorization_pattern": "[ADS_FIELD_NAME]",
+      "destination": "accy_v2/output/dq_reports/ads_refresh"
+    }
+  },
+  "notes": {
+    "note_1": "Package column now contains ADS 'id' (numeric style ID), not trim level",
+    "note_2": "TrimName column now contains ADS 'trim' (trim level), not base model name",
+    "note_3": "Schema reduced to 9 columns (StyleID removed from output)",
+    "note_4": "All required fields (modelYear, name, mfrModelCode) must be non-null for row to pass validation",
+    "note_5": "This contract enforces field mapping for pipeline runs; update this file when mapping changes"
+  }
+}

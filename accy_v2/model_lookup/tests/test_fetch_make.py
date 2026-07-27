@@ -39,13 +39,13 @@ def test_fetch_make():
     print("  [OK] All rows are year 2026")
 
     # Check schema
-    expected_cols = 10
+    expected_cols = 9
     assert len(df.columns) == expected_cols, f"Expected {expected_cols} columns, got {len(df.columns)}"
     print(f"  [OK] Has all {expected_cols} columns")
 
     # Check critical columns are populated
     assert df["ModelNumber"].notna().all(), "ModelNumber has nulls"
-    assert df["StyleID"].notna().all(), "StyleID has nulls"
+    assert df["Package"].notna().all(), "Package has nulls"
     assert df["Drivetrain"].notna().all(), "Drivetrain has nulls"
     print("  [OK] All critical columns populated")
 
@@ -54,7 +54,7 @@ def test_fetch_make():
     for i in range(3):
         row = df.iloc[i]
         print(
-            f"    {row['ModelNumber']:15} | {row['Description'][:25]:25} | StyleID={row['StyleID']}"
+            f"    {row['ModelNumber']:15} | {row['Description'][:25]:25} | Package={row['Package']}"
         )
 
     print("\n" + "=" * 70)

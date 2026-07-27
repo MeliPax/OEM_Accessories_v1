@@ -104,7 +104,7 @@ class TestADSIntegration:
 
         assert len(df) == 1, f"Expected 1 row, got {len(df)}"
         assert df.iloc[0]["ModelNumber"] == "ELCS4V2BES00", "Wrong model number"
-        assert df.iloc[0]["StyleID"] == 481251, "Wrong StyleID"
+        assert df.iloc[0]["Package"] == 481251, "Wrong Package"
         assert df.iloc[0]["Drivetrain"] == "FRONT_WHEEL_DRIVE", "Wrong drivetrain"
         print_test("test_fetch_vehicle_single_call", True, f"1 row in {elapsed:.1f}s (includes pacing)")
 
@@ -128,16 +128,15 @@ class TestADSIntegration:
             "ModelYear",
             "ModelNumber",
             "Description",
-            "Description2",
+            "TrimName",
             "Package",
             "Style_ID",
-            "StyleID",
             "Drivetrain",
             "PassDoors",
         ]
 
         assert list(df.columns) == expected_cols, f"Column mismatch. Got: {list(df.columns)}"
-        print_test("test_schema_10_columns", True, f"All 10 columns present")
+        print_test("test_schema_10_columns", True, f"All 9 columns present")
 
     def test_columns_populated(self):
         """Test 6: All columns have data (non-null)."""
@@ -150,17 +149,17 @@ class TestADSIntegration:
 
         print_test("test_columns_populated", True, f"All {len(df.columns)} columns populated")
 
-    def test_style_id_is_numeric(self):
-        """Test 7: StyleID column contains numeric values."""
+    def test_package_is_numeric(self):
+        """Test 7: Package column contains numeric values (style ID)."""
         service = ADSService()
         df = service.fetch_make("Hyundai", [2026])
 
-        assert df["StyleID"].dtype in ["int64", "int32"], f"StyleID is {df['StyleID'].dtype}, expected numeric"
-        assert df["StyleID"].nunique() == len(df), "StyleID should be unique per trim"
+        assert df["Package"].dtype in ["int64", "int32"], f"Package is {df['Package'].dtype}, expected numeric"
+        assert df["Package"].nunique() == len(df), "Package should be unique per trim"
         print_test(
-            "test_style_id_is_numeric",
+            "test_package_is_numeric",
             True,
-            f"Numeric StyleIDs: {df['StyleID'].min()}-{df['StyleID'].max()}",
+            f"Numeric Package IDs: {df['Package'].min()}-{df['Package'].max()}",
         )
 
     def test_drivetrain_values(self):
@@ -186,7 +185,7 @@ class TestADSIntegration:
         # Read back
         df_read = pd.read_csv(self.test_csv)
         assert len(df_read) == len(df), f"Row count mismatch after read: {len(df_read)} vs {len(df)}"
-        assert len(df_read.columns) == 10, f"Column count mismatch: {len(df_read.columns)} vs 10"
+        assert len(df_read.columns) == 9, f"Column count mismatch: {len(df_read.columns)} vs 9"
 
         print_test("test_csv_write_and_read", True, f"{len(df_read)} rows, {len(df_read.columns)} cols")
 
@@ -198,45 +197,45 @@ class TestADSIntegration:
             "ModelYear": [2025],
             "ModelNumber": ["OLD001"],
             "Description": ["Old Model"],
-            "Description2": [""],
+            "TrimName": [""],
             "Package": ["Base"],
             "Style_ID": ["4dr Car"],
         })
         df_7col.to_csv(self.test_csv, index=False)
 
-        # Append 10-column data
-        df_10col = pd.DataFrame({
+        # Append 9-column data
+        df_9col = pd.DataFrame({
             "Manufacturer": ["HYUNDAI"],
             "ModelYear": [2026],
             "ModelNumber": ["NEW001"],
             "Description": ["New Model"],
-            "Description2": [""],
+            "TrimName": [""],
             "Package": ["Essential"],
             "Style_ID": ["4dr Car"],
-            "StyleID": [481251],
             "Drivetrain": ["FRONT_WHEEL_DRIVE"],
             "PassDoors": [4],
         })
 
-        result = save_vehicle_models_to_csv(df_10col, str(self.test_csv))
+        result = save_vehicle_models_to_csv(df_9col, str(self.test_csv))
         df_final = pd.read_csv(self.test_csv)
 
         assert len(df_final) == 2, f"Expected 2 rows, got {len(df_final)}"
-        assert len(df_final.columns) == 10, f"Expected 10 columns, got {len(df_final.columns)}"
+        assert len(df_final.columns) == 9, f"Expected 9 columns, got {len(df_final.columns)}"
         assert df_final.iloc[0]["ModelNumber"] == "OLD001", "Old row lost"
         assert df_final.iloc[1]["ModelNumber"] == "NEW001", "New row lost"
 
-        print_test("test_csv_column_harmonization", True, f"7-col + 10-col = 10-col harmonized")
+        print_test("test_csv_column_harmonization", True, f"7-col + 9-col = 9-col harmonized")
 
     def test_no_duplicates(self):
-        """Test 11: No duplicate model numbers in fetch."""
+        """Test 11: No duplicate configurations on 4-column unique key."""
         service = ADSService()
         df = service.fetch_make("Hyundai", [2026])
 
-        key_cols = ["Manufacturer", "ModelYear", "ModelNumber"]
+        # Check on 4-column unique key (Manufacturer + ModelYear + ModelNumber + Package/StyleID)
+        key_cols = ["Manufacturer", "ModelYear", "ModelNumber", "Package"]
         dupes = df.duplicated(subset=key_cols, keep=False).sum()
-        assert dupes == 0, f"Found {dupes} duplicate rows"
-        print_test("test_no_duplicates", True, f"No duplicates on key columns")
+        assert dupes == 0, f"Found {dupes} duplicate rows on unique key {key_cols}"
+        print_test("test_no_duplicates", True, f"No duplicates on 4-column key")
 
     def test_rate_limiting(self):
         """Test 12: Rate limiting is working (should take ~12s for 62 rows)."""
@@ -305,7 +304,7 @@ def main():
     tester.run_test(tester.test_fetch_make_complete)
     tester.run_test(tester.test_schema_10_columns)
     tester.run_test(tester.test_columns_populated)
-    tester.run_test(tester.test_style_id_is_numeric)
+    tester.run_test(tester.test_package_is_numeric)
     tester.run_test(tester.test_drivetrain_values)
     tester.run_test(tester.test_csv_write_and_read)
     tester.run_test(tester.test_csv_column_harmonization)

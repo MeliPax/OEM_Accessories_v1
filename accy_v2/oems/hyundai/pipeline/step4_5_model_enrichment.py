@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Tuple
 from pathlib import Path
+import json
 
 import pandas as pd
 
@@ -65,6 +66,9 @@ def run(
     model_keywords_from_data = model_name.replace("-", "_").split("_")
     model_keywords_from_data = [kw.strip() for kw in model_keywords_from_data if kw.strip()]
 
+    # Merge multi-word model names (e.g., ["santa", "fe"] -> ["santa fe"])
+    model_keywords_from_data = _merge_compound_model_names(model_keywords_from_data, oem_config, pipeline_logger)
+
     # Hyundai has no sheet-name fuel_type extraction (fuel comes from trim strings)
     fuel_type = None
 
@@ -110,6 +114,98 @@ def run(
 # -----------------------------------------------------------------------
 # Private Helpers
 # -----------------------------------------------------------------------
+
+
+def _merge_compound_model_names(tokens: List[str], oem_config: Dict[str, Any], pipeline_logger=None) -> List[str]:
+    """
+    Merge consecutive tokens that form a compound model name (e.g., ["santa", "fe"] -> ["santa fe"]).
+
+    Checks the classification config's token_map for compound keys (e.g., "santa fe")
+    and merges adjacent tokens that match known compound model names.
+
+    Args:
+        tokens: List of extracted keyword tokens
+        oem_config: OEM configuration dict containing classification config path
+        pipeline_logger: Optional logger for debugging
+
+    Returns:
+        List of tokens with compound model names merged
+    """
+    if len(tokens) < 2:
+        return tokens
+
+    # Load classification config to get compound model names
+    try:
+        # Try to get explicit path from config first
+        classification_path_str = oem_config.get("classification_config_path", "").strip()
+
+        if classification_path_str:
+            classification_path = Path(classification_path_str)
+        else:
+            # Fallback: construct path from make name
+            make = oem_config.get("make", "hyundai").lower()
+            classification_path = (
+                Path(__file__).parent.parent.parent.parent
+                / "model_lookup" / "configs" / f"{make}_classification.json"
+            )
+
+        if not classification_path.exists():
+            if pipeline_logger:
+                pipeline_logger.debug(f"[MERGE] Classification file not found: {classification_path}")
+            return tokens
+
+        if pipeline_logger:
+            pipeline_logger.debug(f"[MERGE] Loading classification from: {classification_path}")
+
+        with open(classification_path, "r") as f:
+            classification = json.load(f)
+
+        token_map = classification.get("token_map", {})
+    except Exception as e:
+        # If we can't load the config, just return tokens as-is
+        if pipeline_logger:
+            pipeline_logger.debug(f"[MERGE] Failed to load classification: {e}")
+        return tokens
+
+    # Get all compound model keys (multi-word keys where category is MODEL)
+    compound_models = {
+        key for key, cat in token_map.items()
+        if cat == "MODEL" and " " in key
+    }
+
+    if pipeline_logger:
+        pipeline_logger.debug(f"[MERGE] Found compound models: {compound_models}")
+
+    if not compound_models:
+        return tokens
+
+    # Merge tokens that form compound models
+    result = []
+    i = 0
+    while i < len(tokens):
+        merged = False
+        # Try to match progressively longer compound keys (longest first for greedy matching)
+        for compound in sorted(compound_models, key=len, reverse=True):
+            compound_tokens = compound.split()
+            # Check if tokens starting at position i match this compound
+            if (i + len(compound_tokens) <= len(tokens) and
+                all(tokens[i + j].lower() == ct for j, ct in enumerate(compound_tokens))):
+                # Merge the tokens
+                if pipeline_logger:
+                    pipeline_logger.debug(f"[MERGE] Merged {tokens[i:i+len(compound_tokens)]} -> '{compound}'")
+                result.append(compound)
+                i += len(compound_tokens)
+                merged = True
+                break
+
+        if not merged:
+            result.append(tokens[i])
+            i += 1
+
+    if pipeline_logger:
+        pipeline_logger.debug(f"[MERGE] Result: {result}")
+
+    return result
 
 
 def _batch_lookup_model_numbers(

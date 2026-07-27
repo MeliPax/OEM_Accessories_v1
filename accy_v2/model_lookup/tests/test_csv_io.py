@@ -44,8 +44,8 @@ def test_csv_write_read():
     assert len(df_read) == len(df), f"Row count mismatch: {len(df_read)} vs {len(df)}"
     print("  [OK] Row count matches")
 
-    assert len(df_read.columns) == 10, f"Expected 10 columns, got {len(df_read.columns)}"
-    print("  [OK] Has all 10 columns")
+    assert len(df_read.columns) == 9, f"Expected 9 columns, got {len(df_read.columns)}"
+    print("  [OK] Has all 9 columns")
 
     # Check data integrity
     assert df_read.iloc[0]["ModelNumber"] == df.iloc[0]["ModelNumber"], "Data corrupted"

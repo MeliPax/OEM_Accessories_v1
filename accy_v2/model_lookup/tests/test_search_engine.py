@@ -1,12 +1,16 @@
 """Tests for OEM Vehicle Model Search Engine."""
 
 import pytest
+import sys
 from pathlib import Path
 
-from accy_v2.model_lookup.translator import translate_keywords, load_oem_translator
-from accy_v2.model_lookup.classifier import classify_tokens, load_classification_config
-from accy_v2.model_lookup.scorer import compute_score, compute_confidence, CATEGORY_WEIGHTS, MINIMUM_SCORE
-from accy_v2.model_lookup.search_engine import VehicleSearchEngine
+# Add parent to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from semantic.translator import translate_keywords, load_oem_translator
+from semantic.classifier import classify_tokens, load_classification_config
+from semantic.scorer import compute_score, compute_confidence, CATEGORY_WEIGHTS, MINIMUM_SCORE
+from search_engine import VehicleSearchEngine
 
 
 class TestTranslator:
@@ -33,13 +37,15 @@ class TestTranslator:
 
     def test_load_oem_translator_mitsubishi(self):
         """Test loading Mitsubishi translator config."""
-        translator = load_oem_translator("Mitsubishi")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+        translator = load_oem_translator("Mitsubishi", configs_dir)
         assert "s-awc" in translator
         assert translator["s-awc"] == "awd"
 
     def test_load_oem_translator_mazda(self):
         """Test loading Mazda translator config — has different abbreviations."""
-        translator = load_oem_translator("Mazda")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+        translator = load_oem_translator("Mazda", configs_dir)
         assert "i-activ" in translator
         assert translator["i-activ"] == "awd"
         # Mazda's single-char differs from Mitsubishi
@@ -51,7 +57,8 @@ class TestClassifier:
 
     def test_classify_tokens_basic(self):
         """Test classification of a standard set of keywords."""
-        config = load_classification_config("Mitsubishi")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+        config = load_classification_config("Mitsubishi", configs_dir)
         classified = classify_tokens(["outlander", "gt", "awd", "phev"], config)
 
         assert "MODEL" in classified
@@ -62,7 +69,8 @@ class TestClassifier:
 
     def test_classify_handles_unclassified(self):
         """Test that unclassified tokens are handled gracefully (not passed through)."""
-        config = load_classification_config("Mitsubishi")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+        config = load_classification_config("Mitsubishi", configs_dir)
         # "xyz" is not in the classification map
         classified = classify_tokens(["outlander", "xyz", "gt"], config)
 

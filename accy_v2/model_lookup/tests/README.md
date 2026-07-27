@@ -5,6 +5,7 @@ Complete test suite for the AutoData Solutions API integration.
 ## Quick Start
 
 Run all tests:
+
 ```bash
 cd accy_v2/model_lookup
 python tests/test_ads_integration.py
@@ -15,6 +16,7 @@ python tests/test_ads_integration.py
 Run specific tests without running the full suite:
 
 ### 1. Test Single Vehicle Fetch (~2 seconds)
+
 Tests the minimal-call `fetch_vehicle()` method. Fetches one specific vehicle trim.
 
 ```bash
@@ -22,12 +24,14 @@ python tests/test_fetch_vehicle.py
 ```
 
 **What it tests:**
+
 - API call count (should be exactly 1)
 - Correct model data returned
 - All columns populated
 - Data types correct
 
 **Expected output:**
+
 ```
 TEST: fetch_vehicle() - Single Vehicle Fetch
 Fetching Hyundai Elantra Essential (2026)...
@@ -44,6 +48,7 @@ Fetching Hyundai Elantra Essential (2026)...
 ---
 
 ### 2. Test Complete Make/Year Fetch (~15 seconds)
+
 Tests the `fetch_make()` method. Fetches all trims for Hyundai 2026 (62 configurations).
 
 ```bash
@@ -51,12 +56,14 @@ python tests/test_fetch_make.py
 ```
 
 **What it tests:**
+
 - Multiple API calls (years → models → trims)
 - All rows returned
 - Correct manufacturer and year
 - Schema validation
 
 **Expected output:**
+
 ```
 TEST: fetch_make() - Complete Make/Year Fetch
 Fetching all Hyundai 2026 trims...
@@ -77,6 +84,7 @@ Fetching all Hyundai 2026 trims...
 ---
 
 ### 3. Test CSV Write/Read (~15 seconds)
+
 Tests saving data to CSV and reading it back.
 
 ```bash
@@ -84,12 +92,14 @@ python tests/test_csv_io.py
 ```
 
 **What it tests:**
+
 - CSV file creation
 - Data persistence
 - Column preservation
 - Row count accuracy
 
 **Expected output:**
+
 ```
 TEST: CSV Write/Read
 [1/3] Fetching data...
@@ -119,6 +129,7 @@ TEST: CSV Write/Read
 ---
 
 ### 4. Test Schema Validation (~15 seconds)
+
 Tests that all columns exist, have correct data types, and are populated.
 
 ```bash
@@ -126,12 +137,14 @@ python tests/test_schema.py
 ```
 
 **What it tests:**
+
 - All 10 columns present
 - Column order correct
 - Data population percentage
 - Data type correctness
 
 **Expected output:**
+
 ```
 TEST: Schema Validation
 [1/2] Checking all columns present...
@@ -162,6 +175,7 @@ TEST: Schema Validation
 ---
 
 ### 5. Test All (Comprehensive Suite)
+
 Runs all 15 tests in sequence. Takes ~3-4 minutes total.
 
 ```bash
@@ -169,6 +183,7 @@ python tests/test_ads_integration.py
 ```
 
 **What it tests:**
+
 - Credentials loading
 - Service initialization
 - Single vehicle fetch
@@ -184,6 +199,7 @@ python tests/test_ads_integration.py
 - And more...
 
 **Expected output:**
+
 ```
 ======================================================================
   ADS INTEGRATION TEST SUITE
@@ -219,16 +235,17 @@ Failed:  2
 Before running tests, ensure:
 
 1. **Credentials file exists:**
+
    ```bash
    cat accy_v2/model_lookup/creds/ads_api.env
    ```
-
 2. **Python dependencies:**
+
    ```bash
    pip install pandas requests urllib3
    ```
-
 3. **Writable database directory:**
+
    ```bash
    mkdir -p accy_v2/model_lookup/db
    mkdir -p accy_v2/model_lookup/db/archive
@@ -238,25 +255,25 @@ Before running tests, ensure:
 
 ## Test Results Summary
 
-| Test | Time | Rows | Status |
-|------|------|------|--------|
-| fetch_vehicle | ~1s | 1 | ✓ |
-| fetch_make | ~12s | 62 | ✓ |
-| CSV I/O | ~1s | 62 | ✓ |
-| Schema | ~12s | 62 | ✓ |
+| Test                | Time  | Rows  | Status     |
+| ------------------- | ----- | ----- | ---------- |
+| fetch_vehicle       | ~1s   | 1     | ✓         |
+| fetch_make          | ~12s  | 62    | ✓         |
+| CSV I/O             | ~1s   | 62    | ✓         |
+| Schema              | ~12s  | 62    | ✓         |
 | All (comprehensive) | ~3-4m | Mixed | ✓ (13/15) |
 
 ---
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| `FileNotFoundError: ads_api.env` | Create `creds/ads_api.env` with credentials |
-| `ConnectionError` | Check internet, verify ADS_BASE_URL is reachable |
-| `ModuleNotFoundError` | `pip install pandas requests urllib3` |
-| Test hangs | API might be slow; let it run (has 30s timeout) |
-| Tests fail intermittently | Network issue; retry or check API availability |
+| Issue                              | Solution                                         |
+| ---------------------------------- | ------------------------------------------------ |
+| `FileNotFoundError: ads_api.env` | Create`creds/ads_api.env` with credentials     |
+| `ConnectionError`                | Check internet, verify ADS_BASE_URL is reachable |
+| `ModuleNotFoundError`            | `pip install pandas requests urllib3`          |
+| Test hangs                         | API might be slow; let it run (has 30s timeout)  |
+| Tests fail intermittently          | Network issue; retry or check API availability   |
 
 ---
 
@@ -271,6 +288,7 @@ Before running the full `refresh_db_ads.py` pipeline, run these tests in order:
 5. `test_ads_integration.py` - Full suite (optional, comprehensive)
 
 If all pass, you're ready to run:
+
 ```bash
 python accy_v2/model_lookup/refresh_db_ads.py
 ```

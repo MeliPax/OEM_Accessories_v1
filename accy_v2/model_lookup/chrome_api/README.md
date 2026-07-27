@@ -56,10 +56,11 @@ The script will show the real ADS response structure. Identify which fields corr
 
 Once Phase 1 identifies the field mapping:
 
-1. **`mapper.py`** — Transform ADS trim response to pipeline 7-column schema
+1. **`mapper.py`** — Transform ADS trim response to pipeline 9-column schema
 
-   - Maps ADS fields → `Manufacturer, ModelYear, ModelNumber, Description, Description2, Package, Style_ID`
+   - Maps ADS fields → `Manufacturer, ModelYear, ModelNumber, Description, TrimName, Package, Style_ID, Drivetrain, PassDoors`
    - Handles any data normalization needed
+   - Package field contains ADS numeric style ID (unique configuration identifier)
 2. **`service.py`** — Orchestrate the full refresh
 
    - Years → Makes → Models → Trims

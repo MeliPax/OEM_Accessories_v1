@@ -63,17 +63,16 @@ python tests/test_csv_io.py          # CSV write/read
 Runtime: ~3-4 minutes (includes API pacing delays)
 ```
 
-## Schema: 10 Columns
+## Schema: 9 Columns
 
 ```
 Manufacturer      (string)  - OEM name (HYUNDAI, HONDA, etc.)
 ModelYear         (integer) - Year (2024, 2025, 2026)
 ModelNumber       (string)  - OEM config code (ELCS4V2BES00)
-Description       (string)  - Trim name (Essential IVT)
-Description2      (string)  - Additional info (optional)
-Package           (string)  - Trim level (Essential, Preferred, etc.)
+Description       (string)  - Full trim name (Essential IVT)
+TrimName          (string)  - Trim level (Essential, Preferred, etc.)
+Package           (integer) - ADS numeric style ID (unique identifier per trim config)
 Style_ID          (string)  - Body type (4dr Car, SUV, etc.)
-StyleID           (integer) - ADS numeric style ID (481251, 481252, etc.)
 Drivetrain        (string)  - Drivetrain type (FRONT_WHEEL_DRIVE, AWD, RWD)
 PassDoors         (integer) - Number of doors (2, 4, 5)
 ```

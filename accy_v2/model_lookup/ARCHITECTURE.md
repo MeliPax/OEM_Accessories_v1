@@ -125,9 +125,9 @@ model_lookup/
 │   └── ... (one per manufacturer)
 │
 ├── db/                          # Database files
-│   └── db_vehicle_models.csv    # CSV database
-│                                 # Columns: Manufacturer, ModelYear, ModelNumber,
-│                                 #          Description, Description2, Package, Style_ID
+│   └── db_vehicle_models.csv    # CSV database (9 columns)
+│                                 # Columns: Manufacturer, ModelYear, ModelNumber, Description,
+│                                 #          TrimName, Package, Style_ID, Drivetrain, PassDoors
 │
 └── tests/                       # Test suite
     └── test_search.py           # Comprehensive tests

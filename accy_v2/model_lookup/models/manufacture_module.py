@@ -123,17 +123,28 @@ def load_existing_csv(csv_path: str, expected_columns: list = None) -> pd.DataFr
 
 
 def check_duplicate_record(
-    df_new: pd.DataFrame, df_existing: pd.DataFrame
+    df_new: pd.DataFrame, df_existing: pd.DataFrame, key_columns: list = None
 ) -> pd.DataFrame:
     """
     Filter out records that already exist in the database.
-    Uses Manufacturer, ModelYear, and ModelNumber as the unique key.
+    Configurable unique key; defaults to Manufacturer, ModelYear, and ModelNumber.
+
+    Args:
+        df_new: New records to check
+        df_existing: Existing records in the database
+        key_columns: List of column names that define uniqueness.
+                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber"]
+
+    Returns:
+        DataFrame with only new records (not in df_existing)
     """
+    if key_columns is None:
+        key_columns = ["Manufacturer", "ModelYear", "ModelNumber"]
+
     if df_existing.empty:
         return df_new
 
-    required_cols = ["Manufacturer", "ModelYear", "ModelNumber"]
-    existing_cols = [col for col in required_cols if col in df_existing.columns]
+    existing_cols = [col for col in key_columns if col in df_existing.columns]
 
     if not existing_cols:
         return df_new
@@ -149,7 +160,13 @@ def check_duplicate_record(
     )
 
 
-def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_dir: str = None) -> dict:
+def save_vehicle_models_to_csv(
+    df: pd.DataFrame,
+    csv_path: str = None,
+    configs_dir: str = None,
+    key_columns: list = None,
+    dq_logger = None,
+) -> dict:
     """
     Save vehicle models to CSV with validation, standardization, and deduplication.
 
@@ -160,6 +177,9 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_d
         df: DataFrame with vehicle model data
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
+        key_columns: List of column names that define uniqueness for deduplication.
+                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber"]
+        dq_logger: Optional DQLogger for logging duplicates found
 
     Returns:
         dict with save status, records saved, duplicates skipped, etc.
@@ -254,7 +274,25 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_d
     df_existing = load_existing_csv(csv_path, expected_columns=write_columns)
 
     if not df_existing.empty:
-        df_valid = check_duplicate_record(df_valid, df_existing)
+        df_before_dedup = df_valid.copy()
+        df_valid = check_duplicate_record(df_valid, df_existing, key_columns=key_columns)
+
+        # Log duplicates found against existing CSV
+        duplicates_found = len(df_before_dedup) - len(df_valid)
+        if duplicates_found > 0 and dq_logger:
+            dupes = df_before_dedup[~df_before_dedup.index.isin(df_valid.index)]
+            for _, dupe_row in dupes.iterrows():
+                key_values = key_columns if key_columns else ["Manufacturer", "ModelYear", "ModelNumber"]
+                key_str = ", ".join([f"{col}={dupe_row.get(col, 'N/A')}" for col in key_values])
+                dq_logger.log_warning(
+                    sheet_name=dupe_row.get("Manufacturer", "UNKNOWN"),
+                    model_name=dupe_row.get("ModelNumber", "UNKNOWN"),
+                    record_index=None,
+                    record_snapshot=dupe_row.to_dict(),
+                    rule_violated="csv_uniqueness_rule",
+                    issue_description=f"[CSV_DUPLICATE] Already exists in database: {key_str}",
+                )
+
         result["duplicates"] = (
             result["total_records"] - result["invalid_records"] - len(df_valid)
         )
@@ -414,12 +452,12 @@ def print_bulletin_details(bull):
         ModelYear = json_[idx].get("Year")
         ModelNumber = json_[idx].get("Model")
         Description = json_[idx].get("Description")
-        Description2 = json_[idx].get("Description2")
+        TrimName = json_[idx].get("TrimName")
         Package = json_[idx].get("Package")
         Style_ID = json_[idx].get("Style")
 
         print(
-            f"{ModelYear}, {ModelNumber}, { Description}, { Description2}, { Package}, {Style_ID}"
+            f"{ModelYear}, {ModelNumber}, { Description}, { TrimName}, { Package}, {Style_ID}"
         )
 
 
@@ -440,7 +478,7 @@ def convert_bulletin_to_df(
             "ModelYear": item.get("Year"),
             "ModelNumber": item.get("Model"),
             "Description": item.get("Description"),
-            "Description2": item.get("Description2"),
+            "TrimName": item.get("TrimName"),
             "Package": item.get("Package"),
             "Style_ID": item.get("Style"),
         }
@@ -464,7 +502,7 @@ def convert_bulletin_to_df(
                 "ModelYear",
                 "ModelNumber",
                 "Description",
-                "Description2",
+                "TrimName",
                 "Package",
                 "Style_ID",
             ]

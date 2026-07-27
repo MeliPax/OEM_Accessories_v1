@@ -6,17 +6,23 @@ responses into pipeline schema using mapper.py.
 """
 
 import pandas as pd
-from typing import List, Optional
+from typing import List, Optional, Any
 from .config import load_ads_env, get_make_name_map
 from .client import ADSClient
 from .mapper import ads_response_to_rows
+from .validators import validate_unique_keys
 
 
 class ADSService:
     """Orchestrator for ADS API calls and data transformation."""
 
-    def __init__(self):
-        """Initialize ADS service with credentials and client."""
+    def __init__(self, pipeline_logger: Optional[Any] = None, dq_logger: Optional[Any] = None):
+        """Initialize ADS service with credentials and client.
+
+        Args:
+            pipeline_logger: Optional PipelineLogger for dev/ops logs (defaults to print)
+            dq_logger: Optional DQLogger for data quality warnings (defaults to print)
+        """
         config = load_ads_env()
         self.client = ADSClient(
             config["base_url"],
@@ -24,6 +30,36 @@ class ADSService:
             config["api_password"],
         )
         self.make_map = get_make_name_map()
+        self.pipeline_logger = pipeline_logger
+        self.dq_logger = dq_logger
+
+    def _log_info(self, msg: str) -> None:
+        """Log info message to pipeline logger or print."""
+        if self.pipeline_logger:
+            self.pipeline_logger.info(msg)
+        else:
+            print(msg)
+
+    def _log_warning(self, msg: str) -> None:
+        """Log warning message to pipeline logger or print."""
+        if self.pipeline_logger:
+            self.pipeline_logger.warning(msg)
+        else:
+            print(f"WARNING: {msg}")
+
+    def _log_dq_warning(self, make: str, model_number: str, issue: str) -> None:
+        """Log data quality warning."""
+        if self.dq_logger:
+            self.dq_logger.log_warning(
+                sheet_name=make,
+                model_name=model_number,
+                record_index=None,
+                record_snapshot={"ModelNumber": model_number},
+                rule_violated="ads_style_uniqueness_rule",
+                issue_description=issue,
+            )
+        else:
+            print(f"DQ WARNING [{make}] {model_number}: {issue}")
 
     def refresh_from_ads(
         self,
@@ -44,16 +80,16 @@ class ADSService:
             language_locale: Locale for trims fetch (e.g., "CA_en")
 
         Returns:
-            pandas DataFrame with 7-column schema ready for save_vehicle_models_to_csv()
+            pandas DataFrame with 9-column schema ready for save_vehicle_models_to_csv()
         """
         all_rows = []
 
         for make in makes:
-            print(f"\nFetching {make}...")
+            self._log_info(f"\nFetching {make}...")
 
             # Verify make is known
             if make not in self.make_map:
-                print(f"  WARNING: Unknown make {make}, skipping")
+                self._log_warning(f"Unknown make {make}, skipping")
                 continue
 
             for year in years:
@@ -75,30 +111,29 @@ class ADSService:
                             all_rows.extend(rows)
 
                         except Exception as model_err:
-                            print(f"\n    Error fetching {year} {make} {model}: {model_err}")
+                            self._log_warning(f"Error fetching {year} {make} {model}: {model_err}")
                             continue
 
                     print("OK", end=" ")
 
                 except Exception as year_err:
-                    print(f"\n  Error fetching {year}: {year_err}")
+                    self._log_warning(f"Error fetching {year}: {year_err}")
                     continue
 
             print()
 
         # Convert to DataFrame
         if not all_rows:
-            print("WARNING: No rows fetched from ADS")
+            self._log_warning("No rows fetched from ADS")
             return pd.DataFrame(
                 columns=[
                     "Manufacturer",
                     "ModelYear",
                     "ModelNumber",
                     "Description",
-                    "Description2",
+                    "TrimName",
                     "Package",
                     "Style_ID",
-                    "StyleID",
                     "Drivetrain",
                     "PassDoors",
                 ]
@@ -106,9 +141,28 @@ class ADSService:
 
         df = pd.DataFrame(all_rows)
 
-        print(f"\nFetched {len(df)} vehicle configurations from ADS")
-        print(f"Manufacturers: {df['Manufacturer'].unique().tolist()}")
-        print(f"Years: {sorted(df['ModelYear'].unique().tolist())}")
+        # Validate uniqueness: check for in-batch duplicates on 4-column key
+        unique_key = ["Manufacturer", "ModelYear", "ModelNumber", "Package"]
+        df_deduped, df_dupes = validate_unique_keys(df, unique_key)
+
+        if not df_dupes.empty:
+            self._log_warning(f"Found {len(df_dupes)} in-batch duplicate(s) on unique key {unique_key}")
+            for _, dupe_row in df_dupes.iterrows():
+                issue = (
+                    f"[ADS_DUPLICATE_STYLE] Duplicate configuration: "
+                    f"{dupe_row['Manufacturer']} {dupe_row['ModelYear']} "
+                    f"{dupe_row['ModelNumber']} (Package={dupe_row['Package']})"
+                )
+                self._log_dq_warning(
+                    dupe_row["Manufacturer"],
+                    dupe_row["ModelNumber"],
+                    issue,
+                )
+            df = df_deduped
+
+        self._log_info(f"\nFetched {len(df)} vehicle configurations from ADS (after dedup)")
+        self._log_info(f"Manufacturers: {df['Manufacturer'].unique().tolist()}")
+        self._log_info(f"Years: {sorted(df['ModelYear'].unique().tolist())}")
 
         return df
 
@@ -149,7 +203,7 @@ class ADSService:
 
             # Filter by trim if specified
             if trim and rows:
-                rows = [r for r in rows if r.get("Package") == trim]
+                rows = [r for r in rows if r.get("TrimName") == trim]
 
             if not rows:
                 return pd.DataFrame(
@@ -158,10 +212,9 @@ class ADSService:
                         "ModelYear",
                         "ModelNumber",
                         "Description",
-                        "Description2",
+                        "TrimName",
                         "Package",
                         "Style_ID",
-                        "StyleID",
                         "Drivetrain",
                         "PassDoors",
                     ]
@@ -213,11 +266,11 @@ class ADSService:
                         rows = ads_response_to_rows(trims_response, make)
                         all_rows.extend(rows)
                     except Exception as model_err:
-                        print(f"  Error fetching {year} {make} {model}: {model_err}")
+                        self._log_warning(f"Error fetching {year} {make} {model}: {model_err}")
                         continue
 
             except Exception as year_err:
-                print(f"Error fetching {year} for {make}: {year_err}")
+                self._log_warning(f"Error fetching {year} for {make}: {year_err}")
                 continue
 
         if not all_rows:
@@ -227,7 +280,7 @@ class ADSService:
                     "ModelYear",
                     "ModelNumber",
                     "Description",
-                    "Description2",
+                    "TrimName",
                     "Package",
                     "Style_ID",
                     "Drivetrain",
@@ -235,7 +288,24 @@ class ADSService:
                 ]
             )
 
-        return pd.DataFrame(all_rows)
+        df = pd.DataFrame(all_rows)
+
+        # Validate uniqueness within this batch
+        unique_key = ["Manufacturer", "ModelYear", "ModelNumber", "Package"]
+        df_deduped, df_dupes = validate_unique_keys(df, unique_key)
+
+        if not df_dupes.empty:
+            self._log_warning(f"Found {len(df_dupes)} in-batch duplicate(s) on unique key {unique_key}")
+            for _, dupe_row in df_dupes.iterrows():
+                issue = (
+                    f"[ADS_DUPLICATE_STYLE] Duplicate configuration: "
+                    f"{dupe_row['Manufacturer']} {dupe_row['ModelYear']} "
+                    f"{dupe_row['ModelNumber']} (Package={dupe_row['Package']})"
+                )
+                self._log_dq_warning(dupe_row["Manufacturer"], dupe_row["ModelNumber"], issue)
+            df = df_deduped
+
+        return df
 
     def dump_all(
         self,
@@ -267,50 +337,50 @@ class ADSService:
         # Auto-discover makes if not provided
         if makes is None:
             makes = list(self.make_map.keys())
-            print(f"Auto-discovered makes: {makes}")
+            self._log_info(f"Auto-discovered makes: {makes}")
 
         # Auto-discover years if not provided
         if years is None:
             try:
                 years = self.client.get_years(country, language, "DESC")
-                print(f"Auto-discovered years: {years}")
+                self._log_info(f"Auto-discovered years: {years}")
             except Exception as e:
-                print(f"Warning: Could not auto-discover years: {e}")
+                self._log_warning(f"Could not auto-discover years: {e}")
                 years = [2024, 2025, 2026]
-                print(f"Falling back to default years: {years}")
+                self._log_info(f"Falling back to default years: {years}")
 
         all_rows = []
 
         for make in makes:
-            print(f"\nDumping {make}...")
+            self._log_info(f"\nDumping {make}...")
 
             if make not in self.make_map:
-                print(f"  WARNING: Unknown make {make}, skipping")
+                self._log_warning(f"Unknown make {make}, skipping")
                 continue
 
             make_df = self.fetch_make(make, years, country, language, language_locale)
 
             if not make_df.empty:
                 all_rows.append(make_df)
-                print(f"  {len(make_df)} records for {make}")
+                self._log_info(f"  {len(make_df)} records for {make}")
 
                 # Incremental save if callback provided
                 if save_callback:
                     try:
                         save_callback(make, make_df)
                     except Exception as save_err:
-                        print(f"  Warning: Save callback failed for {make}: {save_err}")
+                        self._log_warning(f"Save callback failed for {make}: {save_err}")
 
         # Concatenate all makes
         if not all_rows:
-            print("WARNING: No rows fetched from ADS")
+            self._log_warning("No rows fetched from ADS")
             return pd.DataFrame(
                 columns=[
                     "Manufacturer",
                     "ModelYear",
                     "ModelNumber",
                     "Description",
-                    "Description2",
+                    "TrimName",
                     "Package",
                     "Style_ID",
                     "Drivetrain",
@@ -319,6 +389,6 @@ class ADSService:
             )
 
         result_df = pd.concat(all_rows, ignore_index=True)
-        print(f"\nTotal fetched: {len(result_df)} configurations")
+        self._log_info(f"\nTotal fetched: {len(result_df)} configurations")
 
         return result_df

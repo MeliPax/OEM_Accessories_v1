@@ -39,8 +39,8 @@ def test_fetch_vehicle():
     assert row["ModelNumber"] == "ELCS4V2BES00", f"Wrong model number: {row['ModelNumber']}"
     print(f"  [OK] ModelNumber: {row['ModelNumber']}")
 
-    assert row["StyleID"] == 481251, f"Wrong StyleID: {row['StyleID']}"
-    print(f"  [OK] StyleID: {row['StyleID']}")
+    assert row["Package"] == 481251, f"Wrong Package: {row['Package']}"
+    print(f"  [OK] Package: {row['Package']}")
 
     assert row["Drivetrain"] == "FRONT_WHEEL_DRIVE", f"Wrong drivetrain: {row['Drivetrain']}"
     print(f"  [OK] Drivetrain: {row['Drivetrain']}")

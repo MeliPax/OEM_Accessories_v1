@@ -46,7 +46,7 @@ def ads_trim_to_row(
 
     Returns:
         dict with 9-column schema: Manufacturer, ModelYear, ModelNumber,
-        Description, Description2, Package, Style_ID, Drivetrain, PassDoors
+        Description, TrimName, Package, Style_ID, Drivetrain, PassDoors
         Returns None if required fields are missing.
     """
     # Extract required fields
@@ -69,10 +69,8 @@ def ads_trim_to_row(
         "ModelYear": int(model_year),
         "ModelNumber": model_number,
         "Description": description,
-        "Description2": name_wo_trim or "",
-        "Package": trim_level or "",
-        "Style_ID": body_type,
-        "StyleID": style_id or "",
+        "TrimName": trim_level or "",
+        "Package": style_id or "",
         "Drivetrain": drivetrain or "",
         "PassDoors": pass_doors or "",
     }
