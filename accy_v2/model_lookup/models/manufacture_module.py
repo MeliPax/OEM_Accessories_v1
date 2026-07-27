@@ -87,10 +87,13 @@ def validate_row_not_null(row: dict, required_fields: list[str] = None) -> bool:
     return True
 
 
-def load_existing_csv(csv_path: str) -> pd.DataFrame:
+def load_existing_csv(csv_path: str, expected_columns: list = None) -> pd.DataFrame:
     """
     Load existing CSV file and clean description punctuation.
     Returns empty DataFrame if file doesn't exist.
+
+    If expected_columns provided and CSV has fewer columns, pads with empty columns.
+    This handles schema evolution (e.g., reading a 7-column file when expecting 9).
 
     Applies description cleaning to normalize cosmetic info in all loaded data:
     - Removes parentheses/brackets that interfere with tokenization
@@ -102,9 +105,19 @@ def load_existing_csv(csv_path: str) -> pd.DataFrame:
             # Clean descriptions for all loaded data (not just search results)
             if not df.empty and "Description" in df.columns:
                 df["Description"] = df["Description"].apply(_clean_description_punctuation)
+
+            # Pad with expected columns if needed
+            if expected_columns:
+                for col in expected_columns:
+                    if col not in df.columns:
+                        df[col] = ""
+
             return df
         except Exception as e:
             print(f"Warning: Could not read existing CSV: {e}")
+            # Return DataFrame with expected columns if parsing failed
+            if expected_columns:
+                return pd.DataFrame(columns=expected_columns)
             return pd.DataFrame()
     return pd.DataFrame()
 
@@ -223,7 +236,22 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_d
         # Log warning but don't fail the save if standardization has issues
         pass
 
-    df_existing = load_existing_csv(csv_path)
+    # Pre-harmonize columns: read existing header to determine full schema
+    existing_cols = []
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path, 'r') as f:
+                existing_cols = f.readline().strip().split(',')
+            # Ensure df_valid has all existing columns
+            for col in existing_cols:
+                if col not in df_valid.columns:
+                    df_valid[col] = ""
+        except Exception:
+            pass
+
+    # Determine the full write schema upfront
+    write_columns = sorted(set(existing_cols + df_valid.columns.tolist()))
+    df_existing = load_existing_csv(csv_path, expected_columns=write_columns)
 
     if not df_existing.empty:
         df_valid = check_duplicate_record(df_valid, df_existing)
@@ -236,11 +264,22 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None, configs_d
         result["message"] = "No new data to load — all records already exist"
         return result
 
-    mode = "w" if df_existing.empty else "a"
-    header = df_existing.empty
+    # Determine write mode: if schema changed (new columns), rewrite file instead of append
+    # This prevents CSV corruption from column mismatch
+    schema_changed = existing_cols and write_columns != existing_cols
+    mode = "w" if (df_existing.empty or schema_changed) else "a"
+    header = df_existing.empty or schema_changed
+
+    # If schema changed and we're not starting fresh, include existing rows with new columns
+    if schema_changed and not df_existing.empty:
+        df_existing = df_existing.reindex(columns=write_columns, fill_value="")
+        df_valid = pd.concat([df_existing, df_valid], ignore_index=True)
+
+    # Reindex df_valid to write schema (ensures all columns present)
+    df_valid = df_valid.reindex(columns=write_columns, fill_value="")
 
     try:
-        df_valid.to_csv(csv_path, mode=mode, header=header, index=False)
+        df_valid.to_csv(csv_path, mode=mode, header=header, index=False, columns=write_columns)
         result["records_saved"] = len(df_valid)
         result["records_skipped"] = result["total_records"] - len(df_valid)
         result["success"] = True
@@ -603,9 +642,10 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     """
     Standardize database description by:
     1. Cleaning punctuation that breaks tokenization
-    2. Translating tokens using OEM translator while preserving original casing
-    3. Removing duplicate words (case-insensitive) introduced by translation
-    4. Applying title case (capitalize first letter of each word, lowercase the rest)
+    2. Normalizing trim variant naming (e.g., "N Line" → "N-Line")
+    3. Translating tokens using OEM translator while preserving original casing
+    4. Removing duplicate words (case-insensitive) introduced by translation
+    5. Applying title case (capitalize first letter of each word, lowercase the rest)
 
     Applies the same translation rules used for search keywords to ensure consistent
     vocabulary between search input and database (e.g., "ult" → "ultimate").
@@ -630,10 +670,12 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
     # Step 1: Clean punctuation first (so "(Two Tone Interior)" becomes "Two Tone Interior")
     cleaned = _clean_description_punctuation(description)
 
-    # Step 2: Translate tokens while preserving original casing for untranslated words
-    if oem_translator:
-        import re
+    # Step 2: Normalize trim variant naming (e.g., "N Line" → "N-Line" for consistent DB storage)
+    import re
+    normalized = re.sub(r'\bN Line\b', 'N-Line', cleaned, flags=re.IGNORECASE)
 
+    # Step 4: Translate tokens while preserving original casing for untranslated words
+    if oem_translator:
         def _replace_token(match: "re.Match") -> str:
             word = match.group(0)
             # Look up lowercase version of word in translator, but return the translated version as-is
@@ -641,14 +683,14 @@ def _standardize_description(description: str, oem_translator: dict) -> str:
             return oem_translator.get(word.lower(), word)
 
         # Replace each whitespace-separated token (already normalized to single spaces)
-        translated = re.sub(r"\S+", _replace_token, cleaned)
+        translated = re.sub(r"\S+", _replace_token, normalized)
     else:
-        translated = cleaned
+        translated = normalized
 
-    # Step 3: Remove duplicate words introduced by translation (case-insensitive, first occurrence wins)
+    # Step 5: Remove duplicate words introduced by translation (case-insensitive, first occurrence wins)
     deduplicated = _deduplicate_description_words(translated)
 
-    # Step 4: Apply title case (capitalize first letter of each word, lowercase the rest)
+    # Step 6: Apply title case (capitalize first letter of each word, lowercase the rest)
     return _apply_title_case(deduplicated)
 
 
