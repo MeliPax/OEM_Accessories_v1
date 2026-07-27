@@ -58,6 +58,7 @@ def ads_trim_to_row(
     body_type = extract_body_type(trim.get("bodyType"))
     drivetrain = trim.get("drivetrain", "")
     pass_doors = trim.get("passDoors")
+    style_id = trim.get("id")
 
     # Validate required fields
     if not model_number or not model_year or not description:
@@ -71,6 +72,7 @@ def ads_trim_to_row(
         "Description2": name_wo_trim or "",
         "Package": trim_level or "",
         "Style_ID": body_type,
+        "StyleID": style_id or "",
         "Drivetrain": drivetrain or "",
         "PassDoors": pass_doors or "",
     }

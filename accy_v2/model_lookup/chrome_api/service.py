@@ -98,6 +98,7 @@ class ADSService:
                     "Description2",
                     "Package",
                     "Style_ID",
+                    "StyleID",
                     "Drivetrain",
                     "PassDoors",
                 ]
@@ -160,6 +161,7 @@ class ADSService:
                         "Description2",
                         "Package",
                         "Style_ID",
+                        "StyleID",
                         "Drivetrain",
                         "PassDoors",
                     ]
