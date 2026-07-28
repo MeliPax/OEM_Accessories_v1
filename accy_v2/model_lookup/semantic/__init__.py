@@ -8,6 +8,7 @@ This is an optional enhancement layer that wraps core.search.search()
 with semantic preprocessing.
 """
 
-from .search import search
+# Note: search is imported lazily to avoid circular imports during initialization
+# Use: from semantic.search import search
 
-__all__ = ["search"]
+__all__ = []

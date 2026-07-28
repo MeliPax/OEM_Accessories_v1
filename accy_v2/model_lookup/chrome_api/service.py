@@ -3,14 +3,27 @@ Service to orchestrate ADS API data collection.
 
 Coordinates years → makes → models → trims batch collection and transforms
 responses into pipeline schema using mapper.py.
+
+Features:
+  - Configuration-driven engine_type extraction (ENGINE_TYPE keywords + translator)
+  - Dynamic loading of OEM-specific classification and translator configs
+  - Comprehensive logging via structured logging module
 """
 
+import json
+import yaml
+import logging
 import pandas as pd
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
+from pathlib import Path
 from .config import load_ads_env, get_make_name_map
 from .client import ADSClient
 from .mapper import ads_response_to_rows
 from .validators import validate_unique_keys
+from semantic.standardizer import DataStandardizer
+from semantic.translator import load_oem_translator
+
+logger = logging.getLogger(__name__)
 
 
 class ADSService:
@@ -32,6 +45,110 @@ class ADSService:
         self.make_map = get_make_name_map()
         self.pipeline_logger = pipeline_logger
         self.dq_logger = dq_logger
+        self._config_cache = {}  # Cache for loaded configs (classification/translator)
+
+    def _load_config_for_make(self, make: str) -> tuple:
+        """
+        Load classification, translator, and standardizer configs for an OEM.
+
+        Caches loaded configs to avoid repeated file I/O.
+
+        Args:
+            make: OEM name (e.g., "Hyundai")
+
+        Returns:
+            Tuple of (classification_dict, translator_dict, standardizer_obj)
+            Returns None for missing configs
+
+        Logs:
+            - DEBUG: Config loading attempt, cached retrieve
+            - INFO: Config loaded successfully
+            - WARNING: Config file not found
+            - ERROR: Config loading failure
+        """
+        # Return from cache if already loaded
+        if make in self._config_cache:
+            logger.debug(f"service | {make} | Config retrieved from cache")
+            return self._config_cache[make]
+
+        try:
+            configs_dir = Path(__file__).parent.parent / "configs"
+            classification_file = configs_dir / f"{make.lower()}_classification.json"
+            translator_file = configs_dir / f"{make.lower()}_translator.json"
+            standardization_file = configs_dir / f"{make.lower()}_standardization.yaml"
+
+            logger.debug(
+                f"service | {make} | Loading configs from: {configs_dir}"
+            )
+
+            # Load classification
+            classification = None
+            if classification_file.exists():
+                with open(classification_file, 'r') as f:
+                    classification = json.load(f)
+                logger.debug(
+                    f"service | {make} | Loaded classification.json "
+                    f"({len(classification.get('token_map', {}))} keywords)"
+                )
+            else:
+                logger.warning(
+                    f"service | {make} | Classification file not found: {classification_file}"
+                )
+
+            # Load translator (use load_oem_translator to get flattened dict)
+            translator = load_oem_translator(make, str(configs_dir))
+            if translator:
+                logger.debug(
+                    f"service | {make} | Loaded translator.json "
+                    f"({len(translator)} flattened keywords)"
+                )
+            else:
+                logger.warning(
+                    f"service | {make} | Translator file not found: {translator_file}"
+                )
+
+            # Load standardizer
+            standardizer = None
+            if standardization_file.exists():
+                with open(standardization_file, 'r') as f:
+                    config = yaml.safe_load(f)
+                standardizer = DataStandardizer(config, make)
+                logger.debug(
+                    f"service | {make} | Loaded standardization.yaml with "
+                    f"{len(config.get('standardization_rules', {}))} rule categories"
+                )
+            else:
+                logger.debug(
+                    f"service | {make} | Standardization file not found: {standardization_file}"
+                )
+
+            config_status = []
+            if classification:
+                config_status.append("classification")
+            if translator:
+                config_status.append("translator")
+            if standardizer:
+                config_status.append("standardizer")
+
+            if config_status:
+                logger.info(
+                    f"service | {make} | Configs loaded | components: {', '.join(config_status)}"
+                )
+            else:
+                logger.warning(
+                    f"service | {make} | No configs found (engine_type extraction and standardization disabled)"
+                )
+
+            # Cache the result
+            self._config_cache[make] = (classification, translator, standardizer)
+            return classification, translator, standardizer
+
+        except Exception as e:
+            logger.error(
+                f"service | {make} | FAILED to load config files | Error: {str(e)}"
+            )
+            self._config_cache[make] = (None, None, None)
+            return None, None, None
 
     def _log_info(self, msg: str) -> None:
         """Log info message to pipeline logger or print."""
@@ -72,6 +189,12 @@ class ADSService:
         """
         Fetch vehicle data from ADS and transform to pipeline schema.
 
+        Features:
+          - Loads OEM-specific classification and translator configs
+          - Extracts engine_type from ModelName/Description using ENGINE_TYPE keywords
+          - Deduplicates on 4-column uniqueness key (Manufacturer+Year+ModelNumber+Package)
+          - Logs progress with engine_type extraction details
+
         Args:
             makes: List of ADS make names (e.g., ["Hyundai", "Genesis"])
             years: List of model years (e.g., [2024, 2025, 2026])
@@ -80,17 +203,24 @@ class ADSService:
             language_locale: Locale for trims fetch (e.g., "CA_en")
 
         Returns:
-            pandas DataFrame with 9-column schema ready for save_vehicle_models_to_csv()
+            pandas DataFrame with 10-column schema ready for save_vehicle_models_to_csv():
+            Manufacturer, ModelYear, ModelNumber, Description, TrimName,
+            Package, Drivetrain, PassDoors, ModelName, engine_type
         """
         all_rows = []
 
         for make in makes:
             self._log_info(f"\nFetching {make}...")
+            logger.info(f"refresh_from_ads | {make} | Starting fetch")
 
             # Verify make is known
             if make not in self.make_map:
                 self._log_warning(f"Unknown make {make}, skipping")
+                logger.warning(f"refresh_from_ads | {make} | Unknown make, skipping")
                 continue
+
+            # Load configuration for this make (classification, translator, standardizer)
+            classification, translator, standardizer = self._load_config_for_make(make)
 
             for year in years:
                 print(f"  {year}...", end=" ", flush=True)
@@ -106,9 +236,15 @@ class ADSService:
                                 year, make, model, language_locale
                             )
 
-                            # Transform to rows
-                            rows = ads_response_to_rows(trims_response, make)
+                            # Transform to rows (with engine_type extraction and standardization)
+                            rows = ads_response_to_rows(
+                                trims_response, make, classification, translator, standardizer
+                            )
                             all_rows.extend(rows)
+                            logger.debug(
+                                f"refresh_from_ads | {make} {year} {model} | "
+                                f"Converted {len(rows)} trims to rows"
+                            )
 
                         except Exception as model_err:
                             self._log_warning(f"Error fetching {year} {make} {model}: {model_err}")
@@ -195,11 +331,18 @@ class ADSService:
             DataFrame with matching rows (likely 1 row if trim specified, multiple if not)
         """
         if make not in self.make_map:
+            logger.error(f"fetch_vehicle | {make} | Unknown make")
             raise ValueError(f"Unknown make: {make}")
 
         try:
+            logger.debug(f"fetch_vehicle | {make} {year} {model} | Fetching trims")
+
+            # Load configuration for this make
+            classification, translator, standardizer = self._load_config_for_make(make)
+
             trims_response = self.client.get_trims(year, make, model, language_locale)
-            rows = ads_response_to_rows(trims_response, make)
+            rows = ads_response_to_rows(trims_response, make, classification, translator, standardizer)
+            logger.debug(f"fetch_vehicle | {make} {year} {model} | Converted {len(rows)} trims")
 
             # Filter by trim if specified
             if trim and rows:
@@ -250,12 +393,19 @@ class ADSService:
             DataFrame with all trims for the make/years combination
         """
         if make not in self.make_map:
+            logger.error(f"fetch_make | {make} | Unknown make")
             raise ValueError(f"Unknown make: {make}")
+
+        logger.info(f"fetch_make | {make} | Fetching for years: {years}")
+
+        # Load configuration for this make (once, reuse for all years)
+        classification, translator, standardizer = self._load_config_for_make(make)
 
         all_rows = []
 
         for year in years:
             try:
+                logger.debug(f"fetch_make | {make} {year} | Fetching models")
                 models = self.client.get_models(year, make, country, language, "ASC")
 
                 for model in models:
@@ -263,7 +413,9 @@ class ADSService:
                         trims_response = self.client.get_trims(
                             year, make, model, language_locale
                         )
-                        rows = ads_response_to_rows(trims_response, make)
+                        rows = ads_response_to_rows(
+                            trims_response, make, classification, translator, standardizer
+                        )
                         all_rows.extend(rows)
                     except Exception as model_err:
                         self._log_warning(f"Error fetching {year} {make} {model}: {model_err}")
