@@ -241,11 +241,18 @@ def _batch_lookup_model_numbers(
     # Initialize search engine once for this batch of lookups
     csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
     configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
+
+    # Extract ignore_keyword_categories from OEM rules (nested under model_lookup_rules)
+    oem_rules = {}
+    if "model_lookup_rules" in oem_config and vehicle_make in oem_config["model_lookup_rules"]:
+        oem_rules = oem_config["model_lookup_rules"][vehicle_make]
+    ignore_kw_categories = oem_rules.get("ignore_keyword_categories", [])
+
     engine = VehicleSearchEngine(
         csv_path=csv_path,
         configs_dir=configs_dir,
         oem_config=oem_config,
-        ignore_keyword_categories=oem_config.get("ignore_keyword_categories", []),
+        ignore_keyword_categories=ignore_kw_categories,
         pipeline_logger=pipeline_logger,
     )
 
