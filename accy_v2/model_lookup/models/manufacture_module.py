@@ -23,12 +23,12 @@ MANUFACTURER_SEARCH_CONFIG = {
     "default": {
         "year_field": "ModelYear",
         "model_field": "ModelNumber",
-        "trim_fields": ["Description"],
+        "trim_fields": ["ModelName", "Description"],
         "style_field": "Style_ID",
         "package_field": "Package",
     },
     "Hyundai": {
-        "trim_fields": ["Description"],
+        "trim_fields": ["ModelName", "Description"],
     },
 }
 
@@ -527,15 +527,19 @@ def build_word_boundary_pattern(keyword: str) -> str:
     """
     Build a regex pattern for exact word matching with word boundaries.
 
+    Ensures the keyword matches as a complete word/token, not as part of a
+    hyphenated term. For example, 'N' should not match the 'N' in 'N-Line'.
+
     Args:
         keyword: The keyword to match
 
     Returns:
-        str: Regex pattern with word boundaries (e.g., r'\bSE\b')
+        str: Regex pattern with word boundaries excluding hyphen-adjacent matches
     """
     import re as regex_module
     escaped_keyword = regex_module.escape(keyword)
-    return rf"\b{escaped_keyword}\b"
+    # Don't match if preceded/followed by hyphen (to avoid 'N' matching in 'N-Line')
+    return rf"(?<![-])\b{escaped_keyword}\b(?![-])"
 
 
 def _extract_description_tokens(description: str) -> list[str]:
@@ -1054,15 +1058,17 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
 
 
 def search_models_by_description(
-    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None, oem_config: dict = None
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True,
+    configs_dir: str = None, oem_config: dict = None, engine_type: str = None
 ) -> pd.DataFrame:
     """
-    Search vehicle models by manufacturer, year, and description keywords.
+    Search vehicle models by manufacturer, year, description keywords, and optional engine type.
     Keywords must match exactly as whole words (e.g., "SE" won't match "SEL").
     Filters out results that contain additional TRIM DISCRIMINATOR keywords not in the search list,
     while ignoring non-discriminating specification keywords (drive types, transmissions, packages).
 
     Automatically translates OEM-specific abbreviations (e.g., 'prem' → 'premium', 's-awc' → 'awd').
+    Optionally filters results by engine_type (e.g., "Electric", "Hybrid").
 
     Args:
         make: Manufacturer name
@@ -1072,6 +1078,8 @@ def search_models_by_description(
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
         configs_dir: Directory for keyword vocab JSONs (defaults to model_lookup/configs/)
+        engine_type: Optional filter for engine type (e.g., "Electric", "Hybrid", "Gasoline")
+                    If provided, only return records matching this engine_type (case-insensitive)
 
     Returns:
         DataFrame with matching records
@@ -1124,18 +1132,46 @@ def search_models_by_description(
 
     for keyword in keywords:
         if use_single_char_token_matching and len(keyword) == 1:
-            # For single-char keywords: strict token matching (exact word, not part of hyphenated term)
-            df_filtered = df_filtered[
-                df_filtered["Description"].apply(
-                    lambda desc: keyword.lower() in _extract_description_tokens(desc)
-                )
-            ]
-        else:
-            # For multi-char keywords: use regex word boundary logic
+            # For single-char keywords: check ModelName first (e.g., "N" in "Elantra N"),
+            # then fall back to token matching in TrimName/Description
             pattern = build_word_boundary_pattern(keyword)
-            df_filtered = df_filtered[
-                df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-            ]
+
+            # Check if single-char keyword appears as a separate word in ModelName
+            model_matches = df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True).sum()
+
+            if model_matches > 0:
+                # Single-char keyword is a model name component (e.g., "N" in "Elantra N")
+                df_filtered = df_filtered[
+                    df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+                ]
+            else:
+                # Single-char keyword not in ModelName, use token matching for trim/description
+                df_filtered = df_filtered[
+                    df_filtered["TrimName"].fillna("").apply(
+                        lambda trim: keyword.lower() in _extract_description_tokens(trim)
+                    ) |
+                    df_filtered["Description"].apply(
+                        lambda desc: keyword.lower() in _extract_description_tokens(desc)
+                    )
+                ]
+        else:
+            pattern = build_word_boundary_pattern(keyword)
+
+            # Determine if this keyword is a model name or trim keyword
+            # Check if keyword matches anything in ModelName column
+            model_matches = df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True).sum()
+
+            if model_matches > 0:
+                # This keyword appears in ModelName column - search ONLY in ModelName
+                df_filtered = df_filtered[
+                    df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+                ]
+            else:
+                # This keyword doesn't match model names - search in TrimName AND Description (trim keywords)
+                df_filtered = df_filtered[
+                    df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True) |
+                    df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
+                ]
         # DEBUG: Track how many records remain after each keyword filter
         import sys
         print(f"[SEARCH_DEBUG] After keyword '{keyword}': {len(df_filtered)} records", file=sys.stderr)
@@ -1154,9 +1190,10 @@ def search_models_by_description(
         # No fuel type keyword found in search — exclude all configured fuel types
         for fuel_keyword in fuel_type_keywords:
             pattern = build_word_boundary_pattern(fuel_keyword)
-            df_filtered = df_filtered[
-                ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-            ]
+            # Fuel type keywords are trim-related, so check TrimName AND Description
+            has_ev_in_trim = df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+            has_ev_in_desc = df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
+            df_filtered = df_filtered[~(has_ev_in_trim | has_ev_in_desc)]
 
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
     # However: if any POWERTRAIN_TYPE keyword (fuel type) OR a TRIM keyword was explicitly requested,
@@ -1182,6 +1219,36 @@ def search_models_by_description(
                 return bool(extra_discriminators)
 
             df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+
+    # Filter by engine_type if provided
+    if engine_type:
+        # Get logger
+        try:
+            logger = logging.getLogger(__name__)
+        except:
+            logger = None
+
+        if logger:
+            logger.info(
+                f"search_models | {make} {year} | Filtering by engine_type: {engine_type}"
+            )
+
+        # Handle null/empty engine_type values in database (case-insensitive)
+        mask = df_filtered["engine_type"].fillna("").str.lower() == engine_type.lower()
+        records_before = len(df_filtered)
+        df_filtered = df_filtered[mask]
+
+        if logger:
+            logger.debug(
+                f"search_models | {make} {year} | "
+                f"engine_type filter: {engine_type} | {records_before} → {len(df_filtered)} records"
+            )
+
+        if len(df_filtered) == 0 and logger:
+            logger.warning(
+                f"search_models | {make} {year} | "
+                f"No records match engine_type: {engine_type}"
+            )
 
     # DEBUG: Log results at exit
     if make.lower() == 'hyundai' and 'pref' in [k.lower() for k in keywords]:
