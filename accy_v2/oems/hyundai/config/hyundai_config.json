@@ -117,7 +117,7 @@
         "min": 1900,
         "max": 2100
       },
-      "fuel_type_keywords": ["EV", "PHEV", "HEV", "FCEV", "ELECTRIC", "E-SC"],
+      "fuel_type_keywords": ["EV", "PHEV", "HEV", "FCEV"],
       "trim_abbreviation_library": {},
       "fields": ["trim", "model"],
       "trim_column": "trim_level",

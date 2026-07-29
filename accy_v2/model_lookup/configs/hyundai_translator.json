@@ -14,33 +14,29 @@
       "ed": "edition",
       "edt": "edition",
       "pkg": "package",
-      "pckg": "package",
-      "urban": "urban"
+      "pckg": "package"
     },
     "fuel_drivetrain": {
       "hev": "hybrid",
       "phev": "plug-in",
-      "ev": "electric"
+      "ev": "electric",
+      "e-sc": "electric",
+      "electrified": "electric"
     },
     "body_style": {
-      "coupe": "coupe",
-      "5p": "5p",
-      "7p": "7p"
+    
     },
     "technology": {
-      "nhl": "nhl",
-      "xrt": "xrt",
-      "e-sc": "e-sc",
-      "elsd": "elsd"
+    
     },
     "range_options": {
-      "long": "long"
+    
     },
     "data_artifacts": {
-      "plug-in": "plug-in"
+
     },
     "Extras": {
-      "w/": "with"
+
     }
 
   }

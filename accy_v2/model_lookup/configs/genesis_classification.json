@@ -2,6 +2,7 @@
   "make": "Genesis",
   "generated_at": "2026-06-30T10:00:00.000000",
   "schema_version": "1.0",
+  "fuel_type_category": "ENGINE_TYPE",
   "token_map": {
     "g70": "MODEL",
     "g80": "MODEL",
@@ -26,7 +27,6 @@
     "quilting": "INTERIOR",
     "suede": "INTERIOR",
     "wood": "INTERIOR",
-    "w/navy": "INTERIOR",
     "electrified": "ENGINE_TYPE",
     "electric": "ENGINE_TYPE",
     "ev": "ENGINE_TYPE",

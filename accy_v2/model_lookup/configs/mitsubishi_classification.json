@@ -2,6 +2,7 @@
   "make": "mitsubishi",
   "generated_at": "2026-06-23T11:35:35.109010",
   "schema_version": "1.0",
+  "fuel_type_category": "ENGINE_TYPE",
   "token_map": {
     "*ltd": "PACKAGE",
     "avail*": "PACKAGE",

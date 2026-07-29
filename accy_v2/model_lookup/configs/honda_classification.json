@@ -2,6 +2,7 @@
   "make": "Honda",
   "generated_at": "2026-06-23T11:35:35.045095",
   "schema_version": "1.0",
+  "fuel_type_category": "ENGINE_TYPE",
   "token_map": {
     "4wd": "DRIVETRAIN",
     "awd": "DRIVETRAIN",

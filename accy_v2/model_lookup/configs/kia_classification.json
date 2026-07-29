@@ -2,6 +2,7 @@
   "make": "Kia",
   "generated_at": "2026-06-23T11:35:35.057169",
   "schema_version": "1.0",
+  "fuel_type_category": "ENGINE_TYPE",
   "token_map": {
     "*ltd": "PACKAGE",
     "auto": "TRANSMISSION",
@@ -24,6 +25,7 @@
     "mt": "TRANSMISSION",
     "package": "PACKAGE",
     "phev": "ENGINE_TYPE",
+    "electrified": "ENGINE_TYPE",
     "pkg": "PACKAGE",
     "premium": "TRIM",
     "rwd": "DRIVETRAIN",

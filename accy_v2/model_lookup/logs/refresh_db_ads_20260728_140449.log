@@ -1,0 +1,505 @@
+[2026-07-28 14:04:49] [INFO    ] [root] Logging initialized | Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260728_140449.log
+[2026-07-28 14:04:49] [DEBUG   ] [root] Console level: INFO | File level: DEBUG
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] DATABASE REFRESH FROM ADS STARTED
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] Run ID: a50efaeb
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] Makes: Hyundai
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] Years: 2026
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260728_140449.log
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] 
+[Step 1/4] Initializing ADS service...
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] ADS service initialized successfully | Credentials loaded and client ready
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] 
+[Step 2/4] Archiving current database...
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] Database archived | File: db_vehicle_models.2026-07-28_140449.csv | Size: 95027 bytes
+[2026-07-28 14:04:49] [INFO    ] [refresh_db_ads] 
+[Step 3/4] Fetching data from ADS API...
+[2026-07-28 14:04:49] [DEBUG   ] [refresh_db_ads] Fetching for makes: ['Hyundai'] | years: [2026]
+[2026-07-28 14:04:49] [INFO    ] [chrome_api.service] refresh_from_ads | Hyundai | Starting fetch
+[2026-07-28 14:04:49] [DEBUG   ] [chrome_api.service] service | Hyundai | Loading configs from: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\configs
+[2026-07-28 14:04:49] [DEBUG   ] [chrome_api.service] service | Hyundai | Loaded classification.json (79 keywords)
+[2026-07-28 14:04:49] [DEBUG   ] [chrome_api.service] service | Hyundai | Loaded translator.json (7 categories)
+[2026-07-28 14:04:49] [INFO    ] [chrome_api.service] service | Hyundai | Configs loaded | classification=yes, translator=yes
+[2026-07-28 14:04:49] [DEBUG   ] [urllib3.connectionpool] Starting new HTTPS connection (1): demos.autodatasolutions.com:443
+[2026-07-28 14:04:49] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Hyundai/year/2026/country/CA/language/en?sort=ASC HTTP/1.1" 200 None
+[2026-07-28 14:04:50] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Elantra/ HTTP/1.1" 200 None
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 6 trims from ADS response
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BES00 | Extracted fields: year=2026, desc=Essential IVT, trim=Essential
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BES00 | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BES00 | Searching text: 'elantra essential ivt'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BES00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BES00 | Row complete: model=Elantra, trim=Essential IVT, engine_type=None
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPR00 | Extracted fields: year=2026, desc=Preferred IVT, trim=Preferred
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPR00 | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPR00 | Searching text: 'elantra preferred ivt'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPR00 | Row complete: model=Elantra, trim=Preferred IVT, engine_type=None
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPRTE | Extracted fields: year=2026, desc=Preferred IVT w/Tech Pkg, trim=Preferred
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPRTE | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPRTE | Searching text: 'elantra preferred ivt w/tech pkg'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPRTE | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BPRTE | Row complete: model=Elantra, trim=Preferred IVT w/Tech Pkg, engine_type=None
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLU00 | Extracted fields: year=2026, desc=Luxury IVT, trim=Luxury
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLU00 | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLU00 | Searching text: 'elantra luxury ivt'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLU00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLU00 | Row complete: model=Elantra, trim=Luxury IVT, engine_type=None
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLUME | Extracted fields: year=2026, desc=Luxury IVT w/Two-Tone Interior, trim=Luxury
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLUME | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLUME | Searching text: 'elantra luxury ivt w/two-tone interior'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLUME | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4V2BLUME | Row complete: model=Elantra, trim=Luxury IVT w/Two-Tone Interior, engine_type=None
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4U1ANLUL | Extracted fields: year=2026, desc=N Line Ultimate DCT, trim=N Line Ultimate
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4U1ANLUL | ModelName from ADS: Elantra
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4U1ANLUL | Searching text: 'elantra n line ultimate dct'
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4U1ANLUL | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4U1ANLUL | Row complete: model=Elantra, trim=N Line Ultimate DCT, engine_type=None
+[2026-07-28 14:04:50] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 6/6 trims to rows
+[2026-07-28 14:04:50] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Elantra | Converted 6 trims to rows
+[2026-07-28 14:04:51] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Elantra%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 2 trims from ADS response
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | Extracted fields: year=2026, desc=Luxury Sedan, trim=Luxury
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | ModelName from ADS: Elantra Hybrid
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | Searching text: 'elantra hybrid luxury sedan'
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | Found keyword 'hybrid' in 'Elantra Hybrid Luxury Sedan'
+[2026-07-28 14:04:51] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHE | Row complete: model=Elantra Hybrid, trim=Luxury Sedan, engine_type=hybrid
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | Extracted fields: year=2026, desc=Luxury Sedan w/Two-Tone Interior, trim=Luxury
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | ModelName from ADS: Elantra Hybrid
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | Searching text: 'elantra hybrid luxury sedan w/two-tone interior'
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | Found keyword 'hybrid' in 'Elantra Hybrid Luxury Sedan w/Two-Tone Interior'
+[2026-07-28 14:04:51] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELHS4T1BLUHM | Row complete: model=Elantra Hybrid, trim=Luxury Sedan w/Two-Tone Interior, engine_type=hybrid
+[2026-07-28 14:04:51] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 2/2 trims to rows
+[2026-07-28 14:04:51] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Elantra Hybrid | Converted 2 trims to rows
+[2026-07-28 14:04:51] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Elantra%20N/ HTTP/1.1" 200 None
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 4 trims from ADS response
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANN00 | Extracted fields: year=2026, desc=Manual, trim=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANN00 | ModelName from ADS: Elantra N
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANN00 | Searching text: 'elantra n manual'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANN00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANN00 | Row complete: model=Elantra N, trim=Manual, engine_type=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANN00 | Extracted fields: year=2026, desc=DCT, trim=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANN00 | ModelName from ADS: Elantra N
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANN00 | Searching text: 'elantra n dct'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANN00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANN00 | Row complete: model=Elantra N, trim=DCT, engine_type=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANNTC | Extracted fields: year=2026, desc=TCR Manual, trim=TCR
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANNTC | ModelName from ADS: Elantra N
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANNTC | Searching text: 'elantra n tcr manual'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANNTC | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS472ANNTC | Row complete: model=Elantra N, trim=TCR Manual, engine_type=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANNTC | Extracted fields: year=2026, desc=TCR DCT, trim=TCR
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANNTC | ModelName from ADS: Elantra N
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANNTC | Searching text: 'elantra n tcr dct'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANNTC | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | ELCS4M2ANNTC | Row complete: model=Elantra N, trim=TCR DCT, engine_type=None
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 4/4 trims to rows
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Elantra N | Converted 4 trims to rows
+[2026-07-28 14:04:52] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/IONIQ%205/ HTTP/1.1" 200 None
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 3 trims from ADS response
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE4PRLR | Extracted fields: year=2026, desc=Preferred RWD Long Range, trim=Preferred
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE4PRLR | ModelName from ADS: IONIQ 5
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE4PRLR | Searching text: 'ioniq 5 preferred rwd long range'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE4PRLR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE4PRLR | Row complete: model=IONIQ 5, trim=Preferred RWD Long Range, engine_type=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRLR | Extracted fields: year=2026, desc=Preferred AWD Long Range, trim=Preferred
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRLR | ModelName from ADS: IONIQ 5
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRLR | Searching text: 'ioniq 5 preferred awd long range'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRLR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRLR | Row complete: model=IONIQ 5, trim=Preferred AWD Long Range, engine_type=None
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRUP | Extracted fields: year=2026, desc=Preferred AWD Long Range w/Ultimate Pkg, trim=Preferred
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRUP | ModelName from ADS: IONIQ 5
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRUP | Searching text: 'ioniq 5 preferred awd long range w/ultimate pkg'
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRUP | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I5EW5ZE2PRUP | Row complete: model=IONIQ 5, trim=Preferred AWD Long Range w/Ultimate Pkg, engine_type=None
+[2026-07-28 14:04:52] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 3/3 trims to rows
+[2026-07-28 14:04:52] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 IONIQ 5 | Converted 3 trims to rows
+[2026-07-28 14:04:52] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/IONIQ%209/ HTTP/1.1" 200 None
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 5 trims from ADS response
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE4ES00 | Extracted fields: year=2026, desc=Essential RWD, trim=Essential
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE4ES00 | ModelName from ADS: IONIQ 9
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE4ES00 | Searching text: 'ioniq 9 essential rwd'
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE4ES00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE4ES00 | Row complete: model=IONIQ 9, trim=Essential RWD, engine_type=None
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PR00 | Extracted fields: year=2026, desc=Preferred AWD, trim=Preferred
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PR00 | ModelName from ADS: IONIQ 9
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PR00 | Searching text: 'ioniq 9 preferred awd'
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PR00 | Row complete: model=IONIQ 9, trim=Preferred AWD, engine_type=None
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PRLP | Extracted fields: year=2026, desc=Preferred AWD w/Luxury Pkg, trim=Preferred
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PRLP | ModelName from ADS: IONIQ 9
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PRLP | Searching text: 'ioniq 9 preferred awd w/luxury pkg'
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PRLP | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE2PRLP | Row complete: model=IONIQ 9, trim=Preferred AWD w/Luxury Pkg, engine_type=None
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW6ZE1PRBG | Extracted fields: year=2026, desc=Preferred + AWD w/Ultimate Calligraphy Pkg, trim=Preferred +
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW6ZE1PRBG | ModelName from ADS: IONIQ 9
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW6ZE1PRBG | Searching text: 'ioniq 9 preferred + awd w/ultimate calligraphy pkg'
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW6ZE1PRBG | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I9EW6ZE1PRBG | Row complete: model=IONIQ 9, trim=Preferred + AWD w/Ultimate Calligraphy Pkg, engine_type=None
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE1PR00 | Extracted fields: year=2026, desc=Preferred + AWD, trim=Preferred +
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE1PR00 | ModelName from ADS: IONIQ 9
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE1PR00 | Searching text: 'ioniq 9 preferred + awd'
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE1PR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | I9EW7ZE1PR00 | Row complete: model=IONIQ 9, trim=Preferred + AWD, engine_type=None
+[2026-07-28 14:04:53] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 5/5 trims to rows
+[2026-07-28 14:04:53] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 IONIQ 9 | Converted 5 trims to rows
+[2026-07-28 14:04:53] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Kona/ HTTP/1.1" 200 None
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 9 trims from ADS response
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BES00 | Extracted fields: year=2026, desc=2.0L Essential FWD, trim=Essential
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BES00 | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BES00 | Searching text: 'kona 2.0l essential fwd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BES00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BES00 | Row complete: model=Kona, trim=2.0L Essential FWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BPR00 | Extracted fields: year=2026, desc=2.0L Preferred FWD, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BPR00 | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BPR00 | Searching text: 'kona 2.0l preferred fwd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BPR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5V2BPR00 | Row complete: model=Kona, trim=2.0L Preferred FWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BES00 | Extracted fields: year=2026, desc=2.0L Essential AWD, trim=Essential
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BES00 | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BES00 | Searching text: 'kona 2.0l essential awd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BES00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BES00 | Row complete: model=Kona, trim=2.0L Essential AWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPR00 | Extracted fields: year=2026, desc=2.0L Preferred AWD, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPR00 | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPR00 | Searching text: 'kona 2.0l preferred awd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPR00 | Row complete: model=Kona, trim=2.0L Preferred AWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPRTR | Extracted fields: year=2026, desc=2.0L Preferred AWD w/Trend Package, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPRTR | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPRTR | Searching text: 'kona 2.0l preferred awd w/trend package'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPRTR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5Q2BPRTR | Row complete: model=Kona, trim=2.0L Preferred AWD w/Trend Package, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANL00 | Extracted fields: year=2026, desc=1.6T N Line AWD, trim=N Line
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANL00 | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANL00 | Searching text: 'kona 1.6t n line awd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANL00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANL00 | Row complete: model=Kona, trim=1.6T N Line AWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLTT | Extracted fields: year=2026, desc=1.6T N Line AWD w/Two-Tone Roof, trim=N Line
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLTT | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLTT | Searching text: 'kona 1.6t n line awd w/two-tone roof'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLTT | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLTT | Row complete: model=Kona, trim=1.6T N Line AWD w/Two-Tone Roof, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLUL | Extracted fields: year=2026, desc=1.6T N Line Ultimate AWD, trim=N Line Ultimate
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLUL | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLUL | Searching text: 'kona 1.6t n line ultimate awd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLUL | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLUL | Row complete: model=Kona, trim=1.6T N Line Ultimate AWD, engine_type=None
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLBA | Extracted fields: year=2026, desc=1.6T N Line Ultimate AWD w/Two-Tone Roof, trim=N Line Ultimate
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLBA | ModelName from ADS: Kona
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLBA | Searching text: 'kona 1.6t n line ultimate awd w/two-tone roof'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLBA | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KOCW5K1ANLBA | Row complete: model=Kona, trim=1.6T N Line Ultimate AWD w/Two-Tone Roof, engine_type=None
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 9/9 trims to rows
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Kona | Converted 9 trims to rows
+[2026-07-28 14:04:54] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Kona%20Electric/ HTTP/1.1" 200 None
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 4 trims from ADS response
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | Extracted fields: year=2026, desc=Preferred FWD, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | ModelName from ADS: Kona Electric
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | Searching text: 'kona electric preferred fwd'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | Found keyword 'electric' in 'Kona Electric Preferred FWD'
+[2026-07-28 14:04:54] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | Keyword 'electric' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PR00 | Row complete: model=Kona Electric, trim=Preferred FWD, engine_type=electric
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | Extracted fields: year=2026, desc=Preferred FWD w/Trend Package, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | ModelName from ADS: Kona Electric
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | Searching text: 'kona electric preferred fwd w/trend package'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | Found keyword 'electric' in 'Kona Electric Preferred FWD w/Trend Package'
+[2026-07-28 14:04:54] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | Keyword 'electric' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRTR | Row complete: model=Kona Electric, trim=Preferred FWD w/Trend Package, engine_type=electric
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | Extracted fields: year=2026, desc=Preferred FWD w/Ultimate Package, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | ModelName from ADS: Kona Electric
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | Searching text: 'kona electric preferred fwd w/ultimate package'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | Found keyword 'electric' in 'Kona Electric Preferred FWD w/Ultimate Package'
+[2026-07-28 14:04:54] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | Keyword 'electric' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUP | Row complete: model=Kona Electric, trim=Preferred FWD w/Ultimate Package, engine_type=electric
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | Extracted fields: year=2026, desc=Preferred FWD w/Ultimate Package Two-Tone, trim=Preferred
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | ModelName from ADS: Kona Electric
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | Searching text: 'kona electric preferred fwd w/ultimate package two-tone'
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | Found keyword 'electric' in 'Kona Electric Preferred FWD w/Ultimate Package Two-Tone'
+[2026-07-28 14:04:54] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | Keyword 'electric' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | KEEW5ZE4PRUT | Row complete: model=Kona Electric, trim=Preferred FWD w/Ultimate Package Two-Tone, engine_type=electric
+[2026-07-28 14:04:54] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 4/4 trims to rows
+[2026-07-28 14:04:54] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Kona Electric | Converted 4 trims to rows
+[2026-07-28 14:04:54] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Palisade/ HTTP/1.1" 200 None
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 3 trims from ADS response
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW8K3FPRTR | Extracted fields: year=2026, desc=Preferred Trend AWD, trim=Preferred Trend
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW8K3FPRTR | ModelName from ADS: Palisade
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW8K3FPRTR | Searching text: 'palisade preferred trend awd'
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW8K3FPRTR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PACW8K3FPRTR | Row complete: model=Palisade, trim=Preferred Trend AWD, engine_type=None
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FULCA | Extracted fields: year=2026, desc=Ultimate Calligraphy AWD, trim=Ultimate Calligraphy
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FULCA | ModelName from ADS: Palisade
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FULCA | Searching text: 'palisade ultimate calligraphy awd'
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FULCA | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FULCA | Row complete: model=Palisade, trim=Ultimate Calligraphy AWD, engine_type=None
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FXP00 | Extracted fields: year=2026, desc=XRT Pro AWD, trim=XRT Pro
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FXP00 | ModelName from ADS: Palisade
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FXP00 | Searching text: 'palisade xrt pro awd'
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FXP00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PACW7K3FXP00 | Row complete: model=Palisade, trim=XRT Pro AWD, engine_type=None
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 3/3 trims to rows
+[2026-07-28 14:04:55] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Palisade | Converted 3 trims to rows
+[2026-07-28 14:04:55] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Palisade%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:04:55] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 4 trims from ADS response
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | Extracted fields: year=2026, desc=Luxury 8-Passenger AWD, trim=Luxury
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | ModelName from ADS: Palisade Hybrid
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | Searching text: 'palisade hybrid luxury 8-passenger awd'
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | Found keyword 'hybrid' in 'Palisade Hybrid Luxury 8-Passenger AWD'
+[2026-07-28 14:04:56] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PAHW8G2DLU8H | Row complete: model=Palisade Hybrid, trim=Luxury 8-Passenger AWD, engine_type=hybrid
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | Extracted fields: year=2026, desc=Luxury 7-Passenger AWD, trim=Luxury
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | ModelName from ADS: Palisade Hybrid
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | Searching text: 'palisade hybrid luxury 7-passenger awd'
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | Found keyword 'hybrid' in 'Palisade Hybrid Luxury 7-Passenger AWD'
+[2026-07-28 14:04:56] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DLU7H | Row complete: model=Palisade Hybrid, trim=Luxury 7-Passenger AWD, engine_type=hybrid
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Extracted fields: year=2026, desc=Ultimate Calligraphy AWD, trim=Ultimate Calligraphy
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | ModelName from ADS: Palisade Hybrid
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Searching text: 'palisade hybrid ultimate calligraphy awd'
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Found keyword 'hybrid' in 'Palisade Hybrid Ultimate Calligraphy AWD'
+[2026-07-28 14:04:56] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Row complete: model=Palisade Hybrid, trim=Ultimate Calligraphy AWD, engine_type=hybrid
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Extracted fields: year=2026, desc=Ultimate Calligraphy NHL Special Edition AWD, trim=Ultimate Calligraphy NHL Special Edition
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | ModelName from ADS: Palisade Hybrid
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Searching text: 'palisade hybrid ultimate calligraphy nhl special edition awd'
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Found keyword 'hybrid' in 'Palisade Hybrid Ultimate Calligraphy NHL Special Edition AWD'
+[2026-07-28 14:04:56] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | PAHW7G2DULCH | Row complete: model=Palisade Hybrid, trim=Ultimate Calligraphy NHL Special Edition AWD, engine_type=hybrid
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 4/4 trims to rows
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Palisade Hybrid | Converted 4 trims to rows
+[2026-07-28 14:04:56] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Santa%20Fe/ HTTP/1.1" 200 None
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 0 trims from ADS response
+[2026-07-28 14:04:56] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 0/0 trims to rows
+[2026-07-28 14:04:56] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Santa Fe | Converted 0 trims to rows
+[2026-07-28 14:04:56] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Santa%20Fe%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 5 trims from ADS response
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | Extracted fields: year=2026, desc=Preferred AWD, trim=Preferred
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | ModelName from ADS: Santa Fe Hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | Searching text: 'santa fe hybrid preferred awd'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | Found keyword 'hybrid' in 'Santa Fe Hybrid Preferred AWD'
+[2026-07-28 14:04:57] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRHE | Row complete: model=Santa Fe Hybrid, trim=Preferred AWD, engine_type=hybrid
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | Extracted fields: year=2026, desc=Preferred AWD w/Trend Pkg, trim=Preferred
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | ModelName from ADS: Santa Fe Hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | Searching text: 'santa fe hybrid preferred awd w/trend pkg'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | Found keyword 'hybrid' in 'Santa Fe Hybrid Preferred AWD w/Trend Pkg'
+[2026-07-28 14:04:57] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1APRTH | Row complete: model=Santa Fe Hybrid, trim=Preferred AWD w/Trend Pkg, engine_type=hybrid
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | Extracted fields: year=2026, desc=Luxury AWD, trim=Luxury
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | ModelName from ADS: Santa Fe Hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | Searching text: 'santa fe hybrid luxury awd'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | Found keyword 'hybrid' in 'Santa Fe Hybrid Luxury AWD'
+[2026-07-28 14:04:57] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SAHW7G1ALUHE | Row complete: model=Santa Fe Hybrid, trim=Luxury AWD, engine_type=hybrid
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | Extracted fields: year=2026, desc=Ultimate Calligraphy AWD, trim=Ultimate Calligraphy
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | ModelName from ADS: Santa Fe Hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | Searching text: 'santa fe hybrid ultimate calligraphy awd'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | Found keyword 'hybrid' in 'Santa Fe Hybrid Ultimate Calligraphy AWD'
+[2026-07-28 14:04:57] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBG | Row complete: model=Santa Fe Hybrid, trim=Ultimate Calligraphy AWD, engine_type=hybrid
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | Extracted fields: year=2026, desc=Ultimate Calligraphy AWD w/Beige, trim=Ultimate Calligraphy
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | ModelName from ADS: Santa Fe Hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | Searching text: 'santa fe hybrid ultimate calligraphy awd w/beige'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | Found keyword 'hybrid' in 'Santa Fe Hybrid Ultimate Calligraphy AWD w/Beige'
+[2026-07-28 14:04:57] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SAHW6G1AULBH | Row complete: model=Santa Fe Hybrid, trim=Ultimate Calligraphy AWD w/Beige, engine_type=hybrid
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 5/5 trims to rows
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Santa Fe Hybrid | Converted 5 trims to rows
+[2026-07-28 14:04:57] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Sonata/ HTTP/1.1" 200 None
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 2 trims from ADS response
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4M2DNL00 | Extracted fields: year=2026, desc=N Line FWD, trim=N Line
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4M2DNL00 | ModelName from ADS: Sonata
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4M2DNL00 | Searching text: 'sonata n line fwd'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4M2DNL00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4M2DNL00 | Row complete: model=Sonata, trim=N Line FWD, engine_type=None
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4K2EPRTR | Extracted fields: year=2026, desc=Preferred-Trend AWD, trim=Preferred-Trend
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4K2EPRTR | ModelName from ADS: Sonata
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4K2EPRTR | Searching text: 'sonata preferred-trend awd'
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4K2EPRTR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SOCS4K2EPRTR | Row complete: model=Sonata, trim=Preferred-Trend AWD, engine_type=None
+[2026-07-28 14:04:57] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 2/2 trims to rows
+[2026-07-28 14:04:57] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Sonata | Converted 2 trims to rows
+[2026-07-28 14:04:57] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Sonata%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:04:58] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 1 trims from ADS response
+[2026-07-28 14:04:58] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | Extracted fields: year=2026, desc=Preferred-Trend FWD, trim=Preferred-Trend
+[2026-07-28 14:04:58] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | ModelName from ADS: Sonata Hybrid
+[2026-07-28 14:04:58] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:58] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | Searching text: 'sonata hybrid preferred-trend fwd'
+[2026-07-28 14:04:58] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | Found keyword 'hybrid' in 'Sonata Hybrid Preferred-Trend FWD'
+[2026-07-28 14:04:58] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:58] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | SHHS4F2FPRTH | Row complete: model=Sonata Hybrid, trim=Preferred-Trend FWD, engine_type=hybrid
+[2026-07-28 14:04:58] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 1/1 trims to rows
+[2026-07-28 14:04:58] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Sonata Hybrid | Converted 1 trims to rows
+[2026-07-28 14:04:58] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Tucson/ HTTP/1.1" 200 None
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 4 trims from ADS response
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPR00 | Extracted fields: year=2026, desc=Preferred AWD, trim=Preferred
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPR00 | ModelName from ADS: Tucson
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPR00 | Searching text: 'tucson preferred awd'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPR00 | Row complete: model=Tucson, trim=Preferred AWD, engine_type=None
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPRTR | Extracted fields: year=2026, desc=Preferred AWD w/Trend Pkg, trim=Preferred
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPRTR | ModelName from ADS: Tucson
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPRTR | Searching text: 'tucson preferred awd w/trend pkg'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPRTR | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPRTR | Row complete: model=Tucson, trim=Preferred AWD w/Trend Pkg, engine_type=None
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPM00 | Extracted fields: year=2026, desc=Preferred AWD, trim=Preferred
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPM00 | ModelName from ADS: Tucson
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPM00 | Searching text: 'tucson preferred awd'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPM00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPM00 | Row complete: model=Tucson, trim=Preferred AWD, engine_type=None
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPMTM | Extracted fields: year=2026, desc=Preferred AWD w/Trend Pkg, trim=Preferred
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPMTM | ModelName from ADS: Tucson
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPMTM | Searching text: 'tucson preferred awd w/trend pkg'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPMTM | No ENGINE_TYPE keyword found
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUCWDK2EPMTM | Row complete: model=Tucson, trim=Preferred AWD w/Trend Pkg, engine_type=None
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 4/4 trims to rows
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Tucson | Converted 4 trims to rows
+[2026-07-28 14:04:59] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Tucson%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 3 trims from ADS response
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | Extracted fields: year=2026, desc=N-Line AWD, trim=N-Line
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | ModelName from ADS: Tucson Hybrid
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | Searching text: 'tucson hybrid n-line awd'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | Found keyword 'hybrid' in 'Tucson Hybrid N-Line AWD'
+[2026-07-28 14:04:59] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANLHE | Row complete: model=Tucson Hybrid, trim=N-Line AWD, engine_type=hybrid
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | Extracted fields: year=2026, desc=Ultimate AWD, trim=Ultimate
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | ModelName from ADS: Tucson Hybrid
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | Searching text: 'tucson hybrid ultimate awd'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | Found keyword 'hybrid' in 'Tucson Hybrid Ultimate AWD'
+[2026-07-28 14:04:59] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1AULHE | Row complete: model=Tucson Hybrid, trim=Ultimate AWD, engine_type=hybrid
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | Extracted fields: year=2026, desc=Night Edition AWD, trim=Night Edition
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | ModelName from ADS: Tucson Hybrid
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | Searching text: 'tucson hybrid night edition awd'
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | Found keyword 'hybrid' in 'Tucson Hybrid Night Edition AWD'
+[2026-07-28 14:04:59] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUHWDG1ANE00 | Row complete: model=Tucson Hybrid, trim=Night Edition AWD, engine_type=hybrid
+[2026-07-28 14:04:59] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 3/3 trims to rows
+[2026-07-28 14:04:59] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Tucson Hybrid | Converted 3 trims to rows
+[2026-07-28 14:04:59] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Tucson%20Plug-In%20Hybrid/ HTTP/1.1" 200 None
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 1 trims from ADS response
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | Extracted fields: year=2026, desc=Ultimate AWD, trim=Ultimate
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | ModelName from ADS: Tucson Plug-In Hybrid
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | Searching text: 'tucson plug-in hybrid ultimate awd'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | Found keyword 'hybrid' in 'Tucson Plug-In Hybrid Ultimate AWD'
+[2026-07-28 14:05:00] [WARNING ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | Keyword 'hybrid' found but NOT in translator. Returning keyword as-is.
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | TUPWDG1AULPH | Row complete: model=Tucson Plug-In Hybrid, trim=Ultimate AWD, engine_type=hybrid
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 1/1 trims to rows
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Tucson Plug-In Hybrid | Converted 1 trims to rows
+[2026-07-28 14:05:00] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Hyundai/model/Venue/ HTTP/1.1" 200 None
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Processing 6 trims from ADS response
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FES00 | Extracted fields: year=2026, desc=Essential IVT, trim=Essential
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FES00 | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FES00 | Searching text: 'venue essential ivt'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FES00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FES00 | Row complete: model=Venue, trim=Essential IVT, engine_type=None
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FESTT | Extracted fields: year=2026, desc=Essential IVT w/Two-Tone, trim=Essential
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FESTT | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FESTT | Searching text: 'venue essential ivt w/two-tone'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FESTT | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FESTT | Row complete: model=Venue, trim=Essential IVT w/Two-Tone, engine_type=None
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPR00 | Extracted fields: year=2026, desc=Preferred IVT, trim=Preferred
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPR00 | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPR00 | Searching text: 'venue preferred ivt'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPR00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPR00 | Row complete: model=Venue, trim=Preferred IVT, engine_type=None
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPRTT | Extracted fields: year=2026, desc=Preferred IVT w/Two-Tone, trim=Preferred
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPRTT | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPRTT | Searching text: 'venue preferred ivt w/two-tone'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPRTT | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FPRTT | Row complete: model=Venue, trim=Preferred IVT w/Two-Tone, engine_type=None
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FUL00 | Extracted fields: year=2026, desc=Ultimate IVT w/Black Interior, trim=Ultimate
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FUL00 | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FUL00 | Searching text: 'venue ultimate ivt w/black interior'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FUL00 | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FUL00 | Row complete: model=Venue, trim=Ultimate IVT w/Black Interior, engine_type=None
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FULCP | Extracted fields: year=2026, desc=Ultimate IVT w/Denim Interior, trim=Ultimate
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FULCP | ModelName from ADS: Venue
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | Loaded 6 ENGINE_TYPE keywords: ['hev', 'hybrid', 'phev', 'ev', 'plug-in', 'electric']
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FULCP | Searching text: 'venue ultimate ivt w/denim interior'
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FULCP | No ENGINE_TYPE keyword found
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | HYUNDAI | VNCW5V1FULCP | Row complete: model=Venue, trim=Ultimate IVT w/Denim Interior, engine_type=None
+[2026-07-28 14:05:00] [INFO    ] [chrome_api.mapper] mapper | ads_response_to_rows | Hyundai | Converted 6/6 trims to rows
+[2026-07-28 14:05:00] [DEBUG   ] [chrome_api.service] refresh_from_ads | Hyundai 2026 Venue | Converted 6 trims to rows
+[2026-07-28 14:05:00] [INFO    ] [refresh_db_ads] ADS fetch complete | Total records: 62 | Columns: 10
+[2026-07-28 14:05:00] [DEBUG   ] [refresh_db_ads] DataFrame columns: ['Manufacturer', 'ModelYear', 'ModelNumber', 'Description', 'TrimName', 'Package', 'Drivetrain', 'PassDoors', 'ModelName', 'engine_type']
+[2026-07-28 14:05:00] [INFO    ] [refresh_db_ads] 
+[Step 4/4] Saving to database with validation and standardization...
+[2026-07-28 14:05:00] [DEBUG   ] [refresh_db_ads] Saving to: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\db\db_vehicle_models.csv | Key columns: Manufacturer, ModelYear, ModelNumber, Package
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] CSV save SUCCESS | Records saved: 62
+[2026-07-28 14:05:01] [DEBUG   ] [refresh_db_ads] Writing DQ report to: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] DQ report written | Path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] 
+================================================================================
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] DATABASE REFRESH COMPLETE - SUCCESS
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] Database location: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\db\db_vehicle_models.csv
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] Records saved: 62
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] Total configurations fetched: 62
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] Pipeline log path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\pipeline_logs\ads_refresh
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] DQ report path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] Structured log file: accy_v2\model_lookup\logs\refresh_db_ads_20260728_140449.log
+[2026-07-28 14:05:01] [INFO    ] [refresh_db_ads] ================================================================================

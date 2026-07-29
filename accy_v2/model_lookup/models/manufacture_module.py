@@ -256,6 +256,12 @@ def save_vehicle_models_to_csv(
         # Log warning but don't fail the save if standardization has issues
         pass
 
+    # Standardize engine_type: map 'e-sc' to 'electric' for Genesis models
+    if "engine_type" in df_valid.columns:
+        esc_mask = df_valid["engine_type"].fillna("").str.lower() == "e-sc"
+        if esc_mask.any():
+            df_valid.loc[esc_mask, "engine_type"] = "electric"
+
     # Pre-harmonize columns: read existing header to determine full schema
     existing_cols = []
     if os.path.exists(csv_path):
