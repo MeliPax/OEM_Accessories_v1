@@ -4,9 +4,7 @@
 # OEM: Hyundai
 # Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
 # ============================================================================
-# DECISION [015]: Modular 5-file config (enrichment separated from schemas/transformations)
-# DECISION [016]: use_model_lookup flag controls enrichment behavior
-# ============================================================================
+
 
 model_lookup:
   # DECISION [016]: use_model_lookup flag determines whether this step runs
@@ -47,11 +45,12 @@ model_lookup:
         - EXTERIOR_COLOR
         - ENGINE_SPEC
 
-      # Config file paths (relative to project root)
-      # These are resolved to absolute Paths by ModularConfigLoader._resolve_enrichment_paths()
-      translator_config: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
-      classifier_config: "accy_v2/model_lookup/configs/hyundai/classification.yaml"
-      standardization_config: "accy_v2/model_lookup/configs/hyundai/standardization.yaml"
+      # Config file paths using central registry
+      # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
+      # Paths defined in accy_v2/paths.yaml for single source of truth
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
 
     Genesis:
       # Genesis uses same base config as Hyundai with one key override
@@ -84,9 +83,10 @@ model_lookup:
       # This allows "G" to match "G70", "G80" model names
       use_single_char_token_matching: true
 
-      translator_config: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
-      classifier_config: "accy_v2/model_lookup/configs/hyundai/classification.yaml"
-      standardization_config: "accy_v2/model_lookup/configs/hyundai/standardization.yaml"
+      # DECISION [020]: Use centralized path registry
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
 
 # ADS (AutoData Solutions) fallback for missing models
 ads_fallback:
@@ -110,9 +110,9 @@ ads_fallback:
 
 # Model lookup database configuration
 database:
-  # Path to local model database (relative to project root)
-  # Resolved to absolute Path by ModularConfigLoader._resolve_enrichment_paths()
-  db_path: "accy_v2/model_lookup/db/vehicle_models.csv"
+  # Path to local model database
+  # DECISION [020]: Use centralized path registry (single source of truth)
+  db_path: "${MODEL_LOOKUP_DB}"
 
   # Uniqueness constraint for deduplication
   # DECISION: 4-column uniqueness invariant (no duplicates across all 4)

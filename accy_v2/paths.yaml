@@ -1,0 +1,76 @@
+# ============================================================================
+# File: accy_v2/paths.yaml
+# Description: Centralized path definitions (global + OEM-specific)
+# Purpose: Single source of truth for all project paths; enables DRY principle
+# ============================================================================
+# DECISION [020]: Centralized path registry to avoid DRY violations
+# - Global paths: shared across all OEMs
+# - OEM overrides: optional per-OEM customizations
+# ============================================================================
+
+# Global paths (shared across all OEMs)
+global:
+  # Model lookup system paths
+  model_lookup:
+    configs_dir: "accy_v2/model_lookup/configs"
+    db: "accy_v2/model_lookup/db/vehicle_models.csv"
+    chrome_api: "accy_v2/model_lookup/chrome_api"
+    semantic:
+      translator: "accy_v2/model_lookup/semantic/translator.py"
+      classifier: "accy_v2/model_lookup/semantic/classifier.py"
+
+  # Output directories (base; {oem} appended at runtime)
+  output:
+    base: "accy_v2/output"
+    # Subdirectories under base/{oem}/:
+    ready_to_upload: "ready_to_upload"
+    dq_reports: "dq_reports"
+    pipeline_logs: "pipeline_logs"
+
+  # Input data directories
+  data:
+    landing_zone: "accy_v2/data/landing_zone"
+    # {oem}-specific landing zones at landing_zone/{oem}
+
+  # Core pipeline system
+  core:
+    base: "accy_v2/core"
+    helpers: "accy_v2/core/helpers"
+    models: "accy_v2/model_lookup/models"
+
+  # Documentation
+  docs:
+    base: "accy_v2/docs"
+    system_architecture: "accy_v2/docs/SYSTEM_ARCHITECTURE.md"
+
+# OEM-specific path overrides
+# Only add here if OEM needs paths different from global
+# Most OEMs will use global paths; leave overrides: {} empty
+oems:
+  hyundai:
+    # All paths use global definitions
+    overrides: {}
+
+  mazda:
+    # All paths use global definitions
+    overrides: {}
+
+  mitsubishi:
+    # All paths use global definitions
+    overrides: {}
+
+  honda:
+    # All paths use global definitions
+    overrides: {}
+
+# Path variable reference (for documentation)
+# Use these variables in config files as ${PATH_*}:
+#
+# MODEL_LOOKUP_CONFIGS: global.model_lookup.configs_dir
+# MODEL_LOOKUP_DB: global.model_lookup.db
+# MODEL_LOOKUP_CHROME_API: global.model_lookup.chrome_api
+# OUTPUT_BASE: global.output.base
+# DATA_LANDING_ZONE: global.data.landing_zone
+# CORE_BASE: global.core.base
+# CORE_HELPERS: global.core.helpers
+# DOCS_BASE: global.docs.base

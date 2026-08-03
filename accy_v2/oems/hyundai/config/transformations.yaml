@@ -49,7 +49,8 @@ columns:
       - name: standardize_case
         format: title_case
       - name: standardize_abbreviations
-        config_file: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
+        # DECISION [020]: Use centralized path registry
+        config_file: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
         description: "Convert abbreviations (HEV→Hybrid, e-sc→electric, etc.)"
       - name: deduplicate_words
         description: "Remove duplicate adjacent words (Hybrid Hybrid→Hybrid)"
@@ -66,7 +67,8 @@ columns:
       - name: standardize_case
         format: title_case
       - name: standardize_abbreviations
-        config_file: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
+        # DECISION [020]: Use centralized path registry
+        config_file: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
       - name: deduplicate_words
       - name: remove_markup
         markup_tags: ["(EN)", "(FR)"]
