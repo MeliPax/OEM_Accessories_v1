@@ -187,13 +187,10 @@ class VehicleSearchEngine:
 
         # Same vehicle re-coded under multiple model numbers: not real ambiguity.
         # (Only applied if OEM config explicitly enables this behavior.)
-        # Handle both config formats: full config or OEM-specific rules dict
-        if "model_lookup_rules" in self.oem_config:
-            oem_rules = self.oem_config.get("model_lookup_rules", {}).get(make, {})
-        else:
-            oem_rules = self.oem_config
-        oem_allow_duplicates = oem_rules.get("allow_duplicate_model_numbers", False)
-        if candidate_count > 1 and oem_allow_duplicates:
+        # Duplicate model-number handling (unconditional): if multiple candidates normalize to
+        # the same (ModelYear, ModelName, Description), they are legitimate multiple model codes
+        # for the same vehicle config (e.g., old/new mfr part numbers), not ambiguity.
+        if candidate_count > 1:
             # Normalize each candidate description by filtering ignored categories
             normalized_keys = [
                 self._normalize_description(desc, classification_config)

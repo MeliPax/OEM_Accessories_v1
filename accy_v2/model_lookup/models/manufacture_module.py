@@ -127,19 +127,23 @@ def check_duplicate_record(
 ) -> pd.DataFrame:
     """
     Filter out records that already exist in the database.
-    Configurable unique key; defaults to Manufacturer, ModelYear, and ModelNumber.
+    Configurable unique key; defaults to Manufacturer, ModelYear, ModelNumber, ModelName, Description.
+
+    This 4-column key ensures: (1) no full duplicates (same everything, including ModelNumber),
+    and (2) legitimate multi-model-number records (same ModelYear+ModelName+Description but
+    different ModelNumber) are correctly allowed, since ModelNumber is part of the key.
 
     Args:
         df_new: New records to check
         df_existing: Existing records in the database
         key_columns: List of column names that define uniqueness.
-                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber"]
+                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]
 
     Returns:
         DataFrame with only new records (not in df_existing)
     """
     if key_columns is None:
-        key_columns = ["Manufacturer", "ModelYear", "ModelNumber"]
+        key_columns = ["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]
 
     if df_existing.empty:
         return df_new
@@ -1063,6 +1067,29 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
     }
 
 
+def find_model_line(df: pd.DataFrame, make: str, year: int, model_name: str) -> pd.DataFrame:
+    """
+    Direct column check: does this model line exist locally?
+
+    No tokenization — straight contains match of the incoming Model value against db ModelName,
+    scoped to make+year. This is the outer gate for stage 4 augmentation: if a model line doesn't
+    exist locally, we fall back to ADS refresh before giving up entirely.
+
+    Args:
+        df: Vehicle models CSV as DataFrame
+        make: Manufacturer (e.g., "Hyundai", "Genesis")
+        year: Model year (int)
+        model_name: Incoming model name to search for (e.g., "Elantra", "Santa Fe")
+
+    Returns:
+        DataFrame slice of all rows matching make/year where ModelName contains model_name
+    """
+    pattern = build_word_boundary_pattern(model_name)
+    scoped = df[(df["Manufacturer"].str.contains(make, case=False, na=False))
+                & (df["ModelYear"] == year)]
+    return scoped[scoped["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)]
+
+
 def search_models_by_description(
     make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True,
     configs_dir: str = None, oem_config: dict = None, engine_type: str = None
@@ -1120,13 +1147,6 @@ def search_models_by_description(
     df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
-    # DEBUG: Log the search parameters at entry
-    import sys
-    if make.lower() == 'hyundai' and 'pref' in [k.lower() for k in keywords]:
-        print(f"\n[SEARCH_DEBUG] search_models_by_description() called:", file=sys.stderr)
-        print(f"  make={make}, year={year}, keywords={keywords}", file=sys.stderr)
-        print(f"  Initial candidates: {len(df_filtered)}", file=sys.stderr)
-
     # Parse OEM config to get search behavior flags
     oem_config = oem_config or {}
     if "model_lookup_rules" in oem_config:
@@ -1178,9 +1198,6 @@ def search_models_by_description(
                     df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True) |
                     df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
                 ]
-        # DEBUG: Track how many records remain after each keyword filter
-        import sys
-        print(f"[SEARCH_DEBUG] After keyword '{keyword}': {len(df_filtered)} records", file=sys.stderr)
 
     # Get fuel type keywords from OEM config (already parsed above)
 
@@ -1255,14 +1272,6 @@ def search_models_by_description(
                 f"search_models | {make} {year} | "
                 f"No records match engine_type: {engine_type}"
             )
-
-    # DEBUG: Log results at exit
-    if make.lower() == 'hyundai' and 'pref' in [k.lower() for k in keywords]:
-        print(f"  Final candidates: {len(df_filtered)}", file=sys.stderr)
-        if len(df_filtered) > 0:
-            for idx, row in df_filtered.iterrows():
-                print(f"    - {row['Description'][:70]}", file=sys.stderr)
-        print(f"[END_SEARCH_DEBUG]\n", file=sys.stderr)
 
     return df_filtered
 

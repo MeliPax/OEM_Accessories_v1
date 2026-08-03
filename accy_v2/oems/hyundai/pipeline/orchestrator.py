@@ -162,8 +162,9 @@ class HyundaiPipeline(BasePipeline):
         config: Dict,
         dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
+        ads_attempted: set = None,
     ) -> Dict[str, pd.DataFrame]:
-        return step4_5_model_enrichment.run(transformed, meta_data, config, dq_logger, pipeline_logger)
+        return step4_5_model_enrichment.run(transformed, meta_data, config, dq_logger, pipeline_logger, ads_attempted)
 
     def run_step5_output(
         self,

@@ -8,6 +8,8 @@ from core.helpers.dq_logger import DQLogger
 from core.helpers.keyword_extractor import KeywordExtractor
 from core.helpers.pipeline_logger import PipelineLogger
 from accy_v2.model_lookup.search_engine import VehicleSearchEngine
+from accy_v2.model_lookup.models.manufacture_module import find_model_line, load_existing_csv, save_vehicle_models_to_csv
+from accy_v2.model_lookup.chrome_api.service import ADSService
 
 
 def run(
@@ -16,24 +18,33 @@ def run(
     config: dict,
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
+    ads_attempted: set = None,
 ) -> Dict[str, pd.DataFrame]:
     """
     Enrich transformed data with model numbers via batch lookup.
 
     Process:
-    1. Get unique trims from melted data
-    2. For EACH unique trim, do ONE lookup (batch lookup, not per-row)
-    3. Store mapping: {trim: model_number}
-    4. For each language, add model_number and model_number_status columns
-    5. Exclude rows where trim lookup failed
-    6. Return enriched DataFrames with model_number and model_number_status
+    1. Check if model line exists locally via find_model_line()
+    2. If not found locally, check run-scoped ADS cache; if not already attempted, refresh from ADS
+    3. Get unique trims from melted data
+    4. For EACH unique trim, do ONE lookup (batch lookup, not per-row)
+    5. Store mapping: {trim: model_number}
+    6. For each language, add model_number and model_number_status columns
+    7. Exclude rows where trim lookup failed
+    8. Return enriched DataFrames with model_number and model_number_status
 
     Hyundai-specific:
     - Manufacturer is routed from meta_data (Hyundai or Genesis)
     - Trim keywords are space-separated in the data (e.g., "Ult HEV"), not underscore-joined
       Pre-process by replacing spaces with underscores before extracting via KeywordExtractor
     - Model keywords are split from the model name (e.g., "Santa Fe" -> ["santa", "fe"])
+
+    Args:
+        ads_attempted: Run-scoped set of (make, model_name, year) tuples already checked in ADS.
+                      Avoids redundant per-trim ADS calls for the same model/year group.
     """
+    if ads_attempted is None:
+        ads_attempted = set()
     group_key = meta_data.get("group_key", "unknown")
     model_name = meta_data.get("model_name", "unknown")
     vehicle_year = meta_data.get("vehicle_year")
@@ -75,6 +86,49 @@ def run(
     pipeline_logger.debug(
         f"Group '{group_key}': model_keywords from data={model_keywords_from_data}, fuel_type={fuel_type}"
     )
+
+    # ===== STAGE 4 MODEL-LINE GATE: Check if model line exists locally, or refresh from ADS =====
+    csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
+    configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
+
+    # Load local database
+    local_df = load_existing_csv(csv_path)
+
+    # Check if model line exists locally
+    model_line_df = find_model_line(local_df, vehicle_make, vehicle_year, model_name)
+
+    if model_line_df.empty:
+        # Model line not found locally — check ADS cache and attempt refresh if not already tried
+        cache_key = (vehicle_make, model_name, vehicle_year)
+        if cache_key not in ads_attempted:
+            ads_attempted.add(cache_key)
+            pipeline_logger.info(f"  Model line '{model_name}' not in local db; attempting ADS refresh...")
+
+            try:
+                ads_service = ADSService(pipeline_logger=pipeline_logger, dq_logger=dq_logger)
+                ads_result = ads_service.fetch_vehicle(vehicle_make, model_name, vehicle_year)
+
+                if not ads_result.empty:
+                    # Save new rows to CSV (reuses validation, dedup, standardization, vocab rebuild)
+                    pipeline_logger.info(f"  ADS returned {len(ads_result)} rows for {vehicle_make} {vehicle_year} {model_name}; saving to db...")
+                    save_vehicle_models_to_csv(ads_result, csv_path=csv_path, configs_dir=configs_dir, dq_logger=dq_logger)
+                    # Reload local db to see new rows
+                    local_df = load_existing_csv(csv_path)
+                    # Re-check model line
+                    model_line_df = find_model_line(local_df, vehicle_make, vehicle_year, model_name)
+                else:
+                    pipeline_logger.warning(f"  ADS returned no results for {vehicle_make} {vehicle_year} {model_name}")
+            except Exception as e:
+                dq_logger.log_warning(
+                    sheet_name=group_key, model_name=model_name, record_index=None,
+                    record_snapshot={}, rule_violated="model_number_lookup_rule",
+                    issue_description=f"[ADS_FETCH_ERROR] Failed to fetch from ADS: {str(e)}"
+                )
+                pipeline_logger.warning(f"  ADS fetch failed: {str(e)}")
+        # else: cache hit — already attempted ADS this run for this model/year, skip redundant call
+
+    # ===== END MODEL-LINE GATE =====
+    # If still empty, all trims will be marked as missing (handled in batch_lookup)
 
     # Batch lookup: one per unique trim
     model_mapping, duplicate_trims, missing_trims = _batch_lookup_model_numbers(

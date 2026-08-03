@@ -108,7 +108,6 @@
       "fields": ["trim", "model"],
       "trim_column": "trim_level",
       "exclude_keywords": ["ice", "combustion"],
-      "allow_duplicate_model_numbers": true,
       "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR", "ENGINE_SPEC"],
       "use_single_char_token_matching": true
     },
@@ -122,7 +121,6 @@
       "fields": ["trim", "model"],
       "trim_column": "trim_level",
       "exclude_keywords": ["ice", "combustion"],
-      "allow_duplicate_model_numbers": true,
       "ignore_keyword_categories": ["INTERIOR", "EXTERIOR_COLOR", "ENGINE_SPEC"],
       "use_single_char_token_matching": true
     }

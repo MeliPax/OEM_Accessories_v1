@@ -104,9 +104,15 @@ class BasePipeline(ABC):
         config: Dict,
         dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
+        ads_attempted: set = None,
     ) -> Dict[str, pd.DataFrame]:
         """Enrich with model numbers via lookup and validate.
-        Returns: {language: enriched_DataFrame} with model_number and vehicle_year columns."""
+        Returns: {language: enriched_DataFrame} with model_number and vehicle_year columns.
+
+        Args:
+            ads_attempted: Run-scoped set of (make, model_name, year) tuples already checked in ADS,
+                          to avoid redundant per-trim ADS calls for the same model/year.
+        """
         ...
 
     @abstractmethod
@@ -143,6 +149,10 @@ class BasePipeline(ABC):
             log_path=config["output"]["pipeline_log_path"],
         )
 
+        # Run-scoped cache: track ADS lookups already attempted in this run to avoid redundant calls
+        # Key: (make, model_name, year) tuples (once per model/year, not per-trim)
+        ads_attempted = set()
+
         pipeline_logger.log_run_start(oem=self.OEM_NAME, file_path=file_path)
 
         sheets_processed = 0
@@ -174,7 +184,7 @@ class BasePipeline(ABC):
 
                 if config.get("use_model_lookup", True):
                     pipeline_logger.info(f"Step 4.5: model_lookup enrichment | sheet='{sheet_name}'")
-                    enriched = self.run_step4_5_model_enrichment(transformed, meta_data, config, dq_logger, pipeline_logger)
+                    enriched = self.run_step4_5_model_enrichment(transformed, meta_data, config, dq_logger, pipeline_logger, ads_attempted)
                 else:
                     pipeline_logger.info(f"Step 4.5: SKIPPED (use_model_lookup=false) | sheet='{sheet_name}'")
                     enriched = transformed
