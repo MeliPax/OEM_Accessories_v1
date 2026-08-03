@@ -10,12 +10,14 @@ Replaces single JSON config file with semantic layers:
   5. schemas/intermediate.yaml — Post-transform quality gate
   6. schemas/downstream.yaml — Output structure
 
-This loader resolves relative paths to absolute Paths using Pathlib.
+DECISION [020]: Centralized path registry (paths.yaml) for DRY principle
+Loads paths from accy_v2/paths.yaml and resolves ${PATH_*} placeholders.
 """
 
 from pathlib import Path
 from typing import Dict, Any
 import yaml
+import re
 
 
 class ModularConfigLoader:
@@ -32,6 +34,7 @@ class ModularConfigLoader:
         self.oem = oem
         self.config_root = Path(config_root)
         self._resolve_base_path()
+        self._load_path_registry()  # DECISION [020]: Load centralized paths
 
     def _resolve_base_path(self) -> None:
         """Resolve project root by looking for run_pipeline.py."""
@@ -64,6 +67,128 @@ class ModularConfigLoader:
         if not relative_path:
             return None
         return self.project_root / relative_path
+
+    def _load_path_registry(self) -> None:
+        """
+        Load centralized path definitions from accy_v2/paths.yaml.
+
+        DECISION [020]: Centralized path registry for DRY principle.
+        Enables resolution of ${PATH_*} placeholders in config files.
+        """
+        registry_path = self.project_root / "accy_v2" / "paths.yaml"
+        if not registry_path.exists():
+            raise FileNotFoundError(f"Path registry not found: {registry_path}")
+        self.path_registry = self._load_yaml(registry_path)
+
+    def _resolve_placeholders(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Replace ${PATH_*} placeholders with actual paths from registry.
+
+        DECISION [020]: Resolve centralized path variables.
+        Example: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+                 → "accy_v2/model_lookup/configs/hyundai/translator.yaml"
+
+        Args:
+            config: Config dict that may contain ${VAR} placeholders
+
+        Returns:
+            Config dict with all placeholders resolved to actual paths
+        """
+        return self._resolve_placeholders_recursive(config)
+
+    def _resolve_placeholders_recursive(self, obj: Any) -> Any:
+        """
+        Recursively resolve placeholders in dicts and lists.
+
+        Args:
+            obj: Dict, list, string, or other value
+
+        Returns:
+            Same object with all ${VAR} strings resolved
+        """
+        if isinstance(obj, dict):
+            return {k: self._resolve_placeholders_recursive(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._resolve_placeholders_recursive(item) for item in obj]
+        elif isinstance(obj, str):
+            return self._resolve_placeholder_string(obj)
+        else:
+            return obj
+
+    def _resolve_placeholder_string(self, value: str) -> str:
+        """
+        Resolve placeholders in a single string.
+
+        Args:
+            value: String that may contain ${VAR} or ${VAR}/path
+
+        Returns:
+            String with placeholders replaced
+        """
+        # Pattern: ${VARIABLE_NAME} at start, optionally followed by /path
+        pattern = r"\$\{([A-Z_]+)\}"
+
+        def replace_var(match):
+            var_name = match.group(1)
+            resolved = self._get_path_from_registry(var_name)
+            if resolved is None:
+                raise ValueError(f"Unknown path variable: {var_name}")
+            return resolved
+
+        return re.sub(pattern, replace_var, value)
+
+    def _get_path_from_registry(self, var_name: str) -> str:
+        """
+        Get path value from registry using variable name.
+
+        DECISION [020]: Support both global and OEM-specific overrides.
+
+        Args:
+            var_name: Variable name like "MODEL_LOOKUP_CONFIGS"
+
+        Returns:
+            Path string from registry, or None if not found
+        """
+        # Map variable names to registry keys
+        # E.g., MODEL_LOOKUP_CONFIGS → ["model_lookup", "configs_dir"]
+        var_to_key = {
+            "MODEL_LOOKUP_CONFIGS": ["model_lookup", "configs_dir"],
+            "MODEL_LOOKUP_DB": ["model_lookup", "db"],
+            "MODEL_LOOKUP_CHROME_API": ["model_lookup", "chrome_api"],
+            "OUTPUT_BASE": ["output", "base"],
+            "OUTPUT_READY_TO_UPLOAD": ["output", "ready_to_upload"],
+            "OUTPUT_DQ_REPORTS": ["output", "dq_reports"],
+            "OUTPUT_PIPELINE_LOGS": ["output", "pipeline_logs"],
+            "DATA_LANDING_ZONE": ["data", "landing_zone"],
+            "CORE_BASE": ["core", "base"],
+            "CORE_HELPERS": ["core", "helpers"],
+            "CORE_MODELS": ["core", "models"],
+            "DOCS_BASE": ["docs", "base"],
+        }
+
+        if var_name not in var_to_key:
+            return None
+
+        key_path = var_to_key[var_name]
+
+        # Check OEM-specific overrides first
+        oem_overrides = (
+            self.path_registry.get("oems", {})
+            .get(self.oem, {})
+            .get("overrides", {})
+        )
+        if var_name in oem_overrides:
+            return oem_overrides[var_name]
+
+        # Fall back to global paths
+        global_paths = self.path_registry.get("global", {})
+        value = global_paths
+        for key in key_path:
+            if isinstance(value, dict):
+                value = value.get(key)
+            else:
+                return None
+        return value
 
     def load_pipeline_config(self) -> Dict[str, Any]:
         """
@@ -113,19 +238,25 @@ class ModularConfigLoader:
             Dict containing: columns (per-column operations), global settings
         """
         path = self.config_root / "transformations.yaml"
-        return self._load_yaml(path)
+        config = self._load_yaml(path)
+        # DECISION [020]: Resolve path placeholders
+        config = self._resolve_placeholders(config)
+        return config
 
     def load_enrichment(self) -> Dict[str, Any]:
         """
         Load enrichment.yaml (model lookup and ADS fallback rules).
 
-        Resolves all relative paths to absolute Paths.
+        Resolves all path placeholders and converts paths to absolute Paths.
 
         Returns:
             Dict containing: model_lookup, ads_fallback, database, validation
         """
         path = self.config_root / "enrichment.yaml"
         config = self._load_yaml(path)
+        # DECISION [020]: Resolve path placeholders from registry
+        config = self._resolve_placeholders(config)
+        # Convert resolved paths to absolute Path objects
         self._resolve_enrichment_paths(config)
         return config
 
