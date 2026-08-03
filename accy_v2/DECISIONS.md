@@ -12,6 +12,13 @@ This document captures significant design and architecture decisions made for th
 6. `__na__` sentinel in config for `pd.isna()` checks
 7. `rate_import_column_mapping` uses `"description"` (post-language-split name)
 8. Non-null violations: DQ warning + configurable threshold instead of always-FATAL
+9. Batch model lookup: one database query per unique trim
+10. Keyword combination strategy: model_name + trim + fuel_type
+11. Modular 5-file config structure per OEM (replacing single JSON)
+12. use_model_lookup flag remains configurable per OEM
+13. non_null_threshold remains configurable global setting
+14. Output paths derived from OEM name in code (not configured)
+15. Rename rate_import_* to output_column_* in downstream schema
 
 ---
 
@@ -362,6 +369,163 @@ This ensures the exclusion logic works in the same vocabulary as the database in
 - `oems/hyundai/config/hyundai_config.json` — fuel_type_keywords already present (used by this implementation)
 - `oems/mitsubishi/config/mitsubishi_config.json` — fuel_type_keywords already present; benefits from the same fix
 - `model_lookup/configs/*_classification.json` — existing POWERTRAIN_TYPE tokens already correct for Hyundai; other OEMs can be standardized in a future decision
+
+---
+
+## [015] Modular 5-file config structure per OEM (replacing single JSON)
+
+**Date:** 2026-08-03
+
+**Context:** Previously, all business rules for an OEM lived in a single JSON file (`{oem}_config.json`). This file mixed concerns: data schemas (what columns exist), transformation rules (how to clean data), enrichment logic (how to find model numbers), orchestration settings (where to write output), and output structure (which columns in which sheet). This made the file hard to navigate (200+ lines) and difficult to modify without affecting unrelated concerns.
+
+**Decision:** Replace single config file with modular 5-file YAML structure per OEM:
+1. **pipeline.yaml** — Orchestration settings (output paths, feature flags, runtime behavior)
+2. **transformations.yaml** — Data cleaning rules (per-column operations, standardization)
+3. **enrichment.yaml** — Model lookup and optional enrichment rules
+4. **schemas/upstream.yaml** — Input validation (expected columns, types, languages)
+5. **schemas/intermediate.yaml** — Post-transformation quality gate (guaranteed columns/types)
+6. **schemas/downstream.yaml** — Output sheet structure (which columns in which sheet)
+
+**Rationale:**
+- **Single responsibility:** Each file has one semantic concern (schema, transformation, enrichment, output, orchestration)
+- **Discoverability:** New team members know where to look for each type of rule
+- **Loose coupling:** Independent concerns can be modified without touching unrelated files
+- **Maintainability:** Smaller files are easier to review and change
+- **Extensibility:** Future settings (dry_run, retry_count, timeouts) have a natural place to live in pipeline.yaml
+- **Precedent:** Docker (Dockerfile + docker-compose.yml), Kubernetes (Deployment + ConfigMap), Django (models.py + settings.py) all separate concerns this way
+
+**Files affected:**
+- `accy_v2/oems/{oem}/config/` — new 6-file structure (replacing single JSON)
+- `accy_v2/core/config_loader_v2.py` — new ModularConfigLoader class to load all 6 files
+- All pipeline steps updated to use modular loader (phased: Phase 2a, Phase 2b)
+
+**Migration path:**
+- Phase 1: Create new 6-file skeleton, keep old JSON working in parallel
+- Phase 2a-2b: Migrate pipeline steps to use new loader (non-breaking)
+- Phase 3: Delete old JSON config (breaking point)
+- Phase 4: Roll out to all OEMs (Mazda, Mitsubishi, Honda)
+
+---
+
+## [016] use_model_lookup flag remains configurable per OEM
+
+**Date:** 2026-08-03
+
+**Context:** Initially, after Phase 2b (ADS fallback + mandatory enrichment), it seemed model lookup should always be enabled. However, some OEMs like Mazda come with pre-populated model numbers in their source files, making local lookup unnecessary. Other OEMs like Hyundai need lookup because trims must be translated to model numbers.
+
+**Decision:** Keep `use_model_lookup: true/false` in pipeline.yaml as a configurable OEM setting.
+- **If true:** Run model lookup + ADS fallback (normal flow)
+- **If false:** Skip model lookup entirely; trust that source file has model numbers already
+
+**Rationale:**
+- **OEM flexibility:** Some OEMs have complete data (Mazda), others need enrichment (Hyundai). One size doesn't fit all.
+- **Cost optimization:** Skipping lookups for OEMs that don't need them saves database queries
+- **Future-proof:** If an OEM later switches to providing model numbers, just flip the flag
+- **Backward compatible:** Hyundai (use_model_lookup: true) continues to work; Mazda (use_model_lookup: false) uses existing model numbers
+
+**Implementation:**
+- In orchestrator, check flag before calling `step4_5_model_enrichment()`
+- If false, skip enrichment and go directly to output
+
+**Files affected:**
+- `pipeline.yaml` — retains `use_model_lookup` flag
+- `accy_v2/oems/{oem}/pipeline/orchestrator.py` — conditional step4.5 call based on flag
+
+---
+
+## [017] non_null_threshold remains configurable global setting
+
+**Date:** 2026-08-03
+
+**Context:** `non_null_threshold` was initially questioned as unnecessary (all OEMs should be uniform). However, different OEMs have different data quality expectations:
+- Hyundai: Strict (50% threshold — fail sheet if >50% nulls in required column)
+- Future OEMs: May tolerate higher null rates if other compensations exist
+
+**Decision:** Keep `non_null_threshold: 0.5` in pipeline.yaml as configurable per OEM.
+
+**Rationale:**
+- **OEM autonomy:** Each OEM defines acceptable data quality thresholds for their supply chain
+- **Business rules:** Some OEMs may accept 60% completeness for a column; others 30%. Let config drive this.
+- **Low cost:** Single config line; no code changes needed
+
+**Files affected:**
+- `pipeline.yaml` — retains `non_null_threshold` (default 0.5)
+- `accy_v2/core/base_pipeline.py` — reads from pipeline config
+
+---
+
+## [018] Output paths derived from OEM name in code (not configured)
+
+**Date:** 2026-08-03
+
+**Context:** Output paths follow a predictable pattern:
+- `accy_v2/output/ready_to_upload/{oem}/`
+- `accy_v2/output/dq_reports/{oem}/`
+- `accy_v2/output/pipeline_logs/{oem}/`
+
+Initially, these were configured in pipeline.yaml. This added configuration overhead with no flexibility: no OEM deviates from this pattern, and if they did, a code change would be needed anyway.
+
+**Decision:** Derive output paths from OEM name in code. Remove path configuration from pipeline.yaml.
+
+```python
+def get_output_paths(oem: str) -> Dict[str, Path]:
+    base = Path("accy_v2/output")
+    return {
+        "ready_to_upload": base / "ready_to_upload" / oem.lower(),
+        "dq_reports": base / "dq_reports" / oem.lower(),
+        "pipeline_logs": base / "pipeline_logs" / oem.lower(),
+    }
+```
+
+**Rationale:**
+- **Eliminates configuration boilerplate:** Every OEM config had the same 3 lines of paths
+- **Automatic consistency:** New OEMs automatically follow the same folder structure
+- **Reduces configuration surface:** Fewer things to configure = fewer things to get wrong
+- **Explicit in code:** Behavior is transparent (not hidden in config) and easy to audit
+
+**Trade-offs:**
+- **Loses flexibility:** If an OEM needs custom paths (e.g., cloud storage), path derivation needs updating. But this is rare and would require code changes anyway.
+
+**Implementation:**
+- Call `get_output_paths(oem)` in orchestrator during setup
+- Pass paths to pipeline steps (or store in a context object)
+
+**Files affected:**
+- `accy_v2/oems/{oem}/pipeline/orchestrator.py` — derive paths from OEM name
+- `pipeline.yaml` — REMOVED `output_paths` section
+
+---
+
+## [019] Rename rate_import_* to output_column_* in downstream schema
+
+**Date:** 2026-08-03
+
+**Context:** The configuration keys `rate_import_column_mapping` and `rate_import_required_columns` were historically named around a "rate import" feature that doesn't exist. What they actually do is format the output for export:
+1. `rate_import_column_mapping` renames columns (`part_number` → `Part`, `msrp` → `Price`)
+2. `rate_import_required_columns` selects which columns to include in the output
+
+These are core output formatting operations used in every pipeline run, not optional imports.
+
+**Decision:** Rename for clarity and move to downstream schema:
+- `rate_import_column_mapping` → `output_column_mapping`
+- `rate_import_required_columns` → `output_required_columns`
+- Move from pipeline.yaml to `schemas/downstream.yaml` (where they logically belong)
+
+**Rationale:**
+- **Accurate naming:** "output_column" describes what the config does (format output columns)
+- **Semantic placement:** These settings define output structure, so they belong in downstream schema
+- **Clarity for future developers:** New team members won't confuse this with "rate imports from ADS"
+- **Consistency:** Downstream schema now defines both output sheets AND output column formatting
+
+**Implementation:**
+- In `schemas/downstream.yaml`, add columns with `output_column_mapping` and `output_required_columns`
+- Update `step5_output.py` to read from downstream schema instead of pipeline config
+- Update all OEM configs (Hyundai, Mazda, Mitsubishi, Honda) to use new names/locations
+
+**Files affected:**
+- `schemas/downstream.yaml` — add `output_column_mapping` and `output_required_columns`
+- `accy_v2/oems/{oem}/pipeline/step5_output.py` — read from downstream schema
+- `accy_v2/core/config_loader_v2.py` — ModularConfigLoader loads from downstream
 
 ---
 
