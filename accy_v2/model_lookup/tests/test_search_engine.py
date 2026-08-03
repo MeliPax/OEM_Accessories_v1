@@ -7,10 +7,10 @@ from pathlib import Path
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from semantic.translator import translate_keywords, load_oem_translator
-from semantic.classifier import classify_tokens, load_classification_config
-from semantic.scorer import compute_score, compute_confidence, CATEGORY_WEIGHTS, MINIMUM_SCORE
-from search_engine import VehicleSearchEngine
+from model_lookup.semantic.translator import translate_keywords, load_oem_translator
+from model_lookup.semantic.classifier import classify_tokens, load_classification_config
+from model_lookup.semantic.scorer import compute_score, compute_confidence, CATEGORY_WEIGHTS, MINIMUM_SCORE
+from model_lookup.search_engine import VehicleSearchEngine
 
 
 class TestTranslator:

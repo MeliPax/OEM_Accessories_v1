@@ -130,16 +130,23 @@ def _build_run_summary(
     else:
         dq_by_rule = "None"
 
-    # Model lookup issues by type (categorized by issue_description prefix)
+    # Model lookup issues by type (categorized by bracket tag in issue_description)
     lookup_records = [r for r in dq_logger.records if r["rule_violated"] == "model_number_lookup_rule"]
     if lookup_records:
         total_lookup = len(lookup_records)
         def _categorize_lookup_issue(issue: str) -> str:
-            if issue.startswith("No keywords"):
-                return "No Keywords"
-            if issue.startswith("No confident"):
-                return "No Match"
-            if issue.startswith("Error"):
+            # Extract bracket tag like [DATABASE_NO_MATCH], [MODEL_LINE_NOT_FOUND], etc.
+            if issue.startswith("[DATABASE_NO_MATCH]"):
+                return "Database No Match"
+            if issue.startswith("[MODEL_LINE_NOT_FOUND]"):
+                return "Model Line Not Found"
+            if issue.startswith("[KEYWORD_EXTRACTION_FAILED]"):
+                return "Keyword Extraction Failed"
+            if issue.startswith("[ADS_FETCH_ERROR]"):
+                return "ADS Fetch Error"
+            if issue.startswith("[ADS_NOT_FOUND]"):
+                return "ADS Not Found"
+            if issue.startswith("[LOOKUP_ERROR]"):
                 return "Lookup Error"
             return "Other"
         lookup_counts = Counter(_categorize_lookup_issue(r["issue_description"]) for r in lookup_records)

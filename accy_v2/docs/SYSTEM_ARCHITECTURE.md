@@ -1,8 +1,8 @@
 # OEM Accessory Pipeline System Architecture
 
-**Date:** 2026-07-30
-**Status:** Production Ready (Critical issues fixed 2026-07-29)
-**Version:** 2.1.0
+**Date:** 2026-08-03
+**Status:** Production Ready (YAML configs + ADS fallback 2026-08-03)
+**Version:** 2.2.0
 
 ---
 
@@ -326,6 +326,60 @@ Search for 'electric' in '3.5T electric Prestige' = MATCH ✓
 - ✅ Database: No other 'e-sc' substrings trigger unintended matches
 - ✅ Result: 'E-Sc' text in Description does NOT match 'electric' pattern
 
+#### 3g1. Model-Line Gate (Outer Gate, 2026-08-03)
+
+**Purpose:** Check if model line exists locally BEFORE expensive per-trim lookups.
+
+**Process:**
+1. Column-based check: Direct match of incoming Model value vs database ModelName
+2. Uses word boundary regex (same pattern as 3g Database Search)
+3. Scoped to make + year combination
+4. Returns matching records from local CSV
+
+**Example:**
+```
+Input:  make="Hyundai", year=2024, model_name="Santa Fe"
+Local DB records (Hyundai 2024):
+  - ModelName: Santa Fe → MATCH ✓
+  - ModelName: Santa Fe Hybrid → MATCH ✓
+
+Result: Non-empty → Proceed with existing per-trim search (translate→classify→score)
+```
+
+**If model line NOT found locally:**
+- Check run-scoped cache: has this (make, model_name, year) been attempted in THIS pipeline run?
+- If NOT in cache: attempt ADS (AutoData Solutions) online refresh
+- If already in cache: skip ADS (already tried), go directly to NOT_FOUND logging
+
+**Run-Scoped Cache:**
+- Plain `set()` of `(make, model_name, year)` tuples
+- Created once per pipeline execution in `BasePipeline.run()`
+- Prevents redundant ADS calls for same model/year within single run
+- Example: 10 trims of 2024 Santa Fe = 1 ADS call max (not 10)
+
+#### 3g2. ADS Fallback (Online Database Refresh, 2026-08-03)
+
+**Purpose:** Refresh vehicle model data when local CSV search fails.
+
+**Trigger:** Model line not found locally after gate check (3g1).
+
+**Service:** `ADSService` (chrome_api/service.py)
+- Fetches vehicle data by make, model_name, year
+- Returns DataFrame with vehicle database schema (same as local CSV)
+- Empty DataFrame = no match found in online database
+
+**Process:**
+1. Call `ADSService.fetch_vehicle(make, model_name, year)`
+2. If result is non-empty:
+   - Save via `save_vehicle_models_to_csv()` (validation, dedup, standardization, vocab rebuild)
+   - Reload local CSV to include new rows
+   - Re-check model line via gate (3g1) — now may succeed
+3. If result is empty OR still not found after reload:
+   - Log single DQ warning per model group: `[MODEL_LINE_NOT_FOUND]`
+   - Continue to next model group (pipeline never halts)
+
+**ADS Fallback is unconditional for all OEMs** (no config flag to disable).
+
 #### 3h. Confidence Calculation
 
 ```
@@ -337,7 +391,26 @@ If no candidates:
   confidence = 0.0 (not found)
 ```
 
-#### 3i. Result Aggregation
+#### 3i. Duplicate Model-Number Handling (2026-08-03)
+
+**Invariant:** No two records in `db_vehicle_models.csv` may share identical `(Manufacturer, ModelYear, ModelNumber, ModelName, Description)` — the 4-column dedup key.
+
+**Legitimate duplicates allowed:** Two records CAN share the same `(ModelYear, ModelName, Description)` with **different** `ModelNumber`s. This represents the same vehicle configuration with multiple valid part-lookup codes (e.g., old/new model codes).
+
+**Process:**
+1. When `search_models_by_description()` returns >1 candidates:
+   - Check if all candidates normalize to the same `(ModelYear, ModelName, Description)` (differing only in `ModelNumber`)
+   - If yes: Unconditionally return as one `SearchResult` with all ModelNumbers (`is_duplicate_group=True`)
+   - If no: Return as separate candidates (model/trim variations)
+
+2. At CSV write time via `save_vehicle_models_to_csv()`:
+   - Validate 4-column uniqueness key: `["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]`
+   - If true duplicate found: Log DQ warning (`csv_uniqueness_rule`)
+   - If legitimate multi-code entry: Leave as-is (correct data)
+
+**Removed:** `allow_duplicate_model_numbers` config flag (all OEMs) — duplicate handling is now always-on, data-invariant based.
+
+#### 3j. Result Aggregation
 
 For each unique trim in the model group:
 
@@ -346,7 +419,7 @@ model_mapping = {
   'Essential': ['ELCS4V2BES00'],     // Found 1 candidate
   'Preferred': ['ELCS4V2BPR00'],     // Found 1 candidate  
   'Luxury': ['ELCS4V2BUL00'],        // Found 1 candidate
-  'N': ['ELCS472ANN00'],             // NEW FIX: Found 1 candidate
+  'N': ['ELCS472ANN00'],             // Found 1 candidate (Elantra N fix, 2026-07-29)
   'N-Line': ['ELCS4M2ANL00'],        // Found 1 candidate
   'HEV': ['ELCS4V4BHV00']            // Found 1 candidate
 }
@@ -409,19 +482,34 @@ engine_type
 
 ### OEM Configuration System
 
-**Location:** `accy_v2/model_lookup/configs/`
+**Location:** `accy_v2/model_lookup/configs/` and `accy_v2/oems/{oem}/config/`
 
-**Per-OEM Files:**
+**Per-OEM Files (YAML format, 2026-08-03):**
 
-- `{oem}_translator.json` - Abbreviation mappings (ess→essential, hev→hybrid, e-sc→electric)
-- `{oem}_classification.json` - Token category definitions (MODEL, TRIM, ENGINE_TYPE, etc.)
-- `oems/{oem}/config/{oem}_config.json` - Pipeline configuration
+```
+accy_v2/model_lookup/configs/
+├── hyundai/
+│   ├── translator.yaml         # Abbreviation mappings (ess→essential, hev→hybrid, e-sc→electric)
+│   ├── classification.yaml     # Token category definitions (MODEL, TRIM, ENGINE_TYPE, etc.)
+│   ├── keywords.yaml           # Generated vocabulary cache
+│   └── standardization.yaml    # Description normalization rules
+├── genesis/
+│   ├── translator.yaml
+│   ├── classification.yaml
+│   └── keywords.yaml
+└── {oem}/ ... (10 OEMs total: genesis, honda, hyundai, kia, mazda, mitsubishi, subaru, toyota, volkswagen, volvo)
 
-**Recent Updates (2026-07-29):**
+accy_v2/oems/{oem}/config/
+└── {oem}_config.yaml           # Pipeline configuration (data checks, stages, output paths)
+```
 
-- ✅ `genesis_translator.json`: Added `'e-sc': 'electric'` mapping
-- ✅ `hyundai_translator.json`: Added `'e-sc': 'electric'` mapping
-- ✅ `genesis_classification.json`: Maps engine types and displacements
+**Recent Updates (2026-08-03):**
+
+- ✅ All translator/classification configs converted from JSON to YAML format
+- ✅ Organized into per-OEM subfolders for maintainability
+- ✅ `genesis_translator.yaml`: Includes `'e-sc': 'electric'` mapping
+- ✅ `hyundai_translator.yaml`: Includes `'e-sc': 'electric'` mapping
+- ✅ `{oem}_config.yaml`: Removed `allow_duplicate_model_numbers` flag (now unconditional)
 
 ### Translator & Classifier
 
@@ -470,6 +558,49 @@ engine_type
 accy_v2/output/pipeline_logs/
 accy_v2/output/dq_reports/
 ```
+
+---
+
+## Critical Fixes & Enhancements (2026-08-03)
+
+### Phase 4: Config Migration & ADS Fallback (2026-08-03)
+
+**Upgrade:** YAML format + per-OEM folder organization + mandatory ADS fallback
+
+**Changes:**
+
+1. **Config Format:** JSON → YAML
+   - `accy_v2/model_lookup/configs/{oem}_translator.json` → `{oem}/translator.yaml`
+   - `accy_v2/model_lookup/configs/{oem}_classification.json` → `{oem}/classification.yaml`
+   - `accy_v2/oems/{oem}/config/{oem}_config.json` → `{oem}_config.yaml`
+   - All loaders updated: `translator.py`, `classifier.py`, `config_loader.py`, `service.py`
+
+2. **Duplicate Handling:** Flag removed, data-invariant enabled
+   - Removed `allow_duplicate_model_numbers` from all OEM configs
+   - Extended dedup key to 4 columns: `(Manufacturer, ModelYear, ModelNumber, ModelName, Description)`
+   - Unconditional duplicate collapsing when same `(ModelYear, ModelName, Description)` with different `ModelNumber`
+
+3. **Model-Line Gate:** Column-based outer gate
+   - Direct model-name matching before expensive per-trim lookups
+   - Prevents model-not-found false negatives
+   - Enables ADS fallback when local search fails
+
+4. **ADS Fallback:** Mandatory online refresh with run-scoped caching
+   - Triggers automatically when local model line not found
+   - Run-scoped `(make, model_name, year)` cache prevents redundant calls
+   - Unconditional for all OEMs (no config toggle)
+   - Non-halting: logs `[MODEL_LINE_NOT_FOUND]` once per model group, continues
+
+5. **DQ Categorization Fix:** Actual bracket tags
+   - Updated `output_writer.py::_categorize_lookup_issue()` to check bracket tags
+   - New categories: `[MODEL_LINE_NOT_FOUND]`, `[ADS_FETCH_ERROR]`, `[ADS_NOT_FOUND]`
+   - Proper categorization in DQ reports and `_Report` sheet
+
+6. **Test Fixes:** Import paths corrected
+   - Updated `test_search_engine.py` imports from bare `semantic.*` to full `model_lookup.semantic.*`
+   - Added `configs_dir` argument to all config loader calls
+
+**Verification Status:** ✅ All config loaders updated, tests corrected, ready for end-to-end verification
 
 ---
 
