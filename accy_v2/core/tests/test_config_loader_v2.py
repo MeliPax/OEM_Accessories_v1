@@ -220,6 +220,104 @@ class TestGetOutputPaths:
             assert "hyundai" in path_str
 
 
+class TestPathPlaceholderResolution:
+    """Test suite for path placeholder resolution (DECISION [020])."""
+
+    @pytest.fixture
+    def loader(self) -> ModularConfigLoader:
+        """Create loader instance for Hyundai."""
+        config_root = Path(__file__).parent.parent.parent / "oems" / "hyundai" / "config"
+        return ModularConfigLoader("hyundai", config_root)
+
+    def test_path_registry_loads(self, loader):
+        """Verify path registry (accy_v2/paths.yaml) loads successfully."""
+        assert hasattr(loader, "path_registry")
+        assert loader.path_registry is not None
+        assert "global" in loader.path_registry
+        assert "oems" in loader.path_registry
+
+    def test_resolve_placeholder_model_lookup_configs(self, loader):
+        """Verify ${MODEL_LOOKUP_CONFIGS} placeholder resolves."""
+        resolved = loader._get_path_from_registry("MODEL_LOOKUP_CONFIGS")
+        assert resolved is not None
+        assert "model_lookup" in resolved
+        assert "configs" in resolved
+
+    def test_resolve_placeholder_model_lookup_db(self, loader):
+        """Verify ${MODEL_LOOKUP_DB} placeholder resolves."""
+        resolved = loader._get_path_from_registry("MODEL_LOOKUP_DB")
+        assert resolved is not None
+        assert "vehicle_models.csv" in resolved
+
+    def test_resolve_placeholder_in_string(self, loader):
+        """Verify placeholder resolution in strings."""
+        input_str = "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+        resolved = loader._resolve_placeholder_string(input_str)
+        assert "${" not in resolved  # No more placeholders
+        assert "model_lookup" in resolved
+        assert "hyundai" in resolved
+
+    def test_resolve_placeholders_in_transformations(self, loader):
+        """Verify placeholders resolved in transformations config."""
+        config = loader.load_transformations()
+
+        # Check that Description operations have resolved paths
+        desc_ops = config["columns"]["Description"]["operations"]
+        for op in desc_ops:
+            if op["name"] == "standardize_abbreviations":
+                assert "${" not in op["config_file"]
+                assert "model_lookup" in op["config_file"]
+                assert "translator.yaml" in op["config_file"]
+
+    def test_resolve_placeholders_in_enrichment(self, loader):
+        """Verify placeholders resolved in enrichment config."""
+        config = loader.load_enrichment()
+
+        # Check Hyundai brand paths resolved
+        hyundai = config["model_lookup"]["brands"]["Hyundai"]
+        for key in ["translator_config", "classifier_config", "standardization_config"]:
+            assert "${" not in str(hyundai[key])
+            # Should be Path object (converted later)
+            # But value should contain "model_lookup"
+
+        # Check database path resolved
+        assert "${" not in str(config["database"]["db_path"])
+
+    def test_resolve_placeholders_recursive_dict(self, loader):
+        """Verify recursive placeholder resolution in nested dicts."""
+        test_dict = {
+            "path1": "${MODEL_LOOKUP_CONFIGS}/test.yaml",
+            "nested": {"path2": "${MODEL_LOOKUP_DB}"},
+            "list": ["${MODEL_LOOKUP_CONFIGS}/file.yaml"],
+        }
+        resolved = loader._resolve_placeholders(test_dict)
+
+        assert "${" not in str(resolved)
+        assert "model_lookup" in resolved["path1"]
+        assert "model_lookup" in resolved["nested"]["path2"]
+        assert "model_lookup" in resolved["list"][0]
+
+    def test_unknown_placeholder_raises_error(self, loader):
+        """Verify error handling for unknown placeholder variables."""
+        bad_string = "${UNKNOWN_PATH_VAR}/test.yaml"
+
+        with pytest.raises(ValueError):
+            loader._resolve_placeholder_string(bad_string)
+
+    def test_path_registry_structure(self, loader):
+        """Verify path registry has expected structure."""
+        registry = loader.path_registry
+
+        # Check global paths exist
+        global_paths = registry["global"]
+        assert "model_lookup" in global_paths
+        assert "output" in global_paths
+        assert "data" in global_paths
+
+        # Check OEM overrides section exists
+        assert "hyundai" in registry["oems"]
+
+
 class TestConfigValidation:
     """Test suite for config validation and structure."""
 
