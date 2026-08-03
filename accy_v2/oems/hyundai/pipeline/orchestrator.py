@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 from pathlib import Path
-import json
+import yaml
 
 import pandas as pd
 
@@ -64,9 +64,9 @@ class HyundaiPipeline(BasePipeline):
         working.columns = [clean_column_name(str(c)) for c in working.columns]
 
         # Load config to get genesis_models list for manufacturer routing
-        config_path = Path(__file__).parent.parent / "config" / "hyundai_config.json"
+        config_path = Path(__file__).parent.parent / "config" / "hyundai_config.yaml"
         with open(config_path) as f:
-            config = json.load(f)
+            config = yaml.safe_load(f)
         genesis_models = config.get("genesis_models", [])
 
         # Find the actual year and model columns

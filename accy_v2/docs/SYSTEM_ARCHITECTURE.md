@@ -1,7 +1,7 @@
 # OEM Accessory Pipeline System Architecture
 
-**Date:** 2026-07-30  
-**Status:** Production Ready (Critical issues fixed 2026-07-29)  
+**Date:** 2026-07-30
+**Status:** Production Ready (Critical issues fixed 2026-07-29)
 **Version:** 2.1.0
 
 ---
@@ -11,8 +11,9 @@
 The OEM Accessory Pipeline is a modular, multi-stage data processing system that transforms raw OEM Excel files into standardized accessory catalogs enriched with vehicle model information. The system processes **57 sheets** per run with **100% success rate**.
 
 **Critical Improvements (2026-07-29):**
+
 - ✅ Fixed Elantra N search (60 rows recovered)
-- ✅ Fixed G90 e-SC search (30 rows recovered) 
+- ✅ Fixed G90 e-SC search (30 rows recovered)
 - ✅ Standardized e-SC engine type identification
 - ✅ All NOT_FOUND cases resolved
 
@@ -59,6 +60,7 @@ LAYER 5: SUPPORT SYSTEMS
 **Source:** `accy_v2/data/landing_zone/{oem}/{filename}.xlsx`
 
 Each OEM Excel file contains:
+
 - **Hyundai/Genesis:** Master sheet with all models (rows = model/trim combinations)
 - **Mazda/Honda/Mitsubishi:** Multiple sheets (one per model)
 - **Column types:** Model Year, Model Name, Trim Levels (6 columns max), Accessories, Part Numbers, Pricing
@@ -66,23 +68,27 @@ Each OEM Excel file contains:
 ### Processing Steps
 
 **Step 1: Validation** (`step1_validation.py`)
+
 - Verify headers present
 - Check required columns (Model, Trim_*, Accessory_*)
 - Validate data types and ranges
 - Log validation results
 
 **Step 2: Header Normalization** (`step2_header_normalization.py`)
+
 - Promote header rows (handle merged cells)
 - Standardize column names (lowercase, underscores)
 - Handle multi-line headers
 
 **Step 3: Standardization** (`step3_standardization.py`)
+
 - Convert to internal format
 - Rename columns to standard schema
 - Clean data (trim whitespace, handle nulls)
 - Convert data types
 
 **Step 3.5: Extract Vehicle Year** (`step3_5_extract_vehicle_year.py`)
+
 - Parse year from column headers
 - Validate year (2020-2030 range)
 - Set `vehicle_year` in metadata
@@ -94,12 +100,14 @@ Each OEM Excel file contains:
 ### Grouping Strategy
 
 Data is grouped by **(Year, Model)** tuple:
+
 - **Example:** `2024_elantra`, `2024_tucson`, `2025_g80`, `2026_venue`
 - Each group gets metadata: `group_key`, `model_name`, `vehicle_year`, `manufacturer`
 
 ### Trim Melting
 
 **Input:** Wide format (trim columns as separate columns)
+
 ```
 | Model    | Trim_1      | Trim_2       | Accessory | Part_Number |
 |----------|-------------|--------------|-----------|-------------|
@@ -108,6 +116,7 @@ Data is grouped by **(Year, Model)** tuple:
 ```
 
 **Output:** Long format (all trim combinations)
+
 ```
 | Model    | Trim_Level  | Accessory | Part_Number |
 |----------|-------------|-----------|-------------|
@@ -117,7 +126,7 @@ Data is grouped by **(Year, Model)** tuple:
 | Elantra  | Preferred   | Door Trim | 12346       |
 ```
 
-**Impact:** Accessories × Trim Columns = Output Rows  
+**Impact:** Accessories × Trim Columns = Output Rows
 Example: 95 accessories × 6 trim columns = 570 rows per model
 
 ---
@@ -125,6 +134,7 @@ Example: 95 accessories × 6 trim columns = 570 rows per model
 ## LAYER 3: Model Lookup Enrichment (Critical Path)
 
 ### Purpose
+
 Match trim keywords to vehicle models in database, retrieve OEM model number.
 
 ### Process Flow
@@ -142,6 +152,7 @@ Extraction Rules:
 ```
 
 **Example Parsing:**
+
 ```
 Input:  "3.5T e-SC Prestige"
 Split:  ["3.5T", "e-SC", "Prestige"]
@@ -168,11 +179,13 @@ Applies OEM-specific abbreviation mappings from translator configuration:
 ```
 
 **Translation Process:**
+
 - Uses exact dictionary lookup (NOT substring matching)
 - Preserves order, deduplicates
 - Keeps unmapped tokens as-is
 
 **Example:**
+
 ```
 Input:  ['g90', '3.5t', 'e-sc']
 Lookup: g90 → g90, 3.5t → 3.5t, e-sc → electric
@@ -199,6 +212,7 @@ Categorizes tokens using OEM-specific classification config:
 ```
 
 **Result:**
+
 ```
 Input:  ['g90', '3.5t', 'electric', 'prestige']
 Output: {
@@ -224,6 +238,7 @@ Genesis config specifies which categories to **ignore** (filter out):
 ```
 
 **Why this matters:**
+
 - Keep ENGINE_TYPE (includes fuel types: e-sc, electric, hev)
 - Ignore ENGINE_SPEC (cosmetic: 3.5t, 2.0t)
 - Ignore INTERIOR/EXTERIOR_COLOR (irrelevant for model matching)
@@ -231,6 +246,7 @@ Genesis config specifies which categories to **ignore** (filter out):
 #### 3e. Search Profile Validation
 
 Checks for search consistency:
+
 - **Require:** At least one MODEL keyword ✓
 - **Reject:** Contradictory keywords (e.g., "awd" + "fwd" together)
 - **Reject:** Excluded keywords (e.g., "ice", "combustion")
@@ -253,6 +269,7 @@ Minimum threshold: 10
 ```
 
 **Example:** `['g90', 'prestige']`
+
 ```
 Score = 10(MODEL) + 5(TRIM) = 15 ✓ (passes gate)
 ```
@@ -264,22 +281,24 @@ Score = 10(MODEL) + 5(TRIM) = 15 ✓ (passes gate)
 ```python
 # Pattern for keyword matching
 pattern = r"(?<![-])\b{keyword}\b(?![-])"
-
-# Example for 'electric':
-# (?<![-])  : NOT preceded by hyphen
-# \b        : word boundary
+d boundary
 # electric  : literal keyword
 # \b        : word boundary  
+# Example for 'electric':
+# (?<![-])  : NOT preceded by hyphen
+# \b        : wor
 # (?![-])   : NOT followed by hyphen
 ```
 
 **Search Strategy:**
+
 1. Check **ModelName** column first (with word boundaries)
 2. If found in ModelName, filter to those records
 3. If not found in ModelName, check TrimName + Description
 4. Returns all matching records
 
 **Database Records:**
+
 ```
 Before fix (didn't work):
   ModelName: G90
@@ -300,6 +319,7 @@ Search for 'electric' in '3.5T electric Prestige' = MATCH ✓
 ```
 
 **Strict e-sc Identification Verification:**
+
 - ✅ Tokenization: 'e-sc' extracted as complete token (not split)
 - ✅ Translation: Exact dictionary lookup (not substring match)
 - ✅ Pattern matching: Word boundaries with hyphen exclusion
@@ -320,6 +340,7 @@ If no candidates:
 #### 3i. Result Aggregation
 
 For each unique trim in the model group:
+
 ```
 model_mapping = {
   'Essential': ['ELCS4V2BES00'],     // Found 1 candidate
@@ -340,15 +361,17 @@ All trims now successfully matched (previously had issues with single-char 'N').
 ### Filtering
 
 Filter rows by `model_number_status`:
+
 - **Include:** Rows where status = "yes - found" (has model_number)
 - **Exclude:** Rows where status = "no - not found" (no model_number)
 
-**Before fixes:** ~123 rows excluded (3 major issues)  
+**Before fixes:** ~123 rows excluded (3 major issues)
 **After fixes:** <10 rows excluded (minor edge cases only)
 
 ### Output Generation
 
 Per OEM, generates:
+
 - **Excel files:** Language-specific outputs (EN, FR)
 - **DQ reports:** Data quality violations and warnings
 - **Pipeline logs:** Execution flow and timing
@@ -363,6 +386,7 @@ Per OEM, generates:
 **File:** `accy_v2/model_lookup/db/db_vehicle_models.csv`
 
 **Current Schema (10 columns):**
+
 ```
 Manufacturer | ModelYear | ModelNumber | ModelName | TrimName | 
 Package | Description | Drivetrain | PassDoors | Style_ID | 
@@ -370,6 +394,7 @@ engine_type
 ```
 
 **Stats (as of 2026-07-30):**
+
 - Total records: 279
 - Hyundai: 168 records
 - Genesis: 79 records
@@ -377,6 +402,7 @@ engine_type
 - Engine types: electric (25), 3.5t (8), 2.5t (12), hybrid (4), etc.
 
 **Recent Updates (2026-07-29):**
+
 - ✅ Standardized 5 G90 records: `engine_type='e-sc'` → `'electric'`
 - ✅ Updated 8 TrimName values: `'e-SC ...'` → `'3.5T electric ...'`
 - ✅ All EV models now use consistent classification
@@ -386,11 +412,13 @@ engine_type
 **Location:** `accy_v2/model_lookup/configs/`
 
 **Per-OEM Files:**
+
 - `{oem}_translator.json` - Abbreviation mappings (ess→essential, hev→hybrid, e-sc→electric)
 - `{oem}_classification.json` - Token category definitions (MODEL, TRIM, ENGINE_TYPE, etc.)
 - `oems/{oem}/config/{oem}_config.json` - Pipeline configuration
 
 **Recent Updates (2026-07-29):**
+
 - ✅ `genesis_translator.json`: Added `'e-sc': 'electric'` mapping
 - ✅ `hyundai_translator.json`: Added `'e-sc': 'electric'` mapping
 - ✅ `genesis_classification.json`: Maps engine types and displacements
@@ -398,12 +426,14 @@ engine_type
 ### Translator & Classifier
 
 **Translator** (`semantic/translator.py`):
+
 - Loads OEM-specific abbreviation mappings
 - Applies exact dictionary lookup (NOT substring matching)
 - Supports both flat and categorized config structures
 - Returns deduplicated keyword list
 
 **Classifier** (`semantic/classifier.py`):
+
 - Loads OEM-specific token → category mappings
 - Organizes keywords by semantic category
 - Supports multiple tokens per keyword
@@ -412,6 +442,7 @@ engine_type
 ### Scoring System
 
 **Scorer** (`semantic/scorer.py`):
+
 - Computes weighted score from classified tokens
 - Calculates confidence from score and candidate count
 - Implements adaptive thresholds based on search results
@@ -420,18 +451,21 @@ engine_type
 ### Logging System
 
 **PipelineLogger:** Tracks execution flow
+
 - Step entry/exit
 - Model lookups (success/failure)
 - Timing and performance
 - Debug output
 
 **DQLogger:** Tracks data quality
+
 - Validation failures
 - Missing trims
 - NOT_FOUND cases with root cause
 - Duplicate records
 
 **Log Output:**
+
 ```
 accy_v2/output/pipeline_logs/
 accy_v2/output/dq_reports/
@@ -448,6 +482,7 @@ accy_v2/output/dq_reports/
 **Root Cause:** Single-char keyword matching logic bypassed ModelName checks, only looked in TrimName/Description tokens
 
 **Fix Applied:** Commit `52e81e0`
+
 - Updated `search_models_by_description()` to check ModelName FIRST with word boundaries
 - Falls back to TrimName/Description token matching if not found in ModelName
 - Uses pattern: `(?<![-])\bn\b(?![-])` to match complete words
@@ -459,6 +494,7 @@ accy_v2/output/dq_reports/
 **Problem:** G90 e-SC records not found in pipeline; keywords not matching database
 
 **Root Causes:**
+
 1. Database `engine_type='e-sc'` not standardized
 2. Database TrimName missing displacement: `'e-SC Prestige'` (no 3.5T)
 3. Translator not mapping `'e-sc' → 'electric'`
@@ -467,16 +503,19 @@ accy_v2/output/dq_reports/
 **Fixes Applied:** Commits `35783f8` and `5047430`
 
 **Fix 1:** Database Standardization
+
 - Changed 5 G90 records: `engine_type='e-sc'` → `'electric'`
 - Added 3.5T to TrimName: `'electric Prestige'` → `'3.5T electric Prestige'`
 - Standardizes all EV models under 'electric' classification
 
-**Fix 2:** Translator Mapping  
+**Fix 2:** Translator Mapping
+
 - Added to `genesis_translator.json`: `'e-sc': 'electric'`
 - Added to `hyundai_translator.json`: `'e-sc': 'electric'`
 - Ensures keyword translation is consistent across OEMs
 
 **Fix 3:** Engine Type Standardization at Ingestion
+
 - Added to `manufacture_module.py`: Auto-converts `'e-sc' → 'electric'` during CSV save
 - Prevents future e-sc values from entering database
 
@@ -489,16 +528,19 @@ accy_v2/output/dq_reports/
 The system uses **three layers of strict matching** to prevent false positives:
 
 ### Layer 1: Tokenization
+
 - 'e-sc' extracted as complete token in keyword extraction phase
 - Dash abbreviation logic keeps 'e-sc' intact (not split into 'e' and 'sc')
 - Strict rule: single-letter abbreviations only (e.g., 'es-p' split, 'e-sc' not)
 
 ### Layer 2: Translation
+
 - Translator uses exact dictionary lookup: `oem_translations.get(kw, kw)`
 - NOT substring matching
 - Only 'e-sc' (lowercase) maps to 'electric', no variations
 
 ### Layer 3: Pattern Matching
+
 - Word boundary regex: `(?<![-])\belectric\b(?![-])`
 - Won't match:
   - 'E-Sc' text in Description field (would be different word)
@@ -506,8 +548,9 @@ The system uses **three layers of strict matching** to prevent false positives:
   - 'electric' preceded/followed by hyphen
 
 ### Verification Results
-✅ No database records with 'e-sc' substring matching for 'electric' pattern  
-✅ Only G90/GV80 Coupe records with 'electric' in TrimName  
+
+✅ No database records with 'e-sc' substring matching for 'electric' pattern
+✅ Only G90/GV80 Coupe records with 'electric' in TrimName
 ✅ Database 'E-Sc' text in Description does NOT falsely match
 
 ---
@@ -552,17 +595,17 @@ STEP 4.5: Model Enrichment
   
   6. Database search:
      Keywords: ['g90', '3.5t', 'electric']
-     
+   
      Database record:
      - ModelName: G90
      - TrimName: 3.5T electric Prestige
      - engine_type: electric
-     
+   
      Pattern matching:
      - 'g90' in 'G90' → MATCH ✓
      - '3.5t' in '3.5T electric Prestige' → MATCH ✓
      - 'electric' in '3.5T electric Prestige' → MATCH ✓
-     
+   
      Result: FOUND with model_number='G9CS4K3BXXPS'
 
 STEP 5: Output
@@ -576,8 +619,8 @@ OUTPUT:
 
 ## Pipeline Execution Statistics (Latest Run)
 
-**Date:** 2026-07-30  
-**Run ID:** 4001222e  
+**Date:** 2026-07-30
+**Run ID:** 4001222e
 **Status:** SUCCESS
 
 ```
@@ -604,11 +647,13 @@ NOT_FOUND Cases: 0 critical
 ### key OEM Configs
 
 **Hyundai**
+
 - ignore_keyword_categories: `["INTERIOR", "EXTERIOR_COLOR", "ENGINE_SPEC"]`
 - fuel_type_keywords: `["EV", "PHEV", "HEV", "FCEV"]`
 - use_single_char_token_matching: `true`
 
 **Genesis** (Hyundai subsidiary)
+
 - ignore_keyword_categories: `["INTERIOR", "EXTERIOR_COLOR", "ENGINE_SPEC"]`
 - fuel_type_keywords: `["EV", "PHEV", "HEV", "FCEV"]`
 - use_single_char_token_matching: `true`
@@ -616,6 +661,7 @@ NOT_FOUND Cases: 0 critical
 ### Translator Mappings
 
 **Key mappings active:**
+
 ```
 Abbreviations:
   ess → essential
@@ -647,16 +693,19 @@ Fuel types:
 ## Next Steps & Known Limitations
 
 ### Completed (2026-07-29)
-✅ Single-char keyword matching (Elantra N)  
-✅ E-SC engine type standardization (G90)  
-✅ Translator mappings for e-sc → electric  
-✅ Database updates for consistency  
+
+✅ Single-char keyword matching (Elantra N)
+✅ E-SC engine type standardization (G90)
+✅ Translator mappings for e-sc → electric
+✅ Database updates for consistency
 
 ### In Progress
+
 - Monitor remaining NOT_FOUND cases (<1%)
 - Document Santa Cruz XRT/Ioniq 5 N edge cases
 
 ### Future Enhancements
+
 - Add seating configuration classifiers (5-passenger, 7-passenger)
 - Expand battery spec handling (long-range, short-range)
 - Improve interior configuration matching
@@ -667,6 +716,7 @@ Fuel types:
 ## Deployment & Operations
 
 ### Environment
+
 - **Framework:** Python 3.x + pandas
 - **Storage:** Local CSV files + Excel outputs
 - **Logging:** File-based (JSON + structured text)
@@ -692,20 +742,20 @@ accy_v2/output/pipeline_logs/{oem}/
 
 ## Glossary
 
-| Term | Definition |
-|------|-----------|
-| **Engine Type** | Fuel classification: electric, hybrid, phev, ice |
-| **Engine Spec** | Displacement: 2.0t, 3.5t (cosmetic, ignored in search) |
-| **Trim Name** | Trim level: Essential, Preferred, Luxury, N, HEV, etc. |
-| **Model Name** | Vehicle model: Elantra, Tucson, G90, etc. |
-| **Model Number** | OEM part code: ELCS4V2BES00 (target output) |
-| **Classifier** | Maps tokens to semantic categories (MODEL, TRIM, etc.) |
-| **Translator** | Maps abbreviations to standard forms (ess → essential) |
-| **Scorer** | Computes confidence from classified tokens |
-| **DQ Logger** | Tracks data quality violations and missing data |
+| Term                   | Definition                                              |
+| ---------------------- | ------------------------------------------------------- |
+| **Engine Type**  | Fuel classification: electric, hybrid, phev, ice        |
+| **Engine Spec**  | Displacement: 2.0t, 3.5t (cosmetic, ignored in search)  |
+| **Trim Name**    | Trim level: Essential, Preferred, Luxury, N, HEV, etc.  |
+| **Model Name**   | Vehicle model: Elantra, Tucson, G90, etc.               |
+| **Model Number** | OEM part code: ELCS4V2BES00 (target output)             |
+| **Classifier**   | Maps tokens to semantic categories (MODEL, TRIM, etc.)  |
+| **Translator**   | Maps abbreviations to standard forms (ess → essential) |
+| **Scorer**       | Computes confidence from classified tokens              |
+| **DQ Logger**    | Tracks data quality violations and missing data         |
 
 ---
 
-**Last Updated:** 2026-07-30  
-**Maintained By:** Claude  
+**Last Updated:** 2026-07-30
+**Maintained By:** Claude
 **Status:** Production Ready ✅

@@ -1,0 +1,19 @@
+make: Mitsubishi
+version: '1.0'
+description: Mitsubishi-specific keyword translation rules. Applied before classification.
+translations:
+  s-awc: awc
+  awc: awc
+  4wd: awc
+  awd: awc
+  prem: premium
+  pkg: package
+  bev: ev
+  p: premium
+  n: noir
+  mhev: hybrid
+  hev: hybrid
+  ivt: cvt
+  dct: dsg
+  mt: manual
+  at: auto

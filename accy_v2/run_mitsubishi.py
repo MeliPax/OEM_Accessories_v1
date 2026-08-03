@@ -26,7 +26,7 @@ sys.path.insert(0, str(project_root))     # For model_lookup package import
 from oems.mitsubishi.pipeline.orchestrator import MitsubishiPipeline
 
 CONFIG_PATH = (
-    accy_v2_dir / "oems" / "mitsubishi" / "config" / "mitsubishi_config.json"
+    accy_v2_dir / "oems" / "mitsubishi" / "config" / "mitsubishi_config.yaml"
 )
 DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "mitsubishi"
 

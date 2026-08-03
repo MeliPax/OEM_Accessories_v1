@@ -1,0 +1,71 @@
+make: Volkswagen
+generated_at: '2026-06-23T11:35:35.025381'
+schema_version: '1.0'
+token_map:
+  '*ltd': PACKAGE
+  4motion: DRIVETRAIN
+  auto: TRANSMISSION
+  avail*: PACKAGE
+  awd: DRIVETRAIN
+  black: PACKAGE
+  comfortline: TRIM
+  dsg: TRANSMISSION
+  edition: PACKAGE
+  execline: TRIM
+  fwd: DRIVETRAIN
+  gli: TRIM
+  highline: TRIM
+  jetta: TRIM
+  manual: TRANSMISSION
+  rwd: DRIVETRAIN
+  s: TRIM
+  sport: TRIM
+  ltd: MODEL
+  e-golf: MODEL
+  fsi: MODEL
+  tsi: MODEL
+  '2.0': MODEL
+  tiguan: MODEL
+  passat: MODEL
+  beetle: MODEL
+  anniversary: MODEL
+  alltrack: MODEL
+  gti: MODEL
+  trendline: MODEL
+  atlas: MODEL
+  'on': MODEL
+  hb: MODEL
+  drive: MODEL
+  convertible: MODEL
+  autobahn: MODEL
+  taos: MODEL
+  battery: MODEL
+  w/sk: MODEL
+  wolfsburg: MODEL
+  peak: MODEL
+  sportwagen: MODEL
+  buzz: MODEL
+  5dr: MODEL
+  performance: MODEL
+  20th: MODEL
+  arteon: MODEL
+  iq: MODEL
+  id.: MODEL
+  '3.6': MODEL
+  golf: MODEL
+  w/lg: MODEL
+  rabbit: MODEL
+  id.4: MODEL
+  coupe: MODEL
+  cross: MODEL
+  40th: MODEL
+  dune: MODEL
+  r: MODEL
+  united: MODEL
+  avail: MODEL
+  pro: MODEL
+  1st: MODEL
+unclassified:
+- 35th
+- 5-door
+- r-line

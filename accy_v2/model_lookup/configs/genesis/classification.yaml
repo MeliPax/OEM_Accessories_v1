@@ -1,0 +1,65 @@
+make: Genesis
+generated_at: '2026-06-30T10:00:00.000000'
+schema_version: '1.0'
+fuel_type_category: ENGINE_TYPE
+token_map:
+  g70: MODEL
+  g80: MODEL
+  g90: MODEL
+  gv60: MODEL
+  gv70: MODEL
+  gv80: MODEL
+  coupe: MODEL
+  select: TRIM
+  advanced: TRIM
+  prestige: TRIM
+  sport: TRIM
+  elite: TRIM
+  ultimate: TRIM
+  dynamic: TRIM
+  edition: PACKAGE
+  performance: TRIM
+  special: PACKAGE
+  launch: PACKAGE
+  interior: INTERIOR
+  seat: INTERIOR
+  quilting: INTERIOR
+  suede: INTERIOR
+  wood: INTERIOR
+  electrified: ENGINE_TYPE
+  electric: ENGINE_TYPE
+  ev: ENGINE_TYPE
+  awd: DRIVETRAIN
+  rwd: DRIVETRAIN
+  3.3t: ENGINE_TYPE
+  3.5t: ENGINE_TYPE
+  '3.8': ENGINE_TYPE
+  '5.0': ENGINE_TYPE
+  5.0l: ENGINE_TYPE
+  2.5t: ENGINE_TYPE
+  2.0t: ENGINE_TYPE
+  e-sc: ENGINE_TYPE
+  pkg: PACKAGE
+  package: PACKAGE
+  tech: PACKAGE
+  technology: PACKAGE
+  entertainment: PACKAGE
+  plus: PACKAGE
+  5p: PACKAGE
+  7p: PACKAGE
+  w/tech: PACKAGE
+  w/lsd: PACKAGE
+  w/matte: EXTERIOR_COLOR
+  w/multi-spoke: EXTERIOR_COLOR
+  w/navy: PACKAGE
+  w/rear: PACKAGE
+  w/rse: PACKAGE
+  w/rse/multi-spoke: PACKAGE
+  w/o: PACKAGE
+  lsd: PACKAGE
+  +: PACKAGE
+  black: EXTERIOR_COLOR
+  graphite: EXTERIOR_COLOR
+  ash: EXTERIOR_COLOR
+  paint: EXTERIOR_COLOR
+  wheel: EXTERIOR_COLOR

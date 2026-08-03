@@ -73,9 +73,10 @@ class ADSService:
 
         try:
             configs_dir = Path(__file__).parent.parent / "configs"
-            classification_file = configs_dir / f"{make.lower()}_classification.json"
-            translator_file = configs_dir / f"{make.lower()}_translator.json"
-            standardization_file = configs_dir / f"{make.lower()}_standardization.yaml"
+            # New paths: configs/{make}/{file}.yaml instead of {make}_{file}.json
+            make_lower = make.lower()
+            classification_file = configs_dir / make_lower / "classification.yaml"
+            standardization_file = configs_dir / make_lower / "standardization.yaml"
 
             logger.debug(
                 f"service | {make} | Loading configs from: {configs_dir}"
@@ -85,9 +86,9 @@ class ADSService:
             classification = None
             if classification_file.exists():
                 with open(classification_file, 'r') as f:
-                    classification = json.load(f)
+                    classification = yaml.safe_load(f)
                 logger.debug(
-                    f"service | {make} | Loaded classification.json "
+                    f"service | {make} | Loaded classification.yaml "
                     f"({len(classification.get('token_map', {}))} keywords)"
                 )
             else:
@@ -99,12 +100,12 @@ class ADSService:
             translator = load_oem_translator(make, str(configs_dir))
             if translator:
                 logger.debug(
-                    f"service | {make} | Loaded translator.json "
+                    f"service | {make} | Loaded translator.yaml "
                     f"({len(translator)} flattened keywords)"
                 )
             else:
                 logger.warning(
-                    f"service | {make} | Translator file not found: {translator_file}"
+                    f"service | {make} | Translator file not found"
                 )
 
             # Load standardizer

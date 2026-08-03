@@ -1,0 +1,28 @@
+make: Hyundai
+version: '1.0'
+description: Hyundai-specific keyword translation rules, organized by category for
+  maintainability. Flattened into one lookup table at load time. Applied before classification.
+categories:
+  trim_levels:
+    pref: preferred
+    ess: essential
+    calli: calligraphy
+    cali: calligraphy
+    lux: luxury
+    ult: ultimate
+    adv: advanced
+    ed: edition
+    edt: edition
+    pkg: package
+    pckg: package
+  fuel_drivetrain:
+    hev: hybrid
+    phev: plug-in
+    ev: electric
+    e-sc: electric
+    electrified: electric
+  body_style: {}
+  technology: {}
+  range_options: {}
+  data_artifacts: {}
+  Extras: {}

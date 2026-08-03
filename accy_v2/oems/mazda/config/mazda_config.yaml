@@ -1,0 +1,150 @@
+non_null_threshold: 0.5
+use_model_lookup: false
+column_definition:
+  model_year:
+    key_words:
+      must_have:
+      - modelyear
+      must_have_one_of: []
+      not_have: []
+  model:
+    key_words:
+      must_have:
+      - carlinecode
+      must_have_one_of: []
+      not_have: []
+  model_number:
+    key_words:
+      must_have:
+      - trimlevel
+      must_have_one_of: []
+      not_have: []
+  part_number:
+    key_words:
+      must_have:
+      - partnumber
+      must_have_one_of: []
+      not_have: []
+  description_en:
+    key_words:
+      must_have:
+      - accessoryname
+      must_have_one_of: []
+      not_have:
+      - fr
+      - french
+      - additional
+  description_fr:
+    key_words:
+      must_have:
+      - accessorynamefr
+      must_have_one_of: []
+      not_have: []
+  comments_en:
+    key_words:
+      must_have:
+      - restrictionen
+      must_have_one_of: []
+      not_have: []
+  comments_fr:
+    key_words:
+      must_have:
+      - restrictionfr
+      must_have_one_of: []
+      not_have: []
+  msrp:
+    key_words:
+      must_have:
+      - msrp
+      must_have_one_of: []
+      not_have: []
+  install_hours:
+    key_words:
+      must_have:
+      - standardinstalltime
+      must_have_one_of: []
+      not_have: []
+required_columns:
+- model_year
+- model
+- model_number
+- part_number
+- description_en
+- description_fr
+- msrp
+- install_hours
+non_null_columns:
+- model_year
+- model
+- model_number
+- part_number
+- description_en
+- description_fr
+- msrp
+- install_hours
+col_data_type_dict:
+  to_string:
+  - model_year
+  - model
+  - model_number
+  - part_number
+  - description_en
+  - description_fr
+  to_float:
+  - msrp
+  - install_hours
+package_validation:
+  pattern: ^[A-Za-z]{2}[0-9]{2}$
+  model_number_length: 10
+  package_chars: 4
+trim_bounds_config: null
+trim_validation_config: null
+non_acceptable_sheet_names: []
+language_columns:
+  EN:
+  - description_en
+  - comments_en
+  FR:
+  - description_fr
+  - comments_fr
+rate_import_column_mapping:
+  model_year: Year
+  short_model_number: Model
+  package: Package
+  part_number: Part
+  description: Description
+  comments: Comments
+  msrp: Price
+  install_hours: Hours
+rate_import_required_columns:
+- Year
+- Model
+- Package
+- Part
+- Description
+- Comments
+- Price
+- Hours
+output:
+  ready_to_upload_path: accy_v2/output/ready_to_upload/mazda/
+  dq_report_path: accy_v2/output/dq_reports/mazda/
+  pipeline_log_path: accy_v2/output/pipeline_logs/mazda/
+model_lookup_rules:
+  Mazda:
+    sheet_name_format: model_name (from CarLineCode grouping)
+    valid_year_range:
+      min: 1900
+      max: 2100
+    fuel_type_keywords:
+    - EV
+    - PHEV
+    - HEV
+    trim_abbreviation_library:
+      p: preferred
+      s: sport
+    fields:
+    - trim
+    - model
+    - fuel_type
+    trim_column: Package
+    exclude_keywords: []

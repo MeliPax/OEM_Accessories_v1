@@ -26,7 +26,7 @@ sys.path.insert(0, str(project_root))     # For model_lookup package import
 from oems.hyundai.pipeline.orchestrator import HyundaiPipeline
 
 CONFIG_PATH = (
-    accy_v2_dir / "oems" / "hyundai" / "config" / "hyundai_config.json"
+    accy_v2_dir / "oems" / "hyundai" / "config" / "hyundai_config.yaml"
 )
 DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai"
 

@@ -1,0 +1,104 @@
+make: Toyota
+generated_at: '2026-06-23T11:35:35.089945'
+schema_version: '1.0'
+token_map:
+  4wd: DRIVETRAIN
+  auto: TRANSMISSION
+  awd: DRIVETRAIN
+  cvt: TRANSMISSION
+  edition: PACKAGE
+  fwd: DRIVETRAIN
+  hybrid: ENGINE_TYPE
+  l: TRIM
+  le: TRIM
+  limited: TRIM
+  manual: TRANSMISSION
+  package: PACKAGE
+  phev: ENGINE_TYPE
+  plus: TRIM
+  premium: TRIM
+  se: TRIM
+  sport: TRIM
+  cruiser: MODEL
+  fixed: MODEL
+  gr: MODEL
+  plug-in: MODEL
+  sequoia: MODEL
+  bz4x: MODEL
+  '7': MODEL
+  xle: MODEL
+  platinum: MODEL
+  venza: MODEL
+  awd-e: MODEL
+  hakone: MODEL
+  rav4: MODEL
+  tacoma: MODEL
+  3.0t: MODEL
+  cross: MODEL
+  trueno: MODEL
+  passenger: MODEL
+  woodland: MODEL
+  sr5: MODEL
+  technology: MODEL
+  w/: MODEL
+  trail: MODEL
+  land: MODEL
+  crewmax: MODEL
+  mirai: MODEL
+  supra: MODEL
+  prius: MODEL
+  trd: MODEL
+  gr86: MODEL
+  7-passenger: MODEL
+  4x2: MODEL
+  core: MODEL
+  highlander: MODEL
+  coupe: MODEL
+  capstone: MODEL
+  prime: MODEL
+  signia: MODEL
+  tundra: MODEL
+  i-force: MODEL
+  4runner: MODEL
+  hatchback: MODEL
+  c-hr: MODEL
+  'off': MODEL
+  bz: MODEL
+  crown: MODEL
+  8-passenger: MODEL
+  grand: MODEL
+  cab: MODEL
+  sedan: MODEL
+  double: MODEL
+  yuzu: MODEL
+  automatic: MODEL
+  sr: MODEL
+  xse: MODEL
+  sienna: MODEL
+  long: MODEL
+  4x4: MODEL
+  '2.0': MODEL
+  corolla: MODEL
+  road: MODEL
+  '1958': MODEL
+  fx: MODEL
+  board: MODEL
+  max: MODEL
+  camry: MODEL
+  trailhunter: MODEL
+  '5': MODEL
+  sb: MODEL
+  '4': MODEL
+  pro: MODEL
+  rav: MODEL
+  '3.0': MODEL
+  bed: MODEL
+  running: MODEL
+unclassified:
+- advanced
+- "all\x02terrain"
+- nightshade
+- tech
+- tir
+- upgrade
+- with
