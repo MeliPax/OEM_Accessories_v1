@@ -20,8 +20,8 @@ from .config import load_ads_env, get_make_name_map
 from .client import ADSClient
 from .mapper import ads_response_to_rows
 from .validators import validate_unique_keys
-from semantic.standardizer import DataStandardizer
-from semantic.translator import load_oem_translator
+from ..semantic.standardizer import DataStandardizer
+from ..semantic.translator import load_oem_translator
 
 logger = logging.getLogger(__name__)
 
