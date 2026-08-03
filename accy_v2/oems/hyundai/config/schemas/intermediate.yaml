@@ -1,0 +1,113 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/schemas/intermediate.yaml
+# Description: Expected data structure after transformation (quality gate)
+# OEM: Hyundai
+# Purpose: Validates that data cleaning produced expected schema before enrichment
+# ============================================================================
+# DECISION [015]: Modular config (intermediate schema separated from other concerns)
+# This is the CONTRACT between Step 3 (Transformation) and Step 4 (Enrichment)
+# ============================================================================
+
+# Schema version for tracking evolution
+schema_version: "1.0"
+description: "Canonical vehicle accessory record schema post-transformation"
+
+# All columns here MUST exist and meet specified constraints after transformation
+required_columns:
+  ModelYear:
+    data_type: integer
+    nullable: false
+    value_range: [2020, 2100]
+    description: "Vehicle model year (e.g., 2024)"
+
+  ModelName:
+    data_type: string
+    nullable: false
+    min_length: 2
+    max_length: 50
+    description: "Vehicle model name (e.g., Elantra, Santa Fe)"
+
+  PartNumber:
+    data_type: string
+    nullable: false
+    min_length: 3
+    max_length: 50
+    pattern: "^[A-Z0-9-]+$"
+    description: "Accessory part number (uppercase)"
+
+  Description:
+    data_type: string
+    nullable: false
+    min_length: 5
+    max_length: 500
+    description: "English accessory description (post-transformation)"
+
+  Description_FR:
+    data_type: string
+    nullable: false
+    min_length: 5
+    max_length: 500
+    description: "French accessory description (post-transformation)"
+
+  MSRP:
+    data_type: float
+    nullable: false
+    value_range: [0, 1000000]
+    description: "Manufacturer Suggested Retail Price"
+
+  LaborHours:
+    data_type: float
+    nullable: false
+    value_range: [0, 100]
+    description: "Labor hours required for installation"
+
+# Optional columns that may or may not exist
+optional_columns:
+  DNET:
+    data_type: float
+    nullable: true
+    description: "Dealer net cost"
+
+  LaborRate:
+    data_type: float
+    nullable: true
+    description: "Labor rate per hour"
+
+  Comments:
+    data_type: string
+    nullable: true
+    description: "English comments/restrictions"
+
+  Comments_FR:
+    data_type: string
+    nullable: true
+    description: "French comments/restrictions"
+
+# Language requirements (from pipeline.yaml upstream schema)
+language_requirements:
+  EN:
+    required: true
+    columns: [Description, Comments]
+    description: "English language support required"
+
+  FR:
+    required: true
+    columns: [Description_FR, Comments_FR]
+    description: "French language support required"
+
+# Data integrity checks (validation gates after transformation)
+integrity_checks:
+  no_duplicate_rows: true
+  all_columns_present: true
+  no_null_in_required: true
+  description: "All required columns must exist and be non-null"
+
+# Uniqueness constraints for data quality
+uniqueness:
+  key_columns: [ModelYear, ModelName, PartNumber]
+  description: "A row is unique by (Year, Model, PartNumber). Multiple accessories can share these, but part number per row is unique."
+
+# Row count expectations
+row_count_validation:
+  minimum_rows: 1
+  description: "At least one data row after transformation"

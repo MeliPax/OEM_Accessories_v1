@@ -1,0 +1,164 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/schemas/downstream.yaml
+# Description: Output sheet structure and column formatting
+# OEM: Hyundai
+# Purpose: Defines which columns appear in each output sheet and how they're formatted
+# ============================================================================
+# DECISION [015]: Modular config (downstream schema separated from other concerns)
+# DECISION [019]: Renamed rate_import_* to output_column_* for clarity
+#   - Previously: rate_import_column_mapping → output.column_mapping
+#   - Previously: rate_import_required_columns → output.required_columns
+#   - Rationale: "output_column" describes what it does (format output columns)
+# ============================================================================
+
+output:
+  # DECISION [019]: Column mapping (formerly rate_import_column_mapping)
+  # Maps internal column names to export names
+  # Used by step5_output.py to rename columns before writing to Excel
+  column_mapping:
+    part_number: Part
+    description: Description
+    comments: Comments
+    msrp: Price
+    labour_hours: Hours
+    trim_level: Trim
+
+  # DECISION [019]: Required columns (formerly rate_import_required_columns)
+  # Which columns to include in the final output sheet
+  # Only listed columns will be written to Excel (others are dropped)
+  # Note: model_number and Year are always included if present
+  required_columns:
+    - Year
+    - Part
+    - Description
+    - Comments
+    - Price
+    - Hours
+    - Trim
+
+# Output file configuration
+output_file:
+  # Filename pattern for generated Excel files
+  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"  # e.g., hyundai_abc123_20260803_120000.xlsx
+
+  # Whether to create an audit sheet
+  create_audit_sheet: true
+
+# Sheet definitions (what goes in each sheet)
+sheets:
+  # Main accessory catalog sheet
+  Accessories:
+    display_name: "Accessories"
+    description: "Complete vehicle accessory catalog with model numbers and pricing"
+    data_source: primary  # Main output from step5
+
+    columns:
+      - column_name: ModelYear
+        display_name: "Year"
+        data_type: integer
+        width: 10
+
+      - column_name: ModelName
+        display_name: "Model"
+        data_type: string
+        width: 20
+
+      - column_name: PartNumber
+        display_name: "Part #"
+        data_type: string
+        width: 15
+
+      - column_name: Description
+        display_name: "Accessory Description"
+        data_type: string
+        width: 50
+
+      - column_name: Description_FR
+        display_name: "Description Accessoire"
+        data_type: string
+        width: 50
+
+      - column_name: ModelNumber
+        display_name: "Model Number"
+        data_type: string
+        width: 15
+        note: "Added during enrichment step"
+
+      - column_name: MSRP
+        display_name: "MSRP"
+        data_type: float
+        width: 12
+        formatting: currency
+
+      - column_name: LaborHours
+        display_name: "Labor Hours"
+        data_type: float
+        width: 12
+
+    # Sort by year ascending, then model ascending
+    sorting:
+      - column: ModelYear
+        order: ascending
+      - column: ModelName
+        order: ascending
+
+  # Data quality issues sheet
+  _Data_Issues:
+    display_name: "Data Issues"
+    description: "Records that failed validation or enrichment steps"
+    data_source: dq_logger  # Populated from quality checks
+
+    columns:
+      - column_name: ModelYear
+        display_name: "Year"
+
+      - column_name: ModelName
+        display_name: "Model"
+
+      - column_name: PartNumber
+        display_name: "Part #"
+
+      - column_name: IssueCategory
+        display_name: "Issue Type"
+        note: "DATABASE_NO_MATCH, MODEL_LINE_NOT_FOUND, KEYWORD_EXTRACTION_FAILED, ADS_FETCH_ERROR, etc."
+
+      - column_name: IssueDescription
+        display_name: "Issue Details"
+
+      - column_name: SourceColumn
+        display_name: "Affected Column"
+
+  # Summary report sheet
+  _Report:
+    display_name: "Summary Report"
+    description: "Processing statistics and quality metrics"
+    data_source: aggregated_stats  # Calculated from pipeline execution
+
+    columns:
+      - column_name: MetricName
+        display_name: "Metric"
+
+      - column_name: Count
+        display_name: "Count"
+        data_type: integer
+
+      - column_name: Percentage
+        display_name: "% of Total"
+        data_type: float
+        formatting: percentage
+
+  # Audit trail sheet
+  _Audit:
+    display_name: "Audit Trail"
+    description: "Pipeline execution metadata"
+    data_source: pipeline_logger  # From pipeline execution log
+
+    columns:
+      - column_name: Timestamp
+        display_name: "Timestamp"
+
+      - column_name: Stage
+        display_name: "Pipeline Stage"
+
+      - column_name: Message
+        display_name: "Event"

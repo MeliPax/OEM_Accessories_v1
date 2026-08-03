@@ -1,0 +1,132 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/transformations.yaml
+# Description: Data cleaning and standardization rules
+# OEM: Hyundai
+# Purpose: Defines all transformations applied to each column post-ingestion
+# ============================================================================
+# DECISION [015]: Modular 5-file config structure (transformations as separate file)
+# ============================================================================
+
+# Per-column transformation pipelines
+# Order matters: operations are applied sequentially to each column
+# Each column gets its own cleaning, standardization, and validation pipeline
+
+columns:
+  ModelYear:
+    operations:
+      - name: ensure_integer
+        description: "Convert to integer type"
+      - name: validate_range
+        min_value: 2020
+        max_value: 2100
+        description: "Year must be within valid production range"
+    validation:
+      nullable: false
+
+  ModelName:
+    operations:
+      - name: trim_whitespace
+        description: "Remove leading/trailing whitespace"
+      - name: standardize_case
+        format: title_case
+        description: "Convert to Title Case (Elantra, Santa Fe, etc.)"
+    validation:
+      nullable: false
+
+  PartNumber:
+    operations:
+      - name: uppercase
+        description: "Convert to uppercase for part number consistency"
+      - name: trim_whitespace
+        description: "Remove extra whitespace"
+    validation:
+      nullable: false
+      pattern: "^[A-Z0-9-]+$"
+
+  Description:
+    operations:
+      - name: trim_whitespace
+      - name: standardize_case
+        format: title_case
+      - name: standardize_abbreviations
+        config_file: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
+        description: "Convert abbreviations (HEV→Hybrid, e-sc→electric, etc.)"
+      - name: deduplicate_words
+        description: "Remove duplicate adjacent words (Hybrid Hybrid→Hybrid)"
+      - name: remove_markup
+        markup_tags: ["(EN)", "(FR)"]
+        description: "Remove language markers"
+    validation:
+      nullable: false
+      minimum_length: 5
+
+  Description_FR:
+    operations:
+      - name: trim_whitespace
+      - name: standardize_case
+        format: title_case
+      - name: standardize_abbreviations
+        config_file: "accy_v2/model_lookup/configs/hyundai/translator.yaml"
+      - name: deduplicate_words
+      - name: remove_markup
+        markup_tags: ["(EN)", "(FR)"]
+    validation:
+      nullable: false
+      minimum_length: 5
+
+  MSRP:
+    operations:
+      - name: convert_to_float
+      - name: remove_currency_symbols
+        symbols: ["$", "CAD", "USD"]
+      - name: validate_range
+        min_value: 0
+        max_value: 1000000
+        description: "MSRP should be reasonable"
+    validation:
+      nullable: false
+
+  DNET:
+    operations:
+      - name: convert_to_float
+      - name: remove_currency_symbols
+        symbols: ["$", "CAD", "USD"]
+    validation:
+      nullable: true
+
+  LaborRate:
+    operations:
+      - name: convert_to_float
+    validation:
+      nullable: true
+
+  LaborHours:
+    operations:
+      - name: convert_to_float
+      - name: validate_range
+        min_value: 0
+        max_value: 100
+    validation:
+      nullable: false
+
+  Comments:
+    operations:
+      - name: trim_whitespace
+    validation:
+      nullable: true
+
+  Comments_FR:
+    operations:
+      - name: trim_whitespace
+    validation:
+      nullable: true
+
+# Global transformation settings
+global:
+  # Handle missing values during transformation
+  missing_value_strategy:
+    empty_string: "treat_as_null"
+    "N/A": "treat_as_null"
+    "NA": "treat_as_null"
+  # Log all transformation details for audit trail
+  log_transformations: true
