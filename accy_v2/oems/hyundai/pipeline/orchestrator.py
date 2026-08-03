@@ -5,6 +5,7 @@ import yaml
 import pandas as pd
 
 from core.base_pipeline import BasePipeline
+from core.config_loader_v2 import ModularConfigLoader, get_output_paths
 from core.helpers.dq_logger import DQLogger
 from core.helpers.header_helpers import clean_column_name, promote_header_row
 from core.helpers.output_writer import write_combined_output
@@ -63,11 +64,15 @@ class HyundaiPipeline(BasePipeline):
         # Sanitize column names (lowercase, spaces→underscores, etc.)
         working.columns = [clean_column_name(str(c)) for c in working.columns]
 
-        # Load config to get genesis_models list for manufacturer routing
-        config_path = Path(__file__).parent.parent / "config" / "hyundai_config.yaml"
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-        genesis_models = config.get("genesis_models", [])
+        # Load modular config (DECISION [015]: Use ModularConfigLoader)
+        config_root = Path(__file__).parent.parent / "config"
+        loader = ModularConfigLoader(self.OEM_NAME, config_root)
+        enrichment_config = loader.load_enrichment()
+
+        # Get Genesis models from enrichment config for manufacturer routing
+        genesis_models = list(enrichment_config.get("model_lookup", {}).get("brands", {}).keys())
+        if "Hyundai" in genesis_models:
+            genesis_models.remove("Hyundai")  # Only keep non-Hyundai brands (e.g., Genesis)
 
         # Find the actual year and model columns
         col_lower = {c.lower(): c for c in working.columns}

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import uuid
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
 
-from core.config_loader import load_config
+from core.config_loader_v2 import ModularConfigLoader, get_output_paths
 from core.helpers.dq_logger import DQLogger
 from core.helpers.pipeline_logger import PipelineLogger
 
@@ -139,8 +140,37 @@ class BasePipeline(ABC):
         """Write all accumulated model frames + Report sheet to one Excel file."""
         ...
 
-    def run(self, file_path: str, config_path: str) -> None:
-        config = load_config(config_path)
+    def run(self, file_path: str, config_root: str) -> None:
+        """
+        Execute the pipeline with modular config structure.
+
+        DECISION [015/020]: Use ModularConfigLoader for config loading.
+
+        Args:
+            file_path: Path to input file
+            config_root: Path to config directory (accy_v2/oems/{oem}/config/)
+        """
+        # Load modular config (DECISION [015]: Modular 5-file structure)
+        loader = ModularConfigLoader(self.OEM_NAME, Path(config_root))
+        pipeline_config = loader.load_pipeline_config()
+        enrichment_config = loader.load_enrichment()
+        transformations_config = loader.load_transformations()
+        upstream_schema = loader.load_upstream_schema()
+
+        # Build config dict with backward compatibility for existing step methods
+        # Maps modular structure back to legacy structure to minimize code changes
+        config = self._build_legacy_config(
+            pipeline_config, enrichment_config, transformations_config, upstream_schema
+        )
+
+        # Derive output paths from OEM name (DECISION [018])
+        output_paths = get_output_paths(self.OEM_NAME)
+        config["output"] = {
+            "ready_to_upload_path": str(output_paths["ready_to_upload"]),
+            "dq_report_path": str(output_paths["dq_reports"]),
+            "pipeline_log_path": str(output_paths["pipeline_logs"]),
+        }
+
         run_id = uuid.uuid4().hex[:8]
 
         dq_logger = DQLogger(run_id=run_id, source_file=file_path)
@@ -219,3 +249,44 @@ class BasePipeline(ABC):
         self.run_write_combined_output(all_output_frames, model_run_stats, dq_logger, run_id, config, pipeline_logger)
         dq_logger.write_dq_report(config["output"]["dq_report_path"])
         pipeline_logger.log_run_complete(sheets_processed, sheets_skipped)
+
+    @staticmethod
+    def _build_legacy_config(
+        pipeline_config: Dict, enrichment_config: Dict, transformations_config: Dict, upstream_schema: Dict
+    ) -> Dict:
+        """
+        Build config dict with backward compatibility for existing step methods.
+
+        Maps modular 5-file structure back to legacy flat structure.
+        This allows gradual migration: steps don't change immediately.
+
+        DECISION [015]: Modular config → Legacy config mapping.
+        """
+        # Map upstream schema columns to legacy column_definition format
+        column_definition = {}
+        for col_name, col_def in upstream_schema.get("columns", {}).items():
+            column_definition[col_name] = {
+                "key_words": col_def.get("detect_by_keyword", {}),
+                "data_type": col_def.get("expected_data_type"),
+                "required": col_def.get("required", False),
+            }
+
+        # Extract lists for backward compatibility
+        required_columns = [
+            name
+            for name, col_def in upstream_schema.get("columns", {}).items()
+            if col_def.get("required", False)
+        ]
+        non_null_columns = required_columns.copy()
+
+        # Build legacy config structure
+        return {
+            "column_definition": column_definition,
+            "required_columns": required_columns,
+            "non_null_columns": non_null_columns,
+            "non_null_threshold": pipeline_config.get("non_null_threshold", 0.5),
+            "use_model_lookup": pipeline_config.get("use_model_lookup", True),
+            "trim_column_patterns": upstream_schema.get("trim_table", {}).get("column_pattern"),
+            "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
+            "output": {},  # Will be filled by run() with derived paths
+        }
