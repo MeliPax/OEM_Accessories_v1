@@ -1,0 +1,17 @@
+# ============================================================================
+# File: accy_v2/oems/mazda/config/pipeline.yaml
+# Description: Orchestration settings and runtime configuration
+# OEM: Mazda
+# Purpose: Flow control, feature flags, and runtime behavior
+# ============================================================================
+# DECISION [016]: use_model_lookup is configurable per OEM
+# Mazda: false (comes with ModelNumber pre-populated)
+# ============================================================================
+
+# Model lookup enrichment
+# Mazda doesn't need model lookup (source file has model numbers already)
+use_model_lookup: false
+
+# Data completeness threshold
+# DECISION [017]: non_null_threshold is configurable per OEM
+non_null_threshold: 0.5
