@@ -1,6 +1,6 @@
 """Keyword translation layer — normalizes OEM-specific abbreviations and variations."""
 
-import json
+import yaml
 from pathlib import Path
 from typing import Dict, List
 
@@ -10,27 +10,36 @@ def load_oem_translator(make: str, configs_dir: str = None) -> Dict[str, str]:
     Load OEM-specific translator config.
 
     Args:
-        make: Manufacturer name (e.g., "Mitsubishi", "Mazda")
-        configs_dir: Directory containing translator JSON files. Defaults to model_lookup/configs/
+        make: Manufacturer name (e.g., "Mitsubishi", "Mazda", "Hyundai")
+        configs_dir: Directory containing translator YAML files. Defaults to model_lookup/configs/
 
     Returns:
         Dictionary mapping tokens to normalized forms (e.g., {"s-awc": "awd"}).
+        Supports both flat "translations" key (Mitsubishi/Mazda style) and
+        "categories" key with nested groups (Hyundai/Genesis style), flattening the latter.
         Returns empty dict if config file is missing (graceful degradation).
     """
     if configs_dir is None:
-        configs_dir = str(Path(__file__).parent / "configs")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
-    translator_path = Path(configs_dir) / f"{make.lower()}_translator.json"
+    # New path: configs/{make}/translator.yaml instead of {make}_translator.json
+    translator_path = Path(configs_dir) / make.lower() / "translator.yaml"
 
     try:
         with open(translator_path, "r") as f:
-            config = json.load(f)
+            config = yaml.safe_load(f)
+            # Support categorized structure (new style: nested groups) with fallback to flat (old style)
+            if "categories" in config:
+                flat = {}
+                for group in config["categories"].values():
+                    flat.update(group)
+                return flat
             return config.get("translations", {})
     except FileNotFoundError:
         # No config for this make — return empty dict (no translations applied)
         return {}
     except Exception as e:
-        # JSON parsing error or other issue — log and return empty dict
+        # YAML parsing error or other issue — log and return empty dict
         print(f"Warning: Failed to load translator for {make}: {e}")
         return {}
 

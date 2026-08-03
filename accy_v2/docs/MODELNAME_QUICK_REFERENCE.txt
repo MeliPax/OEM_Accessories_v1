@@ -1,0 +1,255 @@
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║                 MODELNAME INGESTION - QUICK REFERENCE GUIDE                       ║
+║                        Data Flow & Execution Plan                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+YOUR CHANGE IN mapper.py:
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│ Line 53:  model_name = trim.get("bestModelName")                                 │
+│ Line 77:  "ModelName": model_name or ""                                          │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+HOW IT FLOWS TO DATABASE:
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                  │
+│  ADS API Response                                                                │
+│  {bestModelName: "Elantra", name: "Essential Ivt", trim: "Essential", ...}       │
+│         │                                                                        │
+│         ▼                                                                        │
+│  mapper.py::ads_trim_to_row()                                                    │
+│  Extracts: model_name = "Elantra"                                                │
+│  Returns dict with ModelName key/value                                           │
+│         │                                                                        │
+│         ▼                                                                        │
+│  mapper.py::ads_response_to_rows()                                               │
+│  Creates list of dicts (each with ModelName)                                     │
+│         │                                                                        │
+│         ▼                                                                        │
+│  service.py::refresh_from_ads()                                                  │
+│  Calls ads_response_to_rows() → pd.DataFrame(rows)                              │
+│  DataFrame includes ModelName column automatically                               │
+│         │                                                                        │
+│         ▼                                                                        │
+│  refresh_db_ads.py::refresh_from_ads()                                           │
+│  save_vehicle_models_to_csv(df, ...)  ← passes DataFrame with ModelName         │
+│         │                                                                        │
+│         ▼                                                                        │
+│  manufacture_module.py::save_vehicle_models_to_csv()                             │
+│  Line 273: write_columns = sorted(set(existing_cols + df.columns))              │
+│  Line 320: df.to_csv(..., columns=write_columns)                                │
+│  ✓ Automatically includes ModelName in CSV!                                     │
+│         │                                                                        │
+│         ▼                                                                        │
+│  db_vehicle_models.csv                                                           │
+│  Header: Description,Drivetrain,Manufacturer,ModelNumber,ModelYear,             │
+│          Package,PassDoors,TrimName,ModelName                                   │
+│  Data:   Essential Ivt,FRONT_WHEEL_DRIVE,HYUNDAI,ELCS4V2BES00,2024,             │
+│          449710,4,Essential,Elantra  ← ModelName here!                          │
+│                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+KEY INSIGHT: NO ADDITIONAL CODE CHANGES NEEDED!
+═════════════════════════════════════════════════════════════════════════════════════
+
+The save function (manufacture_module.py line 273) automatically:
+  ✓ Detects all columns in the DataFrame (including ModelName)
+  ✓ Creates write_columns from union of existing + new columns
+  ✓ Writes all columns to CSV
+
+Your mapper.py change is SUFFICIENT to get ModelName into the database!
+
+
+EXECUTION PLAN (4 Phases, ~25 minutes total):
+═════════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: VERIFY (5 min)                                                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  Command:                                                                       │
+│  └─ cd accy_v2/model_lookup                                                     │
+│  └─ python -m py_compile chrome_api/mapper.py                                   │
+│                                                                                 │
+│  Expected: No syntax errors                                                    │
+│                                                                                 │
+│  Verifies: Your mapper.py change is syntactically correct                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 2: BACKUP (2 min)                                                         │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  Note: refresh_db_ads.py does this automatically!                              │
+│                                                                                 │
+│  It creates timestamped backup before overwriting:                             │
+│  └─ db_vehicle_models.2026-07-28_HHMMSS.csv in archive/                       │
+│                                                                                 │
+│  Verifies: Original data is safe before refresh                                │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 3: REFRESH DATABASE (5-10 min) ← MAIN ACTION                             │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  Command:                                                                       │
+│  └─ cd accy_v2/model_lookup                                                     │
+│  └─ python refresh_db_ads.py \                                                  │
+│       --makes Hyundai Mazda Genesis Mitsubishi Honda \                         │
+│       --years 2022 2023 2024 2025 2026 2027                                    │
+│                                                                                 │
+│  What happens:                                                                  │
+│    1. Fetches data from ADS API (with ModelName extraction via your change)   │
+│    2. Converts to DataFrame with ModelName column                              │
+│    3. Saves to CSV including ModelName column                                  │
+│    4. Archives old CSV with timestamp                                          │
+│                                                                                 │
+│  Expected output:                                                               │
+│    [1/4] Initializing ADS service...                                            │
+│          [OK] Credentials loaded                                                │
+│    [2/4] Archiving current database...                                          │
+│          [OK] Archived to: db_vehicle_models.2026-07-28_HHMMSS.csv            │
+│    [3/4] Fetching data from ADS...                                              │
+│          [OK] Fetched 1143+ configurations                                      │
+│    [4/4] Saving to database with validation...                                  │
+│          [OK] 1143+ records saved                                               │
+│                                                                                 │
+│  Expected file size: ~150-180 KB (includes new ModelName column)               │
+│                                                                                 │
+│  Verifies: ModelName data successfully ingested into database                  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ PHASE 4: VALIDATE (8 min)                                                       │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  Check 4a: CSV Header (30 sec)                                                 │
+│  ─────────────────────────────────                                             │
+│  Command:                                                                       │
+│  └─ head -1 accy_v2/model_lookup/db/db_vehicle_models.csv                     │
+│                                                                                 │
+│  Expected:                                                                      │
+│  Description,Drivetrain,Manufacturer,ModelNumber,ModelYear,Package,            │
+│  PassDoors,TrimName,ModelName                                                  │
+│                                                                                 │
+│  ✓ ModelName column present in CSV header                                      │
+│                                                                                 │
+│                                                                                 │
+│  Check 4b: Sample Data (1 min)                                                 │
+│  ──────────────────────────────                                                │
+│  Command:                                                                       │
+│  └─ tail -n +2 accy_v2/model_lookup/db/db_vehicle_models.csv | head -3       │
+│                                                                                 │
+│  Expected:                                                                      │
+│  Essential Ivt,FRONT_WHEEL_DRIVE,HYUNDAI,EL74MF20A100,2022,424279,4,        │
+│  Essential,Elantra                                                              │
+│                                                                                 │
+│  ✓ ModelName values populated in data rows                                     │
+│                                                                                 │
+│                                                                                 │
+│  Check 4c: Data Completeness (2 min)                                           │
+│  ─────────────────────────────────────                                         │
+│  Command (Python):                                                              │
+│  └─ import pandas as pd                                                         │
+│  └─ df = pd.read_csv('accy_v2/model_lookup/db/db_vehicle_models.csv')         │
+│  └─ print(df['ModelName'].value_counts().head())                               │
+│  └─ print(f"Non-empty ModelName: {(df['ModelName'] != '').sum()} / {len(df)}")  │
+│                                                                                 │
+│  Expected:                                                                      │
+│  Non-empty ModelName: 1143 / 1143 (or close to it)                             │
+│                                                                                 │
+│  ✓ All (or nearly all) records have ModelName populated                        │
+│                                                                                 │
+│                                                                                 │
+│  Check 4d: Per-OEM Breakdown (4 min)                                           │
+│  ────────────────────────────────────                                          │
+│  Command (Python):                                                              │
+│  └─ import pandas as pd                                                         │
+│  └─ df = pd.read_csv('accy_v2/model_lookup/db/db_vehicle_models.csv')         │
+│  └─ for mfr in sorted(df['Manufacturer'].unique()):                            │
+│  │    df_mfr = df[df['Manufacturer'] == mfr]                                   │
+│  │    non_empty = (df_mfr['ModelName'] != '').sum()                            │
+│  │    sample = df_mfr['ModelName'].iloc[0]                                     │
+│  │    print(f"{mfr}: {non_empty}/{len(df_mfr)} (e.g., {sample})")             │
+│                                                                                 │
+│  Expected:                                                                      │
+│  GENESIS: 159/159 have ModelName (e.g., G70)                                   │
+│  HONDA: 217/217 have ModelName (e.g., Civic)                                   │
+│  HYUNDAI: 384/384 have ModelName (e.g., Elantra)                               │
+│  MAZDA: 250/250 have ModelName (e.g., Mazda3)                                  │
+│  MITSUBISHI: 133/133 have ModelName (e.g., Outlander)                          │
+│                                                                                 │
+│  ✓ All OEMs have ModelName populated                                           │
+│                                                                                 │
+│  Verifies: ModelName successfully captured for all OEMs                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+TOTAL TIME: ~25 minutes (mostly waiting for ADS API)
+
+SUCCESS CRITERIA:
+═════════════════════════════════════════════════════════════════════════════════════
+
+✓ Phase 1: No syntax errors in mapper.py
+✓ Phase 2: Old CSV backed up with timestamp
+✓ Phase 3: Refresh completes successfully, 1100+ records saved
+✓ Phase 4a: CSV header includes "ModelName" column
+✓ Phase 4b: Sample data rows have ModelName values (e.g., "Elantra")
+✓ Phase 4c: 95%+ of records have non-empty ModelName
+✓ Phase 4d: All OEMs (HYUNDAI, GENESIS, MAZDA, MITSUBISHI, HONDA) populated
+
+If all checks pass: ✓✓✓ MODELNAME SUCCESSFULLY INGESTED INTO DATABASE ✓✓✓
+
+
+WHAT THIS FIXES:
+═════════════════════════════════════════════════════════════════════════════════════
+
+Before:  Database Description = "Essential Ivt" (no model name)
+         Search for ["elantra", "essential"] → 0 candidates
+         Pipeline output: 0 rows (100% excluded)
+
+After:   Database Description = "Essential Ivt" + ModelName = "Elantra"
+         Search for ["elantra", "essential"] → Found candidates
+         Pipeline output: >400 rows (not excluded)
+
+The fix allows the search engine to find model names in the database!
+
+
+NEXT STEPS AFTER VALIDATION:
+═════════════════════════════════════════════════════════════════════════════════════
+
+1. Update search function to use ModelName (optional):
+   └─ Modify manufacture_module.py::search_models_by_description()
+   └─ Search in (ModelName + " " + Description) instead of just Description
+
+2. Test full pipeline:
+   └─ Run Hyundai pipeline
+   └─ Verify output has >400 rows (was 0)
+   └─ Check logs for no NOT_FOUND errors
+
+3. Test other OEMs:
+   └─ Run Genesis pipeline
+   └─ Run Mazda pipeline
+   └─ Run Mitsubishi pipeline
+
+4. Monitor logs:
+   └─ Check that trims are found (not "not_found")
+   └─ Verify no model_number is blank
+
+
+ROLLBACK (If anything goes wrong):
+═════════════════════════════════════════════════════════════════════════════════════
+
+Command:
+└─ cd accy_v2/model_lookup/db
+└─ ls archive/  (find the pre-refresh backup)
+└─ cp archive/db_vehicle_models.*.csv db_vehicle_models.csv
+
+Result: Database reverted to previous state without ModelName
+
+
+═════════════════════════════════════════════════════════════════════════════════════
+READY TO EXECUTE? Follow phases 1-4 above. Should take ~25 minutes total.
+═════════════════════════════════════════════════════════════════════════════════════

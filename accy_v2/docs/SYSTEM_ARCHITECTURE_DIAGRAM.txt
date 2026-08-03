@@ -1,0 +1,537 @@
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                    OEM ACCESSORY PROJECT - COMPLETE SYSTEM ARCHITECTURE DIAGRAM                                                                      ║
+║                                       Data Flow & Component Mapping                                                                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                           LAYER 1: DATA INGESTION
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────┐
+    │   SOURCE DATA (OEM Excel Files)     │
+    └─────────────────────────────────────┘
+              │
+              │ [File Path: accy_v2/data/landing_zone/{oem}/{filename}.xlsx]
+              │
+              ├──→ Hyundai Master Sheet (all models in one sheet)
+              ├──→ Mazda Multiple Sheets (one per model)
+              ├──→ Mitsubishi Multiple Sheets (one per model)
+              ├──→ Genesis Models (routed via Hyundai)
+              └──→ Honda Multiple Sheets (one per model)
+              │
+              ▼
+    ┌─────────────────────────────────────┐
+    │   ORCHESTRATOR (OEM-Specific)       │
+    │   [File: oems/{oem}/pipeline/...]   │
+    │                                     │
+    │   HyundaiPipeline.run()             │
+    │   MazdaPipeline.run()               │
+    │   MitsubishiPipeline.run()          │
+    │   HondaPipeline.run()               │
+    └─────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 1: VALIDATION                                               │
+    │ [File: oems/{oem}/pipeline/step1_validation.py]                  │
+    │                                                                  │
+    │ ✓ Check headers present                                          │
+    │ ✓ Verify required columns (Model, Trim_*, Accessory_*)           │
+    │ ✓ Check data types and ranges                                    │
+    │ ✓ Log validation results                                         │
+    │                                                                  │
+    │ Input:  Raw Excel dataframe (header=None, may have merged cells) │
+    │ Output: Validated dataframe + validation report                  │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 2: HEADER NORMALIZATION                                     │
+    │ [File: oems/{oem}/pipeline/step2_header_normalization.py]        │
+    │                                                                  │
+    │ ✓ Promote header rows                                            │
+    │ ✓ Standardize column names (lowercase, replace spaces)           │
+    │ ✓ Handle merged cells and multi-line headers                     │
+    │                                                                  │
+    │ Input:  Validated dataframe with inconsistent column names       │
+    │ Output: Dataframe with clean, standardized column names          │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 3: STANDARDIZATION                                          │
+    │ [File: oems/{oem}/pipeline/step3_standardization.py]             │
+    │                                                                  │
+    │ ✓ Convert to common internal format                              │
+    │ ✓ Rename columns to standard names                               │
+    │ ✓ Clean data (trim whitespace, handle nulls)                     │
+    │ ✓ Convert data types                                             │
+    │                                                                  │
+    │ Input:  Dataframe with OEM-specific column names                 │
+    │ Output: Dataframe with standard schema                           │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 3.5: EXTRACT VEHICLE YEAR                                   │
+    │ [File: oems/{oem}/pipeline/step3_5_extract_vehicle_year.py]      │
+    │                                                                  │
+    │ ✓ Parse year from column headers                                 │
+    │ ✓ Validate year in reasonable range (2020-2030)                  │
+    │ ✓ Set vehicle_year in metadata                                   │
+    │                                                                  │
+    │ Input:  Standardized dataframe                                   │
+    │ Output: Dataframe + vehicle_year metadata                        │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                           LAYER 2: DATA TRANSFORMATION
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ GROUPING: By (Year, Model)                                       │
+    │                                                                  │
+    │ Example: 2024_elantra, 2024_tucson, 2025_g80, etc.               │
+    │                                                                  │
+    │ Each group gets:                                                 │
+    │ - group_key: "2024_elantra"                                      │
+    │ - model_name: "elantra"                                          │
+    │ - vehicle_year: 2024                                             │
+    │ - manufacturer: "Hyundai" (or "Genesis" for Genesis models)      │
+    │                                                                  │
+    │ Input:  Full dataframe (e.g., 500 rows, all models mixed)        │
+    │ Output: Dict[group_key] → grouped_dataframe                      │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 4: TRANSFORMATION (Per-Group)                               │
+    │ [File: oems/{oem}/pipeline/step4_transformation.py]              │
+    │                                                                  │
+    │ ✓ Melt trim columns (Trim_1, Trim_2, ..., Trim_6) into rows      │
+    │ ✓ Create Cartesian product: accessories × trims                  │
+    │ ✓ Standardize trim names (e.g., "Ess" → "Essential")             │
+    │ ✓ Combine language columns (EN/FR)                               │
+    │                                                                  │
+    │ Example:                                                         │
+    │   Input:   95 accessories × 6 trim columns                       │
+    │   Output: 570 rows (95 × 6 combinations)                         │
+    │                                                                  │
+    │ Structure per row:                                               │
+    │ {                                                                │
+    │   model: "elantra",                                              │
+    │   year: 2024,                                                    │
+    │   trim_level: "Essential",        ← INDIVIDUAL TRIM             │
+    │   accessory_category: "Interior",                                │
+    │   accessory_description: "Floor Mats",                           │
+    │   part_number: "12345",                                          │
+    │   ...                                                            │
+    │ }                                                                │
+    │                                                                  │
+    │ Input:  Grouped dataframe for ONE model/year combo               │
+    │ Output: Melted dataframe (long format, all trim combos)          │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                    LAYER 3: MODEL LOOKUP ENRICHMENT (CRITICAL PATH)
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+    │ STEP 4.5: MODEL LOOKUP ENRICHMENT                                                            │
+    │ [File: oems/{oem}/pipeline/step4_5_model_enrichment.py]                                      │
+    │                                                                                              │
+    │ PURPOSE: Match trim keywords to vehicle models in database, get OEM model number             │
+    │                                                                                              │
+    │ PROCESS:                                                                                    │
+    │                                                                                              │
+    │ 1. EXTRACT UNIQUE TRIMS                                                                    │
+    │    Input dataframe rows: [Elantra+Essential+FloorMats, Elantra+Essential+Mud, ...]          │
+    │    Extract unique: ['Essential', 'Preferred', 'Luxury', 'HEV', 'N', 'N-Line']               │
+    │                                                                                              │
+    │ 2. FOR EACH TRIM: BATCH LOOKUP (One search per trim, not per row)                           │
+    │                                                                                              │
+    │    ┌──────────────────────────────────────────────────────────────────────────────────────┐ │
+    │    │ TRIM LOOKUP PROCESS (e.g., "Essential")                                              │ │
+    │    │                                                                                      │ │
+    │    │ a) KEYWORD EXTRACTION                                                                │ │
+    │    │    ├─ Model keywords: ['elantra'] (from data)                                        │ │
+    │    │    ├─ Trim keywords: ['essential'] (from trim normalization)                         │ │
+    │    │    ├─ Fuel keywords: None (no fuel type in data)                                     │ │
+    │    │    └─ Combined: ['elantra', 'essential']                                             │ │
+    │    │                                                                                      │ │
+    │    │ b) KEYWORD TRANSLATION (OEM-specific abbreviation mapping)                           │ │
+    │    │    └─ Config: oems/hyundai/config/hyundai_keywords.json                              │ │
+    │    │       { "ess": "essential", "pref": "preferred", "hev": "hybrid", ... }              │ │
+    │    │    └─ Input: ['elantra', 'ess'] → Output: ['elantra', 'essential']                   │ │
+    │    │                                                                                      │ │
+    │    │ c) SEMANTIC CLASSIFICATION                                                           │ │
+    │    │    └─ Config: oems/hyundai/config/hyundai_classification.json                        │ │
+    │    │       { "elantra": "MODEL", "essential": "TRIM", ... }                               │ │
+    │    │    └─ Classified: { "MODEL": ["elantra"], "TRIM": ["essential"] }                    │ │
+    │    │                                                                                      │ │
+    │    │ d) VALIDATION                                                                        │ │
+    │    │    ├─ Require at least one MODEL token ✓ (has "elantra")                             │ │
+    │    │    ├─ Reject contradictions (e.g., "awd" + "fwd" together)                           │ │
+    │    │    └─ Reject excluded keywords (e.g., "ice", "combustion")                           │ │
+    │    │                                                                                      │ │
+    │    │ e) COMPUTE SCORE                                                                     │ │
+    │    │    └─ Weighted by category: MODEL(10) + TRIM(5) = 15                                 │ │
+    │    │    └─ Minimum threshold: 10                                                          │ │
+    │    │    └─ Result: 15 ≥ 10 ✓ (passes gate)                                                │ │
+    │    │                                                                                      │ │
+    │    │ f) DATABASE SEARCH ⚠️ FAILS HERE (Current Implementation)                            │ │
+    │    │    ├─ Call: search_models_by_description(                                           │ │
+    │    │    │          make="Hyundai",                                                        │ │
+    │    │    │          year=2024,                                                             │ │
+    │    │    │          keywords=['elantra', 'essential']                                      │ │
+    │    │    │        )                                                                        │ │
+    │    │    ├─ Load: db/db_vehicle_models.csv                                                 │ │
+    │    │    ├─ Filter: WHERE Manufacturer='HYUNDAI' AND ModelYear=2024                        │ │
+    │    │    ├─ Search: WHERE Description LIKE '%elantra%' AND LIKE '%essential%'              │ │
+    │    │    │                                                                                 │ │
+    │    │    │  Database has:                                                                  │ │
+    │    │    │    Description="Essential Ivt" ✗ (no "elantra")                                 │ │
+    │    │    │    Description="Preferred Ivt" ✗                                                │ │
+    │    │    │                                                                                 │ │
+    │    │    │  Result: 0 candidates 🔴 CRITICAL FAILURE                                      │ │
+    │    │    │                                                                                 │ │
+    │    │    │ WHY IT FAILS:                                                                   │ │
+    │    │    │ - Description column has ONLY trim descriptors (Essential, Preferred, etc.)    │ │
+    │    │    │ - Model name (Elantra) is NOT in Description                                    │ │
+    │    │    │ - Search requires ALL keywords to match, not just some                         │ │
+    │    │    │ - Result: Missing model name → 0 candidates                                    │ │
+    │    │    │                                                                                 │ │
+    │    │    └─ Expected to find: ModelNumber="ELCS4V2BES00" for Essential trim                │ │
+    │    │                                                                                      │ │
+    │    │ g) CONFIDENCE CALCULATION                                                            │ │
+    │    │    └─ IF candidates found (currently 0):                                             │ │
+    │    │       score / (min_score + candidate_penalty)                                        │ │
+    │    │    └─ IF no candidates: confidence = 0.0                                             │ │
+    │    │                                                                                      │ │
+    │    │ h) RESULT                                                                            │ │
+    │    │    ├─ model_numbers: [] (empty, no match)                                            │ │
+    │    │    ├─ confidence: 0.0 (no match)                                                     │ │
+    │    │    ├─ match_status: "NOT_FOUND"                                                      │ │
+    │    │    └─ Log: [NOT_FOUND] Hyundai 2024 Essential keywords=['elantra', 'essential']     │ │
+    │    └──────────────────────────────────────────────────────────────────────────────────────┘ │
+    │                                                                                              │
+    │ 3. AGGREGATE TRIM MAPPING RESULTS                                                          │
+    │    model_mapping = {                                                                       │
+    │        'Essential': [],         ← NOT FOUND (0 candidates)                                │
+    │        'Preferred': [],         ← NOT FOUND (0 candidates)                                │
+    │        'Luxury': [],            ← NOT FOUND (0 candidates)                                │
+    │        'HEV': [],               ← NOT FOUND (0 candidates)                                │
+    │        'N': [],                 ← NOT FOUND (0 candidates)                                │
+    │        'N-Line': []             ← NOT FOUND (0 candidates)                                │
+    │    }                                                                                       │
+    │    Result: ALL TRIMS MISSING 🔴                                                           │
+    │                                                                                              │
+    │ 4. ADD MODEL_NUMBER COLUMNS TO DATA                                                       │
+    │    For each row in transformed data:                                                      │
+    │    ├─ row['model_number'] = model_mapping.get(row['trim_level'])  ← Gets []               │
+    │    ├─ row['model_number_status'] = "no - not found"                                       │
+    │    └─ DQ_Logger.log_warning(missing_trim)                                                 │
+    │                                                                                              │
+    │ Input:  Melted dataframe (570 rows, all trim combos)                                       │
+    │ Output: Dataframe + model_mapping dict + DQ warnings                                       │
+    └──────────────────────────────────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                           LAYER 4: DATA FILTERING & OUTPUT
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ STEP 5: OUTPUT FILTERING & GENERATION                            │
+    │ [File: oems/{oem}/pipeline/step5_output.py]                      │
+    │                                                                  │
+    │ ✓ Filter rows by model_number_status                             │
+    │   └─ EXCLUDE: where status = "no - not found"                    │
+    │   └─ INCLUDE: where status = "yes - found"                       │
+    │                                                                  │
+    │ ⚠️ CURRENT RESULT:                                               │
+    │   Input:  570 rows                                               │
+    │   ALL rows have model_number_status = "no - not found"           │
+    │   Output: 0 rows 🔴 100% EXCLUDED                                │
+    │                                                                  │
+    │ ✓ Generate language-specific output (EN, FR)                    │
+    │ ✓ Format columns for Excel                                      │
+    │ ✓ Create summary report                                         │
+    │                                                                  │
+    │ Input:  Enriched dataframe (570 rows, all with NO model_number) │
+    │ Output: Excel file with ZERO DATA ROWS                          │
+    └──────────────────────────────────────────────────────────────────┘
+              │
+              ▼
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ OUTPUT FILES (Per OEM)                                           │
+    │ [Directory: output/processed_accessories/]                      │
+    │                                                                  │
+    │ ├─ {oem}_en.xlsx          (English output - EMPTY)              │
+    │ ├─ {oem}_fr.xlsx          (French output - EMPTY)               │
+    │ ├─ {oem}_summary.txt      (Summary report)                      │
+    │ └─ logs/                  (Pipeline logs)                       │
+    │    ├─ pipeline_[id].log   (Full execution log)                  │
+    │    └─ dq_[id].log         (Data quality warnings)               │
+    │                                                                  │
+    │ Current Status: ALL FILES EMPTY (0 output records)              │
+    └──────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                           LAYER 5: SUPPORT SYSTEMS
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────┐
+    │ MODEL LOOKUP DATABASE (Search Index) │
+    │                                     │
+    │ File: model_lookup/db/db_vehicle_   │
+    │       models.csv                    │
+    │                                     │
+    │ 8 Columns:                          │
+    │ ├─ Description          (Trim desc) │
+    │ ├─ Drivetrain           (Drive)     │
+    │ ├─ Manufacturer         (OEM)       │
+    │ ├─ ModelNumber          (Code)      │
+    │ ├─ ModelYear            (Year)      │
+    │ ├─ Package              (Style ID)  │
+    │ ├─ PassDoors            (Doors)     │
+    │ └─ TrimName             (Trim lvl)  │
+    │                                     │
+    │ 1,143 Total Records                 │
+    │ (Hyundai 384, Mazda 250, Honda 217, │
+    │  Genesis 159, Mitsubishi 133)       │
+    │                                     │
+    │ ⚠️ CRITICAL ISSUE:                  │
+    │ Missing model names in Description  │
+    │ causing 0-candidate search results  │
+    └─────────────────────────────────────┘
+              │
+              ▼
+    ┌─────────────────────────────────────┐
+    │ OEM CONFIGURATION SYSTEM            │
+    │                                     │
+    │ Per-OEM Configs:                    │
+    │ ├─ hyundai_keywords.json            │
+    │ │  (Abbreviation mappings)          │
+    │ ├─ hyundai_classification.json      │
+    │ │  (Token categories)               │
+    │ ├─ mazda_keywords.json              │
+    │ ├─ mazda_classification.json        │
+    │ ├─ mitsubishi_keywords.json         │
+    │ ├─ mitsubishi_classification.json   │
+    │ └─ (Honda, Genesis, etc.)           │
+    │                                     │
+    │ Also:                               │
+    │ ├─ hyundai_config.json              │
+    │ │  (Pipeline config per OEM)        │
+    │ └─ ads_field_mapping.json           │
+    │    (ADS API → CSV mapping)          │
+    └─────────────────────────────────────┘
+              │
+              ▼
+    ┌─────────────────────────────────────┐
+    │ LOGGING SYSTEM                      │
+    │                                     │
+    │ PipelineLogger:                     │
+    │ └─ Execution flow, steps, timing    │
+    │                                     │
+    │ DQLogger:                           │
+    │ └─ Data quality violations,         │
+    │    missing trims, invalid data      │
+    │                                     │
+    │ Output Logs:                        │
+    │ └─ output/pipeline_logs/{oem}/      │
+    │    pipeline_[id]_[timestamp].log    │
+    └─────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                              CRITICAL PATH SUMMARY
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Excel Input (95 Hyundai Elantra accessories)
+    │
+    ├→ [STEP 1-3] Validation & Normalization
+    │
+    ├→ [STEP 3.5] Extract Year: 2024
+    │
+    ├→ [STEP 4] Transformation: Melt 6 trim columns
+    │   Result: 95 × 6 = 570 rows
+    │
+    ├→ [STEP 4.5] MODEL LOOKUP ENRICHMENT ⚠️ CRITICAL FAILURE
+    │   │
+    │   ├→ Extract trims: ['Ess', 'Pref', 'Lux', 'HEV', 'N', 'N-Line']
+    │   │
+    │   ├→ For each trim: Search database
+    │   │   │
+    │   │   ├→ Translate: 'Ess' → 'essential'
+    │   │   ├→ Classify: 'essential' → TRIM category
+    │   │   ├→ Keywords: ['elantra', 'essential']
+    │   │   ├→ Score: 15 (≥10 minimum) ✓
+    │   │   │
+    │   │   └→ Search database for Description matching ALL keywords
+    │   │       Database: Description='Essential Ivt' (no 'elantra')
+    │   │       Result: 0 candidates 🔴 FAIL
+    │   │
+    │   └→ Result: NO model_numbers found for ANY trim
+    │       All 570 rows marked: model_number_status = "no - not found"
+    │
+    ├→ [STEP 5] Output Filtering
+    │   Filter: WHERE model_number_status = "yes - found"
+    │   Result: 0 rows (all were "no - not found")
+    │
+    └→ OUTPUT: Empty Excel file (0 accessory rows)
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                              WHY SEARCH FAILS
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Pipeline Search Workflow (Current Implementation):
+
+    Keywords: ['elantra', 'essential']
+           │
+           ├─→ Must find BOTH in ONE field
+           │
+           └─→ Check database Description column:
+
+               Row 1: Description='Essential Ivt'
+               ├─ Contains 'essential'? YES ✓
+               ├─ Contains 'elantra'? NO ✗
+               └─ Result: REJECTED (missing 'elantra')
+
+               Row 2: Description='Preferred Ivt'
+               ├─ Contains 'essential'? NO ✗
+               └─ Result: REJECTED (missing 'essential')
+
+               Row 3-N: Similar (all rejected)
+
+               Final: 0 candidates 🔴
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                              THE FIX (PROPOSED)
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Add ModelName column to database:
+
+    Current Description: 'Essential Ivt'
+           │
+           ├─→ Parse ModelNumber: 'EL74MF20A100'
+           │   Extract prefix: 'EL' → 'Elantra'
+           │
+           └─→ New Column: ModelName = 'Elantra'
+
+Database Row (Enhanced):
+    Description='Essential Ivt' + ModelName='Elantra'
+           │
+           └─→ Combined for search: 'Elantra Essential Ivt'
+
+Search Now Works:
+    Keywords: ['elantra', 'essential']
+    Check Description (or combined field): 'Elantra Essential Ivt'
+    ├─ Contains 'elantra'? YES ✓
+    ├─ Contains 'essential'? YES ✓
+    └─ Result: MATCH 🟢 (returns ModelNumber)
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                            COMPONENT INTERDEPENDENCIES
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+Components & Their Relationships:
+
+    ┌────────────────────────────────────────────────────────────────────┐
+    │                        CORE PIPELINE                               │
+    │ ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │
+    │ │ Orchestrator ├─→ Step 1-3      ├─→ Step 4       │              │
+    │ └──────────────┘  │ (Validation) │  │(Transform)   │              │
+    │                  │              │  │              │              │
+    │                  └──────────────┘  └──────┬───────┘              │
+    │                                           │                      │
+    │                                           ▼                      │
+    │                        ┌───────────────────────────────┐         │
+    │                        │ Step 4.5: Model Enrichment    │         │
+    │                        │ (🔴 CURRENTLY BROKEN)         │         │
+    │                        └───────────────┬───────────────┘         │
+    │                                        │                        │
+    │                                        ▼                        │
+    │                        ┌───────────────────────────────┐         │
+    │                        │ Step 5: Output & Filtering    │         │
+    │                        │ (Excludes all 100% records)   │         │
+    │                        └───────────────────────────────┘         │
+    └────────────────────────────────────────────────────────────────────┘
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+            │ CONFIG SYSTEM    │ │ LOGGING SYSTEM   │ │ DATABASE LOOKUP  │
+            │                  │ │                  │ │                  │
+            │ OEM Keywords     │ │ PipelineLogger   │ │ db_vehicle_      │
+            │ OEM Classif.     │ │ DQLogger         │ │ models.csv       │
+            │ OEM Config       │ │ Log Files        │ │                  │
+            │                  │ │                  │ │ 🔴 NEEDS MODEL  │
+            │ ⚠️ Mazda config  │ │ ✓ Working       │ │    NAMES ADDED   │
+            │    corrupted     │ │                  │ │ ⚠️ Currently 0%  │
+            │                  │ │                  │ │    searchable    │
+            └──────────────────┘ └──────────────────┘ └──────────────────┘
+                    │                                           │
+                    └───────────────────┬───────────────────────┘
+                                        │
+                                        ▼
+                            ┌──────────────────────────────┐
+                            │   SUPPORTING MODULES         │
+                            │                              │
+                            │ search_models_by_description │
+                            │ VehicleSearchEngine          │
+                            │ KeywordExtractor             │
+                            │ Translator                   │
+                            │ Classifier                   │
+                            │ Scorer                       │
+                            │                              │
+                            │ ✓ All functional, issue is  │
+                            │   data quality (no model     │
+                            │   names in DB)               │
+                            └──────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                            NEXT STEPS (IMPLEMENTATION)
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+1. DATABASE: Add ModelName column to db_vehicle_models.csv
+   └─ Extract from ModelNumber using OEM-specific code tables
+   └─ Run migration script
+
+2. SEARCH: Update search_models_by_description() to use ModelName+Description
+   └─ Change: search in (ModelName + ' ' + Description) instead of just Description
+
+3. TEST: Verify search now returns candidates
+   └─ Hyundai Elantra Essential: 0 → >1 candidates
+   └─ Genesis G80 Advanced: 0 → >1 candidates
+   └─ Mazda CX-5 Preferred: 0 → >1 candidates
+
+4. PIPELINE: Run end-to-end pipeline
+   └─ Hyundai: 95 input → 570 rows (after melt) → >500 output (not 0)
+   └─ Genesis: Similar
+   └─ Mazda: Similar
+
+5. VALIDATE: Check success metrics
+   └─ All trims found (not "no - not found")
+   └─ Non-empty Excel output files
+   └─ No 100% record exclusion
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+END OF ARCHITECTURE DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════

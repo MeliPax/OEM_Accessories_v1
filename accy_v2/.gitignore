@@ -22,3 +22,9 @@ ready_to_upload/
 # Raw OEM source files — drop into data/landing_zone/{oem}/ before running
 # Contains sensitive pricing data and large binary files
 data/landing_zone/
+
+# Secrets and credentials — keep locally, never commit
+.env
+*.env
+creds/
+**/creds/

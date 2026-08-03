@@ -1,0 +1,47 @@
+make: Genesis
+version: '1.0'
+description: Genesis-specific keyword translation rules for trim levels and packages.
+  Categorized for maintainability, flattened at load time.
+categories:
+  trim_levels:
+    select: select
+    advanced: advanced
+    prestige: prestige
+    sport: sport
+    elite: elite
+    ultimate: ultimate
+    dynamic: dynamic
+    adv: advanced
+    performance: performance
+  fuel_drivetrain:
+    2.0t: 2.0t
+    2.5t: 2.5t
+    3.3t: 3.3t
+    3.5t: 3.5t
+    '3.8': '3.8'
+    '5.0': '5.0'
+    5.0l: '5.0'
+    e-sc: electric
+    electrified: electric
+    ev: electric
+    awd: awd
+    rwd: rwd
+  packages_options:
+    plus: plus
+    pkg: package
+    package: package
+    tech: technology
+    technology: technology
+    entertainment: entertainment
+    5p: 5-passenger
+    7p: 7-passenger
+    black: black-package
+    edition: edition
+    special: special-edition
+    launch: launch-edition
+    w/tech: with-technology
+    w/lsd: with-lsd
+    lsd: lsd
+    with: with
+    w/: with
+    w/o: without

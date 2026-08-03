@@ -83,7 +83,7 @@ def get_config_path(oem: str) -> str:
     """Get config file path for OEM."""
     project_root = Path(__file__).parent
     oem_lower = oem.lower()
-    config_path = project_root / f"accy_v2/oems/{oem_lower}/config/{oem_lower}_config.json"
+    config_path = project_root / f"accy_v2/oems/{oem_lower}/config/{oem_lower}_config.yaml"
 
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")

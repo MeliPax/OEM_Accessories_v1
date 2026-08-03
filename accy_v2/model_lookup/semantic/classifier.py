@@ -1,6 +1,6 @@
 """Semantic token classification and configuration management."""
 
-import json
+import yaml
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
@@ -34,20 +34,21 @@ def load_classification_config(make: str, configs_dir: str = None) -> Dict:
 
     Args:
         make: Manufacturer name (e.g., "Mitsubishi")
-        configs_dir: Directory containing classification JSON files. Defaults to model_lookup/configs/
+        configs_dir: Directory containing classification YAML files. Defaults to model_lookup/configs/
 
     Returns:
         Dictionary with keys "make", "generated_at", "token_map", "unclassified".
         Returns empty dict structure if file missing (graceful degradation).
     """
     if configs_dir is None:
-        configs_dir = str(Path(__file__).parent / "configs")
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
-    config_path = Path(configs_dir) / f"{make.lower()}_classification.json"
+    # New path: configs/{make}/classification.yaml instead of {make}_classification.json
+    config_path = Path(configs_dir) / make.lower() / "classification.yaml"
 
     try:
         with open(config_path, "r") as f:
-            return json.load(f)
+            return yaml.safe_load(f)
     except FileNotFoundError:
         return {"make": make, "token_map": {}, "unclassified": []}
     except Exception as e:

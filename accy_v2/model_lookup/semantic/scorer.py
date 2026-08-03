@@ -6,15 +6,23 @@ from typing import Dict, List
 CATEGORY_WEIGHTS = {
     "MODEL": 10,
     "ENGINE_TYPE": 8,
+    "POWERTRAIN_TYPE": 10,  # Fuel type (HEV, PHEV, EV) — increased to 10 (critical for accessory compatibility)
+    "ENGINE_SPEC": 7,  # Specific engine specs (2.5T, 3.3T, etc.)
     "DRIVETRAIN": 6,
     "TRIM": 5,
+    "TRIM_VARIANT": 6,  # Trim variants (N, N-Line) — increased to 6 (important for specificity)
+    "BODY_STYLE": 4,  # Body type (sedan, suv, hatchback)
     "TRANSMISSION": 3,
+    "SEATING": 2,  # Passenger count
+    "INTERIOR": 1,  # Interior cosmetics (filtered in search)
+    "EXTERIOR_COLOR": 1,  # Exterior cosmetics (filtered in search)
     "PACKAGE": 1,
     "UNCLASSIFIED": 0,  # Unclassified tokens contribute zero to score
 }
 
-# Minimum passing score: requires MODEL (10) + at least one other signal (2+)
-MINIMUM_SCORE = 12
+# Minimum passing score: requires MODEL alone (10)
+# Previously required MODEL + TRIM/ENGINE_SPEC, but engine specs are now ignored by design
+MINIMUM_SCORE = 10
 
 
 def compute_score(classified: Dict[str, List[str]], weights: Dict[str, int] = None) -> int:

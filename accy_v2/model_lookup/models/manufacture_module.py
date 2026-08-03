@@ -23,12 +23,12 @@ MANUFACTURER_SEARCH_CONFIG = {
     "default": {
         "year_field": "ModelYear",
         "model_field": "ModelNumber",
-        "trim_fields": ["Description"],
+        "trim_fields": ["ModelName", "Description"],
         "style_field": "Style_ID",
         "package_field": "Package",
     },
     "Hyundai": {
-        "trim_fields": ["Description"],
+        "trim_fields": ["ModelName", "Description"],
     },
 }
 
@@ -87,31 +87,68 @@ def validate_row_not_null(row: dict, required_fields: list[str] = None) -> bool:
     return True
 
 
-def load_existing_csv(csv_path: str) -> pd.DataFrame:
+def load_existing_csv(csv_path: str, expected_columns: list = None) -> pd.DataFrame:
     """
-    Load existing CSV file. Returns empty DataFrame if file doesn't exist.
+    Load existing CSV file and clean description punctuation.
+    Returns empty DataFrame if file doesn't exist.
+
+    If expected_columns provided and CSV has fewer columns, pads with empty columns.
+    This handles schema evolution (e.g., reading a 7-column file when expecting 9).
+
+    Applies description cleaning to normalize cosmetic info in all loaded data:
+    - Removes parentheses/brackets that interfere with tokenization
+    - Normalizes spacing patterns (e.g., "Two Tone" → "two-tone")
     """
     if os.path.exists(csv_path):
         try:
-            return pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path)
+            # Clean descriptions for all loaded data (not just search results)
+            if not df.empty and "Description" in df.columns:
+                df["Description"] = df["Description"].apply(_clean_description_punctuation)
+
+            # Pad with expected columns if needed
+            if expected_columns:
+                for col in expected_columns:
+                    if col not in df.columns:
+                        df[col] = ""
+
+            return df
         except Exception as e:
             print(f"Warning: Could not read existing CSV: {e}")
+            # Return DataFrame with expected columns if parsing failed
+            if expected_columns:
+                return pd.DataFrame(columns=expected_columns)
             return pd.DataFrame()
     return pd.DataFrame()
 
 
 def check_duplicate_record(
-    df_new: pd.DataFrame, df_existing: pd.DataFrame
+    df_new: pd.DataFrame, df_existing: pd.DataFrame, key_columns: list = None
 ) -> pd.DataFrame:
     """
     Filter out records that already exist in the database.
-    Uses Manufacturer, ModelYear, and ModelNumber as the unique key.
+    Configurable unique key; defaults to Manufacturer, ModelYear, ModelNumber, ModelName, Description.
+
+    This 4-column key ensures: (1) no full duplicates (same everything, including ModelNumber),
+    and (2) legitimate multi-model-number records (same ModelYear+ModelName+Description but
+    different ModelNumber) are correctly allowed, since ModelNumber is part of the key.
+
+    Args:
+        df_new: New records to check
+        df_existing: Existing records in the database
+        key_columns: List of column names that define uniqueness.
+                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]
+
+    Returns:
+        DataFrame with only new records (not in df_existing)
     """
+    if key_columns is None:
+        key_columns = ["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]
+
     if df_existing.empty:
         return df_new
 
-    required_cols = ["Manufacturer", "ModelYear", "ModelNumber"]
-    existing_cols = [col for col in required_cols if col in df_existing.columns]
+    existing_cols = [col for col in key_columns if col in df_existing.columns]
 
     if not existing_cols:
         return df_new
@@ -127,19 +164,35 @@ def check_duplicate_record(
     )
 
 
-def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
+def save_vehicle_models_to_csv(
+    df: pd.DataFrame,
+    csv_path: str = None,
+    configs_dir: str = None,
+    key_columns: list = None,
+    dq_logger = None,
+) -> dict:
     """
-    Save vehicle models to CSV with validation and deduplication.
+    Save vehicle models to CSV with validation, standardization, and deduplication.
+
+    Standardizes descriptions at ingestion time (clean punctuation + translate OEM abbreviations)
+    so the database file is always consistent and searches don't need to re-standardize every time.
 
     Args:
         df: DataFrame with vehicle model data
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
+        key_columns: List of column names that define uniqueness for deduplication.
+                     Defaults to ["Manufacturer", "ModelYear", "ModelNumber"]
+        dq_logger: Optional DQLogger for logging duplicates found
 
     Returns:
         dict with save status, records saved, duplicates skipped, etc.
     """
     if csv_path is None:
         csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
     result = {
         "success": False,
@@ -182,10 +235,74 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
 
     df_valid = pd.DataFrame(valid_records)
 
-    df_existing = load_existing_csv(csv_path)
+    # Format ModelNumber and Manufacturer columns for consistency
+    if not df_valid.empty:
+        if "ModelNumber" in df_valid.columns:
+            df_valid["ModelNumber"] = df_valid["ModelNumber"].apply(_format_model_number)
+        if "Manufacturer" in df_valid.columns:
+            df_valid["Manufacturer"] = df_valid["Manufacturer"].apply(_format_manufacturer)
+
+    # Standardize descriptions at ingestion: clean punctuation + translate OEM abbreviations
+    try:
+        try:
+            from model_lookup.semantic.translator import load_oem_translator
+        except ImportError:
+            from semantic.translator import load_oem_translator
+
+        for make in df_valid["Manufacturer"].unique():
+            translator = load_oem_translator(make, configs_dir)
+            if translator:
+                mask = df_valid["Manufacturer"] == make
+                df_valid.loc[mask, "Description"] = df_valid.loc[mask, "Description"].apply(
+                    lambda d: _standardize_description(d, translator)
+                )
+    except Exception as e:
+        # Log warning but don't fail the save if standardization has issues
+        pass
+
+    # Standardize engine_type: map 'e-sc' to 'electric' for Genesis models
+    if "engine_type" in df_valid.columns:
+        esc_mask = df_valid["engine_type"].fillna("").str.lower() == "e-sc"
+        if esc_mask.any():
+            df_valid.loc[esc_mask, "engine_type"] = "electric"
+
+    # Pre-harmonize columns: read existing header to determine full schema
+    existing_cols = []
+    if os.path.exists(csv_path):
+        try:
+            with open(csv_path, 'r') as f:
+                existing_cols = f.readline().strip().split(',')
+            # Ensure df_valid has all existing columns
+            for col in existing_cols:
+                if col not in df_valid.columns:
+                    df_valid[col] = ""
+        except Exception:
+            pass
+
+    # Determine the full write schema upfront
+    write_columns = sorted(set(existing_cols + df_valid.columns.tolist()))
+    df_existing = load_existing_csv(csv_path, expected_columns=write_columns)
 
     if not df_existing.empty:
-        df_valid = check_duplicate_record(df_valid, df_existing)
+        df_before_dedup = df_valid.copy()
+        df_valid = check_duplicate_record(df_valid, df_existing, key_columns=key_columns)
+
+        # Log duplicates found against existing CSV
+        duplicates_found = len(df_before_dedup) - len(df_valid)
+        if duplicates_found > 0 and dq_logger:
+            dupes = df_before_dedup[~df_before_dedup.index.isin(df_valid.index)]
+            for _, dupe_row in dupes.iterrows():
+                key_values = key_columns if key_columns else ["Manufacturer", "ModelYear", "ModelNumber"]
+                key_str = ", ".join([f"{col}={dupe_row.get(col, 'N/A')}" for col in key_values])
+                dq_logger.log_warning(
+                    sheet_name=dupe_row.get("Manufacturer", "UNKNOWN"),
+                    model_name=dupe_row.get("ModelNumber", "UNKNOWN"),
+                    record_index=None,
+                    record_snapshot=dupe_row.to_dict(),
+                    rule_violated="csv_uniqueness_rule",
+                    issue_description=f"[CSV_DUPLICATE] Already exists in database: {key_str}",
+                )
+
         result["duplicates"] = (
             result["total_records"] - result["invalid_records"] - len(df_valid)
         )
@@ -195,11 +312,22 @@ def save_vehicle_models_to_csv(df: pd.DataFrame, csv_path: str = None) -> dict:
         result["message"] = "No new data to load — all records already exist"
         return result
 
-    mode = "w" if df_existing.empty else "a"
-    header = df_existing.empty
+    # Determine write mode: if schema changed (new columns), rewrite file instead of append
+    # This prevents CSV corruption from column mismatch
+    schema_changed = existing_cols and write_columns != existing_cols
+    mode = "w" if (df_existing.empty or schema_changed) else "a"
+    header = df_existing.empty or schema_changed
+
+    # If schema changed and we're not starting fresh, include existing rows with new columns
+    if schema_changed and not df_existing.empty:
+        df_existing = df_existing.reindex(columns=write_columns, fill_value="")
+        df_valid = pd.concat([df_existing, df_valid], ignore_index=True)
+
+    # Reindex df_valid to write schema (ensures all columns present)
+    df_valid = df_valid.reindex(columns=write_columns, fill_value="")
 
     try:
-        df_valid.to_csv(csv_path, mode=mode, header=header, index=False)
+        df_valid.to_csv(csv_path, mode=mode, header=header, index=False, columns=write_columns)
         result["records_saved"] = len(df_valid)
         result["records_skipped"] = result["total_records"] - len(df_valid)
         result["success"] = True
@@ -334,12 +462,12 @@ def print_bulletin_details(bull):
         ModelYear = json_[idx].get("Year")
         ModelNumber = json_[idx].get("Model")
         Description = json_[idx].get("Description")
-        Description2 = json_[idx].get("Description2")
+        TrimName = json_[idx].get("TrimName")
         Package = json_[idx].get("Package")
         Style_ID = json_[idx].get("Style")
 
         print(
-            f"{ModelYear}, {ModelNumber}, { Description}, { Description2}, { Package}, {Style_ID}"
+            f"{ModelYear}, {ModelNumber}, { Description}, { TrimName}, { Package}, {Style_ID}"
         )
 
 
@@ -360,7 +488,7 @@ def convert_bulletin_to_df(
             "ModelYear": item.get("Year"),
             "ModelNumber": item.get("Model"),
             "Description": item.get("Description"),
-            "Description2": item.get("Description2"),
+            "TrimName": item.get("TrimName"),
             "Package": item.get("Package"),
             "Style_ID": item.get("Style"),
         }
@@ -384,7 +512,7 @@ def convert_bulletin_to_df(
                 "ModelYear",
                 "ModelNumber",
                 "Description",
-                "Description2",
+                "TrimName",
                 "Package",
                 "Style_ID",
             ]
@@ -409,13 +537,19 @@ def build_word_boundary_pattern(keyword: str) -> str:
     """
     Build a regex pattern for exact word matching with word boundaries.
 
+    Ensures the keyword matches as a complete word/token, not as part of a
+    hyphenated term. For example, 'N' should not match the 'N' in 'N-Line'.
+
     Args:
         keyword: The keyword to match
 
     Returns:
-        str: Regex pattern with word boundaries (e.g., r'\bSE\b')
+        str: Regex pattern with word boundaries excluding hyphen-adjacent matches
     """
-    return rf"\b{keyword}\b"
+    import re as regex_module
+    escaped_keyword = regex_module.escape(keyword)
+    # Don't match if preceded/followed by hyphen (to avoid 'N' matching in 'N-Line')
+    return rf"(?<![-])\b{escaped_keyword}\b(?![-])"
 
 
 def _extract_description_tokens(description: str) -> list[str]:
@@ -432,6 +566,184 @@ def _extract_description_tokens(description: str) -> list[str]:
     if not description or not isinstance(description, str):
         return []
     return [t.lower() for t in description.split() if t]
+
+
+def _clean_description_punctuation(description: str) -> str:
+    """
+    Clean database description by removing/normalizing problematic punctuation and spacing.
+    Converts "(Two Tone Interior)" → "two-tone interior" so tokens classify properly.
+    Normalizes common space-separated pairs to hyphenated form matching classifier vocab.
+
+    Args:
+        description: Description string from CSV
+
+    Returns:
+        Cleaned description with normalized punctuation and spacing
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    import re
+
+    # Step 1: Remove parentheses, brackets that interfere with tokenization
+    cleaned = re.sub(r'[()[\]{}]', '', description)
+
+    # Step 2: Normalize common two-word patterns to hyphenated form
+    # (must match classifier vocab like "two-tone" which is classified as INTERIOR)
+    cleaned = re.sub(r'\btwo\s+tone\b', 'two-tone', cleaned, flags=re.IGNORECASE)
+
+    # Step 3: Normalize whitespace
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    return cleaned
+
+
+def _deduplicate_description_words(description: str) -> str:
+    """
+    Remove duplicate words from a description, case-insensitively, keeping first occurrence.
+
+    Prevents artifacts like "Elantra HEV Hybrid Luxury" → "Elantra hybrid Luxury"
+    after translation (HEV → hybrid) when the source already spelled out the translated term.
+    Preserves order and first occurrence's casing.
+
+    Args:
+        description: Description string (already cleaned/translated)
+
+    Returns:
+        Description with duplicate words removed, preserving order and first occurrence's casing
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    seen = set()
+    result = []
+    for word in description.split():
+        key = word.lower()
+        if key not in seen:
+            seen.add(key)
+            result.append(word)
+
+    return " ".join(result)
+
+
+def _format_model_number(model_number: str) -> str:
+    """
+    Format model number to uppercase.
+
+    Args:
+        model_number: Model number string
+
+    Returns:
+        Model number in uppercase (e.g., "elcs4v2bes00" → "ELCS4V2BES00")
+    """
+    if not model_number or not isinstance(model_number, str):
+        return model_number
+    return model_number.upper().strip()
+
+
+def _format_manufacturer(manufacturer: str) -> str:
+    """
+    Format manufacturer name to uppercase for consistency.
+
+    Args:
+        manufacturer: Manufacturer name string
+
+    Returns:
+        Manufacturer name in uppercase (e.g., "hyundai" → "HYUNDAI", "Genesis" → "GENESIS")
+    """
+    if not manufacturer or not isinstance(manufacturer, str):
+        return manufacturer
+    # Convert to uppercase (e.g., "hyundai" -> "HYUNDAI", "Genesis" -> "GENESIS")
+    return manufacturer.strip().upper()
+
+
+def _apply_title_case(description: str) -> str:
+    """
+    Apply title case formatting: capitalize first letter of each word, lowercase the rest.
+
+    Examples:
+        "elantra ultimate black" → "Elantra Ultimate Black"
+        "kona EV preferred" → "Kona Ev Preferred"
+        "two-tone interior" → "Two-Tone Interior" (hyphens preserved, each part capitalized)
+
+    Args:
+        description: Description string
+
+    Returns:
+        Description with title case applied to each whitespace-separated word
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    def capitalize_word(word: str) -> str:
+        """Capitalize first letter, lowercase rest, handling hyphenated words."""
+        if not word:
+            return word
+        # For hyphenated words (e.g., "two-tone"), capitalize each part
+        if "-" in word:
+            parts = word.split("-")
+            return "-".join(part.capitalize() for part in parts if part)
+        # Normal word: first letter uppercase, rest lowercase
+        return word[0].upper() + word[1:].lower() if word else word
+
+    words = description.split()
+    return " ".join(capitalize_word(word) for word in words)
+
+
+def _standardize_description(description: str, oem_translator: dict) -> str:
+    """
+    Standardize database description by:
+    1. Cleaning punctuation that breaks tokenization
+    2. Normalizing trim variant naming (e.g., "N Line" → "N-Line")
+    3. Translating tokens using OEM translator while preserving original casing
+    4. Removing duplicate words (case-insensitive) introduced by translation
+    5. Applying title case (capitalize first letter of each word, lowercase the rest)
+
+    Applies the same translation rules used for search keywords to ensure consistent
+    vocabulary between search input and database (e.g., "ult" → "ultimate").
+    Tokens not found in translator pass through unchanged, preserving their original case.
+
+    Duplicate removal prevents artifacts like "Elantra HEV Hybrid Luxury" → "Elantra hybrid Luxury"
+    when the translator maps HEV → hybrid and the source already contains "Hybrid".
+
+    Title case ensures consistent formatting: "Elantra Ultimate Black" (not "elantra ultimate black").
+
+    Args:
+        description: Description string from CSV
+        oem_translator: Translation dict from load_oem_translator()
+
+    Returns:
+        Standardized description with cleaned punctuation, translated tokens, deduplicated words,
+        and title case formatting applied
+    """
+    if not description or not isinstance(description, str):
+        return description
+
+    # Step 1: Clean punctuation first (so "(Two Tone Interior)" becomes "Two Tone Interior")
+    cleaned = _clean_description_punctuation(description)
+
+    # Step 2: Normalize trim variant naming (e.g., "N Line" → "N-Line" for consistent DB storage)
+    import re
+    normalized = re.sub(r'\bN Line\b', 'N-Line', cleaned, flags=re.IGNORECASE)
+
+    # Step 4: Translate tokens while preserving original casing for untranslated words
+    if oem_translator:
+        def _replace_token(match: "re.Match") -> str:
+            word = match.group(0)
+            # Look up lowercase version of word in translator, but return the translated version as-is
+            # (untranslated words pass through with original case/hyphenation preserved)
+            return oem_translator.get(word.lower(), word)
+
+        # Replace each whitespace-separated token (already normalized to single spaces)
+        translated = re.sub(r"\S+", _replace_token, normalized)
+    else:
+        translated = normalized
+
+    # Step 5: Remove duplicate words introduced by translation (case-insensitive, first occurrence wins)
+    deduplicated = _deduplicate_description_words(translated)
+
+    # Step 6: Apply title case (capitalize first letter of each word, lowercase the rest)
+    return _apply_title_case(deduplicated)
 
 
 def build_manufacturer_keyword_vocab(
@@ -564,24 +876,99 @@ def bootstrap_all_vocabs(csv_path: str = None, configs_dir: str = None) -> dict:
     return {"status": "success", "manufacturers": results}
 
 
+def standardize_existing_database(csv_path: str = None, configs_dir: str = None) -> dict:
+    """
+    One-time migration: standardize all existing DB data in place.
+
+    Applies complete standardization to every row in db_vehicle_models.csv:
+    - Description: clean punctuation + translate OEM abbreviations + deduplicate + title case
+    - ModelNumber: uppercase formatting (e.g., "elcs4v2bes00" → "ELCS4V2BES00")
+    - Manufacturer: proper case formatting (e.g., "hyundai" → "Hyundai")
+
+    Writes standardized rows back to the file.
+
+    **IMPORTANT:** Back up db_vehicle_models.csv before running this function.
+
+    Args:
+        csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
+
+    Returns:
+        dict with success status and count of standardized rows
+    """
+    if csv_path is None:
+        csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
+
+    try:
+        try:
+            from model_lookup.semantic.translator import load_oem_translator
+        except ImportError:
+            from semantic.translator import load_oem_translator
+    except ImportError:
+        return {"success": False, "message": "Could not import translator"}
+
+    df = load_existing_csv(csv_path)
+    if df.empty:
+        return {"success": False, "message": "CSV is empty"}
+
+    standardized_count = 0
+
+    for make in df["Manufacturer"].unique():
+        translator = load_oem_translator(make, configs_dir)
+        if translator:
+            mask = df["Manufacturer"] == make
+            df.loc[mask, "Description"] = df.loc[mask, "Description"].apply(
+                lambda d: _standardize_description(d, translator)
+            )
+            standardized_count += mask.sum()
+
+    # Format ModelNumber and Manufacturer columns for consistency
+    if not df.empty:
+        if "ModelNumber" in df.columns:
+            df["ModelNumber"] = df["ModelNumber"].apply(_format_model_number)
+        if "Manufacturer" in df.columns:
+            df["Manufacturer"] = df["Manufacturer"].apply(_format_manufacturer)
+
+    try:
+        df.to_csv(csv_path, index=False)
+        return {
+            "success": True,
+            "message": f"Standardized {standardized_count} rows",
+            "rows_standardized": standardized_count,
+            "total_rows": len(df),
+            "file_path": csv_path,
+        }
+    except Exception as e:
+        return {"success": False, "message": f"Error writing CSV: {str(e)}"}
+
+
 def batch_save_manufacturer_models(
     engine,
     manufacturers: list[str],
     csv_path: str = None,
+    configs_dir: str = None,
 ) -> dict:
     """
     Fetch and save vehicle models for multiple manufacturers.
+    Standardizes descriptions at ingestion (clean + translate per OEM translator).
 
     Args:
         engine: SQLAlchemy engine for database connection
         manufacturers: List of manufacturer names
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
+        configs_dir: Directory for OEM configs (defaults to model_lookup/configs/)
 
     Returns:
         dict with results for each manufacturer and summary totals
     """
     if csv_path is None:
         csv_path = str(Path(__file__).parent.parent / "db" / "db_vehicle_models.csv")
+
+    if configs_dir is None:
+        configs_dir = str(Path(__file__).parent.parent / "configs")
 
     results = {
         "manufacturers": {},
@@ -612,7 +999,7 @@ def batch_save_manufacturer_models(
                 }
                 continue
 
-            save_result = save_vehicle_models_to_csv(df_models, csv_path)
+            save_result = save_vehicle_models_to_csv(df_models, csv_path, configs_dir)
             results["manufacturers"][make] = save_result
 
             results["summary"]["total_processed"] += save_result["total_records"]
@@ -634,7 +1021,13 @@ def batch_save_manufacturer_models(
 def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) -> set[str]:
     """
     Return a set of keywords that discriminate between trim levels.
-    These are actual trim variant names, not transmission/drive specifications.
+    These are actual trim variant names and TRIM_VARIANT tokens (like "N", "N-Line"),
+    not fuel types (POWERTRAIN_TYPE) or transmission/drive specifications.
+
+    Fuel types (POWERTRAIN_TYPE: hybrid, hev, phev, ev) are excluded because they are
+    handled separately by the earlier EV-exclusion logic in search_models_by_description().
+    Treating them as trim discriminators would incorrectly require users to specify trim
+    names when searching by fuel type.
 
     Prefers to load from classification config if available, falls back to hardcoded set.
 
@@ -643,16 +1036,22 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
         configs_dir: Directory with classification configs (optional)
 
     Returns:
-        set of known trim discriminator keywords
+        set of known trim discriminator keywords (excluding POWERTRAIN_TYPE)
     """
     # Try to load from classification config
     if make:
         try:
-            from model_lookup.classifier import load_classification_config
+            try:
+                # Try relative import first (when called from accy_v2 package)
+                from model_lookup.semantic.classifier import load_classification_config
+            except ImportError:
+                # Fall back to direct import (when called from model_lookup directory)
+                from semantic.classifier import load_classification_config
 
             config = load_classification_config(make, configs_dir)
+            # Include TRIM and TRIM_VARIANT, but NOT POWERTRAIN_TYPE (handled by EV-exclusion logic)
             trim_tokens = {
-                token for token, category in config.get("token_map", {}).items() if category == "TRIM"
+                token for token, category in config.get("token_map", {}).items() if category in ("TRIM", "TRIM_VARIANT")
             }
             if trim_tokens:
                 return trim_tokens
@@ -668,16 +1067,41 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
     }
 
 
+def find_model_line(df: pd.DataFrame, make: str, year: int, model_name: str) -> pd.DataFrame:
+    """
+    Direct column check: does this model line exist locally?
+
+    No tokenization — straight contains match of the incoming Model value against db ModelName,
+    scoped to make+year. This is the outer gate for stage 4 augmentation: if a model line doesn't
+    exist locally, we fall back to ADS refresh before giving up entirely.
+
+    Args:
+        df: Vehicle models CSV as DataFrame
+        make: Manufacturer (e.g., "Hyundai", "Genesis")
+        year: Model year (int)
+        model_name: Incoming model name to search for (e.g., "Elantra", "Santa Fe")
+
+    Returns:
+        DataFrame slice of all rows matching make/year where ModelName contains model_name
+    """
+    pattern = build_word_boundary_pattern(model_name)
+    scoped = df[(df["Manufacturer"].str.contains(make, case=False, na=False))
+                & (df["ModelYear"] == year)]
+    return scoped[scoped["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)]
+
+
 def search_models_by_description(
-    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True, configs_dir: str = None
+    make: str, year: int, keywords: list[str], csv_path: str = None, exclude_ev: bool = True,
+    configs_dir: str = None, oem_config: dict = None, engine_type: str = None
 ) -> pd.DataFrame:
     """
-    Search vehicle models by manufacturer, year, and description keywords.
+    Search vehicle models by manufacturer, year, description keywords, and optional engine type.
     Keywords must match exactly as whole words (e.g., "SE" won't match "SEL").
     Filters out results that contain additional TRIM DISCRIMINATOR keywords not in the search list,
     while ignoring non-discriminating specification keywords (drive types, transmissions, packages).
 
     Automatically translates OEM-specific abbreviations (e.g., 'prem' → 'premium', 's-awc' → 'awd').
+    Optionally filters results by engine_type (e.g., "Electric", "Hybrid").
 
     Args:
         make: Manufacturer name
@@ -687,6 +1111,8 @@ def search_models_by_description(
         csv_path: Path to CSV file (defaults to db/db_vehicle_models.csv)
         exclude_ev: If True and keywords don't contain EV keywords, filter out EV models
         configs_dir: Directory for keyword vocab JSONs (defaults to model_lookup/configs/)
+        engine_type: Optional filter for engine type (e.g., "Electric", "Hybrid", "Gasoline")
+                    If provided, only return records matching this engine_type (case-insensitive)
 
     Returns:
         DataFrame with matching records
@@ -711,42 +1137,141 @@ def search_models_by_description(
             keywords = translate_keywords(keywords, translator)
     except Exception as e:
         # If translator not available, continue with original keywords
-        pass
+        translator = {}
 
     df = load_existing_csv(csv_path)
 
     if df.empty:
         return pd.DataFrame()
 
-    df_filtered = df[df["Manufacturer"] == make].copy()
+    df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
-    for keyword in keywords:
-        pattern = build_word_boundary_pattern(keyword)
-        df_filtered = df_filtered[
-            df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-        ]
+    # Parse OEM config to get search behavior flags
+    oem_config = oem_config or {}
+    if "model_lookup_rules" in oem_config:
+        oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+    else:
+        oem_rules = oem_config
 
-    if exclude_ev and not any(kw.upper() in [k.upper() for k in keywords] for kw in EV_KEYWORDS):
-        for ev_keyword in EV_KEYWORDS:
-            pattern = build_word_boundary_pattern(ev_keyword)
-            df_filtered = df_filtered[
-                ~df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-            ]
+    use_single_char_token_matching = oem_rules.get("use_single_char_token_matching", False)
+
+    for keyword in keywords:
+        if use_single_char_token_matching and len(keyword) == 1:
+            # For single-char keywords: check ModelName first (e.g., "N" in "Elantra N"),
+            # then fall back to token matching in TrimName/Description
+            pattern = build_word_boundary_pattern(keyword)
+
+            # Check if single-char keyword appears as a separate word in ModelName
+            model_matches = df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True).sum()
+
+            if model_matches > 0:
+                # Single-char keyword is a model name component (e.g., "N" in "Elantra N")
+                df_filtered = df_filtered[
+                    df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+                ]
+            else:
+                # Single-char keyword not in ModelName, use token matching for trim/description
+                df_filtered = df_filtered[
+                    df_filtered["TrimName"].fillna("").apply(
+                        lambda trim: keyword.lower() in _extract_description_tokens(trim)
+                    ) |
+                    df_filtered["Description"].apply(
+                        lambda desc: keyword.lower() in _extract_description_tokens(desc)
+                    )
+                ]
+        else:
+            pattern = build_word_boundary_pattern(keyword)
+
+            # Determine if this keyword is a model name or trim keyword
+            # Check if keyword matches anything in ModelName column
+            model_matches = df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True).sum()
+
+            if model_matches > 0:
+                # This keyword appears in ModelName column - search ONLY in ModelName
+                df_filtered = df_filtered[
+                    df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+                ]
+            else:
+                # This keyword doesn't match model names - search in TrimName AND Description (trim keywords)
+                df_filtered = df_filtered[
+                    df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True) |
+                    df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
+                ]
+
+    # Get fuel type keywords from OEM config (already parsed above)
+
+    raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
+
+    # Translate fuel keywords through the same translator used for search keywords
+    # (ensures we match against DB text that was ingested, not against config spellings)
+    fuel_type_keywords = translate_keywords([kw.lower() for kw in raw_fuel_keywords], translator) if translator else [kw.lower() for kw in raw_fuel_keywords]
+
+    # Check if user explicitly requested any fuel type
+    search_kw_lower = [k.lower() for k in keywords]
+    if exclude_ev and not any(kw in search_kw_lower for kw in fuel_type_keywords):
+        # No fuel type keyword found in search — exclude all configured fuel types
+        for fuel_keyword in fuel_type_keywords:
+            pattern = build_word_boundary_pattern(fuel_keyword)
+            # Fuel type keywords are trim-related, so check TrimName AND Description
+            has_ev_in_trim = df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+            has_ev_in_desc = df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
+            df_filtered = df_filtered[~(has_ev_in_trim | has_ev_in_desc)]
 
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
+    # However: if any POWERTRAIN_TYPE keyword (fuel type) OR a TRIM keyword was explicitly requested,
+    # skip discriminator filtering because the user is searching for a fuel type or trim
+    # and should get all variants of that fuel type/trim (not just ones they explicitly named).
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
         trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
         search_kw_set = {kw.lower() for kw in keywords}
 
-        def _has_extra_discriminator_keywords(desc: str) -> bool:
-            tokens = set(_extract_description_tokens(desc))
-            discriminator_tokens = tokens & trim_discriminators
-            extra_discriminators = discriminator_tokens - search_kw_set
-            return bool(extra_discriminators)
+        # Check if any fuel-type keyword was in the search (before translation)
+        user_requested_fuel_type = any(kw.lower() in fuel_type_keywords for kw in keywords)
 
-        df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+        # Check if any trim keyword was in the search
+        trim_kw_requested = bool(search_kw_set & trim_discriminators)
+
+        # Only apply trim discriminator filtering if neither fuel type nor trim keyword was explicitly requested
+        if not user_requested_fuel_type and not trim_kw_requested:
+            def _has_extra_discriminator_keywords(desc: str) -> bool:
+                tokens = set(_extract_description_tokens(desc))
+                discriminator_tokens = tokens & trim_discriminators
+                extra_discriminators = discriminator_tokens - search_kw_set
+                return bool(extra_discriminators)
+
+            df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+
+    # Filter by engine_type if provided
+    if engine_type:
+        # Get logger
+        try:
+            logger = logging.getLogger(__name__)
+        except:
+            logger = None
+
+        if logger:
+            logger.info(
+                f"search_models | {make} {year} | Filtering by engine_type: {engine_type}"
+            )
+
+        # Handle null/empty engine_type values in database (case-insensitive)
+        mask = df_filtered["engine_type"].fillna("").str.lower() == engine_type.lower()
+        records_before = len(df_filtered)
+        df_filtered = df_filtered[mask]
+
+        if logger:
+            logger.debug(
+                f"search_models | {make} {year} | "
+                f"engine_type filter: {engine_type} | {records_before} → {len(df_filtered)} records"
+            )
+
+        if len(df_filtered) == 0 and logger:
+            logger.warning(
+                f"search_models | {make} {year} | "
+                f"No records match engine_type: {engine_type}"
+            )
 
     return df_filtered
 

@@ -120,13 +120,13 @@ class KeywordExtractor:
             return []
 
         try:
-            trim_value = trim_value.strip().lower()
+            trim_value = trim_value.strip().rstrip("*").strip().lower()
 
             if not trim_value:
                 return []
 
-            # Step 1: Split by underscore (main delimiter)
-            components = [c.strip() for c in trim_value.split("_")]
+            # Step 1: Split by underscore OR space (main delimiters)
+            components = [c.strip() for c in re.split(r'[\s_]+', trim_value)]
             components = [c for c in components if c]  # Remove empty strings
 
             # Step 2: Process each component for dash abbreviations

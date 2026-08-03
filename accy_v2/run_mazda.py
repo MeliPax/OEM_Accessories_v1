@@ -26,7 +26,7 @@ sys.path.insert(0, str(project_root))     # For model_lookup package import
 from oems.mazda.pipeline.orchestrator import MazdaPipeline
 
 CONFIG_PATH = (
-    accy_v2_dir / "oems" / "mazda" / "config" / "mazda_config.json"
+    accy_v2_dir / "oems" / "mazda" / "config" / "mazda_config.yaml"
 )
 DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "mazda"
 

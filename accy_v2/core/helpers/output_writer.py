@@ -130,16 +130,23 @@ def _build_run_summary(
     else:
         dq_by_rule = "None"
 
-    # Model lookup issues by type (categorized by issue_description prefix)
+    # Model lookup issues by type (categorized by bracket tag in issue_description)
     lookup_records = [r for r in dq_logger.records if r["rule_violated"] == "model_number_lookup_rule"]
     if lookup_records:
         total_lookup = len(lookup_records)
         def _categorize_lookup_issue(issue: str) -> str:
-            if issue.startswith("No keywords"):
-                return "No Keywords"
-            if issue.startswith("No confident"):
-                return "No Match"
-            if issue.startswith("Error"):
+            # Extract bracket tag like [DATABASE_NO_MATCH], [MODEL_LINE_NOT_FOUND], etc.
+            if issue.startswith("[DATABASE_NO_MATCH]"):
+                return "Database No Match"
+            if issue.startswith("[MODEL_LINE_NOT_FOUND]"):
+                return "Model Line Not Found"
+            if issue.startswith("[KEYWORD_EXTRACTION_FAILED]"):
+                return "Keyword Extraction Failed"
+            if issue.startswith("[ADS_FETCH_ERROR]"):
+                return "ADS Fetch Error"
+            if issue.startswith("[ADS_NOT_FOUND]"):
+                return "ADS Not Found"
+            if issue.startswith("[LOOKUP_ERROR]"):
                 return "Lookup Error"
             return "Other"
         lookup_counts = Counter(_categorize_lookup_issue(r["issue_description"]) for r in lookup_records)
@@ -184,7 +191,9 @@ def _build_model_profile(
     all_frames: Dict[str, pd.DataFrame],
     profile_col: str = "Trim",
 ) -> pd.DataFrame:
-    """Build Model Profile section: one row per model with trim/package breakdown in Records Out cell."""
+    """Build Model Profile section: one row per model with trim/package breakdown in Records Out cell.
+    Aggregates all sheet_names for the same model into a single row (for consolidated multi-year models).
+    """
     if not run_stats:
         return pd.DataFrame()
 
@@ -196,18 +205,26 @@ def _build_model_profile(
                 model_lang_frames[key[:-len(suffix)]][suffix[1:]] = df
                 break
 
-    data = []
+    # Aggregate by model_name: combine all sheets and stats belonging to the same model
+    agg: dict = {}
     for stat in run_stats:
         model_name = stat.get("model_name", "unknown")
+        entry = agg.setdefault(model_name, {"sheets": [], "records_in": 0, "dq_warnings": 0})
+        entry["sheets"].append(stat.get("sheet_name", "unknown"))
+        entry["records_in"] += stat.get("records_in", 0)
+        entry["dq_warnings"] += stat.get("dq_warnings", 0)
+
+    data = []
+    for model_name, entry in agg.items():
         lang_frames = model_lang_frames.get(model_name, {})
         records_out = _build_trim_records_out_text(lang_frames, profile_col)
 
         data.append({
             "Model": model_name,
-            "Sheet": stat.get("sheet_name", "unknown"),
-            "Records In": stat.get("records_in", 0),
+            "Sheet": ", ".join(entry["sheets"]),
+            "Records In": entry["records_in"],
             "Records Out": records_out,
-            "DQ Warnings": stat.get("dq_warnings", 0),
+            "DQ Warnings": entry["dq_warnings"],
         })
     return pd.DataFrame(data)
 

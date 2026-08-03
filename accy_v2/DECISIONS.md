@@ -325,24 +325,43 @@ OEMAccessories/
 
 ---
 
-## Adding a New Decision
+## [014] Config-driven EV/hybrid exclusion with translator-aware keyword matching
 
-When a significant design or architecture decision is made, add a new entry to this document:
+**Date:** 2026-07-20
 
-1. Increment the decision number
-2. Include: Date, Context, Decision, Rationale, Files affected
-3. Keep entries concise but complete — future readers should understand the decision without asking
+**Context:** Initial model lookup implementation used a hardcoded `EV_KEYWORDS = ["EV", "PHEV"]` constant to exclude electric and plug-in hybrid vehicles when no fuel-type keyword was in the user's search (e.g., searching "Elantra Luxury" without "HEV" should exclude Hybrid variants). This approach had two problems:
 
-Examples of decisions worth documenting:
-- Architectural choices (what to abstract, how to structure)
-- Trade-offs between approaches (why this solution over that)
-- Constraints or assumptions (why we can't do X)
-- Bug fixes that inform future design (what we learned)
+1. **Non-adaptive to OEMs:** Each OEM defines its own `fuel_type_keywords` in config (Hyundai: `["EV", "PHEV", "HEV", "FCEV"]`; Mazda: `["EV", "PHEV", "HEV"]`), but the exclusion logic ignored this, using only the hardcoded `["EV", "PHEV"]`.
+2. **Silent failure on translator mismatch:** When OEM translators map abbreviations (e.g., Hyundai's `hev`→`hybrid`, `phev`→`plug-in`), the config-level keywords (`["HEV", "PHEV"]`) no longer matched the already-translated search keywords or ingested DB text. Result: exclusion would silently fail — no HEV variants would be excluded even when intended.
 
-Non-examples (don't document):
-- Routine code changes
-- Bug fixes that are obvious from the commit message
-- Temporary debugging or exploration
+**Decision:** Make EV/hybrid exclusion config-driven AND translator-aware:
+
+1. Read `fuel_type_keywords` from each OEM's `oem_config.model_lookup_rules[make].fuel_type_keywords`
+2. Translate the fuel keywords through the same OEM translator used for search keywords (ensuring vocab consistency)
+3. Check if the translated keywords match any in the search; if not, exclude those fuel types from results
+4. When a fuel-type keyword IS explicitly requested (e.g., user searches `['elantra', 'hev']`), skip the exclusion entirely
+
+This ensures the exclusion logic works in the same vocabulary as the database ingestion pipeline.
+
+**Rationale:**
+- **OEM-specific rules:** Each OEM controls its own fuel-type definitions; no hard-coded constant.
+- **Translator consistency:** Both search keywords and fuel keywords go through the same translator, eliminating vocab mismatches.
+- **Intentional inclusion:** When user explicitly requests a fuel type, we return those variants even if there are multiple trim levels.
+- **Discriminator intelligence:** Trim discriminator filtering (which rejects results with extra trim keywords not in the search) now skips POWERTRAIN_TYPE tokens when a fuel-type keyword is present, allowing "elantra hev" to return all trim levels of hybrid.
+
+**Trade-offs:**
+- **Requires config compliance:** Each OEM config must define `fuel_type_keywords`. Fallback to hardcoded `["EV", "PHEV"]` for missing configs (backward compatible).
+- **Translation dependency:** Correctness depends on the OEM's translator being accurate. Genesis EV exclusion is deferred pending real data verification.
+
+**Bug Discovered & Fixed:**
+- During implementation, a critical bug was found in `VehicleSearchEngine.search()` line 178: it checked `oem_config.get("allow_duplicate_model_numbers")` at the top level, but this key is nested under `model_lookup_rules[make]`. Result: multi-candidate searches (like Elantra Hybrid with 4 model codes) never collapsed to a single SearchResult, returning `None` instead. Fixed by navigating the correct path: `oem_config.get("model_lookup_rules", {}).get(make, {}).get("allow_duplicate_model_numbers", False)`.
+
+**Files affected:**
+- `model_lookup/models/manufacture_module.py` — added `oem_config` parameter to `search_models_by_description()`, replaced hardcoded fuel-keyword loop with config-driven translated version, updated discriminator logic to skip POWERTRAIN_TYPE and to respect fuel-type keywords
+- `model_lookup/search_engine.py` — pass `oem_config` to `search_models_by_description()`; fixed nested config path for duplicate group resolution
+- `oems/hyundai/config/hyundai_config.json` — fuel_type_keywords already present (used by this implementation)
+- `oems/mitsubishi/config/mitsubishi_config.json` — fuel_type_keywords already present; benefits from the same fix
+- `model_lookup/configs/*_classification.json` — existing POWERTRAIN_TYPE tokens already correct for Hyundai; other OEMs can be standardized in a future decision
 
 ---
 

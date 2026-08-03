@@ -1,4 +1,4 @@
-import json
+import yaml
 from pathlib import Path
 
 _REQUIRED_KEYS = [
@@ -22,7 +22,7 @@ def load_config(config_path: str) -> dict:
         raise FileNotFoundError(f"Config not found: {path}")
 
     with open(path, encoding="utf-8") as f:
-        config = json.load(f)
+        config = yaml.safe_load(f)
 
     missing = [k for k in _REQUIRED_KEYS if k not in config]
 
