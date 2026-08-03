@@ -17,7 +17,7 @@ def column_type_finder(
 
     for mapped_name, spec in column_definition.items():
         kw = spec["key_words"]
-        not_have = [k.lower() for k in kw.get("not_have", [])]
+        not_have = [k.lower() for k in kw.get("must_not_have", [])]
         must_have = [k.lower() for k in kw.get("must_have", [])]
         must_have_one_of = [k.lower() for k in kw.get("must_have_one_of", [])]
 

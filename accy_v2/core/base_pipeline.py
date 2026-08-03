@@ -279,6 +279,16 @@ class BasePipeline(ABC):
         ]
         non_null_columns = required_columns.copy()
 
+        # Build col_data_type_dict from transformations: identify which columns need float conversion
+        col_data_type_dict = {"to_float": [], "to_string": []}
+        for canonical_col, col_transforms in transformations_config.get("columns", {}).items():
+            operations = col_transforms.get("operations", [])
+            has_float_op = any(op.get("name") == "convert_to_float" for op in operations)
+            if has_float_op:
+                col_data_type_dict["to_float"].append(canonical_col)
+            else:
+                col_data_type_dict["to_string"].append(canonical_col)
+
         # Build legacy config structure
         return {
             "column_definition": column_definition,
@@ -288,5 +298,6 @@ class BasePipeline(ABC):
             "use_model_lookup": pipeline_config.get("use_model_lookup", True),
             "trim_column_patterns": upstream_schema.get("trim_table", {}).get("column_pattern"),
             "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
+            "col_data_type_dict": col_data_type_dict,
             "output": {},  # Will be filled by run() with derived paths
         }

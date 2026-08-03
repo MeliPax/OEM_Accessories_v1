@@ -4,9 +4,6 @@
 # OEM: Hyundai
 # Purpose: Validates that data cleaning produced expected schema before enrichment
 # ============================================================================
-# DECISION [015]: Modular config (intermediate schema separated from other concerns)
-# This is the CONTRACT between Step 3 (Transformation) and Step 4 (Enrichment)
-# ============================================================================
 
 # Schema version for tracking evolution
 schema_version: "1.0"

@@ -69,12 +69,12 @@ columns:
       must_have: [accessory, description, "(fr)"]
       must_have_one_of: []
       must_not_have: []
-    required: true
+    required: false
     rename_to_canonical: Description_FR
     expected_data_type: string
     completeness_threshold: 1.0
     language: FR
-    description: "French accessory description"
+    description: "French accessory description (optional if not in source)"
 
   msrp:
     detect_by_keyword:

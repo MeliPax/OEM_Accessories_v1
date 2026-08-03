@@ -4,16 +4,9 @@
 # OEM: Hyundai
 # Purpose: Defines which columns appear in each output sheet and how they're formatted
 # ============================================================================
-# DECISION [015]: Modular config (downstream schema separated from other concerns)
-# DECISION [019]: Renamed rate_import_* to output_column_* for clarity
-#   - Previously: rate_import_column_mapping → output.column_mapping
-#   - Previously: rate_import_required_columns → output.required_columns
-#   - Rationale: "output_column" describes what it does (format output columns)
-# ============================================================================
 
 output:
-  # DECISION [019]: Column mapping (formerly rate_import_column_mapping)
-  # Maps internal column names to export names
+  # Maps internal column names to export column names
   # Used by step5_output.py to rename columns before writing to Excel
   column_mapping:
     part_number: Part
