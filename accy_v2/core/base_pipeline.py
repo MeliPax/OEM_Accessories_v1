@@ -156,11 +156,12 @@ class BasePipeline(ABC):
         enrichment_config = loader.load_enrichment()
         transformations_config = loader.load_transformations()
         upstream_schema = loader.load_upstream_schema()
+        intermediate_schema = loader.load_intermediate_schema()
 
         # Build config dict with backward compatibility for existing step methods
         # Maps modular structure back to legacy structure to minimize code changes
         config = self._build_legacy_config(
-            pipeline_config, enrichment_config, transformations_config, upstream_schema
+            pipeline_config, enrichment_config, transformations_config, upstream_schema, intermediate_schema
         )
 
         # Derive output paths from OEM name (DECISION [018])
@@ -252,7 +253,8 @@ class BasePipeline(ABC):
 
     @staticmethod
     def _build_legacy_config(
-        pipeline_config: Dict, enrichment_config: Dict, transformations_config: Dict, upstream_schema: Dict
+        pipeline_config: Dict, enrichment_config: Dict, transformations_config: Dict,
+        upstream_schema: Dict, intermediate_schema: Dict = None
     ) -> Dict:
         """
         Build config dict with backward compatibility for existing step methods.
@@ -262,6 +264,8 @@ class BasePipeline(ABC):
 
         DECISION [015]: Modular config → Legacy config mapping.
         """
+        if intermediate_schema is None:
+            intermediate_schema = {}
         # Map upstream schema columns to legacy column_definition format
         column_definition = {}
         for col_name, col_def in upstream_schema.get("columns", {}).items():
@@ -289,6 +293,9 @@ class BasePipeline(ABC):
             else:
                 col_data_type_dict["to_string"].append(canonical_col)
 
+        # Extract language-specific columns for step4_transformation._split_by_language()
+        language_columns = intermediate_schema.get("language_specific_columns", {})
+
         # Build legacy config structure
         return {
             "column_definition": column_definition,
@@ -299,5 +306,6 @@ class BasePipeline(ABC):
             "trim_column_patterns": upstream_schema.get("trim_table", {}).get("column_pattern"),
             "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
             "col_data_type_dict": col_data_type_dict,
+            "language_columns": language_columns,
             "output": {},  # Will be filled by run() with derived paths
         }

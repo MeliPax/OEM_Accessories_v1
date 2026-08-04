@@ -1,105 +1,175 @@
 # ============================================================================
 # File: accy_v2/oems/hyundai/config/schemas/downstream.yaml
-# Description: Output sheet structure and column formatting
+# Description: Final output structure with language-specific sheets and column mapping
 # OEM: Hyundai
-# Purpose: Defines which columns appear in each output sheet and how they're formatted
+# Purpose: Defines output Excel sheets and programmatic column mapping
+# ============================================================================
+# DECISION [019]: Programmable column mapping via explicit source→output
+# Separate English and French sheets with language-specific column selection
 # ============================================================================
 
 output:
-  # Maps internal column names to export column names
-  # Used by step5_output.py to rename columns before writing to Excel
-  column_mapping:
-    part_number: Part
-    description: Description
-    comments: Comments
-    msrp: Price
-    labour_hours: Hours
-    trim_level: Trim
+  # DECISION [019]: Explicit source→output column mapping (programmable)
+  # This enables future columns to be added via YAML only (no code changes)
 
-  # DECISION [019]: Required columns (formerly rate_import_required_columns)
-  # Which columns to include in the final output sheet
-  # Only listed columns will be written to Excel (others are dropped)
-  # Note: model_number and Year are always included if present
-  required_columns:
-    - Year
-    - Part
-    - Description
-    - Comments
-    - Price
-    - Hours
-    - Trim
-
-# Output file configuration
-output_file:
   # Filename pattern for generated Excel files
-  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"  # e.g., hyundai_abc123_20260803_120000.xlsx
+  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"
 
   # Whether to create an audit sheet
   create_audit_sheet: true
 
 # Sheet definitions (what goes in each sheet)
 sheets:
-  # Main accessory catalog sheet
-  Accessories:
-    display_name: "Accessories"
-    description: "Complete vehicle accessory catalog with model numbers and pricing"
-    data_source: primary  # Main output from step5
+  # English Accessories Sheet
+  Accessories_EN:
+    display_name: "Accessories (English)"
+    language: EN
+    data_source: primary
+    description: "Vehicle accessory catalog with English descriptions"
 
+    # DECISION [019]: Explicit source→output mapping per column
+    # Format allows programmatic processing and easy additions
     columns:
-      - column_name: ModelYear
-        display_name: "Year"
+      - output_column: Year
+        source_column: ModelYear
         data_type: integer
         width: 10
+        description: "Vehicle model year"
 
-      - column_name: ModelName
-        display_name: "Model"
+      - output_column: Model
+        source_column: ModelName
         data_type: string
         width: 20
+        description: "Vehicle model name (e.g., Elantra, Santa Fe)"
 
-      - column_name: PartNumber
-        display_name: "Part #"
+      - output_column: Part
+        source_column: PartNumber
         data_type: string
         width: 15
+        description: "Accessory part number"
 
-      - column_name: Description
-        display_name: "Accessory Description"
+      - output_column: Description
+        source_column: Description
         data_type: string
         width: 50
+        description: "English accessory description (post-transformation)"
 
-      - column_name: Description_FR
-        display_name: "Description Accessoire"
+      - output_column: Comments
+        source_column: Comments
         data_type: string
-        width: 50
+        width: 30
+        description: "English comments/restrictions (optional)"
 
-      - column_name: ModelNumber
-        display_name: "Model Number"
-        data_type: string
-        width: 15
-        note: "Added during enrichment step"
-
-      - column_name: MSRP
-        display_name: "MSRP"
+      - output_column: Price
+        source_column: MSRP
         data_type: float
         width: 12
         formatting: currency
+        description: "Manufacturer Suggested Retail Price (USD)"
 
-      - column_name: LaborHours
-        display_name: "Labor Hours"
+      - output_column: Hours
+        source_column: LaborHours
+        data_type: float
+        width: 10
+        description: "Labor hours required for installation"
+
+      - output_column: Trim
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Vehicle trim level (e.g., Essential, Preferred, Luxury)"
+
+      - output_column: model_number
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "OEM model number from database (fetched during enrichment)"
+
+    sorting:
+      - column: Year
+        order: ascending
+      - column: Model
+        order: ascending
+      - column: Part
+        order: ascending
+
+  # French Accessories Sheet
+  Accessories_FR:
+    display_name: "Accessories (Français)"
+    language: FR
+    data_source: primary
+    description: "Catalogue d'accessoires automobiles avec descriptions en français"
+
+    # DECISION [019]: Identical structure to EN sheet, but with FR-specific columns
+    columns:
+      - output_column: Year
+        source_column: ModelYear
+        data_type: integer
+        width: 10
+        description: "Année du modèle du véhicule"
+
+      - output_column: Model
+        source_column: ModelName
+        data_type: string
+        width: 20
+        description: "Nom du modèle du véhicule (p. ex. Elantra, Santa Fe)"
+
+      - output_column: Part
+        source_column: PartNumber
+        data_type: string
+        width: 15
+        description: "Numéro de pièce accessoire"
+
+      - output_column: Description
+        source_column: Description_FR
+        data_type: string
+        width: 50
+        description: "Description d'accessoire en français (post-transformation)"
+
+      - output_column: Comments
+        source_column: Comments_FR
+        data_type: string
+        width: 30
+        description: "Commentaires/restrictions en français (optionnel)"
+
+      - output_column: Price
+        source_column: MSRP
         data_type: float
         width: 12
+        formatting: currency
+        description: "Prix de détail suggéré par le fabricant (USD)"
 
-    # Sort by year ascending, then model ascending
+      - output_column: Hours
+        source_column: LaborHours
+        data_type: float
+        width: 10
+        description: "Heures de main-d'œuvre requises pour l'installation"
+
+      - output_column: Trim
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Niveau de garniture du véhicule (p. ex. Essential, Preferred, Luxury)"
+
+      - output_column: model_number
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "Numéro de modèle OEM récupéré dans la base de données"
+
     sorting:
-      - column: ModelYear
+      - column: Year
         order: ascending
-      - column: ModelName
+      - column: Model
+        order: ascending
+      - column: Part
         order: ascending
 
   # Data quality issues sheet
   _Data_Issues:
     display_name: "Data Issues"
     description: "Records that failed validation or enrichment steps"
-    data_source: dq_logger  # Populated from quality checks
+    data_source: dq_logger
 
     columns:
       - column_name: ModelYear
@@ -125,7 +195,7 @@ sheets:
   _Report:
     display_name: "Summary Report"
     description: "Processing statistics and quality metrics"
-    data_source: aggregated_stats  # Calculated from pipeline execution
+    data_source: aggregated_stats
 
     columns:
       - column_name: MetricName
@@ -144,7 +214,7 @@ sheets:
   _Audit:
     display_name: "Audit Trail"
     description: "Pipeline execution metadata"
-    data_source: pipeline_logger  # From pipeline execution log
+    data_source: pipeline_logger
 
     columns:
       - column_name: Timestamp

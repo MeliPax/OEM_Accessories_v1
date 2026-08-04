@@ -92,6 +92,16 @@ language_requirements:
     columns: [Description_FR, Comments_FR]
     description: "French language support required"
 
+# Language-specific column configuration
+# Used by step4_transformation._split_by_language() to separate by language
+language_specific_columns:
+  EN:
+    - Description
+    - Comments
+  FR:
+    - Description_FR
+    - Comments_FR
+
 # Data integrity checks (validation gates after transformation)
 integrity_checks:
   no_duplicate_rows: true
