@@ -31,7 +31,7 @@ columns:
     completeness_threshold: 0.8
     description: "Model year from ModelYear column (e.g., 2024, 2025)"
 
-  model:
+  model_name:
     detect_by_keyword:
       must_have: [carline]
       must_have_one_of: []

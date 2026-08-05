@@ -63,7 +63,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
     if language == "EN":
         rename_map = {
             "year_from": "Year",
-            "model": "Model",
+            "model_name": "ModelName",
             "part_number": "Part",
             "english_description": "Description",  # Use English description for EN sheet
             "comments_en": "Comments",              # Use English comments for EN sheet
@@ -76,7 +76,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
     elif language == "FR":
         rename_map = {
             "year_from": "Year",
-            "model": "Model",
+            "model_name": "ModelName",
             "part_number": "Part",
             "french_description": "Description",   # Use French description for FR sheet
             "comments_fr": "Comments",              # Use French comments for FR sheet
@@ -90,7 +90,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
         # Fallback
         rename_map = {
             "year_from": "Year",
-            "model": "Model",
+            "model_name": "ModelName",
             "part_number": "Part",
             "english_description": "Description",
             "comments_en": "Comments",
@@ -108,7 +108,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
     # Define required output columns (order matters for Excel)
     # Mazda-specific: Include Package and ModelNumber in output
     required_output_cols = [
-        "Year", "Model", "Part", "Description", "Comments",
+        "Year", "ModelName", "Part", "Description", "Comments",
         "Price", "Hours", "Trim", "Package", "ModelNumber"
     ]
 
