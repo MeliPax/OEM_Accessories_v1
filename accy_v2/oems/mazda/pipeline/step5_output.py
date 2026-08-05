@@ -59,6 +59,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
 
     # Map snake_case source columns (from step4) to Title Case output columns
     # NOTE: step4_transformation uses snake_case column names: year_from, model, part_number, etc.
+    # Mazda-specific: package was renamed to "Package" in step4, short_model_number stays as-is
     if language == "EN":
         rename_map = {
             "year_from": "Year",
@@ -70,6 +71,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "labour_hours": "Hours",
             "trim_level": "Trim",
             "model_number": "model_number",
+            "short_model_number": "ModelNumber",
         }
     elif language == "FR":
         rename_map = {
@@ -82,6 +84,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "labour_hours": "Hours",
             "trim_level": "Trim",
             "model_number": "model_number",
+            "short_model_number": "ModelNumber",
         }
     else:
         # Fallback
@@ -95,6 +98,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "labour_hours": "Hours",
             "trim_level": "Trim",
             "model_number": "model_number",
+            "short_model_number": "ModelNumber",
         }
 
     # Apply renaming for columns that exist
@@ -102,9 +106,10 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
     df = df.rename(columns=rename_subset)
 
     # Define required output columns (order matters for Excel)
+    # Mazda-specific: Include Package and ModelNumber in output
     required_output_cols = [
         "Year", "Model", "Part", "Description", "Comments",
-        "Price", "Hours", "Trim", "model_number"
+        "Price", "Hours", "Trim", "Package", "ModelNumber"
     ]
 
     # Keep only output columns that exist in the dataframe
