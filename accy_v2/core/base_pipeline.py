@@ -157,11 +157,12 @@ class BasePipeline(ABC):
         transformations_config = loader.load_transformations()
         upstream_schema = loader.load_upstream_schema()
         intermediate_schema = loader.load_intermediate_schema()
+        downstream_schema = loader.load_downstream_schema()
 
         # Build config dict with backward compatibility for existing step methods
         # Maps modular structure back to legacy structure to minimize code changes
         config = self._build_legacy_config(
-            pipeline_config, enrichment_config, transformations_config, upstream_schema, intermediate_schema
+            pipeline_config, enrichment_config, transformations_config, upstream_schema, intermediate_schema, downstream_schema
         )
 
         # Derive output paths from OEM name (DECISION [018])
@@ -262,7 +263,7 @@ class BasePipeline(ABC):
     @staticmethod
     def _build_legacy_config(
         pipeline_config: Dict, enrichment_config: Dict, transformations_config: Dict,
-        upstream_schema: Dict, intermediate_schema: Dict = None
+        upstream_schema: Dict, intermediate_schema: Dict = None, downstream_schema: Dict = None
     ) -> Dict:
         """
         Build config dict with backward compatibility for existing step methods.
@@ -274,6 +275,8 @@ class BasePipeline(ABC):
         """
         if intermediate_schema is None:
             intermediate_schema = {}
+        if downstream_schema is None:
+            downstream_schema = {}
         # Map upstream schema columns to legacy column_definition format
         column_definition = {}
         for col_name, col_def in upstream_schema.get("columns", {}).items():
@@ -322,5 +325,6 @@ class BasePipeline(ABC):
             "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
             "col_data_type_dict": col_data_type_dict,
             "language_columns": language_columns,
+            "downstream_schema": downstream_schema,
             "output": {},  # Will be filled by run() with derived paths
         }
