@@ -7,13 +7,13 @@ def column_type_finder(
     col_name: str, column_definition: dict
 ) -> Dict[str, Optional[str]]:
     """
-    Match col_name against column_definition rules using word-token matching.
-    Column name is split by "_" into tokens; keywords must match whole tokens, not substrings.
+    Match col_name against column_definition rules using substring matching.
+    Keywords are matched as substrings within the lowercased column name.
     Rules applied in sequence: not_have -> must_have -> must_have_one_of.
     All matching is case-insensitive.
     Returns {"original": "mapped_name"} or {"original": None}.
     """
-    tokens = set(col_name.lower().split("_"))
+    col_lower = col_name.lower()
 
     for mapped_name, spec in column_definition.items():
         kw = spec["key_words"]
@@ -21,11 +21,11 @@ def column_type_finder(
         must_have = [k.lower() for k in kw.get("must_have", [])]
         must_have_one_of = [k.lower() for k in kw.get("must_have_one_of", [])]
 
-        if any(k in tokens for k in not_have):
+        if any(k in col_lower for k in not_have):
             continue
-        if not all(k in tokens for k in must_have):
+        if not all(k in col_lower for k in must_have):
             continue
-        if must_have_one_of and not any(k in tokens for k in must_have_one_of):
+        if must_have_one_of and not any(k in col_lower for k in must_have_one_of):
             continue
 
         return {col_name: mapped_name}

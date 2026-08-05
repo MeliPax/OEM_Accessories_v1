@@ -245,6 +245,14 @@ class BasePipeline(ABC):
 
             except PipelineFatalError as exc:
                 pipeline_logger.log_fatal(sheet_name, step="pipeline", reason=str(exc))
+                dq_logger.log_warning(
+                    sheet_name=sheet_name,
+                    model_name=meta_data.get("model_name", "unknown"),
+                    record_index=-1,
+                    record_snapshot={},
+                    rule_violated="structural_validation_failure",
+                    issue_description=f"Sheet structural validation failed and was skipped: {str(exc)}",
+                )
                 sheets_skipped += 1
 
         self.run_write_combined_output(all_output_frames, model_run_stats, dq_logger, run_id, config, pipeline_logger)
@@ -296,6 +304,13 @@ class BasePipeline(ABC):
         # Extract language-specific columns for step4_transformation._split_by_language()
         language_columns = intermediate_schema.get("language_specific_columns", {})
 
+        # Extract trim column pattern from sheet_validation.trim_table
+        trim_column_pattern = (
+            upstream_schema.get("sheet_validation", {})
+            .get("trim_table", {})
+            .get("column_pattern")
+        )
+
         # Build legacy config structure
         return {
             "column_definition": column_definition,
@@ -303,7 +318,7 @@ class BasePipeline(ABC):
             "non_null_columns": non_null_columns,
             "non_null_threshold": pipeline_config.get("non_null_threshold", 0.5),
             "use_model_lookup": pipeline_config.get("use_model_lookup", True),
-            "trim_column_patterns": upstream_schema.get("trim_table", {}).get("column_pattern"),
+            "trim_column_patterns": trim_column_pattern,
             "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
             "col_data_type_dict": col_data_type_dict,
             "language_columns": language_columns,

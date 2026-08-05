@@ -1,72 +1,85 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/schemas/upstream.yaml
-# Description: Incoming Excel file structure and validation rules
-# OEM: Hyundai
-# Purpose: Defines how to detect, validate, and rename columns from raw Excel
+# File: accy_v2/oems/mazda/config/schemas/upstream.yaml
+# Description: Incoming CSV file structure and validation rules
+# OEM: Mazda
+# Purpose: Defines how to detect, validate, and rename columns from raw CSV
 # ============================================================================
-# DECISION [015]: Modular config (upstream schema separated from other concerns)
-# Naming improvements: detect_by → detect_by_keyword, rename_to → rename_to_canonical
+# DECISION [022]: Substring-based keyword matching for PascalCase headers
+# Mazda CSV uses PascalCase (ModelYear, PartNumber, AccessoryName) with no underscores
+# Keywords are matched as substrings, not as underscore-delimited tokens
 # ============================================================================
 
 # Required languages for this OEM
-# Hyundai requires both English and French columns
+# Mazda requires both English and French columns
 languages:
   - EN
   - FR
 
 # Column detection and validation rules
 # Each column defined here with keyword detection, types, and completeness thresholds
+# All keywords are matched as substrings in the lowercased column name
 columns:
   year_from:
     # Keywords to detect this column in header row
     detect_by_keyword:
-      must_have: [model, year, from]
+      must_have: [year]
       must_have_one_of: []
-      must_not_have: []
+      must_not_have: [carline, parts, parts]
     required: true
     rename_to_canonical: ModelYear
     expected_data_type: integer
     completeness_threshold: 0.8
-    description: "Model year (e.g., 2024, 2025)"
+    description: "Model year from ModelYear column (e.g., 2024, 2025)"
 
   model:
     detect_by_keyword:
-      must_have: [model]
+      must_have: [carline]
       must_have_one_of: []
-      must_not_have: [year]
+      must_not_have: []
     required: true
     rename_to_canonical: ModelName
     expected_data_type: string
     completeness_threshold: 1.0
-    description: "Vehicle model name (e.g., Elantra, Santa Fe)"
+    description: "Vehicle model/carline from CarLineCode column (e.g., MX30, CX-5)"
 
   part_number:
     detect_by_keyword:
       must_have: [part, number]
       must_have_one_of: []
-      must_not_have: []
+      must_not_have: [id]
     required: true
     rename_to_canonical: PartNumber
     expected_data_type: string
     completeness_threshold: 1.0
     transformation: uppercase
-    description: "Accessory part number (e.g., 00000-ABC12)"
+    description: "Accessory part number from PartNumber column (e.g., MAZ123456)"
+
+  model_number:
+    detect_by_keyword:
+      must_have: [trim, level]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: model_number
+    expected_data_type: string
+    completeness_threshold: 1.0
+    description: "Model/trim code from TrimLevel column (10 chars: 6-char trim code + 4-char package code)"
 
   english_description:
     detect_by_keyword:
-      must_have: [accessory, description]
+      must_have: [additional, description, en]
       must_have_one_of: []
-      must_not_have: ["(fr)"]
+      must_not_have: []
     required: true
     rename_to_canonical: Description
     expected_data_type: string
     completeness_threshold: 1.0
     language: EN
-    description: "English accessory description"
+    description: "English accessory description from AdditionalDescriptionEn"
 
   french_description:
     detect_by_keyword:
-      must_have: [accessory, description, "(fr)"]
+      must_have: [additional, description, fr]
       must_have_one_of: []
       must_not_have: []
     required: true
@@ -74,7 +87,7 @@ columns:
     expected_data_type: string
     completeness_threshold: 1.0
     language: FR
-    description: "French accessory description"
+    description: "French accessory description from AdditionalDescriptionFr"
 
   msrp:
     detect_by_keyword:
@@ -85,56 +98,34 @@ columns:
     rename_to_canonical: MSRP
     expected_data_type: float
     completeness_threshold: 0.9
-    description: "Manufacturer Suggested Retail Price"
-
-  dnet:
-    detect_by_keyword:
-      must_have: [dnet]
-      must_have_one_of: []
-      must_not_have: []
-    required: false
-    rename_to_canonical: DNET
-    expected_data_type: float
-    completeness_threshold: 0.5
-    description: "Dealer net cost"
-
-  labour_rate:
-    detect_by_keyword:
-      must_have: [labour, rate]
-      must_have_one_of: []
-      must_not_have: []
-    required: false
-    rename_to_canonical: LaborRate
-    expected_data_type: float
-    completeness_threshold: 0.5
-    description: "Labor rate per hour"
+    description: "Manufacturer Suggested Retail Price from MSRP column"
 
   labour_hours:
     detect_by_keyword:
-      must_have: [labour, hours]
+      must_have: [standard, install, time]
       must_have_one_of: []
       must_not_have: []
     required: true
     rename_to_canonical: LaborHours
     expected_data_type: float
     completeness_threshold: 0.8
-    description: "Labor hours required for installation"
+    description: "Installation time from StandardInstallTime column (units to be confirmed with business)"
 
   comments_en:
     detect_by_keyword:
-      must_have: [comments]
+      must_have: [restriction, en]
       must_have_one_of: []
-      must_not_have: ["(fr)"]
+      must_not_have: []
     required: false
     rename_to_canonical: Comments
     expected_data_type: string
     completeness_threshold: 0.0
     language: EN
-    description: "English comments/restrictions"
+    description: "English restrictions/comments from RestrictionEn"
 
   comments_fr:
     detect_by_keyword:
-      must_have: [comments, "(fr)"]
+      must_have: [restriction, fr]
       must_have_one_of: []
       must_not_have: []
     required: false
@@ -142,7 +133,7 @@ columns:
     expected_data_type: string
     completeness_threshold: 0.0
     language: FR
-    description: "French comments/restrictions"
+    description: "French restrictions/comments from RestrictionFr"
 
 # Sheet-level validation rules
 sheet_validation:
@@ -153,12 +144,12 @@ sheet_validation:
   # Sheets to explicitly exclude (empty = no exclusions)
   exclude_sheet_names: []
 
-  # Trim table detection (identifies trim columns for parsing)
+  # Trim table detection (for future use if Mazda sheets have trim applicability)
   trim_table:
-    column_pattern: "^trim[\\s_]\\d+$"
-    required: true
+    column_pattern: "^trim"
+    required: false
     detection_method: contains_pattern
-    description: "Trim level columns (e.g., 'Trim 1', 'Trim_2')"
+    description: "Trim level columns (if present)"
 
 # Completeness validation gates
 validation_gates:

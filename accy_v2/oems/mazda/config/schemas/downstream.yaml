@@ -4,7 +4,7 @@
 # OEM: Hyundai
 # Purpose: Defines output Excel sheets and programmatic column mapping
 # ============================================================================
-# DECISION [019]: Programmable column mapping via explicit source→output
+# DECISION: Programmable column mapping via explicit source→output
 # Separate English and French sheets with language-specific column selection
 # ============================================================================
 

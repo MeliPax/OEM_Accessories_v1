@@ -6,9 +6,6 @@
 # ============================================================================
 
 output:
-  # DECISION [019]: Explicit source→output column mapping (programmable)
-  # This enables future columns to be added via YAML only (no code changes)
-
   # Filename pattern for generated Excel files
   filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"
 
@@ -24,7 +21,7 @@ sheets:
     data_source: primary
     description: "Vehicle accessory catalog with English descriptions"
 
-    # DECISION [019]: Explicit source→output mapping per column
+    # DECISION: Explicit source→output mapping per column
     # Format allows programmatic processing and easy additions
     columns:
       - output_column: Year

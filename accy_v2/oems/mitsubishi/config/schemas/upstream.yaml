@@ -1,15 +1,16 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/schemas/upstream.yaml
+# File: accy_v2/oems/mitsubishi/config/schemas/upstream.yaml
 # Description: Incoming Excel file structure and validation rules
-# OEM: Hyundai
+# OEM: Mitsubishi
 # Purpose: Defines how to detect, validate, and rename columns from raw Excel
 # ============================================================================
-# DECISION [015]: Modular config (upstream schema separated from other concerns)
-# Naming improvements: detect_by → detect_by_keyword, rename_to → rename_to_canonical
+# DECISION [023]: Mitsubishi-specific schema for multi-row Excel format
+# Model name extracted from cell(0,0), year from sheet name (not header columns)
+# Trim columns named after actual trim levels (ES, SE, LE, SEL, GT, GT PREM)
 # ============================================================================
 
 # Required languages for this OEM
-# Hyundai requires both English and French columns
+# Mitsubishi requires both English and French columns
 languages:
   - EN
   - FR
@@ -17,30 +18,8 @@ languages:
 # Column detection and validation rules
 # Each column defined here with keyword detection, types, and completeness thresholds
 columns:
-  year_from:
-    # Keywords to detect this column in header row
-    detect_by_keyword:
-      must_have: [model, year, from]
-      must_have_one_of: []
-      must_not_have: []
-    required: true
-    rename_to_canonical: ModelYear
-    expected_data_type: integer
-    completeness_threshold: 0.8
-    description: "Model year (e.g., 2024, 2025)"
-
-  model:
-    detect_by_keyword:
-      must_have: [model]
-      must_have_one_of: []
-      must_not_have: [year]
-    required: true
-    rename_to_canonical: ModelName
-    expected_data_type: string
-    completeness_threshold: 1.0
-    description: "Vehicle model name (e.g., Elantra, Santa Fe)"
-
   part_number:
+    # Keywords to detect this column in header row (Row 1)
     detect_by_keyword:
       must_have: [part, number]
       must_have_one_of: []
@@ -50,23 +29,23 @@ columns:
     expected_data_type: string
     completeness_threshold: 1.0
     transformation: uppercase
-    description: "Accessory part number (e.g., 00000-ABC12)"
+    description: "Accessory part number from Part Number column"
 
   english_description:
     detect_by_keyword:
-      must_have: [accessory, description]
+      must_have: [english, description]
       must_have_one_of: []
-      must_not_have: ["(fr)"]
+      must_not_have: []
     required: true
     rename_to_canonical: Description
     expected_data_type: string
     completeness_threshold: 1.0
     language: EN
-    description: "English accessory description"
+    description: "English accessory description from English Description column"
 
   french_description:
     detect_by_keyword:
-      must_have: [accessory, description, "(fr)"]
+      must_have: [french, description]
       must_have_one_of: []
       must_not_have: []
     required: true
@@ -74,7 +53,7 @@ columns:
     expected_data_type: string
     completeness_threshold: 1.0
     language: FR
-    description: "French accessory description"
+    description: "French accessory description from French Description column"
 
   msrp:
     detect_by_keyword:
@@ -85,80 +64,68 @@ columns:
     rename_to_canonical: MSRP
     expected_data_type: float
     completeness_threshold: 0.9
-    description: "Manufacturer Suggested Retail Price"
+    description: "Manufacturer Suggested Retail Price from MSRP $ column"
 
   dnet:
     detect_by_keyword:
-      must_have: [dnet]
+      must_have: [dnp]
       must_have_one_of: []
       must_not_have: []
     required: false
     rename_to_canonical: DNET
     expected_data_type: float
     completeness_threshold: 0.5
-    description: "Dealer net cost"
+    description: "Dealer net price from DNP $ column"
 
   labour_rate:
     detect_by_keyword:
-      must_have: [labour, rate]
-      must_have_one_of: []
+      must_have: [rate]
+      must_have_one_of: [labour, labor]
       must_not_have: []
     required: false
     rename_to_canonical: LaborRate
     expected_data_type: float
     completeness_threshold: 0.5
-    description: "Labor rate per hour"
+    description: "Labor rate per hour from Labour Rate column (supports labour/labor spelling)"
 
   labour_hours:
     detect_by_keyword:
-      must_have: [labour, hours]
+      must_have: [install, time]
       must_have_one_of: []
-      must_not_have: []
-    required: true
+      must_not_have: [sheet]
+    required: false
     rename_to_canonical: LaborHours
     expected_data_type: float
     completeness_threshold: 0.8
-    description: "Labor hours required for installation"
+    description: "Installation time in hours from Install Time column (not required at step1 validation, mapped properly at step2)"
 
   comments_en:
     detect_by_keyword:
-      must_have: [comments]
+      must_have: [remark]
       must_have_one_of: []
-      must_not_have: ["(fr)"]
+      must_not_have: []
     required: false
     rename_to_canonical: Comments
     expected_data_type: string
     completeness_threshold: 0.0
     language: EN
-    description: "English comments/restrictions"
-
-  comments_fr:
-    detect_by_keyword:
-      must_have: [comments, "(fr)"]
-      must_have_one_of: []
-      must_not_have: []
-    required: false
-    rename_to_canonical: Comments_FR
-    expected_data_type: string
-    completeness_threshold: 0.0
-    language: FR
-    description: "French comments/restrictions"
+    description: "Remarks from Remarks column (single language in Mitsubishi source)"
 
 # Sheet-level validation rules
 sheet_validation:
   # Pattern to match valid sheet names (regex)
-  # .* accepts all sheets (no filtering)
-  sheet_name_pattern: ".*"
+  # Expected format: YYYY ModelName (e.g., "2026 Outlander", "2025 RVR")
+  sheet_name_pattern: "^\\d{4}\\s+.+"
 
-  # Sheets to explicitly exclude (empty = no exclusions)
-  exclude_sheet_names: []
+  # Sheets to explicitly exclude (e.g., "Instructions", "Cover")
+  exclude_sheet_names: [Instructions, Cover, Instructions (Français), Legend, Légende]
 
-  # Trim table detection (identifies trim columns for parsing)
+  # Trim table detection (Mitsubishi trim columns named after actual trim levels)
   trim_table:
-    column_pattern: "^trim[\\s_]\\d+$"
+    column_pattern: "^(es|se|le|sel|gt|photo|install)$"
     required: true
-    detection_method: contains_pattern
-    description: "Trim level columns (e.g., 'Trim 1', 'Trim_2')"
+    detection_method: exact_match_in_row
+    description: "Trim level columns (ES, SE, LE, SEL, GT, PHOTO, INSTALL) matched case-insensitively"
 
 # Completeness validation gates
 validation_gates:

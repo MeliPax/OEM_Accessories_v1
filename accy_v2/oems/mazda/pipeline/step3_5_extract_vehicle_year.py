@@ -43,13 +43,19 @@ def run(
 
     vehicle_year = None
 
-    # Try 1: Look for model_year column in the DataFrame
-    if "model_year" in standardized_df.columns:
-        years = standardized_df["model_year"].dropna().unique()
+    # Try 1: Look for year_from column in the DataFrame (renamed from ModelYear by step3)
+    year_col = None
+    if "year_from" in standardized_df.columns:
+        year_col = "year_from"
+    elif "model_year" in standardized_df.columns:
+        year_col = "model_year"
+
+    if year_col is not None:
+        years = standardized_df[year_col].dropna().unique()
         if len(years) > 0:
             try:
                 vehicle_year = int(years[0])
-                pipeline_logger.debug(f"Extracted vehicle_year {vehicle_year} from model_year column")
+                pipeline_logger.debug(f"Extracted vehicle_year {vehicle_year} from {year_col} column")
             except (ValueError, TypeError):
                 pass
 

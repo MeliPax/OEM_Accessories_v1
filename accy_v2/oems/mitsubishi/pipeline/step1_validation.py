@@ -98,22 +98,20 @@ def _validate_header_keywords(
 def _validate_trim_boundaries(
     df_raw: pd.DataFrame, sheet_name: str, config: dict
 ) -> None:
+    """Validate that trim columns exist in the header row using the trim_table pattern from upstream.yaml."""
     header_row = [str(v).lower().strip() for v in df_raw.iloc[1].tolist()]
-    bounds = config["trim_bounds_config"]
+    trim_pattern = config.get("trim_column_patterns", "")
 
-    left_kws = [k.lower() for k in bounds["left_bound"]["must_contain"]]
-    right_kws = [k.lower() for k in bounds["right_bound"]["must_contain_one_of"]]
-
-    left_found = any(all(k in cell for k in left_kws) for cell in header_row)
-    right_found = any(any(k in cell for k in right_kws) for cell in header_row)
-
-    if not left_found:
+    if not trim_pattern:
         raise PipelineFatalError(
-            f"Sheet '{sheet_name}': left trim boundary column (keywords: {left_kws}) not found"
+            f"Sheet '{sheet_name}': no trim column pattern defined in config"
         )
-    if not right_found:
+
+    trim_cols_found = [col for col in header_row if re.match(trim_pattern, col, re.IGNORECASE)]
+
+    if not trim_cols_found:
         raise PipelineFatalError(
-            f"Sheet '{sheet_name}': right trim boundary column (keywords: {right_kws}) not found"
+            f"Sheet '{sheet_name}': no trim columns found (expected pattern: {trim_pattern})"
         )
 
 

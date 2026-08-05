@@ -15,6 +15,7 @@ def run(
     config: dict,
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
+    ads_attempted: set = None,
 ) -> Dict[str, pd.DataFrame]:
     """
     Enrich transformed data with model numbers via batch lookup.

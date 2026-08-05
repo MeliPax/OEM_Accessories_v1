@@ -1,7 +1,7 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/pipeline.yaml
+# File: accy_v2/oems/mitsubishi/config/pipeline.yaml
 # Description: Orchestration settings and runtime configuration
-# OEM: Hyundai
+# OEM: Mitsubishi
 # Purpose: Flow control, feature flags, and runtime behavior
 # ============================================================================
 # DECISION [015]: Modular 5-file config structure (replaces single JSON)
@@ -14,7 +14,8 @@
 # DECISION [016]: use_model_lookup flag is configurable per OEM
 # - Hyundai: true (needs trim-to-model translation)
 # - Mazda: false (already has model numbers in source)
-use_model_lookup: true
+# - Mitsubishi: false (source data already has model-year-trim information)
+use_model_lookup: false
 
 # Data completeness threshold
 # DECISION [017]: non_null_threshold is configurable per OEM

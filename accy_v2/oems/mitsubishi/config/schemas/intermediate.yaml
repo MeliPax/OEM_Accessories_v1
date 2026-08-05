@@ -1,7 +1,7 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/schemas/intermediate.yaml
+# File: accy_v2/oems/mitsubishi/config/schemas/intermediate.yaml
 # Description: Expected data structure after transformation (quality gate)
-# OEM: Hyundai
+# OEM: Mitsubishi
 # Purpose: Validates that data cleaning produced expected schema before enrichment
 # ============================================================================
 
