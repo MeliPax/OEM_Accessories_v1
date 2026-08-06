@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -189,6 +190,7 @@ class BasePipeline(ABC):
 
         sheets_processed = 0
         sheets_skipped = 0
+        sheets_excluded = 0
         all_output_frames: Dict[str, pd.DataFrame] = {}
         model_run_stats: List[Dict] = []
 
@@ -198,7 +200,26 @@ class BasePipeline(ABC):
             pipeline_logger.log_fatal("N/A", "file_load", str(exc))
             raise
 
+        # Filter sheets by exclude_sheet_names and sheet_name_pattern (Part B, step 9 of plan)
+        exclude_sheet_names = config.get("exclude_sheet_names", [])
+        sheet_name_pattern = config.get("sheet_name_pattern", ".*")
+        exclude_sheet_names_lower = [s.lower() for s in exclude_sheet_names]
+
+        filtered_data_units = {}
         for sheet_name, df_raw in data_units.items():
+            # Check if sheet should be excluded (case-insensitive match)
+            if sheet_name.lower() in exclude_sheet_names_lower:
+                pipeline_logger.info(f"SHEET SKIPPED | sheet={sheet_name} | reason=excluded_by_config")
+                sheets_excluded += 1
+                continue
+            # Check if sheet matches the sheet_name_pattern
+            if not re.match(sheet_name_pattern, sheet_name, re.IGNORECASE):
+                pipeline_logger.info(f"SHEET SKIPPED | sheet={sheet_name} | reason=name_pattern_mismatch")
+                sheets_excluded += 1
+                continue
+            filtered_data_units[sheet_name] = df_raw
+
+        for sheet_name, df_raw in filtered_data_units.items():
             pipeline_logger.log_sheet_start(sheet_name)
             meta_data: Dict[str, Any] = {"sheet_name": sheet_name, "source_file": file_path}
             warnings_before = dq_logger.warning_count
@@ -258,7 +279,7 @@ class BasePipeline(ABC):
 
         self.run_write_combined_output(all_output_frames, model_run_stats, dq_logger, run_id, config, pipeline_logger)
         dq_logger.write_dq_report(config["output"]["dq_report_path"])
-        pipeline_logger.log_run_complete(sheets_processed, sheets_skipped)
+        pipeline_logger.log_run_complete(sheets_processed, sheets_skipped, sheets_excluded)
 
     @staticmethod
     def _build_legacy_config(
@@ -314,6 +335,16 @@ class BasePipeline(ABC):
             .get("column_pattern")
         )
 
+        # Extract trim validation config and exclusion keywords (Part A, step 5 of plan)
+        trim_table_config = upstream_schema.get("sheet_validation", {}).get("trim_table", {})
+        trim_validation_config = trim_table_config.get("trim_validation_config")
+        trim_exclusion_keywords = trim_table_config.get("trim_exclusion_keywords", [])
+
+        # Extract sheet exclusion config (Part B, step 8 of plan)
+        sheet_validation_config = upstream_schema.get("sheet_validation", {})
+        exclude_sheet_names = sheet_validation_config.get("exclude_sheet_names", [])
+        sheet_name_pattern = sheet_validation_config.get("sheet_name_pattern", ".*")
+
         # Build legacy config structure
         return {
             "column_definition": column_definition,
@@ -322,6 +353,10 @@ class BasePipeline(ABC):
             "non_null_threshold": pipeline_config.get("non_null_threshold", 0.5),
             "use_model_lookup": pipeline_config.get("use_model_lookup", True),
             "trim_column_patterns": trim_column_pattern,
+            "trim_validation_config": trim_validation_config,
+            "trim_exclusion_keywords": trim_exclusion_keywords,
+            "exclude_sheet_names": exclude_sheet_names,
+            "sheet_name_pattern": sheet_name_pattern,
             "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
             "col_data_type_dict": col_data_type_dict,
             "language_columns": language_columns,

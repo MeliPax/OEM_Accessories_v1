@@ -1,8 +1,10 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/schemas/downstream.yaml
+# File: accy_v2/oems/mitsubishi/config/schemas/downstream.yaml
 # Description: Final output structure with language-specific sheets and column mapping
-# OEM: Hyundai
+# OEM: Mitsubishi
 # Purpose: Defines output Excel sheets and programmatic column mapping
+# Note: Mitsubishi does NOT use model lookup enrichment (use_model_lookup: false)
+#       Model codes extracted from trim levels in step4 transformation
 # ============================================================================
 # DECISION [019]: Programmable column mapping via explicit source→output
 # Separate English and French sheets with language-specific column selection
@@ -31,44 +33,44 @@ sheets:
     # Format allows programmatic processing and easy additions
     columns:
       - output_column: Year
-        source_column: ModelYear
+        source_column: year_from
         data_type: integer
         width: 10
         description: "Vehicle model year"
 
       - output_column: Model
-        source_column: ModelName
+        source_column: model
         data_type: string
         width: 20
-        description: "Vehicle model name (e.g., Elantra, Santa Fe)"
+        description: "Vehicle model name/trim code (e.g., ES, SE, GT)"
 
       - output_column: Part
-        source_column: PartNumber
+        source_column: part_number
         data_type: string
         width: 15
         description: "Accessory part number"
 
       - output_column: Description
-        source_column: Description
+        source_column: english_description
         data_type: string
         width: 50
         description: "English accessory description (post-transformation)"
 
       - output_column: Comments
-        source_column: Comments
+        source_column: comments_en
         data_type: string
         width: 30
         description: "English comments/restrictions (optional)"
 
       - output_column: Price
-        source_column: MSRP
+        source_column: msrp
         data_type: float
         width: 12
         formatting: currency
         description: "Manufacturer Suggested Retail Price (USD)"
 
       - output_column: Hours
-        source_column: LaborHours
+        source_column: labour_hours
         data_type: float
         width: 10
         description: "Labor hours required for installation"
@@ -77,13 +79,7 @@ sheets:
         source_column: trim_level
         data_type: string
         width: 20
-        description: "Vehicle trim level (e.g., Essential, Preferred, Luxury)"
-
-      - output_column: model_number
-        source_column: model_number
-        data_type: string
-        width: 15
-        description: "OEM model number from database (fetched during enrichment)"
+        description: "Vehicle trim level code with variant (e.g., ES_S-AWC)"
 
     sorting:
       - column: Year
@@ -103,44 +99,44 @@ sheets:
     # DECISION [019]: Identical structure to EN sheet, but with FR-specific columns
     columns:
       - output_column: Year
-        source_column: ModelYear
+        source_column: year_from
         data_type: integer
         width: 10
         description: "Année du modèle du véhicule"
 
       - output_column: Model
-        source_column: ModelName
+        source_column: model
         data_type: string
         width: 20
-        description: "Nom du modèle du véhicule (p. ex. Elantra, Santa Fe)"
+        description: "Code de modèle/trim du véhicule (ex. ES, SE, GT)"
 
       - output_column: Part
-        source_column: PartNumber
+        source_column: part_number
         data_type: string
         width: 15
         description: "Numéro de pièce accessoire"
 
       - output_column: Description
-        source_column: Description_FR
+        source_column: french_description
         data_type: string
         width: 50
         description: "Description d'accessoire en français (post-transformation)"
 
       - output_column: Comments
-        source_column: Comments_FR
+        source_column: comments_fr
         data_type: string
         width: 30
         description: "Commentaires/restrictions en français (optionnel)"
 
       - output_column: Price
-        source_column: MSRP
+        source_column: msrp
         data_type: float
         width: 12
         formatting: currency
         description: "Prix de détail suggéré par le fabricant (USD)"
 
       - output_column: Hours
-        source_column: LaborHours
+        source_column: labour_hours
         data_type: float
         width: 10
         description: "Heures de main-d'œuvre requises pour l'installation"
@@ -149,13 +145,7 @@ sheets:
         source_column: trim_level
         data_type: string
         width: 20
-        description: "Niveau de garniture du véhicule (p. ex. Essential, Preferred, Luxury)"
-
-      - output_column: model_number
-        source_column: model_number
-        data_type: string
-        width: 15
-        description: "Numéro de modèle OEM récupéré dans la base de données"
+        description: "Code de niveau de garniture du véhicule avec variante"
 
     sorting:
       - column: Year

@@ -7,7 +7,7 @@ from core.base_pipeline import PipelineFatalError
 from core.helpers.column_mapper import assert_required_columns, map_all_columns
 from core.helpers.dq_logger import DQLogger
 from core.helpers.pipeline_logger import PipelineLogger
-from core.helpers.trim_helpers import validate_trim_by_datatype
+from core.helpers.trim_helpers import identify_candidate_trim_columns, validate_trim_by_datatype
 
 
 def run(
@@ -40,26 +40,11 @@ def run(
     except ValueError as exc:
         raise PipelineFatalError(str(exc)) from exc
 
-    # Identify trim column candidates using trim_column_patterns from upstream.yaml
-    trim_pattern = config.get("trim_column_patterns", "")
-    if not trim_pattern:
-        raise PipelineFatalError(f"Sheet '{sheet_name}': no trim column pattern defined in config")
-
-    candidates = [
-        col for col in working_df.columns
-        if re.match(trim_pattern, col, re.IGNORECASE)
-    ]
-    pipeline_logger.debug(f"Trim candidates for '{sheet_name}' (pattern={trim_pattern}): {candidates}")
-
-    # Filter out structural category-header columns that are never valid trim levels
-    exclusion_keywords = [k.lower() for k in config.get("trim_exclusion_keywords", [])]
-    if exclusion_keywords:
-        excluded = [c for c in candidates if any(k in c.lower() for k in exclusion_keywords)]
-        candidates = [c for c in candidates if c not in excluded]
-        if excluded:
-            pipeline_logger.debug(
-                f"Sheet '{sheet_name}': excluded {len(excluded)} category column(s) from trim candidates: {excluded}"
-            )
+    # Identify trim column candidates using shared helper (Part A, step 3 of plan)
+    # This matches step1_validation._validate_trim_boundaries() logic exactly for consistency
+    exclusion_keywords = config.get("trim_exclusion_keywords", [])
+    candidates = identify_candidate_trim_columns(col_mapping, exclusion_keywords)
+    pipeline_logger.debug(f"Trim candidates for '{sheet_name}' (exclusions={exclusion_keywords}): {candidates}")
 
     # Validate candidates by data content (if trim_validation_config is defined)
     trim_log = {}

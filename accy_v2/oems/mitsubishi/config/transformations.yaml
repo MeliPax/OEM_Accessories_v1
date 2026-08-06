@@ -1,8 +1,10 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/transformations.yaml
+# File: accy_v2/oems/mitsubishi/config/transformations.yaml
 # Description: Data cleaning and standardization rules
-# OEM: Hyundai
+# OEM: Mitsubishi
 # Purpose: Defines all transformations applied to each column post-ingestion
+# Note: Mitsubishi uses NO model lookup enrichment (use_model_lookup: false)
+#       Source descriptions are English only; French is optional (no source)
 # ============================================================================
 # DECISION [015]: Modular 5-file config structure (transformations as separate file)
 # ============================================================================

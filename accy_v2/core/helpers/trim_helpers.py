@@ -82,3 +82,31 @@ def validate_trim_by_datatype(
             passed.append(col)
 
     return passed, results
+
+
+def identify_candidate_trim_columns(col_mapping: Dict[str, str], exclusion_keywords: List[str]) -> List[str]:
+    """
+    Identify candidate trim columns from a col_mapping dict.
+    Candidates are columns NOT yet mapped to a canonical field (col_mapping[col] is None)
+    AND not containing any exclusion keyword substring (case-insensitive).
+
+    Args:
+        col_mapping: {original_col_name: canonical_name | None} from map_all_columns()
+        exclusion_keywords: List of substrings to exclude (e.g., ['photo', 'category'])
+
+    Returns:
+        List of candidate column names (original names from col_mapping.keys())
+    """
+    exclusion_lower = [k.lower() for k in exclusion_keywords]
+    candidates = []
+
+    for col, mapped_to in col_mapping.items():
+        # Skip if already mapped to a canonical column
+        if mapped_to is not None:
+            continue
+        # Skip if matches any exclusion keyword
+        if any(k in col.lower() for k in exclusion_lower):
+            continue
+        candidates.append(col)
+
+    return candidates

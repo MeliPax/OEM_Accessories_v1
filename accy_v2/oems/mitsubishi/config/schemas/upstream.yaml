@@ -117,15 +117,27 @@ sheet_validation:
   # Expected format: YYYY ModelName (e.g., "2026 Outlander", "2025 RVR")
   sheet_name_pattern: "^\\d{4}\\s+.+"
 
-  # Sheets to explicitly exclude (e.g., "Instructions", "Cover")
-  exclude_sheet_names: [Instructions, Cover, Instructions (Français), Legend, Légende]
+  # Sheets to explicitly exclude (e.g., "Instructions", "Cover", "Luxwood English", "Luxwood French")
+  # Luxwood sheets are a different vendor's product catalog, not Mitsubishi model data (different schema, header at row 15)
+  exclude_sheet_names: [Instructions, Cover, Instructions (Français), Legend, Légende, "Luxwood English", "Luxwood French"]
 
   # Trim table detection (Mitsubishi trim columns named after actual trim levels)
+  # Trim level columns: ES, SE, LE, SEL, GT, GT PREM (may include suffix like _S-AWC, _FWD, _CVT, _AWC, etc.)
+  # Explicitly EXCLUDE structural junk columns: PHOTO, INSTALL_SHEET, CATEGORY, etc.
   trim_table:
-    column_pattern: "^(es|se|le|sel|gt|photo|install)$"
+    column_pattern: "^(es|se|le|sel|gt|gt.prem)(_s-awc)?$"
     required: true
-    detection_method: exact_match_in_row
-    description: "Trim level columns (ES, SE, LE, SEL, GT, PHOTO, INSTALL) matched case-insensitively"
+    detection_method: content_validation
+    description: "Trim level columns: ES, SE, LE, SEL, GT, GT PREM (optionally with drivetrain suffix)"
+    # Content-based validation (Part A, step 6 of plan): restored from pre-migration mitsubishi_config.yaml
+    trim_validation_config:
+      expected_data:
+        data: X
+        perc_thresh: 60
+      must_have_only:
+        expected_value_types: [X, "", __na__]
+    # Exclusion keywords prevent structural columns from becoming trim candidates
+    trim_exclusion_keywords: [category, electronics, interior, exterior, cargo, general, photo, install_sheet, installed_price, imc]
 
 # Completeness validation gates
 validation_gates:

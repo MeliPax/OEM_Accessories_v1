@@ -41,10 +41,10 @@ required_columns:
 
   Description_FR:
     data_type: string
-    nullable: false
+    nullable: true
     min_length: 5
     max_length: 500
-    description: "French accessory description (post-transformation)"
+    description: "French accessory description (generated from English or optional)"
 
   MSRP:
     data_type: float
@@ -85,12 +85,12 @@ language_requirements:
   EN:
     required: true
     columns: [Description, Comments]
-    description: "English language support required"
+    description: "English language support required (source data provided)"
 
   FR:
-    required: true
+    required: false
     columns: [Description_FR, Comments_FR]
-    description: "French language support required"
+    description: "French language sheets generated from English (via translation or manual effort TBD)"
 
 # Language-specific column configuration
 # Used by step4_transformation._split_by_language() to separate by language
@@ -98,9 +98,7 @@ language_specific_columns:
   EN:
     - Description
     - Comments
-  FR:
-    - Description_FR
-    - Comments_FR
+  # FR: Not generated from source data; if needed, add post-processing step
 
 # Data integrity checks (validation gates after transformation)
 integrity_checks:

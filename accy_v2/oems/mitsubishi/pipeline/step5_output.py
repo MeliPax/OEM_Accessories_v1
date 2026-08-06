@@ -13,20 +13,33 @@ def prepare_frames(
 
     Process:
     1. For each language (EN, FR from transformed dict)
-    2. Apply language-specific column mapping from downstream schema
-    3. Rename columns to output names
-    4. Filter to required output columns
-    5. Return keyed by proper sheet name (model_EN, model_FR)
+    2. Add Year from metadata (extracted from sheet name during pipeline)
+    3. Add Model extracted from trim_level (first part before delimiter)
+    4. Apply language-specific column mapping from downstream schema
+    5. Rename columns to output names
+    6. Filter to required output columns
+    7. Return keyed by proper sheet name (model_EN, model_FR)
 
     DECISION [019]: Explicit source→output mapping enables easy column additions
     """
     model_name = meta_data.get("model_name", "unknown")
+    vehicle_year = meta_data.get("vehicle_year")  # Extracted from sheet name in earlier steps
 
     frames: Dict[str, pd.DataFrame] = {}
 
     for lang, df in transformed.items():
         # Build sheet key with language code (elantra_EN, elantra_FR)
         sheet_key = f"{model_name}_{lang}"[:31]
+
+        # Add Year column from metadata if available
+        if vehicle_year:
+            df = df.copy()
+            df.insert(0, "year_from", vehicle_year)
+
+        # Extract Model from trim_level (first part before any delimiter)
+        if "trim_level" in df.columns:
+            df = df.copy()
+            df["model"] = df["trim_level"].apply(_extract_model_from_trim)
 
         # Apply language-specific processing
         df = _apply_output_column_mapping(df, lang)
@@ -39,6 +52,28 @@ def prepare_frames(
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
+
+
+def _extract_model_from_trim(trim_value: str) -> str:
+    """
+    Extract model code from trim level.
+    Examples:
+      'es_s-awc' → 'es'
+      'es_fwd' → 'es'
+      'noir_awc' → 'noir'
+      'gt_s-awc' → 'gt'
+      'gt-p' → 'gt-p' (PHEV variant, keep as-is)
+      'gt-premium' → 'gt-premium' (keep as-is)
+    """
+    if not isinstance(trim_value, str):
+        return str(trim_value) if trim_value else "unknown"
+
+    # Split on underscore and take first part (handles: es_s-awc → es)
+    if "_" in trim_value:
+        return trim_value.split("_")[0].lower()
+
+    # Return as-is if no underscore (handles: es, gt-p, gt-premium, etc.)
+    return trim_value.lower()
 
 
 def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFrame:
@@ -69,7 +104,6 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "msrp": "Price",
             "labour_hours": "Hours",
             "trim_level": "Trim",
-            "model_number": "model_number",
         }
     elif language == "FR":
         rename_map = {
@@ -81,7 +115,6 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "msrp": "Price",
             "labour_hours": "Hours",
             "trim_level": "Trim",
-            "model_number": "model_number",
         }
     else:
         # Fallback
@@ -94,7 +127,6 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
             "msrp": "Price",
             "labour_hours": "Hours",
             "trim_level": "Trim",
-            "model_number": "model_number",
         }
 
     # Apply renaming for columns that exist
@@ -104,7 +136,7 @@ def _apply_output_column_mapping(df: pd.DataFrame, language: str) -> pd.DataFram
     # Define required output columns (order matters for Excel)
     required_output_cols = [
         "Year", "Model", "Part", "Description", "Comments",
-        "Price", "Hours", "Trim", "model_number"
+        "Price", "Hours", "Trim"
     ]
 
     # Keep only output columns that exist in the dataframe
