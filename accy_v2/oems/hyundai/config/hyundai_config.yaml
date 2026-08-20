@@ -10,7 +10,7 @@ column_definition:
       - from
       must_have_one_of: []
       not_have: []
-  model:
+  model_name:
     key_words:
       must_have:
       - model

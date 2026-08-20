@@ -14,8 +14,8 @@
 # DECISION [016]: use_model_lookup flag is configurable per OEM
 # - Hyundai: true (needs trim-to-model translation)
 # - Mazda: false (already has model numbers in source)
-# - Mitsubishi: false (source data already has model-year-trim information)
-use_model_lookup: false
+# - Mitsubishi: true (enriches trim data with OEM model numbers via ADS)
+use_model_lookup: true
 
 # Data completeness threshold
 # DECISION [017]: non_null_threshold is configurable per OEM

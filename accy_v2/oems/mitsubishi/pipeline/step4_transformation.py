@@ -90,9 +90,19 @@ def _split_by_language(df: pd.DataFrame, config: dict) -> Dict[str, pd.DataFrame
     for lang, lang_cols in language_columns.items():
         cols_to_drop = [col for col in all_lang_cols if col not in lang_cols]
         lang_df = df.drop(columns=cols_to_drop, errors="ignore").copy()
-        # Rename the language-specific description column to the neutral "description"
-        rename_map = {col: "description" for col in lang_cols if col in lang_df.columns}
-        lang_df = lang_df.rename(columns=rename_map)
+
+        # Rename language-specific description and comments columns to neutral names
+        rename_map = {}
+        for col in lang_cols:
+            if col in lang_df.columns:
+                if "description" in col.lower():
+                    rename_map[col] = "description"
+                elif "comments" in col.lower():
+                    rename_map[col] = "comments"
+
+        if rename_map:
+            lang_df = lang_df.rename(columns=rename_map)
+
         result[lang] = lang_df
 
     return result

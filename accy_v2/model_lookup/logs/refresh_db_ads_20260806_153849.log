@@ -1,0 +1,375 @@
+[2026-08-06 15:38:49] [INFO    ] [root] Logging initialized | Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260806_153849.log
+[2026-08-06 15:38:49] [DEBUG   ] [root] Console level: INFO | File level: DEBUG
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] DATABASE REFRESH FROM ADS STARTED (APPEND MODE (no archive))
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] Run ID: 9f5eeef0
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] Makes: Mitsubishi
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] Years: 2025, 2026, 2027, 2028
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] Archive mode: disabled
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260806_153849.log
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] 
+[Step 1/4] Initializing ADS service...
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] ADS service initialized successfully | Credentials loaded and client ready
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] 
+[Step 2/3] (Archival skipped - append mode enabled)
+[2026-08-06 15:38:49] [INFO    ] [refresh_db_ads] 
+[Step 2/3] Fetching data from ADS API...
+[2026-08-06 15:38:49] [DEBUG   ] [refresh_db_ads] Fetching for makes: ['Mitsubishi'] | years: [2025, 2026, 2027, 2028]
+[2026-08-06 15:38:49] [INFO    ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi | Starting fetch
+[2026-08-06 15:38:49] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] service | Mitsubishi | Loading configs from: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\configs
+[2026-08-06 15:38:49] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] service | Mitsubishi | Loaded classification.yaml (32 keywords)
+[2026-08-06 15:38:49] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] service | Mitsubishi | Loaded translator.yaml (11 flattened keywords)
+[2026-08-06 15:38:49] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] service | Mitsubishi | Standardization file not found: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\configs\mitsubishi\standardization.yaml
+[2026-08-06 15:38:49] [INFO    ] [accy_v2.model_lookup.chrome_api.service] service | Mitsubishi | Configs loaded | components: classification, translator
+[2026-08-06 15:38:49] [DEBUG   ] [urllib3.connectionpool] Starting new HTTPS connection (1): demos.autodatasolutions.com:443
+[2026-08-06 15:38:49] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2025/country/CA/language/en?sort=ASC HTTP/1.1" 200 None
+[2026-08-06 15:38:50] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2025/make/Mitsubishi/model/Eclipse%20Cross/ HTTP/1.1" 200 None
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 5 trims from ADS response
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Extracted fields: year=2025, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Searching text: 'eclipse cross es s-awc'
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Row complete: model=Eclipse Cross, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Extracted fields: year=2025, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Searching text: 'eclipse cross se s-awc'
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Row complete: model=Eclipse Cross, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-G | Extracted fields: year=2025, desc=SEL S-AWC, trim=SEL
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-G | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-G | Searching text: 'eclipse cross sel s-awc'
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-G | Row complete: model=Eclipse Cross, trim=SEL S-AWC, engine_type=None
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Extracted fields: year=2025, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Searching text: 'eclipse cross gt s-awc'
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Row complete: model=Eclipse Cross, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Extracted fields: year=2025, desc=NOIR S-AWC, trim=NOIR
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Searching text: 'eclipse cross noir s-awc'
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Row complete: model=Eclipse Cross, trim=NOIR S-AWC, engine_type=None
+[2026-08-06 15:38:50] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 5/5 trims to rows
+[2026-08-06 15:38:50] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2025 Eclipse Cross | Converted 5 trims to rows
+[2026-08-06 15:38:51] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2025/make/Mitsubishi/model/Outlander/ HTTP/1.1" 200 None
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 6 trims from ADS response
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Extracted fields: year=2025, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Searching text: 'outlander es s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Row complete: model=Outlander, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Extracted fields: year=2025, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Searching text: 'outlander se s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Row complete: model=Outlander, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Extracted fields: year=2025, desc=LE S-AWC, trim=LE
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Searching text: 'outlander le s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Row complete: model=Outlander, trim=LE S-AWC, engine_type=None
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Extracted fields: year=2025, desc=SEL S-AWC, trim=SEL
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Searching text: 'outlander sel s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Row complete: model=Outlander, trim=SEL S-AWC, engine_type=None
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Extracted fields: year=2025, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Searching text: 'outlander gt s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Row complete: model=Outlander, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Extracted fields: year=2025, desc=GT Premium S-AWC, trim=GT Premium
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | ModelName from ADS: Outlander
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Searching text: 'outlander gt premium s-awc'
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Row complete: model=Outlander, trim=GT Premium S-AWC, engine_type=None
+[2026-08-06 15:38:51] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 6/6 trims to rows
+[2026-08-06 15:38:51] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2025 Outlander | Converted 6 trims to rows
+[2026-08-06 15:38:51] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2025/make/Mitsubishi/model/Outlander%20Plug-In%20Hybrid/ HTTP/1.1" 200 None
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 6 trims from ADS response
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Extracted fields: year=2025, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Searching text: 'outlander plug-in hybrid es s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Row complete: model=Outlander Plug-In Hybrid, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Extracted fields: year=2025, desc=LE S-AWC, trim=LE
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Searching text: 'outlander plug-in hybrid le s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Row complete: model=Outlander Plug-In Hybrid, trim=LE S-AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Extracted fields: year=2025, desc=SEL S-AWC, trim=SEL
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Searching text: 'outlander plug-in hybrid sel s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Row complete: model=Outlander Plug-In Hybrid, trim=SEL S-AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Extracted fields: year=2025, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Searching text: 'outlander plug-in hybrid gt s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Row complete: model=Outlander Plug-In Hybrid, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Extracted fields: year=2025, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Searching text: 'outlander plug-in hybrid se s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Row complete: model=Outlander Plug-In Hybrid, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Extracted fields: year=2025, desc=GT NOIR S-AWC, trim=GT NOIR
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Searching text: 'outlander plug-in hybrid gt noir s-awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Row complete: model=Outlander Plug-In Hybrid, trim=GT NOIR S-AWC, engine_type=None
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 6/6 trims to rows
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2025 Outlander Plug-In Hybrid | Converted 6 trims to rows
+[2026-08-06 15:38:52] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2025/make/Mitsubishi/model/RVR/ HTTP/1.1" 200 None
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 6 trims from ADS response
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Extracted fields: year=2025, desc=ES FWD, trim=ES
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Searching text: 'rvr es fwd'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Row complete: model=RVR, trim=ES FWD, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Extracted fields: year=2025, desc=ES AWC, trim=ES
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Searching text: 'rvr es awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Row complete: model=RVR, trim=ES AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Extracted fields: year=2025, desc=SE AWC, trim=SE
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Searching text: 'rvr se awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Row complete: model=RVR, trim=SE AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Extracted fields: year=2025, desc=SEL AWC, trim=SEL
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Searching text: 'rvr sel awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Row complete: model=RVR, trim=SEL AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Extracted fields: year=2025, desc=NOIR AWC, trim=NOIR
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Searching text: 'rvr noir awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Row complete: model=RVR, trim=NOIR AWC, engine_type=None
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Extracted fields: year=2025, desc=GT AWC, trim=GT
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | ModelName from ADS: RVR
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Searching text: 'rvr gt awc'
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Row complete: model=RVR, trim=GT AWC, engine_type=None
+[2026-08-06 15:38:52] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 6/6 trims to rows
+[2026-08-06 15:38:52] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2025 RVR | Converted 6 trims to rows
+[2026-08-06 15:38:52] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2026/country/CA/language/en?sort=ASC HTTP/1.1" 200 None
+[2026-08-06 15:38:53] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Mitsubishi/model/Eclipse%20Cross/ HTTP/1.1" 200 None
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 4 trims from ADS response
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Extracted fields: year=2026, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Searching text: 'eclipse cross es s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-B | Row complete: model=Eclipse Cross, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Extracted fields: year=2026, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Searching text: 'eclipse cross se s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-F | Row complete: model=Eclipse Cross, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Extracted fields: year=2026, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Searching text: 'eclipse cross gt s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-X | Row complete: model=Eclipse Cross, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Extracted fields: year=2026, desc=NOIR S-AWC, trim=NOIR
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | ModelName from ADS: Eclipse Cross
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Searching text: 'eclipse cross noir s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CE45-N | Row complete: model=Eclipse Cross, trim=NOIR S-AWC, engine_type=None
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 4/4 trims to rows
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2026 Eclipse Cross | Converted 4 trims to rows
+[2026-08-06 15:38:54] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Mitsubishi/model/Outlander/ HTTP/1.1" 200 None
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 7 trims from ADS response
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Extracted fields: year=2026, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Searching text: 'outlander es s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-B | Row complete: model=Outlander, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Extracted fields: year=2026, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Searching text: 'outlander se s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-D | Row complete: model=Outlander, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Extracted fields: year=2026, desc=LE S-AWC, trim=LE
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Searching text: 'outlander le s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-F | Row complete: model=Outlander, trim=LE S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Extracted fields: year=2026, desc=SEL S-AWC, trim=SEL
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Searching text: 'outlander sel s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-G | Row complete: model=Outlander, trim=SEL S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Extracted fields: year=2026, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Searching text: 'outlander gt s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Row complete: model=Outlander, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Extracted fields: year=2026, desc=GT Premium S-AWC, trim=GT Premium
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Searching text: 'outlander gt premium s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-X | Row complete: model=Outlander, trim=GT Premium S-AWC, engine_type=None
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-N | Extracted fields: year=2026, desc=GT NOIR S-AWC, trim=GT NOIR
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-N | ModelName from ADS: Outlander
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-N | Searching text: 'outlander gt noir s-awc'
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CO45-N | Row complete: model=Outlander, trim=GT NOIR S-AWC, engine_type=None
+[2026-08-06 15:38:54] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 7/7 trims to rows
+[2026-08-06 15:38:54] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2026 Outlander | Converted 7 trims to rows
+[2026-08-06 15:38:54] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Mitsubishi/model/Outlander%20Plug-In%20Hybrid/ HTTP/1.1" 200 None
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 6 trims from ADS response
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Extracted fields: year=2026, desc=ES S-AWC, trim=ES
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Searching text: 'outlander plug-in hybrid es s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-B | Row complete: model=Outlander Plug-In Hybrid, trim=ES S-AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Extracted fields: year=2026, desc=SE S-AWC, trim=SE
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Searching text: 'outlander plug-in hybrid se s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-D | Row complete: model=Outlander Plug-In Hybrid, trim=SE S-AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Extracted fields: year=2026, desc=LE S-AWC, trim=LE
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Searching text: 'outlander plug-in hybrid le s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-F | Row complete: model=Outlander Plug-In Hybrid, trim=LE S-AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Extracted fields: year=2026, desc=SEL S-AWC, trim=SEL
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Searching text: 'outlander plug-in hybrid sel s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-G | Row complete: model=Outlander Plug-In Hybrid, trim=SEL S-AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Extracted fields: year=2026, desc=GT S-AWC, trim=GT
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Searching text: 'outlander plug-in hybrid gt s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-X | Row complete: model=Outlander Plug-In Hybrid, trim=GT S-AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Extracted fields: year=2026, desc=GT NOIR S-AWC, trim=GT NOIR
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | ModelName from ADS: Outlander Plug-In Hybrid
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Searching text: 'outlander plug-in hybrid gt noir s-awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | COEV-N | Row complete: model=Outlander Plug-In Hybrid, trim=GT NOIR S-AWC, engine_type=None
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 6/6 trims to rows
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2026 Outlander Plug-In Hybrid | Converted 6 trims to rows
+[2026-08-06 15:38:55] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2026/make/Mitsubishi/model/RVR/ HTTP/1.1" 200 None
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 6 trims from ADS response
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Extracted fields: year=2026, desc=ES FWD, trim=ES
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Searching text: 'rvr es fwd'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-A | Row complete: model=RVR, trim=ES FWD, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Extracted fields: year=2026, desc=ES AWC, trim=ES
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Searching text: 'rvr es awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-B | Row complete: model=RVR, trim=ES AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Extracted fields: year=2026, desc=SE AWC, trim=SE
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Searching text: 'rvr se awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-E | Row complete: model=RVR, trim=SE AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Extracted fields: year=2026, desc=SEL AWC, trim=SEL
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Searching text: 'rvr sel awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-G | Row complete: model=RVR, trim=SEL AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Extracted fields: year=2026, desc=NOIR AWC, trim=NOIR
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Searching text: 'rvr noir awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-N | Row complete: model=RVR, trim=NOIR AWC, engine_type=None
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Extracted fields: year=2026, desc=GT AWC, trim=GT
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | ModelName from ADS: RVR
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | Loaded 1 ENGINE_TYPE keywords: ['phev']
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Searching text: 'rvr gt awc'
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | No ENGINE_TYPE keyword found
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | MITSUBISHI | CS45-Z | Row complete: model=RVR, trim=GT AWC, engine_type=None
+[2026-08-06 15:38:55] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 6/6 trims to rows
+[2026-08-06 15:38:55] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2026 RVR | Converted 6 trims to rows
+[2026-08-06 15:38:56] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2027/country/CA/language/en?sort=ASC HTTP/1.1" 200 None
+[2026-08-06 15:38:56] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "POST /ADSDemo/api/full/ymmt/year/2027/make/Mitsubishi/model/RVR/ HTTP/1.1" 200 None
+[2026-08-06 15:38:57] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Processing 0 trims from ADS response
+[2026-08-06 15:38:57] [INFO    ] [accy_v2.model_lookup.chrome_api.mapper] mapper | ads_response_to_rows | Mitsubishi | Converted 0/0 trims to rows
+[2026-08-06 15:38:57] [DEBUG   ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | Mitsubishi 2027 RVR | Converted 0 trims to rows
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC HTTP/1.1" 503 392
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.util.retry] Incremented Retry for (url='/ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC'): Retry(total=2, connect=None, read=None, redirect=None, status=None)
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.connectionpool] Retry: /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.connectionpool] Resetting dropped connection: demos.autodatasolutions.com
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC HTTP/1.1" 503 392
+[2026-08-06 15:38:57] [DEBUG   ] [urllib3.util.retry] Incremented Retry for (url='/ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC'): Retry(total=1, connect=None, read=None, redirect=None, status=None)
+[2026-08-06 15:38:59] [DEBUG   ] [urllib3.connectionpool] Retry: /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC
+[2026-08-06 15:38:59] [DEBUG   ] [urllib3.connectionpool] Resetting dropped connection: demos.autodatasolutions.com
+[2026-08-06 15:38:59] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC HTTP/1.1" 503 392
+[2026-08-06 15:38:59] [DEBUG   ] [urllib3.util.retry] Incremented Retry for (url='/ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC'): Retry(total=0, connect=None, read=None, redirect=None, status=None)
+[2026-08-06 15:39:03] [DEBUG   ] [urllib3.connectionpool] Retry: /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC
+[2026-08-06 15:39:03] [DEBUG   ] [urllib3.connectionpool] Resetting dropped connection: demos.autodatasolutions.com
+[2026-08-06 15:39:04] [DEBUG   ] [urllib3.connectionpool] https://demos.autodatasolutions.com:443 "GET /ADSDemo/api/ymmt/models/make/Mitsubishi/year/2028/country/CA/language/en?sort=ASC HTTP/1.1" 503 392
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] ADS fetch complete | Total records: 46 | Columns: 10
+[2026-08-06 15:39:04] [DEBUG   ] [refresh_db_ads] DataFrame columns: ['Manufacturer', 'ModelYear', 'ModelNumber', 'Description', 'TrimName', 'Package', 'Drivetrain', 'PassDoors', 'ModelName', 'engine_type']
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] 
+[Step 3/3] Saving to database with validation and standardization...
+[2026-08-06 15:39:04] [DEBUG   ] [refresh_db_ads] Saving to: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\db\db_vehicle_models.csv | Key columns: Manufacturer, ModelYear, ModelNumber, Package
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] CSV save SUCCESS | Records saved: 23
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Duplicates skipped: 23
+[2026-08-06 15:39:04] [DEBUG   ] [refresh_db_ads] Writing DQ report to: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] DQ report written | Path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] 
+================================================================================
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] DATABASE APPEND COMPLETE - SUCCESS
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Mode: append (no archive)
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Database location: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\db\db_vehicle_models.csv
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Records saved: 23
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Total configurations fetched: 46
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Pipeline log path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\pipeline_logs\ads_refresh
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] DQ report path: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\output\dq_reports\ads_refresh
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] Structured log file: accy_v2\model_lookup\logs\refresh_db_ads_20260806_153849.log
+[2026-08-06 15:39:04] [INFO    ] [refresh_db_ads] ================================================================================

@@ -94,13 +94,14 @@ language_requirements:
 
 # Language-specific column configuration
 # Used by step4_transformation._split_by_language() to separate by language
+# NOTE: These must match the CANONICAL column names from column_definition (step3 output)
 language_specific_columns:
   EN:
-    - Description
-    - Comments
+    - english_description
+    - comments_en
   FR:
-    - Description_FR
-    - Comments_FR
+    - french_description
+    - comments_fr
 
 # Data integrity checks (validation gates after transformation)
 integrity_checks:

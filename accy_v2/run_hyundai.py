@@ -66,7 +66,7 @@ def main() -> None:
         sys.exit(1)
 
     pipeline = HyundaiPipeline()
-    pipeline.run(file_path=file_path, config_path=str(CONFIG_PATH))
+    pipeline.run(file_path=file_path, config_root=str(CONFIG_PATH.parent))
 
 
 if __name__ == "__main__":

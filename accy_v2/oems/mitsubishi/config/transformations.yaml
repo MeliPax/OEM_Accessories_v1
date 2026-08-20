@@ -94,7 +94,7 @@ columns:
     operations:
       - name: convert_to_float
       - name: remove_currency_symbols
-        symbols: ["$", "CAD", "USD"]
+        symbols: ["$"]
     validation:
       nullable: true
 

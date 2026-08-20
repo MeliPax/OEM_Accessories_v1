@@ -3,7 +3,14 @@
     "allow": [
       "Bash(python run_mitsubishi.py \"../landing_zone/2026/Mitsubishi/Accessory Guide - February26.xlsx\")",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python run_db.py append Mitsubishi --years 2023 2024 2025)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(python accy_v2/run_mitsubishi.py)",
+      "Bash(python /tmp/final_verify.py)",
+      "Bash(python accy_v2/run_hyundai.py)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\paxm\\\\OneDrive - PBS SYSTEMS\\\\Desktop\\\\Office\\\\Projects\\\\OEM Accessory project\\\\OEM_Accessories_v1\\\\accy_v2\\\\output\\\\ready_to_upload\\\\mitsubishi\" -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object { $_.FullName })"
     ],
     "deny": [
       "Read(**/.env*)",

@@ -84,9 +84,10 @@ model_lookup:
       use_single_char_token_matching: true
 
       # DECISION [020]: Use centralized path registry
-      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
-      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
-      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
+      # Genesis uses its own configs (not Hyundai configs)
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/genesis/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/genesis/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/genesis/standardization.yaml"
 
 # ADS (AutoData Solutions) fallback for missing models
 ads_fallback:

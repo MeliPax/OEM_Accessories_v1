@@ -30,7 +30,7 @@ sheets:
     description: "Vehicle accessory catalog with English descriptions"
 
     # DECISION [019]: Explicit source→output mapping per column
-    # Format allows programmatic processing and easy additions
+    # Unified structure: Model ← model_number (OEM code), ModelName ← model_name (human name)
     columns:
       - output_column: Year
         source_column: year_from
@@ -38,11 +38,11 @@ sheets:
         width: 10
         description: "Vehicle model year"
 
-      - output_column: Model
-        source_column: model
+      - output_column: ModelName
+        source_column: model_name
         data_type: string
         width: 20
-        description: "Vehicle model name/trim code (e.g., ES, SE, GT)"
+        description: "Vehicle model name (added in step1, standardized across pipeline)"
 
       - output_column: Part
         source_column: part_number
@@ -51,16 +51,16 @@ sheets:
         description: "Accessory part number"
 
       - output_column: Description
-        source_column: english_description
+        source_column: description
         data_type: string
         width: 50
-        description: "English accessory description (post-transformation)"
+        description: "English accessory description (post-transformation, language-split)"
 
       - output_column: Comments
-        source_column: comments_en
+        source_column: comments
         data_type: string
         width: 30
-        description: "English comments/restrictions (optional)"
+        description: "English comments/restrictions (post-transformation, language-split)"
 
       - output_column: Price
         source_column: msrp
@@ -81,6 +81,12 @@ sheets:
         width: 20
         description: "Vehicle trim level code with variant (e.g., ES_S-AWC)"
 
+      - output_column: Model
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "OEM model number from vehicle database"
+
     sorting:
       - column: Year
         order: ascending
@@ -96,7 +102,7 @@ sheets:
     data_source: primary
     description: "Catalogue d'accessoires automobiles avec descriptions en français"
 
-    # DECISION [019]: Identical structure to EN sheet, but with FR-specific columns
+    # DECISION [019]: Identical structure to EN sheet, but with FR-specific language columns
     columns:
       - output_column: Year
         source_column: year_from
@@ -104,11 +110,11 @@ sheets:
         width: 10
         description: "Année du modèle du véhicule"
 
-      - output_column: Model
-        source_column: model
+      - output_column: ModelName
+        source_column: model_name
         data_type: string
         width: 20
-        description: "Code de modèle/trim du véhicule (ex. ES, SE, GT)"
+        description: "Nom du modèle du véhicule (ex. Outlander, RVR, Mirage)"
 
       - output_column: Part
         source_column: part_number
@@ -117,16 +123,16 @@ sheets:
         description: "Numéro de pièce accessoire"
 
       - output_column: Description
-        source_column: french_description
+        source_column: description
         data_type: string
         width: 50
-        description: "Description d'accessoire en français (post-transformation)"
+        description: "Description d'accessoire en français (post-transformation, language-split)"
 
       - output_column: Comments
-        source_column: comments_fr
+        source_column: comments
         data_type: string
         width: 30
-        description: "Commentaires/restrictions en français (optionnel)"
+        description: "Commentaires/restrictions en français (post-transformation, language-split)"
 
       - output_column: Price
         source_column: msrp
@@ -146,6 +152,12 @@ sheets:
         data_type: string
         width: 20
         description: "Code de niveau de garniture du véhicule avec variante"
+
+      - output_column: Model
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "Numéro de modèle OEM de la base de données du véhicule"
 
     sorting:
       - column: Year

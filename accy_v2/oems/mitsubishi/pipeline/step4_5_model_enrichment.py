@@ -7,6 +7,8 @@ from core.helpers.dq_logger import DQLogger
 from core.helpers.keyword_extractor import KeywordExtractor
 from core.helpers.pipeline_logger import PipelineLogger
 from accy_v2.model_lookup.search_engine import VehicleSearchEngine
+from accy_v2.model_lookup.models.manufacture_module import find_model_line, load_existing_csv, save_vehicle_models_to_csv
+from accy_v2.model_lookup.chrome_api.service import ADSService
 
 
 def run(
@@ -88,6 +90,42 @@ def run(
         f"Sheet '{sheet_name}': model_keywords from data={model_keywords_from_data}, fuel_type={fuel_type}"
     )
 
+    # ===== MODEL-LINE GATE: Check if model line exists locally, or refresh from ADS =====
+    csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
+    configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
+
+    local_df = load_existing_csv(csv_path)
+    model_line_df = find_model_line(local_df, vehicle_make, vehicle_year, model_name)
+
+    if model_line_df.empty:
+        cache_key = (vehicle_make, model_name, vehicle_year)
+        if ads_attempted is None:
+            ads_attempted = set()
+
+        if cache_key not in ads_attempted:
+            ads_attempted.add(cache_key)
+            pipeline_logger.info(f"  Model line '{model_name}' not in local db; attempting ADS refresh...")
+
+            try:
+                ads_service = ADSService(pipeline_logger=pipeline_logger, dq_logger=dq_logger)
+                ads_result = ads_service.fetch_vehicle(vehicle_make, model_name, vehicle_year)
+
+                if not ads_result.empty:
+                    pipeline_logger.info(f"  ADS returned {len(ads_result)} rows for {vehicle_make} {vehicle_year} {model_name}; saving to db...")
+                    save_vehicle_models_to_csv(ads_result, csv_path=csv_path, configs_dir=configs_dir, dq_logger=dq_logger)
+                    local_df = load_existing_csv(csv_path)
+                    model_line_df = find_model_line(local_df, vehicle_make, vehicle_year, model_name)
+                else:
+                    pipeline_logger.warning(f"  ADS returned no results for {vehicle_make} {vehicle_year} {model_name}")
+            except Exception as e:
+                dq_logger.log_warning(
+                    sheet_name=sheet_name, model_name=model_name, record_index=None,
+                    record_snapshot={}, rule_violated="model_number_lookup_rule",
+                    issue_description=f"[ADS_FETCH_ERROR] Failed to fetch from ADS: {str(e)}"
+                )
+                pipeline_logger.warning(f"  ADS fetch failed: {str(e)}")
+    # ===== END MODEL-LINE GATE =====
+
     # Batch lookup: one per unique trim
     model_mapping, missing_trims = _batch_lookup_model_numbers(
         year=vehicle_year,
@@ -98,6 +136,7 @@ def run(
         fuel_type=fuel_type,
         extractor=extractor,
         vehicle_make=vehicle_make,
+        oem_config=oem_config,
         dq_logger=dq_logger,
         pipeline_logger=pipeline_logger,
     )
@@ -135,6 +174,7 @@ def _batch_lookup_model_numbers(
     fuel_type: str,
     extractor: KeywordExtractor,
     vehicle_make: str,
+    oem_config: Dict[str, Any],
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
 ) -> Tuple[Dict[str, str], List[str]]:
@@ -156,7 +196,7 @@ def _batch_lookup_model_numbers(
     # Initialize search engine once for this batch of lookups
     csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
     configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
-    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config={}, pipeline_logger=pipeline_logger)
+    engine = VehicleSearchEngine(csv_path=csv_path, configs_dir=configs_dir, oem_config=oem_config, pipeline_logger=pipeline_logger)
 
     for trim in trims:
         # Extract trim keywords and combine with model + fuel_type keywords
@@ -254,23 +294,19 @@ def _add_model_number_columns(
         lambda x: "yes - Model number found" if pd.notna(x) else "no - missing model number"
     )
 
-    # Count before exclusion
-    rows_before = len(df)
-
-    # Exclude rows with missing model numbers (missing_trims)
-    rows_to_exclude = df[df[trim_col].isin(missing_trims)]
-    excluded_count = len(rows_to_exclude)
-
-    df_filtered = df[~df[trim_col].isin(missing_trims)].copy()
-
-    rows_after = len(df_filtered)
+    # Count rows with and without model numbers
+    rows_total = len(df)
+    rows_with_model = len(df[df["model_number"].notna()])
+    rows_without_model = len(df[df["model_number"].isna()])
 
     pipeline_logger.debug(
-        f"Sheet '{sheet_name}': {rows_before} rows before, {excluded_count} excluded "
-        f"(missing trims: {missing_trims}), {rows_after} rows in output"
+        f"Sheet '{sheet_name}': {rows_total} total rows. {rows_with_model} rows with model numbers, "
+        f"{rows_without_model} rows with missing model numbers (empty ModelNumber for manual correction)."
     )
 
-    return df_filtered
+    # Return ALL rows, including those with missing model_number
+    # Rows with missing model_number will have empty ModelNumber column in output for manual correction
+    return df
 
 
 def _extract_make_from_model_name(model_name: str) -> str:

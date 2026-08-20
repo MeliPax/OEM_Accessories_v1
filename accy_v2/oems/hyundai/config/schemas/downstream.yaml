@@ -21,48 +21,48 @@ sheets:
     data_source: primary
     description: "Vehicle accessory catalog with English descriptions"
 
-    # DECISION: Explicit source→output mapping per column
-    # Format allows programmatic processing and easy additions
+    # DECISION [019]: Explicit source→output mapping per column
+    # Unified structure: Model ← model_number (OEM code), ModelName ← model_name (human name)
     columns:
       - output_column: Year
-        source_column: ModelYear
+        source_column: year_from
         data_type: integer
         width: 10
         description: "Vehicle model year"
 
-      - output_column: Model
-        source_column: ModelName
+      - output_column: ModelName
+        source_column: model
         data_type: string
         width: 20
         description: "Vehicle model name (e.g., Elantra, Santa Fe)"
 
       - output_column: Part
-        source_column: PartNumber
+        source_column: part_number
         data_type: string
         width: 15
         description: "Accessory part number"
 
       - output_column: Description
-        source_column: Description
+        source_column: description
         data_type: string
         width: 50
-        description: "English accessory description (post-transformation)"
+        description: "English accessory description (post-transformation, language-split)"
 
       - output_column: Comments
-        source_column: Comments
+        source_column: comments
         data_type: string
         width: 30
-        description: "English comments/restrictions (optional)"
+        description: "English comments/restrictions (post-transformation, language-split)"
 
       - output_column: Price
-        source_column: MSRP
+        source_column: msrp
         data_type: float
         width: 12
         formatting: currency
         description: "Manufacturer Suggested Retail Price (USD)"
 
       - output_column: Hours
-        source_column: LaborHours
+        source_column: labour_hours
         data_type: float
         width: 10
         description: "Labor hours required for installation"
@@ -73,7 +73,7 @@ sheets:
         width: 20
         description: "Vehicle trim level (e.g., Essential, Preferred, Luxury)"
 
-      - output_column: model_number
+      - output_column: Model
         source_column: model_number
         data_type: string
         width: 15
@@ -94,47 +94,47 @@ sheets:
     data_source: primary
     description: "Catalogue d'accessoires automobiles avec descriptions en français"
 
-    # DECISION [019]: Identical structure to EN sheet, but with FR-specific columns
+    # DECISION [019]: Identical structure to EN sheet, but with FR-specific language columns
     columns:
       - output_column: Year
-        source_column: ModelYear
+        source_column: year_from
         data_type: integer
         width: 10
         description: "Année du modèle du véhicule"
 
-      - output_column: Model
-        source_column: ModelName
+      - output_column: ModelName
+        source_column: model
         data_type: string
         width: 20
         description: "Nom du modèle du véhicule (p. ex. Elantra, Santa Fe)"
 
       - output_column: Part
-        source_column: PartNumber
+        source_column: part_number
         data_type: string
         width: 15
         description: "Numéro de pièce accessoire"
 
       - output_column: Description
-        source_column: Description_FR
+        source_column: description
         data_type: string
         width: 50
-        description: "Description d'accessoire en français (post-transformation)"
+        description: "Description d'accessoire en français (post-transformation, language-split)"
 
       - output_column: Comments
-        source_column: Comments_FR
+        source_column: comments
         data_type: string
         width: 30
-        description: "Commentaires/restrictions en français (optionnel)"
+        description: "Commentaires/restrictions en français (post-transformation, language-split)"
 
       - output_column: Price
-        source_column: MSRP
+        source_column: msrp
         data_type: float
         width: 12
         formatting: currency
         description: "Prix de détail suggéré par le fabricant (USD)"
 
       - output_column: Hours
-        source_column: LaborHours
+        source_column: labour_hours
         data_type: float
         width: 10
         description: "Heures de main-d'œuvre requises pour l'installation"
@@ -145,7 +145,7 @@ sheets:
         width: 20
         description: "Niveau de garniture du véhicule (p. ex. Essential, Preferred, Luxury)"
 
-      - output_column: Model_Number
+      - output_column: Model
         source_column: model_number
         data_type: string
         width: 15

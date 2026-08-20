@@ -119,7 +119,16 @@ sheet_validation:
 
   # Sheets to explicitly exclude (e.g., "Instructions", "Cover", "Luxwood English", "Luxwood French")
   # Luxwood sheets are a different vendor's product catalog, not Mitsubishi model data (different schema, header at row 15)
-  exclude_sheet_names: [Instructions, Cover, Instructions (Français), Legend, Légende, "Luxwood English", "Luxwood French"]
+  exclude_sheet_names:
+    [
+      Instructions,
+      Cover,
+      Instructions (Français),
+      Legend,
+      Légende,
+      "Luxwood English",
+      "Luxwood French",
+    ]
 
   # Trim table detection (Mitsubishi trim columns named after actual trim levels)
   # Trim level columns: ES, SE, LE, SEL, GT, GT PREM (may include suffix like _S-AWC, _FWD, _CVT, _AWC, etc.)
@@ -137,7 +146,19 @@ sheet_validation:
       must_have_only:
         expected_value_types: [X, "", __na__]
     # Exclusion keywords prevent structural columns from becoming trim candidates
-    trim_exclusion_keywords: [category, electronics, interior, exterior, cargo, general, photo, install_sheet, installed_price, imc]
+    trim_exclusion_keywords:
+      [
+        category,
+        electronics,
+        interior,
+        exterior,
+        cargo,
+        general,
+        photo,
+        install_sheet,
+        installed_price,
+        imc,
+      ]
 
 # Completeness validation gates
 validation_gates:

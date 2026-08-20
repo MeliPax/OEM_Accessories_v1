@@ -49,6 +49,9 @@ def run(
     _validate_data_types(working_df, sheet_name, config)
     _check_profitability(working_df, sheet_name, meta_data, dq_logger)
 
+    # Standardize model_name as a real column from Step 1 onward (matching Hyundai)
+    working_df["model_name"] = meta_data["model_name"]
+
     return working_df
 
 
