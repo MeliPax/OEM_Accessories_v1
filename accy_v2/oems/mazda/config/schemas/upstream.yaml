@@ -67,7 +67,7 @@ columns:
 
   english_description:
     detect_by_keyword:
-      must_have: [accessoryname]
+      must_have: [additional, description, en]
       must_have_one_of: []
       must_not_have: []
     required: true
@@ -75,11 +75,11 @@ columns:
     expected_data_type: string
     completeness_threshold: 1.0
     language: EN
-    description: "English accessory description from AccessoryName column"
+    description: "English accessory description from AdditionalDescriptionEn column"
 
   french_description:
     detect_by_keyword:
-      must_have: [accessorynamefr]
+      must_have: [additional, description, fr]
       must_have_one_of: []
       must_not_have: []
     required: true
@@ -87,7 +87,7 @@ columns:
     expected_data_type: string
     completeness_threshold: 1.0
     language: FR
-    description: "French accessory description from AccessoryNameFR column"
+    description: "French accessory description from AdditionalDescriptionFr column"
 
   msrp:
     detect_by_keyword:
