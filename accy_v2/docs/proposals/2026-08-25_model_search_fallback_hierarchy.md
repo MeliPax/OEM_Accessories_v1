@@ -123,37 +123,54 @@ Mitsubishi,Outlander,2025,2026-08-23T14:22:10Z,2026-08-23T14:23:05Z,completed,no
 
 **File size:** Bounded by the number of unique `(Mfr, Model, Year)` tuples touched by any pipeline/CLI run. Today's pipeline touches ~7–10 OEMs × ~5–10 model lines per OEM × ~3 years = ~200–300 rows. Full read-modify-write is negligible.
 
-### staleness check: the 30-day rule
+### Staleness check: 30-day rule + 5-minute timeout for stuck fetches
 
 New method in the `FetchActivityLog` class:
 
 ```python
-def should_fetch(self, manufacturer: str, model_name: str, model_year: int, staleness_days: int = 30) -> bool:
+def should_fetch(self, manufacturer: str, model_name: str, model_year: int, 
+                 staleness_days: int = 30, stalled_timeout_minutes: int = 5) -> bool:
     """
     Determine whether a fresh fetch is needed.
     
     Returns True if:
     - No row exists for this key (never fetched)
-    - Last row has Status=in_progress or Status=failed (attempt not finished or errored; retry)
-    - Last row has Status=completed but Result=error (fetch itself errored; retry)
-    - Last row has Status=completed, Result=not_found but > 30 days ago (data might exist now; retry)
-    - Last row has Status=completed, Result=found but > 30 days old (refresh data; retry)
+    - Status=in_progress AND elapsed time > stalled_timeout_minutes (process likely crashed; mark as failed, retry)
+    - Status=failed (attempt errored; retry on next opportunity)
+    - Status=completed, Result=found, but > staleness_days old (refresh data)
+    - Status=completed, Result=not_found, but > staleness_days old (re-check, data might exist now)
     
     Returns False if:
-    - Last row has Status=completed, Result=not_found, and < 30 days old (confirmed absent, skip)
-    - Last row has Status=completed, Result=found, and < 30 days old (confirmed present and fresh, skip)
+    - Status=in_progress AND elapsed < stalled_timeout_minutes (attempt still actively running; don't stack fetches)
+    - Status=completed, Result=found, and < staleness_days old (confirmed present and fresh; skip ADS)
+    - Status=completed, Result=not_found, and < staleness_days old (confirmed absent; skip ADS, go to tier 3)
     """
 ```
 
-**Intent:** Avoid re-fetching data that was checked recently. `found` and `not_found` both count as "we checked," so a model confirmed absent 5 days ago doesn't get re-fetched just because it's been 5 days. Only after 30 days does staleness trigger a retry (maybe ADS added the model, maybe a typo was fixed upstream, etc.).
+**30-day staleness rule:**
+- Both `found` and `not_found` count as "we checked this model"
+- A model confirmed absent 5 days ago doesn't get re-fetched just because time passed
+- Only after 30 days does staleness trigger a fresh ADS call (maybe model was added upstream, maybe a typo was fixed)
 
-**Failed/in_progress rows:** These *don't* count as "checked" — they should be retried on the next opportunity. This prevents a transient ADS timeout from blocking a model for 30 days.
+**5-minute timeout for stalled `in_progress` rows:**
+- If a fetch is marked `in_progress` but has been stalled for > 5 minutes, the process likely crashed/hung
+- Matches on-demand pipeline nature (not background jobs; if running for 5+ min, something is wrong)
+- Automatic recovery: `should_fetch()` auto-marks the stale `in_progress` as `failed`, then returns `True` to retry
+- Next pipeline run (or next sheet in same run) will see the marked-as-failed row and will retry ADS without waiting the full 30 days
+
+**Failed attempts:**
+- `Status=failed` rows don't wait for the 30-day clock — they're retried on the next opportunity
+- This prevents a transient ADS timeout from blocking a model until staleness expires
 
 ### Implementation module: `accy_v2/model_lookup/fetch_activity_log.py`
 
-New helper class:
+New helper class with centralized factory initialization:
 
 ```python
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+import pandas as pd
+
 class FetchActivityLog:
     """
     Centralized interface for tracking model data fetch attempts across pipeline runs.
@@ -162,7 +179,7 @@ class FetchActivityLog:
     
     def __init__(self, csv_path: str):
         """Load existing log from CSV, or create empty log if file doesn't exist."""
-        self.csv_path = csv_path
+        self.csv_path = Path(csv_path)
         self._load()
     
     def _load(self) -> None:
@@ -171,39 +188,112 @@ class FetchActivityLog:
         # Handles missing file gracefully (returns empty DataFrame with correct schema)
     
     def _save(self) -> None:
-        """Write DataFrame back to CSV (upsert pattern: full rewrite)."""
-        # Writes self.df to self.csv_path
+        """Write DataFrame back to CSV (upsert pattern: full rewrite, atomic write via temp file)."""
+        # Writes self.df to self.csv_path using atomic write pattern:
+        # 1. Write to temporary file
+        # 2. Atomic rename temp to final path
+        # This prevents corruption if write is interrupted
     
     def should_fetch(self, manufacturer: str, model_name: str, model_year: int, 
-                     staleness_days: int = 30) -> bool:
-        """Check if a fresh fetch is needed (see staleness rule above)."""
-        # Finds row by key, applies staleness logic
+                     staleness_days: int = 30, stalled_timeout_minutes: int = 5) -> bool:
+        """
+        Check if a fresh fetch is needed.
+        
+        Returns True if:
+        - No row exists (never fetched)
+        - Status=in_progress AND elapsed > stalled_timeout_minutes (process likely crashed)
+        - Status=failed (retry failed attempts)
+        - Status=completed AND (Result=found OR Result=not_found) AND elapsed > staleness_days
+        
+        Returns False if:
+        - Status=in_progress AND elapsed < stalled_timeout_minutes (attempt still running, don't stack)
+        - Status=completed AND elapsed < staleness_days (data is fresh)
+        """
+        # Finds row by key (Manufacturer, ModelName, ModelYear)
+        # Handles in_progress timeout: if > 5 min, auto-fail and return True
     
     def start_fetch(self, manufacturer: str, model_name: str, model_year: int, 
                     source: str, run_id: str) -> None:
         """Record that a fetch is starting. Sets Status=in_progress, FetchStartedAt=now."""
         # Upserts row, calls self._save()
+        # Emits: logger.info(f"[FETCH_START] {manufacturer} {model_name} {model_year} (source={source})")
     
     def complete_fetch(self, manufacturer: str, model_name: str, model_year: int, 
                        result: str, run_id: str) -> None:
-        """Record a successful fetch. Sets Status=completed, Result=<found|not_found>, FetchCompletedAt=now."""
-        # result must be "found" or "not_found"
+        """
+        Record a successful fetch. Sets Status=completed, Result=<found|not_found>, FetchCompletedAt=now.
+        
+        Args:
+            result: "found" or "not_found" — must be one of these values (validates input)
+        
+        Raises:
+            ValueError if result is not a valid enum value
+        """
+        # Validates result is "found" or "not_found"
         # Upserts row, calls self._save()
+        # Emits: logger.info(f"[FETCH_COMPLETE_FOUND] ...") or logger.info(f"[FETCH_COMPLETE_NOT_FOUND] ...")
     
     def fail_fetch(self, manufacturer: str, model_name: str, model_year: int, 
                    error_message: str, run_id: str) -> None:
-        """Record a failed fetch. Sets Status=failed, Result=error, FetchCompletedAt=now."""
+        """
+        Record a failed fetch. Sets Status=failed, Result=error, FetchCompletedAt=now.
+        
+        Args:
+            error_message: Description of the failure (e.g., "Connection timeout", "stalled for 312s")
+        """
         # Upserts row (Result always "error"), calls self._save()
-        # error_message stored for debugging (currently as DQ log entry, not in CSV)
+        # Emits: logger.warning(f"[FETCH_FAILED] {manufacturer} {model_name} {model_year}: {error_message}")
+
+
+# ===== FACTORY FUNCTION: Single initialization point for both pipeline and CLI =====
+def get_fetch_activity_log() -> FetchActivityLog:
+    """
+    Factory: Initialize FetchActivityLog with the standard production path.
+    
+    Both the pipeline and the bulk CLI use this function, ensuring:
+    - Single source of truth for CSV location (encapsulated in model_lookup module)
+    - Consistent initialization across all entry points
+    - Easy to swap for test paths in unit tests
+    
+    Returns:
+        Initialized FetchActivityLog instance
+    """
+    from pathlib import Path
+    
+    # CSV lives alongside db_vehicle_models.csv in the db/ folder
+    csv_path = Path(__file__).parent / "db" / "fetch_activity_log.csv"
+    return FetchActivityLog(str(csv_path))
 ```
 
-All three methods (`start`, `complete`, `fail`) also emit a `PipelineLogger` line:
-- `start_fetch()` → `logger.info(f"[FETCH_START] {manufacturer} {model_name} {model_year} (source={source})")`
-- `complete_fetch(..., result="found")` → `logger.info(f"[FETCH_COMPLETE_FOUND] ...")`
-- `complete_fetch(..., result="not_found")` → `logger.info(f"[FETCH_COMPLETE_NOT_FOUND] ...")`
-- `fail_fetch()` → `logger.warning(f"[FETCH_FAILED] {manufacturer} {model_name} {model_year}: {error_message}")`
+**Design principle:** All model_lookup initialization logic lives in the model_lookup module. Pipeline and CLI code use the factory function, never hardcode paths.
 
-(Same dual-output pattern the project already uses for `DQLogger` + `PipelineLogger`, so the human-readable run log and the structured CSV tracker stay synchronized.)
+---
+
+## Architecture & Module Organization
+
+### Design principle: Single source of truth for model_lookup initialization
+
+The proposal centralizes all model_lookup initialization logic in the model_lookup module itself, avoiding scattered hardcoded paths across pipeline code. This achieves:
+
+1. **Separation of concerns** — model_lookup is self-contained; pipeline code doesn't need to know CSV locations
+2. **Consistency across entry points** — pipeline and bulk CLI use the same factory function
+3. **Encapsulation** — CSV path is an implementation detail, not exposed to callers
+4. **Testability** — easy to mock or inject test paths in unit tests
+5. **Future-proofing** — if storage moves from CSV to database, only the factory needs to change
+
+### Factory function pattern
+
+```
+get_fetch_activity_log() factory function
+    ├─ Lives in: accy_v2/model_lookup/fetch_activity_log.py
+    ├─ Called by: accy_v2/core/base_pipeline.py (pipeline initialization)
+    ├─ Called by: accy_v2/model_lookup/refresh_db_ads.py (bulk CLI initialization)
+    └─ Returns: Initialized FetchActivityLog instance (with CSV path resolved)
+```
+
+**Why factory over direct instantiation:**
+- Direct: `FetchActivityLog(Path(__file__).parent / "db" / "fetch_activity_log.csv")` — path logic scattered
+- Factory: `get_fetch_activity_log()` — all path logic in one place, both callers use it identically
 
 ---
 
@@ -220,16 +310,16 @@ All three methods (`start`, `complete`, `fail`) also emit a `PipelineLogger` lin
 
 1. **Initialize `FetchActivityLog` once per pipeline run** (in `base_pipeline.py::run()`, where `ads_attempted` is currently created):
    ```python
-   from accy_v2.model_lookup.fetch_activity_log import FetchActivityLog
-   
    # Replace:
    #   ads_attempted = set()
    # With:
-   fetch_log = FetchActivityLog(
-       csv_path=Path(accy_v2) / "model_lookup" / "db" / "fetch_activity_log.csv"
-   )
+   from accy_v2.model_lookup.fetch_activity_log import get_fetch_activity_log
+   
+   fetch_log = get_fetch_activity_log()  # Factory handles path, initialization
    ```
    Pass `fetch_log` down to `run_step4_5_model_enrichment()` instead of `ads_attempted`.
+   
+   **Why factory function:** All model_lookup initialization logic lives in the model_lookup module (not scattered across pipeline code). Both pipeline and CLI use the same factory, ensuring consistent path and initialization.
 
 2. **Replace the model-line gate in `step4_5_model_enrichment.py`** (currently lines ~90–130 in both files):
    ```python
@@ -277,17 +367,23 @@ All three methods (`start`, `complete`, `fail`) also emit a `PipelineLogger` lin
 
 **Changes:**
 
-The existing `refresh_from_ads()` flow (lines 34–232) already iterates per make × year, then fetches trims per model within that make/year. Wrap each per-model fetch with the log:
+The existing `refresh_from_ads()` flow (lines 34–232) already iterates per make × year, then fetches trims per model within that make/year. Initialize the log at the start of the function, then wrap each per-model fetch with tracking:
 
 ```python
-# Inside refresh_from_ads(), around line ~180 where models are being fetched:
+# At start of refresh_from_ads():
+from accy_v2.model_lookup.fetch_activity_log import get_fetch_activity_log
+from uuid import uuid4
 
+fetch_log = get_fetch_activity_log()  # Factory initialization (same as pipeline)
+run_id = str(uuid4())[:8]            # Unique run ID for this bulk refresh
+
+# Inside the loop where models are being fetched:
 for model in models_for_make_year:
     manufacturer = make  # (or use canonical name mapping)
     model_name = model["name"]
     model_year = year
     
-    # NEW: start the fetch
+    # NEW: Record fetch start
     fetch_log.start_fetch(manufacturer, model_name, model_year, 
                           source="ads_bulk_cli", run_id=run_id)
     try:
@@ -297,22 +393,23 @@ for model in models_for_make_year:
         if trims:
             # EXISTING: save to CSV
             save_vehicle_models_to_csv(...)
-            # NEW: mark success
+            # NEW: Record success
             fetch_log.complete_fetch(manufacturer, model_name, model_year, 
                                      result="found", run_id=run_id)
         else:
-            # NEW: mark "no data"
+            # NEW: Record "no data found"
             fetch_log.complete_fetch(manufacturer, model_name, model_year, 
                                      result="not_found", run_id=run_id)
     except Exception as e:
-        # NEW: mark failure
+        # NEW: Record failure
         fetch_log.fail_fetch(manufacturer, model_name, model_year, 
                              error_message=str(e), run_id=run_id)
         dq_logger.log_warning(...)  # existing DQ pattern
         logger.warning(f"[ADS_BULK_FETCH_ERROR] {manufacturer} {model_name} {year}: {e}")
+        # Continue to next model (don't crash on partial failures)
 ```
 
-**Benefit:** A manual bulk refresh (e.g., `python refresh_db_ads.py --makes Hyundai --years 2024 2025`) now correctly resets the 30-day clock for every model it touches. The next inline pipeline run won't redundantly re-fetch data an operator just bulk-refreshed.
+**Benefit:** A manual bulk refresh (e.g., `python refresh_db_ads.py --makes Hyundai --years 2024 2025`) correctly resets the 30-day staleness clock for every model it touches. The next inline pipeline run sees the fresh data and won't redundantly re-fetch. This coordinated state (single source of truth in the fetch-activity log) prevents the old problem where bulk CLI and inline pipeline were independent.
 
 ### Point 3: Vehicle Config DB fallback (DESIGN ONLY, phase 2)
 
@@ -386,45 +483,83 @@ if find_model_line(csv_df, make, year, model_name) is None:
 
 ---
 
-## Open Questions & Risks
+## Known Limitations & Future Considerations
+
+### Single-process assumption
+**Current design:** Assumes pipelines run one at a time (sequential execution, no multiprocessing). CSV read-modify-write is not atomic; concurrent writes would cause data loss.
+
+**Current state:** ✅ All pipeline runs are on-demand and sequential. No scheduling or parallelization yet. Low risk.
+
+**If adding parallelization later:** Upgrade path exists:
+- Use atomic write via temp-file-then-rename (simple fix, included in `_save()` spec)
+- Optional: add file locking (advisory lock via `fcntl`/`msvcrt`)
+- Optional: upgrade to SQLite for native atomicity
+
+### Stalled `in_progress` timeout
+**Current design:** Treats `in_progress` rows older than 5 minutes as failed. On-demand pipelines that run for 5+ minutes without updating the log indicate a crash.
+
+**Edge case:** If ADS takes longer than 5 minutes to respond (unusual, but possible with slow networks), a concurrent run might mark the first attempt as failed. However, the first run's data is still saved to `db_vehicle_models.csv`, so the end result is correct (data is available, log reflects "timeout" — a bit misleading but not wrong).
+
+**Acceptable for current use case:** Yes. On-demand pipelines typically complete in < 5 min. If slow ADS becomes common, increase timeout to 10 minutes.
 
 ### VehConfig credential validity
 **Risk:** `model_lookup/creds/.env` is gitignored and not in the repo. If `pb_aristor_server` / `DB_VehConfig` credentials are stale or the server is decommissioned, phase 2 will be blocked.
 
 **Mitigation:** Before phase 2 starts, verify with the infrastructure/data team that the credentials are current and the database is still live.
 
-### CSV concurrency
-**Risk:** Two processes (inline pipeline + bulk CLI) could write to `fetch_activity_log.csv` simultaneously, causing race conditions or data loss (full read-modify-write pattern, no locking).
-
-**Likelihood:** Low (different OEM runs typically scheduled sequentially, or on different machines). But same risk already exists for `db_vehicle_models.csv` itself.
-
-**Mitigation v1 (accepted for this phase):** Document as a known limitation. Add a comment in the code.
-
-**Mitigation v2 (future):** Upgrade to SQLite or add a simple advisory lock file if concurrent runs become common.
-
-### Honda and future OEMs
+### Future: Honda and parallel OEMs
 **Question:** When Honda's pipeline is built, should it use this same hierarchy and log from day one?
 
-**Recommendation:** Yes — the log is OEM-agnostic (keyed by Manufacturer, which is already part of the pipeline's metadata). Reusing it ensures consistency across all OEMs and prevents future retrofitting.
+**Recommendation:** Yes — the log is OEM-agnostic (keyed by Manufacturer, which is already part of the pipeline's metadata). Reusing it ensures consistency across all OEMs and enables future parallelization/scheduling without redesign.
 
 ---
 
-## Files to be created/modified (implementation phase)
+## Files to be created/modified (Phase 1 implementation)
 
-**Create:**
-- `accy_v2/model_lookup/fetch_activity_log.py` — new FetchActivityLog class (100–150 lines)
-- `accy_v2/model_lookup/db/fetch_activity_log.csv` — new file (created empty on first run)
+### New files (in model_lookup module)
 
-**Modify:**
-- `accy_v2/core/base_pipeline.py` — initialize FetchActivityLog, delete ads_attempted
-- `accy_v2/oems/hyundai/pipeline/step4_5_model_enrichment.py` — replace ads_attempted gate with fetch_log calls
-- `accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py` — same
-- `accy_v2/model_lookup/refresh_db_ads.py` — wrap per-model fetches with fetch_log.start/complete/fail
+**`accy_v2/model_lookup/fetch_activity_log.py`** (200–250 lines)
+- `FetchActivityLog` class (all methods as specified in Implementation section)
+- `get_fetch_activity_log()` factory function (centralized initialization)
+- Encapsulates: CSV path resolution, file I/O, staleness logic, 5-minute timeout logic
 
-**Phase 2 only (not in this proposal):**
-- `accy_v2/model_lookup/refresh_db.py` — update schema, align dedup, wire through translator
-- `accy_v2/model_lookup/engine.py` — possible enhancements to query interface
-- `accy_v2/oems/{hyundai,mitsubishi}/pipeline/step4_5_model_enrichment.py` — add VehConfig fallback (after ADS tier)
+**`accy_v2/model_lookup/db/fetch_activity_log.csv`** (data file)
+- Created empty on first run
+- Grows as fetches are recorded (one row per unique Manufacturer/ModelName/ModelYear key)
+- Expected size: ~200–300 rows (bounded by distinct model/year combos across all OEMs)
+
+### Modified files (integration points)
+
+**`accy_v2/core/base_pipeline.py`** (~10 lines changed)
+- Replace: `ads_attempted = set()` initialization
+- With: `fetch_log = get_fetch_activity_log()`
+- Pass `fetch_log` to `run_step4_5_model_enrichment()` in place of `ads_attempted`
+- Delete entire `ads_attempted` threading logic
+
+**`accy_v2/oems/hyundai/pipeline/step4_5_model_enrichment.py`** (~40–50 lines changed)
+- Replace: `if (make, model_name, year) not in ads_attempted` gate
+- With: `if fetch_log.should_fetch(make, model_name, year)` check
+- Wrap ADS call: `fetch_log.start_fetch()` → try ADS → `fetch_log.complete_fetch()` / `fail_fetch()`
+- Update: `_categorize_search_failure()` to add `[NO_MODEL_NUMBER_ALL_SOURCES_EXHAUSTED]` tag
+
+**`accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`** (~40–50 lines changed)
+- Identical changes to Hyundai (same gate + wrap pattern)
+
+**`accy_v2/model_lookup/refresh_db_ads.py`** (~60–80 lines changed)
+- Add initialization: `fetch_log = get_fetch_activity_log()` + `run_id = uuid4().hex[:8]`
+- Wrap per-model fetch loop: `fetch_log.start_fetch()` → fetch → `complete_fetch()` / `fail_fetch()`
+- Source tag: `"ads_bulk_cli"` (not `"ads_inline"`)
+
+### Module organization principle
+**All model_lookup initialization logic lives in `accy_v2/model_lookup/`** — not scattered across pipeline code. Both pipeline and CLI import and use the same factory function, ensuring consistent initialization and encapsulation of CSV paths.
+
+---
+
+## Phase 2 Implementation (NOT in this proposal)
+
+**`accy_v2/model_lookup/refresh_db.py`** — update schema, align dedup, wire through translator
+**`accy_v2/model_lookup/engine.py`** — possible enhancements to query interface
+**`accy_v2/oems/{hyundai,mitsubishi}/pipeline/step4_5_model_enrichment.py`** — add VehConfig fallback (after ADS tier 2)
 
 ---
 
