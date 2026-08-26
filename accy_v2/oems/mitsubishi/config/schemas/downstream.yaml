@@ -87,6 +87,30 @@ sheets:
         width: 15
         description: "OEM model number from vehicle database"
 
+      - output_column: Drivetrain
+        source_column: drivetrain
+        data_type: string
+        width: 15
+        description: "Drivetrain type from vehicle database (e.g., FRONT_WHEEL_DRIVE, ALL_WHEEL_DRIVE)"
+
+      - output_column: FuelType
+        source_column: fuel_type
+        data_type: string
+        width: 12
+        description: "Fuel type from vehicle database (e.g., phev, electric, hybrid)"
+
+      - output_column: Color
+        source_column: color
+        data_type: string
+        width: 12
+        description: "Color keyword from trim (e.g., noir, carbon) if applicable"
+
+      - output_column: Package
+        source_column: package
+        data_type: string
+        width: 12
+        description: "ADS numeric style ID from vehicle database"
+
     sorting:
       - column: Year
         order: ascending
@@ -158,6 +182,30 @@ sheets:
         data_type: string
         width: 15
         description: "Numéro de modèle OEM de la base de données du véhicule"
+
+      - output_column: Drivetrain
+        source_column: drivetrain
+        data_type: string
+        width: 15
+        description: "Type de transmission de la base de données du véhicule"
+
+      - output_column: FuelType
+        source_column: fuel_type
+        data_type: string
+        width: 12
+        description: "Type de carburant de la base de données du véhicule"
+
+      - output_column: Color
+        source_column: color
+        data_type: string
+        width: 12
+        description: "Mot-clé de couleur de la garniture"
+
+      - output_column: Package
+        source_column: package
+        data_type: string
+        width: 12
+        description: "Identifiant de style numérique ADS de la base de données du véhicule"
 
     sorting:
       - column: Year

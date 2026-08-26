@@ -23,6 +23,10 @@ class SearchResult:
     tokens_matched: Dict[str, List[str]]  # Classified tokens used for matching
     candidate_count: int  # Number of DB rows considered (raw count, unaffected by duplicate grouping)
     is_duplicate_group: bool = False  # True when multiple model numbers map to same vehicle
+    drivetrain: Optional[str] = None  # Drivetrain from DB (e.g., "ALL_WHEEL_DRIVE")
+    fuel_type: Optional[str] = None  # Fuel type (e.g., "phev", "electric", or gasoline if None)
+    color: Optional[str] = None  # Color keyword from config (e.g., "noir", "carbon")
+    package: Optional[str] = None  # ADS numeric style ID from DB (e.g., "481877")
 
 
 class VehicleSearchEngine:
@@ -148,6 +152,30 @@ class VehicleSearchEngine:
             oem_config=self.oem_config,
         )
 
+        # 5.5. Exact TRIM token-set matching (narrowing layer)
+        # Apply ONLY when we have multiple candidates to disambiguate.
+        # Extracts TRIM tokens from both search and DB rows, keeps only exact matches.
+        # This fixes collisions like "GT" vs "GT Premium" vs "GT NOIR" where substring
+        # matching returns all three, but exact TRIM set matching narrows to one.
+        if len(results) > 1:
+            searched_trim_set = set(classified.get("TRIM", []))
+            if searched_trim_set:  # Only apply if search includes TRIM tokens
+                narrowed_results = []
+                for idx, row in results.iterrows():
+                    candidate_trim_set = self._extract_trim_token_set(
+                        row["Description"], classification_config
+                    )
+                    if candidate_trim_set == searched_trim_set:
+                        narrowed_results.append(row)
+
+                if narrowed_results:
+                    results = pd.DataFrame(narrowed_results).reset_index(drop=True)
+                    if self.logger:
+                        self.logger.debug(
+                            f"Exact TRIM matching narrowed {len(results) + len(narrowed_results) - len(results)} "
+                            f"candidates to {len(results)} (searched TRIM: {searched_trim_set})"
+                        )
+
         candidate_count = len(results)
 
         if self.logger:
@@ -175,6 +203,7 @@ class VehicleSearchEngine:
         # 8. Return result or None
         if candidate_count == 1:
             row = results.iloc[0]
+            drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
             return SearchResult(
                 match=row["Description"],
                 model_number=row["ModelNumber"],
@@ -183,6 +212,10 @@ class VehicleSearchEngine:
                 score=score,
                 tokens_matched=classified,
                 candidate_count=candidate_count,
+                drivetrain=drivetrain,
+                fuel_type=fuel_type,
+                color=color,
+                package=package,
             )
 
         # Same vehicle re-coded under multiple model numbers: not real ambiguity.
@@ -204,15 +237,21 @@ class VehicleSearchEngine:
                         f"Resolved {candidate_count} candidates to single vehicle with multiple "
                         f"model numbers (ignoring {self.ignore_keyword_categories}): {results['ModelNumber'].tolist()}"
                     )
+                row = results.iloc[0]
+                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 return SearchResult(
-                    match=results.iloc[0]["Description"],
-                    model_number=results.iloc[0]["ModelNumber"],
+                    match=row["Description"],
+                    model_number=row["ModelNumber"],
                     model_numbers=results["ModelNumber"].tolist(),
                     confidence=resolved_confidence,
                     score=score,
                     tokens_matched=classified,
                     candidate_count=candidate_count,
                     is_duplicate_group=True,
+                    drivetrain=drivetrain,
+                    fuel_type=fuel_type,
+                    color=color,
+                    package=package,
                 )
 
         # Multiple unique variants: not ambiguity, but variant handling (e.g., Manual/DCT, TCR variants).
@@ -227,8 +266,10 @@ class VehicleSearchEngine:
                         f"Accepted {candidate_count} candidates with unique model numbers (variant handling): "
                         f"{model_numbers}"
                     )
+                row = results.iloc[0]
+                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 return SearchResult(
-                    match=results.iloc[0]["Description"],
+                    match=row["Description"],
                     model_number=model_numbers[0],  # Primary model number
                     model_numbers=model_numbers,  # ALL model numbers
                     confidence=confidence,
@@ -236,6 +277,10 @@ class VehicleSearchEngine:
                     tokens_matched=classified,
                     candidate_count=candidate_count,
                     is_duplicate_group=False,  # Not duplicate codes, variant handling
+                    drivetrain=drivetrain,
+                    fuel_type=fuel_type,
+                    color=color,
+                    package=package,
                 )
 
         return None
@@ -295,6 +340,68 @@ class VehicleSearchEngine:
         filtered = self._filter_ignored_categories(classified)
         return frozenset(tok for toks in filtered.values() for tok in toks if toks)
 
+    def _extract_trim_token_set(self, description: str, classification_config: Dict) -> set:
+        """
+        Extract TRIM token set from a DB description for exact-match disambiguation.
+
+        Used to narrow candidates when multiple rows match substring search but differ in TRIM modifiers.
+        Example: "GT" vs "GT Premium" vs "GT NOIR" — all contain "gt", but only exact TRIM match
+        narrows to the intended row.
+
+        Args:
+            description: DB description string
+            classification_config: Classification config for this OEM
+
+        Returns:
+            set of TRIM tokens found in description
+        """
+        tokens = _extract_description_tokens(description)
+        classified = classify_tokens(tokens, classification_config, self.logger)
+        return set(classified.get("TRIM", []))
+
+    def _extract_row_metadata(self, row, classification_config: Dict, color_keywords: List[str] = None) -> tuple:
+        """
+        Extract drivetrain, fuel_type, color, and package from a database row.
+
+        Args:
+            row: pandas Series representing a database row
+            classification_config: Classification config for this OEM
+            color_keywords: List of color keywords to check for (optional)
+
+        Returns:
+            Tuple of (drivetrain, fuel_type, color, package)
+        """
+        import pandas as pd
+
+        # Drivetrain: direct column, 0 empty values in DB
+        drivetrain = row.get("Drivetrain") if pd.notna(row.get("Drivetrain")) else None
+
+        # Fuel type: 3-tier fallback
+        fuel_type = None
+        # Tier 1: Use engine_type column if populated
+        if pd.notna(row.get("engine_type")) and row.get("engine_type"):
+            fuel_type = str(row.get("engine_type")).lower()
+        else:
+            # Tier 2: Check if search included ENGINE_TYPE tokens
+            # (This would come from the classified dict passed during search)
+            # For now, leave as None — will be filled by caller if needed
+            pass
+        # Note: Tier 3 (ModelName/Description classification) would require passing classified dict
+
+        # Color: config-driven lookup
+        color = None
+        if color_keywords:
+            row_description = str(row.get("Description", "")).lower()
+            for color_kw in color_keywords:
+                if color_kw.lower() in row_description:
+                    color = color_kw.lower()
+                    break
+
+        # Package: direct column (ADS numeric style ID), 0 empty values in Mitsubishi rows
+        package = row.get("Package") if pd.notna(row.get("Package")) else None
+
+        return drivetrain, fuel_type, color, package
+
     @staticmethod
     def _validate_search_profile(classified: Dict[str, List[str]]) -> tuple[bool, str]:
         """
@@ -326,3 +433,143 @@ class VehicleSearchEngine:
                 return False, "Contradictory drivetrain: fwd and rwd both present"
 
         return True, ""
+
+
+def diagnose_search_failure(
+    make: str,
+    year: int,
+    classified: Dict[str, List[str]],
+    csv_path: str,
+) -> Dict[str, str]:
+    """
+    Diagnose why a search failed by walking the Year → Model → Trim → Drivetrain hierarchy.
+
+    Returns a dict with structured diagnostic info instead of generic "NOT_FOUND".
+
+    Args:
+        make: Manufacturer name (e.g., "Mitsubishi")
+        year: Model year (e.g., 2026)
+        classified: Classified tokens dict from failed search
+        csv_path: Path to vehicle models CSV
+
+    Returns:
+        Dict with keys:
+        - reason: One of MANUFACTURER_NOT_IN_DB, MODEL_YEAR_NOT_IN_DB, MODEL_NAME_NOT_FOUND_FOR_YEAR,
+                  TRIM_VARIANT_NOT_FOUND, AMBIGUOUS_TRIM_MULTIPLE_MODEL_NUMBERS, SCORE_BELOW_THRESHOLD
+        - available_years: List of years in DB for this manufacturer (if applicable)
+        - available_models: List of models in DB for this year (if applicable)
+        - available_trims: List of trims in DB for matching model (if applicable)
+        - requested_trim: The trim tokens that were searched for
+        - details: Human-readable explanation
+    """
+    try:
+        db = pd.read_csv(csv_path)
+    except Exception as e:
+        return {
+            "reason": "DATABASE_ERROR",
+            "details": f"Failed to load database: {str(e)}"
+        }
+
+    # Layer 1: Is manufacturer in DB?
+    mfr_rows = db[db["Manufacturer"].str.lower() == make.lower()]
+    if mfr_rows.empty:
+        return {
+            "reason": "MANUFACTURER_NOT_IN_DB",
+            "details": f"Manufacturer '{make}' not found in database"
+        }
+
+    # Layer 2: Is this year available for this manufacturer?
+    year_rows = mfr_rows[mfr_rows["ModelYear"] == year]
+    if year_rows.empty:
+        available_years = sorted(mfr_rows["ModelYear"].unique().tolist())
+        return {
+            "reason": "MODEL_YEAR_NOT_IN_DB",
+            "available_years": available_years,
+            "details": f"Model year {year} not in database for {make}. Available years: {available_years}"
+        }
+
+    # Layer 3: Does the MODEL match?
+    model_tokens = set(classified.get("MODEL", []))
+    if not model_tokens:
+        return {
+            "reason": "NO_MODEL_TOKEN",
+            "details": "No MODEL token in search (search validation should have caught this)"
+        }
+
+    matching_model_rows = []
+    for model_kw in model_tokens:
+        # Word-boundary match for model
+        pattern = rf"(?<![-])\b{model_kw}\b(?![-])"
+        model_matches = year_rows[
+            (year_rows["ModelName"].str.lower().str.contains(pattern, regex=True, na=False)) |
+            (year_rows["Description"].str.lower().str.contains(pattern, regex=True, na=False))
+        ]
+        matching_model_rows.extend(model_matches.index.tolist())
+
+    if not matching_model_rows:
+        available_models = sorted(year_rows["ModelName"].unique().tolist())
+        return {
+            "reason": "MODEL_NAME_NOT_FOUND_FOR_YEAR",
+            "available_models": available_models,
+            "requested_model": list(model_tokens),
+            "details": f"Model {model_tokens} not found for {make} {year}. Available models: {available_models}"
+        }
+
+    model_rows = year_rows.loc[matching_model_rows]
+
+    # Layer 4: Does the TRIM match exactly?
+    trim_tokens = set(classified.get("TRIM", []))
+    requested_trim = list(trim_tokens) if trim_tokens else ["(none)"]
+
+    if trim_tokens:
+        # Exact TRIM match (from plan Step 1)
+        exact_trim_matches = []
+        for idx, row in model_rows.iterrows():
+            row_tokens = _extract_description_tokens(row["Description"])
+            row_classified = classify_tokens(row_tokens, {"token_map": {}})
+            row_trim_set = set(row_classified.get("TRIM", []))
+            if row_trim_set == trim_tokens:
+                exact_trim_matches.append(idx)
+
+        if exact_trim_matches:
+            # Found exact match(es)
+            candidates = model_rows.loc[exact_trim_matches]
+            if len(candidates) == 1:
+                # Unambiguous
+                return {
+                    "reason": "MATCH_FOUND_BUT_FAILED_CONFIDENCE",
+                    "details": "Match found but failed confidence gate (internal error)"
+                }
+            else:
+                # Ambiguous (multiple model numbers)
+                model_nums = candidates["ModelNumber"].tolist()
+                return {
+                    "reason": "AMBIGUOUS_TRIM_MULTIPLE_MODEL_NUMBERS",
+                    "model_numbers": model_nums,
+                    "details": f"Multiple model numbers for this exact TRIM: {model_nums}"
+                }
+        else:
+            # No exact TRIM match
+            available_trims = sorted(model_rows["TrimName"].unique().tolist())
+            return {
+                "reason": "TRIM_VARIANT_NOT_FOUND",
+                "requested_trim": requested_trim,
+                "available_trims": available_trims,
+                "details": f"Trim variant {requested_trim} not found. Available trims: {available_trims}"
+            }
+    else:
+        # No TRIM tokens in search
+        available_trims = sorted(model_rows["TrimName"].unique().tolist())
+        return {
+            "reason": "NO_TRIM_TOKEN",
+            "available_trims": available_trims,
+            "details": f"No TRIM token in search. Available trims: {available_trims}"
+        }
+
+
+def _extract_description_tokens(description: str) -> List[str]:
+    """Extract tokens from a description string (simple split + cleanup)."""
+    if not description or not isinstance(description, str):
+        return []
+    tokens = description.lower().replace("_", " ").split()
+    return [t.strip() for t in tokens if t.strip()]

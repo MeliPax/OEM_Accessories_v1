@@ -27,5 +27,12 @@
       "Read(**/docker-compose*.yml)",
       "Read(**/config/database.yml)"
     ]
-  }
+  },
+  
+  "attribution": {
+      "commit": "",
+      "pr": "",
+      "sessionUrl": false
+    }
 }
+

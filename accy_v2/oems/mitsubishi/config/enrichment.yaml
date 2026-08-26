@@ -26,6 +26,12 @@ model_lookup:
         - HEV
         - FCEV
 
+      # Color keywords for output tagging (not used in search, only for descriptive output)
+      # These are already correctly classified as TRIM tokens and participate in matching
+      color_keywords:
+        - noir
+        - carbon
+
       # Fields to search within (trim and model columns)
       search_fields:
         - trim

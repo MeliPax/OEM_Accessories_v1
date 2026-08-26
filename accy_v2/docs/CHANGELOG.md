@@ -4,6 +4,71 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [2.4.0] - 2026-08-26
+
+### 🎯 Status: IN PROGRESS
+
+**Mitsubishi Model Lookup: Exact TRIM Matching + Output Enrichment**
+
+Implemented three-part enhancement to Mitsubishi model number lookup: fixed trim disambiguation collision bug, extended output with vehicle metadata, and added diagnostic failure categorization.
+
+### ✅ Phase 7 Enhancements
+
+1. **Step 1: Exact TRIM Token-Set Matching (Bug Fix)**
+   - File: `accy_v2/model_lookup/search_engine.py` (lines ~151-179)
+   - Problem: Searching for "GT" returns 3 ambiguous candidates: "GT" (CO45-X), "GT Premium" (CO45-X), "GT NOIR" (CO45-N)
+   - Solution: New narrowing layer applies after substring search, keeps only candidates with exact TRIM token set match
+   - Mechanism: Extracts TRIM tokens from both search and DB rows, filters to exact matches
+   - Impact: Fixes 2026/2025 gt_s-awc failures (2 of 12 current NOT_FOUND cases)
+   - Safety: Strictly additive — never adds match that wasn't in original substring results, no impact on 1-candidate searches
+   - Tests: New regression tests for GT collision, NOIR vs GT NOIR, GT+Premium interaction, RVR drivetrain disambiguation
+
+2. **Step 2: Extended SearchResult with Vehicle Metadata**
+   - File: `accy_v2/model_lookup/search_engine.py` (SearchResult dataclass, line ~14)
+   - Changes:
+     - Added `drivetrain: Optional[str]` (← row["Drivetrain"], 0 empty values in DB)
+     - Added `fuel_type: Optional[str]` (← 3-tier fallback: engine_type column → classified tokens → text classification)
+     - Added `color: Optional[str]` (← config-driven lookup, output tagging only)
+     - Added `package: Optional[str]` (← row["Package"], ADS numeric style ID, 0 empty values in Mitsubishi)
+   - Population: Updated all 3 SearchResult construction sites (single candidate, duplicate group, unique variants)
+   - Helper: New `_extract_row_metadata()` and `_extract_trim_token_set()` methods
+
+3. **Step 2b: Mitsubishi Config + Output Threading**
+   - File: `accy_v2/oems/mitsubishi/config/enrichment.yaml`
+     - Added `color_keywords: [noir, carbon]` config (output tagging, not matching gate)
+   - File: `accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`
+     - Changed `model_mapping[trim]` from `str` to `Dict[str, Any]` (richer metadata)
+     - Extracts and stores: model_number, drivetrain, fuel_type, color, package
+     - `_add_model_number_columns()` now adds 5 output columns (up from 1)
+   - File: `accy_v2/oems/mitsubishi/config/schemas/downstream.yaml`
+     - Added 4 new output columns to both Accessories_EN and Accessories_FR sheets:
+       - Drivetrain (source: drivetrain)
+       - FuelType (source: fuel_type)
+       - Color (source: color)
+       - Package (source: package — note: ADS numeric ID, not trim code, different from Mazda)
+   - Impact: 13 output columns per sheet (up from 9)
+
+4. **Step 3: Diagnostic Failure Categorization**
+   - File: `accy_v2/model_lookup/search_engine.py` (new function ~line 438)
+   - Function: `diagnose_search_failure(make, year, classified, csv_path) → Dict[str, str]`
+   - Replaces generic "[NOT_FOUND]" with specific reasons walking Year → Model → Trim hierarchy:
+     - MANUFACTURER_NOT_IN_DB
+     - MODEL_YEAR_NOT_IN_DB (with available_years list)
+     - MODEL_NAME_NOT_FOUND_FOR_YEAR (with available_models list)
+     - TRIM_VARIANT_NOT_FOUND (with available_trims list)
+     - AMBIGUOUS_TRIM_MULTIPLE_MODEL_NUMBERS
+   - Integration: Called from step4_5_model_enrichment.py NOT_FOUND branch
+   - DQ Output: Issue descriptions now include failure reason + available options
+   - Zero Performance Impact: Only runs on already-slow failure path
+
+### ⚠️ Risk Mitigation & Side Effects
+
+- **Shared Code Change (search_engine.py):** Touched by Hyundai/Genesis pipelines. Mitigation: Narrowing layer only fires on >1 candidates with TRIM tokens, strict subset of existing logic, comprehensive regression tests before merge.
+- **Package Column Naming Collision:** Same name as Mazda's Package (different semantics: Mazda = trim-code substring, Mitsubishi = ADS numeric ID). Mitigation: Pending downstream consumer confirmation before shipping.
+- **Fuel Type Tier 2 Deferred:** 3-tier fallback only implements tier 1 (engine_type column) and minimal tier 2 in this pass; full tier 2/3 implementation deferred to post-verification.
+
+---
+
 ## [2.3.0] - 2026-08-20
 
 ### 🎯 Status: PRODUCTION READY

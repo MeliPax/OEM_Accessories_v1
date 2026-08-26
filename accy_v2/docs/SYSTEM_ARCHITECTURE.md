@@ -1070,6 +1070,16 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 - ✅ Regression testing (Hyundai, Mitsubishi, Mazda control)
 - ✅ All 9 output columns verified present with correct semantics
 
+**Phase 7 (2026-08-26): Mitsubishi Model Lookup + Trim Disambiguation (In Progress)**
+- ✅ Exact TRIM token-set matching layer (fixes GT/GT Premium/GT NOIR collision)
+- ✅ Extended SearchResult with drivetrain, fuel_type, color, package fields
+- ✅ Threaded new fields through step4_5_model_enrichment.py and downstream output
+- ✅ Added color_keywords config to enrichment.yaml (noir, carbon)
+- ✅ Added 4 new output columns (Drivetrain, FuelType, Color, Package) to downstream.yaml (EN + FR)
+- ✅ Implemented diagnose_search_failure() for layered failure diagnostics (MODEL_YEAR_NOT_IN_DB, TRIM_VARIANT_NOT_FOUND, etc.)
+- 🔄 Testing: Verify exact-trim-match fix resolves 2026/2025 gt_s-awc failures
+- 🔄 Documentation: Update CHANGELOG.md and Phase 7 completion notes
+
 ### 🚀 Immediate Next Steps (Recommended Priority)
 
 **1. Optional: Migrate Mazda to Shared Helper** — 15 minutes
