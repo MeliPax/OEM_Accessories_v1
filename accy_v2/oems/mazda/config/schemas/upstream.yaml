@@ -28,7 +28,7 @@ columns:
     required: true
     rename_to_canonical: ModelYear
     expected_data_type: integer
-    completeness_threshold: 0.8
+    completeness_threshold: 1.0
     description: "Model year from ModelYear column (e.g., 2024, 2025)"
 
   model_name:
@@ -97,7 +97,7 @@ columns:
     required: true
     rename_to_canonical: MSRP
     expected_data_type: float
-    completeness_threshold: 0.9
+    completeness_threshold: 1.0
     description: "Manufacturer Suggested Retail Price from MSRP column"
 
   labour_hours:
@@ -108,7 +108,7 @@ columns:
     required: true
     rename_to_canonical: LaborHours
     expected_data_type: float
-    completeness_threshold: 0.8
+    completeness_threshold: 1.0
     description: "Installation time from StandardInstallTime column (units to be confirmed with business)"
 
   comments_en:
