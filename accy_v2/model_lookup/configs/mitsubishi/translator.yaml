@@ -14,6 +14,8 @@ translations:
   mhev: mild hybrid
   hev: hybrid electric
   phev: plug-in hybrid
+  gt-p: gt premium
+  gt-premium: gt premium
   # ivt: cvt
   # dct: dsg
   # mt: manual

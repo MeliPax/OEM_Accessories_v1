@@ -517,6 +517,19 @@ def diagnose_search_failure(
 
     model_rows = year_rows.loc[matching_model_rows]
 
+    # Narrow model_rows to variants that match the searched keywords (e.g., PHEV vs gasoline)
+    # This is important for "Outlander" searches to distinguish "Outlander" vs "Outlander Plug-In Hybrid"
+    engine_tokens = set(classified.get("ENGINE_TYPE", []))
+    if engine_tokens:
+        # Filter to rows whose descriptions contain the searched engine type keywords
+        filtered_rows = []
+        for idx, row in model_rows.iterrows():
+            row_desc = str(row["Description"]).lower() + " " + str(row["ModelName"]).lower()
+            if any(eng_kw in row_desc for eng_kw in engine_tokens):
+                filtered_rows.append(idx)
+        if filtered_rows:
+            model_rows = model_rows.loc[filtered_rows]
+
     # Layer 4: Does the TRIM match exactly?
     trim_tokens = set(classified.get("TRIM", []))
     requested_trim = list(trim_tokens) if trim_tokens else ["(none)"]
