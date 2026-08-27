@@ -87,23 +87,25 @@ sheets:
         width: 15
         description: "OEM model number from vehicle database"
 
-      - output_column: Drivetrain
-        source_column: drivetrain
-        data_type: string
-        width: 15
-        description: "Drivetrain type from vehicle database (e.g., FRONT_WHEEL_DRIVE, ALL_WHEEL_DRIVE)"
+      # DECISION [019]: Drivetrain, FuelType, and Color columns are commented out for now, they are not needed in the output but can be added back if required in the future.
 
-      - output_column: FuelType
-        source_column: fuel_type
-        data_type: string
-        width: 12
-        description: "Fuel type from vehicle database (e.g., phev, electric, hybrid)"
+      # - output_column: Drivetrain
+      #   source_column: drivetrain
+      #   data_type: string
+      #   width: 15
+      #   description: "Drivetrain type from vehicle database (e.g., FRONT_WHEEL_DRIVE, ALL_WHEEL_DRIVE)"
 
-      - output_column: Color
-        source_column: color
-        data_type: string
-        width: 12
-        description: "Color keyword from trim (e.g., noir, carbon) if applicable"
+      # - output_column: FuelType
+      #   source_column: fuel_type
+      #   data_type: string
+      #   width: 12
+      #   description: "Fuel type from vehicle database (e.g., phev, electric, hybrid)"
+
+      # - output_column: Color
+      #   source_column: color
+      #   data_type: string
+      #   width: 12
+      #   description: "Color keyword from trim (e.g., noir, carbon) if applicable"
 
       - output_column: Package
         source_column: package
@@ -183,23 +185,23 @@ sheets:
         width: 15
         description: "Numéro de modèle OEM de la base de données du véhicule"
 
-      - output_column: Drivetrain
-        source_column: drivetrain
-        data_type: string
-        width: 15
-        description: "Type de transmission de la base de données du véhicule"
+      # - output_column: Drivetrain
+      #   source_column: drivetrain
+      #   data_type: string
+      #   width: 15
+      #   description: "Type de transmission de la base de données du véhicule"
 
-      - output_column: FuelType
-        source_column: fuel_type
-        data_type: string
-        width: 12
-        description: "Type de carburant de la base de données du véhicule"
+      # - output_column: FuelType
+      #   source_column: fuel_type
+      #   data_type: string
+      #   width: 12
+      #   description: "Type de carburant de la base de données du véhicule"
 
-      - output_column: Color
-        source_column: color
-        data_type: string
-        width: 12
-        description: "Mot-clé de couleur de la garniture"
+      # - output_column: Color
+      #   source_column: color
+      #   data_type: string
+      #   width: 12
+      #   description: "Mot-clé de couleur de la garniture"
 
       - output_column: Package
         source_column: package
