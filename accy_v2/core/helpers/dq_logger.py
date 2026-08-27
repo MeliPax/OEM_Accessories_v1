@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
+from core.helpers.path_utils import to_relative_path
+
 
 class DQLogger:
     """
@@ -14,7 +16,7 @@ class DQLogger:
 
     def __init__(self, run_id: str, source_file: str):
         self.run_id = run_id
-        self.source_file = source_file
+        self.source_file = to_relative_path(source_file)
         self._records: List[Dict[str, Any]] = []
 
     def log_warning(
