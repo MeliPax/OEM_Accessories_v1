@@ -4,6 +4,7 @@ from typing import Any, Dict
 import pandas as pd
 
 from core.base_pipeline import PipelineFatalError
+from core.helpers.column_mapper import map_all_columns
 from core.helpers.dq_logger import DQLogger
 from core.helpers.header_helpers import (
     clean_column_name,
@@ -11,6 +12,7 @@ from core.helpers.header_helpers import (
     strip_df_string_values,
 )
 from core.helpers.pipeline_logger import PipelineLogger
+from core.helpers.trim_helpers import identify_candidate_trim_columns, validate_trim_by_datatype
 
 
 def run(
@@ -25,14 +27,21 @@ def run(
     Populates meta_data in-place with model_name.
     Raises PipelineFatalError for structural issues (FATAL).
     Logs DQ_WARNINGs for data-level issues (profitability).
+
+    IMPORTANT: _build_working_df() runs FIRST so all header validation uses cleaned columns,
+    not raw text. This ensures step1 and step2 validate against the same column representations.
     """
     sheet_name = meta_data["sheet_name"]
 
     _extract_meta_data(df_raw, sheet_name, meta_data)
-    _validate_header_keywords(df_raw, sheet_name, config)
-    _validate_trim_boundaries(df_raw, sheet_name, config)
 
+    # Build working_df FIRST (Part A, step 1 of plan) — now all validators use cleaned headers
     working_df = _build_working_df(df_raw)
+
+    # Validate using cleaned headers
+    _validate_header_keywords(working_df, sheet_name, config)
+    _validate_trim_boundaries(working_df, sheet_name, config)
+
     working_df = _drop_brochure_records(working_df, config, pipeline_logger, sheet_name)
     working_df = _trim_to_data_range(working_df, config, pipeline_logger, sheet_name)
 
@@ -40,23 +49,15 @@ def run(
     _validate_data_types(working_df, sheet_name, config)
     _check_profitability(working_df, sheet_name, meta_data, dq_logger)
 
+    # Standardize model_name as a real column from Step 1 onward (matching Hyundai)
+    working_df["model_name"] = meta_data["model_name"]
+
     return working_df
 
 
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
-
-
-def _validate_sheet_name(sheet_name: str, config: dict) -> None:
-    pattern = config.get("sheet_name_pattern", r"^\d{4}\s+.+")
-    if not re.match(pattern, sheet_name, re.IGNORECASE):
-        raise PipelineFatalError(
-            f"Sheet name '{sheet_name}' does not match expected pattern '{pattern}'"
-        )
-    non_acceptable = [s.lower() for s in config["non_acceptable_sheet_names"]]
-    if sheet_name.lower() in non_acceptable:
-        raise PipelineFatalError(f"Sheet '{sheet_name}' is in the non-acceptable list")
 
 
 def _extract_meta_data(
@@ -78,9 +79,10 @@ def _extract_meta_data(
 
 
 def _validate_header_keywords(
-    df_raw: pd.DataFrame, sheet_name: str, config: dict
+    working_df: pd.DataFrame, sheet_name: str, config: dict
 ) -> None:
-    header_row = [str(v).lower().strip() for v in df_raw.iloc[1].tolist()]
+    """Validate that all required columns are detected in the working_df (cleaned headers)."""
+    header_row = [str(v).lower() for v in working_df.columns]
     column_definition = config["column_definition"]
 
     for std_col in config["required_columns"]:
@@ -96,25 +98,43 @@ def _validate_header_keywords(
 
 
 def _validate_trim_boundaries(
-    df_raw: pd.DataFrame, sheet_name: str, config: dict
+    working_df: pd.DataFrame, sheet_name: str, config: dict
 ) -> None:
-    header_row = [str(v).lower().strip() for v in df_raw.iloc[1].tolist()]
-    bounds = config["trim_bounds_config"]
+    """
+    Validate that trim columns exist using content-based validation (Part A, step 4 of plan).
+    Matches step2_header_normalization.py logic exactly for consistency.
 
-    left_kws = [k.lower() for k in bounds["left_bound"]["must_contain"]]
-    right_kws = [k.lower() for k in bounds["right_bound"]["must_contain_one_of"]]
+    Process:
+    1. Map all columns to canonical names
+    2. Identify candidates: unmapped columns + exclusion filter
+    3. If trim_validation_config defined: content-validate candidates
+    4. Raise FATAL only if zero candidates pass
+    """
+    # Map columns to canonical names
+    col_mapping = map_all_columns(working_df, config.get("column_definition", {}))
 
-    left_found = any(all(k in cell for k in left_kws) for cell in header_row)
-    right_found = any(any(k in cell for k in right_kws) for cell in header_row)
+    # Identify candidates: unmapped columns, minus structural junk (exclusion keywords)
+    exclusion_keywords = config.get("trim_exclusion_keywords", [])
+    candidates = identify_candidate_trim_columns(col_mapping, exclusion_keywords)
 
-    if not left_found:
+    if not candidates:
         raise PipelineFatalError(
-            f"Sheet '{sheet_name}': left trim boundary column (keywords: {left_kws}) not found"
+            f"Sheet '{sheet_name}': no trim column candidates found after keyword filtering"
         )
-    if not right_found:
-        raise PipelineFatalError(
-            f"Sheet '{sheet_name}': right trim boundary column (keywords: {right_kws}) not found"
+
+    # If trim_validation_config defined, validate candidates by data content
+    if config.get("trim_validation_config"):
+        valid_trim_cols, trim_log = validate_trim_by_datatype(
+            working_df, candidates, config["trim_validation_config"]
         )
+        if not valid_trim_cols:
+            raise PipelineFatalError(
+                f"Sheet '{sheet_name}': no trim columns passed content validation. "
+                f"Candidates: {candidates}, validation results: {trim_log}"
+            )
+    # If no trim_validation_config, accept all candidates (defensive fallback)
+    else:
+        valid_trim_cols = candidates
 
 
 def _build_working_df(df_raw: pd.DataFrame) -> pd.DataFrame:

@@ -1,5 +1,6 @@
 non_null_threshold: 0.5
 use_model_lookup: true
+
 column_definition:
   year_from:
     key_words:
@@ -9,7 +10,7 @@ column_definition:
       - from
       must_have_one_of: []
       not_have: []
-  model:
+  model_name:
     key_words:
       must_have:
       - model
@@ -79,16 +80,19 @@ column_definition:
       - (fr)
       must_have_one_of: []
       not_have: []
+
 required_columns:
 - part_number
 - english_description
 - msrp
 - labour_hours
+
 non_null_columns:
 - part_number
 - english_description
 - msrp
 - labour_hours
+
 col_data_type_dict:
   to_string:
   - part_number
@@ -108,6 +112,7 @@ trim_bounds_config:
   right_bound:
     must_contain: []
     must_contain_one_of: []
+
 trim_validation_config:
   expected_data:
     data: X
@@ -129,6 +134,7 @@ language_columns:
   FR:
   - french_description
   - comments_fr
+
 rate_import_column_mapping:
   part_number: Part
   description: Description
@@ -136,6 +142,7 @@ rate_import_column_mapping:
   msrp: Price
   labour_hours: Hours
   trim_level: Trim
+
 rate_import_required_columns:
 - Year
 - Part
@@ -144,24 +151,16 @@ rate_import_required_columns:
 - Price
 - Hours
 - Trim
+
 output:
   ready_to_upload_path: accy_v2/output/ready_to_upload/hyundai/
   dq_report_path: accy_v2/output/dq_reports/hyundai/
   pipeline_log_path: accy_v2/output/pipeline_logs/hyundai/
-genesis_models:
-- G70
-- G80
-- G80 EV
-- G90
-- GV60
-- GV70
-- GV70 EV
-- GV80
-- GV80 Coupe
+
 model_lookup_rules:
   Hyundai:
     valid_year_range:
-      min: 1900
+      min: 2020
       max: 2100
     fuel_type_keywords:
     - EV
@@ -180,10 +179,10 @@ model_lookup_rules:
     - INTERIOR
     - EXTERIOR_COLOR
     - ENGINE_SPEC
-    use_single_char_token_matching: true
+    # use_single_char_token_matching: true
   Genesis:
     valid_year_range:
-      min: 1900
+      min: 2020
       max: 2100
     fuel_type_keywords:
     - EV

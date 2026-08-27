@@ -1,0 +1,172 @@
+# ============================================================================
+# File: accy_v2/oems/mitsubishi/config/schemas/upstream.yaml
+# Description: Incoming Excel file structure and validation rules
+# OEM: Mitsubishi
+# Purpose: Defines how to detect, validate, and rename columns from raw Excel
+# ============================================================================
+# DECISION [023]: Mitsubishi-specific schema for multi-row Excel format
+# Model name extracted from cell(0,0), year from sheet name (not header columns)
+# Trim columns named after actual trim levels (ES, SE, LE, SEL, GT, GT PREM)
+# ============================================================================
+
+# Required languages for this OEM
+# Mitsubishi requires both English and French columns
+languages:
+  - EN
+  - FR
+
+# Column detection and validation rules
+# Each column defined here with keyword detection, types, and completeness thresholds
+columns:
+  part_number:
+    # Keywords to detect this column in header row (Row 1)
+    detect_by_keyword:
+      must_have: [part, number]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: PartNumber
+    expected_data_type: string
+    completeness_threshold: 1.0
+    transformation: uppercase
+    description: "Accessory part number from Part Number column"
+
+  english_description:
+    detect_by_keyword:
+      must_have: [english, description]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: Description
+    expected_data_type: string
+    completeness_threshold: 1.0
+    language: EN
+    description: "English accessory description from English Description column"
+
+  french_description:
+    detect_by_keyword:
+      must_have: [french, description]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: Description_FR
+    expected_data_type: string
+    completeness_threshold: 1.0
+    language: FR
+    description: "French accessory description from French Description column"
+
+  msrp:
+    detect_by_keyword:
+      must_have: [msrp]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: MSRP
+    expected_data_type: float
+    completeness_threshold: 0.9
+    description: "Manufacturer Suggested Retail Price from MSRP $ column"
+
+  dnet:
+    detect_by_keyword:
+      must_have: [dnp]
+      must_have_one_of: []
+      must_not_have: []
+    required: false
+    rename_to_canonical: DNET
+    expected_data_type: float
+    completeness_threshold: 0.5
+    description: "Dealer net price from DNP $ column"
+
+  labour_rate:
+    detect_by_keyword:
+      must_have: [rate]
+      must_have_one_of: [labour, labor]
+      must_not_have: []
+    required: false
+    rename_to_canonical: LaborRate
+    expected_data_type: float
+    completeness_threshold: 0.5
+    description: "Labor rate per hour from Labour Rate column (supports labour/labor spelling)"
+
+  labour_hours:
+    detect_by_keyword:
+      must_have: [install, time]
+      must_have_one_of: []
+      must_not_have: [sheet]
+    required: false
+    rename_to_canonical: LaborHours
+    expected_data_type: float
+    completeness_threshold: 0.8
+    description: "Installation time in hours from Install Time column (not required at step1 validation, mapped properly at step2)"
+
+  comments_en:
+    detect_by_keyword:
+      must_have: [remark]
+      must_have_one_of: []
+      must_not_have: []
+    required: false
+    rename_to_canonical: Comments
+    expected_data_type: string
+    completeness_threshold: 0.0
+    language: EN
+    description: "Remarks from Remarks column (single language in Mitsubishi source)"
+
+# Sheet-level validation rules
+sheet_validation:
+  # Pattern to match valid sheet names (regex)
+  # Expected format: YYYY ModelName (e.g., "2026 Outlander", "2025 RVR")
+  sheet_name_pattern: "^\\d{4}\\s+.+"
+
+  # Sheets to explicitly exclude (e.g., "Instructions", "Cover", "Luxwood English", "Luxwood French")
+  # Luxwood sheets are a different vendor's product catalog, not Mitsubishi model data (different schema, header at row 15)
+  exclude_sheet_names:
+    [
+      Instructions,
+      Cover,
+      Instructions (Français),
+      Legend,
+      Légende,
+      "Luxwood English",
+      "Luxwood French",
+    ]
+
+  # Trim table detection (Mitsubishi trim columns named after actual trim levels)
+  # Trim level columns: ES, SE, LE, SEL, GT, GT PREM (may include suffix like _S-AWC, _FWD, _CVT, _AWC, etc.)
+  # Explicitly EXCLUDE structural junk columns: PHOTO, INSTALL_SHEET, CATEGORY, etc.
+  trim_table:
+    column_pattern: "^(es|se|le|sel|gt|gt.prem)(_s-awc)?$"
+    required: true
+    detection_method: content_validation
+    description: "Trim level columns: ES, SE, LE, SEL, GT, GT PREM (optionally with drivetrain suffix)"
+    # Content-based validation (Part A, step 6 of plan): restored from pre-migration mitsubishi_config.yaml
+    trim_validation_config:
+      expected_data:
+        data: X
+        perc_thresh: 60
+      must_have_only:
+        expected_value_types: [X, "", __na__]
+    # Exclusion keywords prevent structural columns from becoming trim candidates
+    trim_exclusion_keywords:
+      [
+        category,
+        electronics,
+        interior,
+        exterior,
+        cargo,
+        general,
+        photo,
+        install_sheet,
+        installed_price,
+        imc,
+      ]
+
+# Completeness validation gates
+validation_gates:
+  # Minimum fraction of columns that must be detected (0.0 - 1.0)
+  column_detection_threshold: 0.8
+
+  # Minimum number of data rows (after header detection)
+  minimum_data_rows: 1
+
+  # Behavior on incomplete data: fail, warn, skip_sheet
+  on_incomplete_data: warn

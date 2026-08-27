@@ -1,0 +1,107 @@
+# ============================================================================
+# File: accy_v2/oems/mitsubishi/config/enrichment.yaml
+# Description: Model lookup and enrichment rules
+# OEM: Mitsubishi
+# Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
+# ============================================================================
+
+
+model_lookup:
+  # DECISION [016]: use_model_lookup flag determines whether this step runs
+  # - If true: Run model lookup + ADS fallback (normal enrichment flow)
+  # - If false: Skip enrichment entirely (OEM has model numbers already, like Mazda)
+  enabled: true
+
+  brands:
+    Mitsubishi:
+      # Year validity for this brand
+      valid_year_range:
+        min: 2015
+        max: 2100
+
+      # Fuel type keywords to recognize and categorize
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+        - FCEV
+
+      # Color keywords for output tagging (not used in search, only for descriptive output)
+      # These are already correctly classified as TRIM tokens and participate in matching
+      color_keywords:
+        - noir
+        - carbon
+
+      # Fields to search within (trim and model columns)
+      search_fields:
+        - trim
+        - model
+
+      # Trim column name in the intermediate data
+      trim_column_name: trim_level
+
+      # Trim abbreviation library for expanding abbreviated keywords (e.g., gt-p → gt premium)
+      trim_abbreviation_library:
+        p: premium
+        n: noir
+        prem: premium
+
+      # Keywords to exclude from matching
+      exclude_keywords: []
+
+      # Keyword categories to ignore during classification
+      ignore_keyword_categories:
+        - INTERIOR
+        - EXTERIOR_COLOR
+        - ENGINE_SPEC
+
+      # Config file paths using central registry
+      # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
+      # Paths defined in accy_v2/paths.yaml for single source of truth
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/mitsubishi/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/mitsubishi/classification.yaml"
+
+# ADS (AutoData Solutions) fallback for missing models
+ads_fallback:
+  # Always enabled for this OEM (mandatory, no opt-out)
+  enabled: true
+
+  # How many times to retry failed ADS calls
+  max_retries: 1
+
+  # Run-scoped cache to avoid redundant ADS calls
+  caching:
+    enabled: true
+    scope: run
+    description: "Cache prevents calling ADS twice for same (make, model, year) within one pipeline run"
+
+  # Database persistence after ADS refresh
+  persistence:
+    persist_ads_results: true
+    persist_to: "accy_v2/model_lookup/db/db_vehicle_models.csv"
+    rebuild_vocab_after_refresh: true
+
+# Model lookup database configuration
+database:
+  # Path to local model database
+  # DECISION [020]: Use centralized path registry (single source of truth)
+  db_path: "${MODEL_LOOKUP_DB}"
+
+  # Uniqueness constraint for deduplication
+  uniqueness_key:
+    - Manufacturer
+    - ModelYear
+    - ModelNumber
+    - ModelName
+    - Description
+
+# Enrichment validation and error handling
+validation:
+  # What happens if model lookup fails
+  on_model_not_found:
+    action: log_warning
+    dq_category: MODEL_LINE_NOT_FOUND
+    description: "Model exists in intermediate data but not in local DB or ADS"
+
+  # Log all successful enrichments for audit trail
+  log_successful_enrichments: true

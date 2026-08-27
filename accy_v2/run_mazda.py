@@ -25,9 +25,7 @@ sys.path.insert(0, str(project_root))     # For model_lookup package import
 
 from oems.mazda.pipeline.orchestrator import MazdaPipeline
 
-CONFIG_PATH = (
-    accy_v2_dir / "oems" / "mazda" / "config" / "mazda_config.yaml"
-)
+CONFIG_DIR = accy_v2_dir / "oems" / "mazda" / "config"
 DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "mazda"
 
 
@@ -45,7 +43,7 @@ def main() -> None:
 
     try:
         pipeline = MazdaPipeline()
-        pipeline.run(file_path, str(CONFIG_PATH))
+        pipeline.run(file_path, str(CONFIG_DIR))
     except Exception as exc:
         print(f"Pipeline failed: {exc}")
         sys.exit(1)

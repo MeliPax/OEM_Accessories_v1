@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import re
 import uuid
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
 
-from core.config_loader import load_config
+from core.config_loader_v2 import ModularConfigLoader, get_output_paths
 from core.helpers.dq_logger import DQLogger
 from core.helpers.pipeline_logger import PipelineLogger
 
@@ -139,8 +141,39 @@ class BasePipeline(ABC):
         """Write all accumulated model frames + Report sheet to one Excel file."""
         ...
 
-    def run(self, file_path: str, config_path: str) -> None:
-        config = load_config(config_path)
+    def run(self, file_path: str, config_root: str) -> None:
+        """
+        Execute the pipeline with modular config structure.
+
+        DECISION [015/020]: Use ModularConfigLoader for config loading.
+
+        Args:
+            file_path: Path to input file
+            config_root: Path to config directory (accy_v2/oems/{oem}/config/)
+        """
+        # Load modular config (DECISION [015]: Modular 5-file structure)
+        loader = ModularConfigLoader(self.OEM_NAME, Path(config_root))
+        pipeline_config = loader.load_pipeline_config()
+        enrichment_config = loader.load_enrichment()
+        transformations_config = loader.load_transformations()
+        upstream_schema = loader.load_upstream_schema()
+        intermediate_schema = loader.load_intermediate_schema()
+        downstream_schema = loader.load_downstream_schema()
+
+        # Build config dict with backward compatibility for existing step methods
+        # Maps modular structure back to legacy structure to minimize code changes
+        config = self._build_legacy_config(
+            pipeline_config, enrichment_config, transformations_config, upstream_schema, intermediate_schema, downstream_schema
+        )
+
+        # Derive output paths from OEM name (DECISION [018])
+        output_paths = get_output_paths(self.OEM_NAME)
+        config["output"] = {
+            "ready_to_upload_path": str(output_paths["ready_to_upload"]),
+            "dq_report_path": str(output_paths["dq_reports"]),
+            "pipeline_log_path": str(output_paths["pipeline_logs"]),
+        }
+
         run_id = uuid.uuid4().hex[:8]
 
         dq_logger = DQLogger(run_id=run_id, source_file=file_path)
@@ -157,6 +190,7 @@ class BasePipeline(ABC):
 
         sheets_processed = 0
         sheets_skipped = 0
+        sheets_excluded = 0
         all_output_frames: Dict[str, pd.DataFrame] = {}
         model_run_stats: List[Dict] = []
 
@@ -166,7 +200,26 @@ class BasePipeline(ABC):
             pipeline_logger.log_fatal("N/A", "file_load", str(exc))
             raise
 
+        # Filter sheets by exclude_sheet_names and sheet_name_pattern (Part B, step 9 of plan)
+        exclude_sheet_names = config.get("exclude_sheet_names", [])
+        sheet_name_pattern = config.get("sheet_name_pattern", ".*")
+        exclude_sheet_names_lower = [s.lower() for s in exclude_sheet_names]
+
+        filtered_data_units = {}
         for sheet_name, df_raw in data_units.items():
+            # Check if sheet should be excluded (case-insensitive match)
+            if sheet_name.lower() in exclude_sheet_names_lower:
+                pipeline_logger.info(f"SHEET SKIPPED | sheet={sheet_name} | reason=excluded_by_config")
+                sheets_excluded += 1
+                continue
+            # Check if sheet matches the sheet_name_pattern
+            if not re.match(sheet_name_pattern, sheet_name, re.IGNORECASE):
+                pipeline_logger.info(f"SHEET SKIPPED | sheet={sheet_name} | reason=name_pattern_mismatch")
+                sheets_excluded += 1
+                continue
+            filtered_data_units[sheet_name] = df_raw
+
+        for sheet_name, df_raw in filtered_data_units.items():
             pipeline_logger.log_sheet_start(sheet_name)
             meta_data: Dict[str, Any] = {"sheet_name": sheet_name, "source_file": file_path}
             warnings_before = dq_logger.warning_count
@@ -214,8 +267,99 @@ class BasePipeline(ABC):
 
             except PipelineFatalError as exc:
                 pipeline_logger.log_fatal(sheet_name, step="pipeline", reason=str(exc))
+                dq_logger.log_warning(
+                    sheet_name=sheet_name,
+                    model_name=meta_data.get("model_name", "unknown"),
+                    record_index=-1,
+                    record_snapshot={},
+                    rule_violated="structural_validation_failure",
+                    issue_description=f"Sheet structural validation failed and was skipped: {str(exc)}",
+                )
                 sheets_skipped += 1
 
         self.run_write_combined_output(all_output_frames, model_run_stats, dq_logger, run_id, config, pipeline_logger)
         dq_logger.write_dq_report(config["output"]["dq_report_path"])
-        pipeline_logger.log_run_complete(sheets_processed, sheets_skipped)
+        pipeline_logger.log_run_complete(sheets_processed, sheets_skipped, sheets_excluded)
+
+    @staticmethod
+    def _build_legacy_config(
+        pipeline_config: Dict, enrichment_config: Dict, transformations_config: Dict,
+        upstream_schema: Dict, intermediate_schema: Dict = None, downstream_schema: Dict = None
+    ) -> Dict:
+        """
+        Build config dict with backward compatibility for existing step methods.
+
+        Maps modular 5-file structure back to legacy flat structure.
+        This allows gradual migration: steps don't change immediately.
+
+        DECISION [015]: Modular config → Legacy config mapping.
+        """
+        if intermediate_schema is None:
+            intermediate_schema = {}
+        if downstream_schema is None:
+            downstream_schema = {}
+        # Map upstream schema columns to legacy column_definition format
+        column_definition = {}
+        for col_name, col_def in upstream_schema.get("columns", {}).items():
+            column_definition[col_name] = {
+                "key_words": col_def.get("detect_by_keyword", {}),
+                "data_type": col_def.get("expected_data_type"),
+                "required": col_def.get("required", False),
+            }
+
+        # Extract lists for backward compatibility
+        required_columns = [
+            name
+            for name, col_def in upstream_schema.get("columns", {}).items()
+            if col_def.get("required", False)
+        ]
+        non_null_columns = required_columns.copy()
+
+        # Build col_data_type_dict from transformations: identify which columns need float conversion
+        col_data_type_dict = {"to_float": [], "to_string": []}
+        for canonical_col, col_transforms in transformations_config.get("columns", {}).items():
+            operations = col_transforms.get("operations", [])
+            has_float_op = any(op.get("name") == "convert_to_float" for op in operations)
+            if has_float_op:
+                col_data_type_dict["to_float"].append(canonical_col)
+            else:
+                col_data_type_dict["to_string"].append(canonical_col)
+
+        # Extract language-specific columns for step4_transformation._split_by_language()
+        language_columns = intermediate_schema.get("language_specific_columns", {})
+
+        # Extract trim column pattern from sheet_validation.trim_table
+        trim_column_pattern = (
+            upstream_schema.get("sheet_validation", {})
+            .get("trim_table", {})
+            .get("column_pattern")
+        )
+
+        # Extract trim validation config and exclusion keywords (Part A, step 5 of plan)
+        trim_table_config = upstream_schema.get("sheet_validation", {}).get("trim_table", {})
+        trim_validation_config = trim_table_config.get("trim_validation_config")
+        trim_exclusion_keywords = trim_table_config.get("trim_exclusion_keywords", [])
+
+        # Extract sheet exclusion config (Part B, step 8 of plan)
+        sheet_validation_config = upstream_schema.get("sheet_validation", {})
+        exclude_sheet_names = sheet_validation_config.get("exclude_sheet_names", [])
+        sheet_name_pattern = sheet_validation_config.get("sheet_name_pattern", ".*")
+
+        # Build legacy config structure
+        return {
+            "column_definition": column_definition,
+            "required_columns": required_columns,
+            "non_null_columns": non_null_columns,
+            "non_null_threshold": pipeline_config.get("non_null_threshold", 0.5),
+            "use_model_lookup": pipeline_config.get("use_model_lookup", True),
+            "trim_column_patterns": trim_column_pattern,
+            "trim_validation_config": trim_validation_config,
+            "trim_exclusion_keywords": trim_exclusion_keywords,
+            "exclude_sheet_names": exclude_sheet_names,
+            "sheet_name_pattern": sheet_name_pattern,
+            "model_lookup_rules": enrichment_config.get("model_lookup", {}).get("brands", {}),
+            "col_data_type_dict": col_data_type_dict,
+            "language_columns": language_columns,
+            "downstream_schema": downstream_schema,
+            "output": {},  # Will be filled by run() with derived paths
+        }

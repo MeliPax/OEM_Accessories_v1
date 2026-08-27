@@ -1,0 +1,27 @@
+[2026-08-06 15:18:09] [INFO    ] [root] Logging initialized | Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260806_151809.log
+[2026-08-06 15:18:09] [DEBUG   ] [root] Console level: INFO | File level: DEBUG
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] DATABASE REFRESH FROM ADS STARTED (APPEND MODE (no archive))
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] Run ID: bff6722b
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] Makes: mitsubishi
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] Years: 2023, 2024, 2025
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] Archive mode: disabled
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] Log file: accy_v2\model_lookup\logs\refresh_db_ads_20260806_151809.log
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] ================================================================================
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] 
+[Step 1/4] Initializing ADS service...
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] ADS service initialized successfully | Credentials loaded and client ready
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] 
+[Step 2/3] (Archival skipped - append mode enabled)
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] 
+[Step 2/3] Fetching data from ADS API...
+[2026-08-06 15:18:09] [DEBUG   ] [refresh_db_ads] Fetching for makes: ['mitsubishi'] | years: [2023, 2024, 2025]
+[2026-08-06 15:18:09] [INFO    ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | mitsubishi | Starting fetch
+[2026-08-06 15:18:09] [WARNING ] [accy_v2.model_lookup.chrome_api.service] refresh_from_ads | mitsubishi | Unknown make, skipping
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] ADS fetch complete | Total records: 0 | Columns: 9
+[2026-08-06 15:18:09] [DEBUG   ] [refresh_db_ads] DataFrame columns: ['Manufacturer', 'ModelYear', 'ModelNumber', 'Description', 'TrimName', 'Package', 'Style_ID', 'Drivetrain', 'PassDoors']
+[2026-08-06 15:18:09] [INFO    ] [refresh_db_ads] 
+[Step 3/3] Saving to database with validation and standardization...
+[2026-08-06 15:18:09] [DEBUG   ] [refresh_db_ads] Saving to: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\model_lookup\db\db_vehicle_models.csv | Key columns: Manufacturer, ModelYear, ModelNumber, Package
+[2026-08-06 15:18:09] [ERROR   ] [refresh_db_ads] CSV save FAILED | Error: No data to save

@@ -79,16 +79,21 @@ def get_pipeline_class(oem: str):
         raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda, hyundai, honda")
 
 
-def get_config_path(oem: str) -> str:
-    """Get config file path for OEM."""
+def get_config_root(oem: str) -> str:
+    """Get config root directory for OEM (supports modular config structure)."""
     project_root = Path(__file__).parent
     oem_lower = oem.lower()
-    config_path = project_root / f"accy_v2/oems/{oem_lower}/config/{oem_lower}_config.yaml"
+    config_root = project_root / f"accy_v2/oems/{oem_lower}/config"
 
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
+    if not config_root.exists():
+        raise FileNotFoundError(f"Config directory not found: {config_root}")
 
-    return str(config_path)
+    # Check that pipeline.yaml exists (required file in modular structure)
+    pipeline_yaml = config_root / "pipeline.yaml"
+    if not pipeline_yaml.exists():
+        raise FileNotFoundError(f"pipeline.yaml not found in {config_root}")
+
+    return str(config_root)
 
 
 def main():
@@ -114,17 +119,17 @@ def main():
 
         # Get pipeline and config
         pipeline_class = get_pipeline_class(oem)
-        config_path = get_config_path(oem)
+        config_root = get_config_root(oem)
         pipeline = pipeline_class()
 
-        print(f"Config: {config_path}\n")
+        print(f"Config: {config_root}\n")
 
         # Process each file
         for file_to_process in files:
             print(f"Processing: {file_to_process.name}")
             print("-" * 80)
             try:
-                pipeline.run(str(file_to_process), config_path)
+                pipeline.run(str(file_to_process), config_root)
                 print(f"[OK] Pipeline completed for {file_to_process.name}\n")
             except Exception as e:
                 print(f"[ERROR] Pipeline failed: {str(e)}\n")
