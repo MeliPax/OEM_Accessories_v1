@@ -52,25 +52,18 @@ nonexistent path could cause a cryptic error. Must be verified.
 
 ---
 
-## Step Module Duplication: Maintenance Risk
+## ✓ Step Module Sharing: Maintenance Efficiency
 
-**Finding:** Full standalone duplication of 7 step modules (step1-5, step4_5, step5) means
-future bug fixes must be applied twice.
+**Finding:** Shared step modules (`accy_v2/oems/hyundai_genesis/pipeline/`) instead of duplication
+eliminates maintenance burden entirely.
 
-**Concrete scenario:**
-1. Fix a bug in Hyundai's `step3_standardization.py`.
-2. Genesis's copy silently remains broken until someone remembers to port the fix.
-3. Two pipelines diverge, creating subtle behavioral differences.
+**Benefit:**
+- Bug fixes (like the compound-merge fix) are applied once in the shared module.
+- Both Hyundai and Genesis pipelines immediately benefit.
+- No risk of divergence — both always run identical step logic.
+- Orchestrators and configs remain fully separate, preserving pipeline independence.
 
-**Mitigation implemented in plan:**
-- Documented as an explicit trade-off: "zero coupling in exchange for manual dual-porting."
-- Flag this in setup/maintenance documentation so future maintainers understand the cost.
-- Consider adding a comment block at the top of Genesis's step modules: "This is a standalone
-  copy of hyundai/pipeline/step*.py. Any bug fixes must be ported to both."
-
-**Risk Level:** **Low-to-Medium.** Documented, but requires discipline. Could be mitigated in
-future by refactoring into a `_shared` package, but that's explicitly deferred per user's
-duplication choice.
+**Risk Level:** **None.** Design is clean and maintainable.
 
 ---
 
@@ -197,7 +190,6 @@ loader code.
 | Item | Risk | Action |
 |------|------|--------|
 | Missing Genesis `standardization.yaml` | Medium | Verify if required; create or remove ref |
-| Step module duplication maintenance | Low | Document in setup/maintenance guide |
 | Config loader triple-instantiation | Very Low | Accept; document as future optimization |
 | Hyundai Genesis-block removal | Low | Grep for any unexpected Genesis refs |
 | Landing zone shared directory | Very Low | Document in run_genesis.py |

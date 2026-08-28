@@ -197,6 +197,7 @@ This is *not* blocking (the pipeline still runs), but makes drift visible. Could
 | `accy_v2/model_lookup/configs/hyundai/classification.yaml` | Add any missing models discovered in Phase 1; standardize to all-complete-entries format per rule |
 | `accy_v2/model_lookup/configs/genesis/classification.yaml` | Verify completeness; standardize format if needed |
 | `accy_v2/model_lookup/configs/mitsubishi/classification.yaml` | Add missing models (including `plug-in hybrid` fix); standardize format |
+| `accy_v2/oems/hyundai_genesis/pipeline/step4_5_model_enrichment.py` | Verify compound-merge fix is solid (already fixed in prior work); no changes needed unless new issues discovered |
 | Documentation (TBD) | Add maintenance guide: "How to maintain classification configs"; record the single-entry-type rule |
 
 ---

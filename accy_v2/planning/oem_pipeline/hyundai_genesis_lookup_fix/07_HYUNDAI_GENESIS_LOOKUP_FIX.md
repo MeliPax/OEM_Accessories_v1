@@ -90,17 +90,23 @@ Confirmed: output columns for `santa_fe_EN` (1827 rows, 100% blank) and `santa_c
 ### Item 1: Genesis Becomes a Standalone OEM Pipeline
 
 **Architecture decision:** Genesis is promoted to a sibling OEM (`OEM_NAME = "genesis"`), mirroring
-the existing Mitsubishi/Mazda/Honda pattern. No shared code — full standalone duplication of step
-modules ensures zero coupling and easy independent evolution.
+the existing Mitsubishi/Mazda/Honda pattern. Step modules are shared (not duplicated) to avoid
+maintenance burden, while orchestrators and configs remain fully separate.
 
 **Implementation details:**
 
-1. **New Genesis pipeline directory structure:**
+1. **Shared step module extraction:**
+   - Create `accy_v2/oems/hyundai_genesis/pipeline/` directory.
+   - Move step modules here: `step1_validation.py`, `step2_header_normalization.py`,
+     `step3_standardization.py`, `step3_5_extract_vehicle_year.py`, `step4_transformation.py`,
+     `step4_5_model_enrichment.py`, `step5_output.py` (moved from `oems/hyundai/pipeline/`).
+   - Apply compound-merge fix + diagnostics wiring once, both pipelines benefit.
+   - Update import statements in both Hyundai's and Genesis's `orchestrator.py` to use
+     `oems.hyundai_genesis.pipeline`.
+
+2. **New Genesis pipeline orchestrator:**
    - `accy_v2/oems/genesis/pipeline/orchestrator.py` — `GenesisPipeline(BasePipeline)`, reads
-     `source_sheet: "Genesis"` from config, delegates to its own local step modules.
-   - `accy_v2/oems/genesis/pipeline/step1_validation.py` … `step5_output.py` — standalone copies
-     of Hyundai's step modules (brand-agnostic code is duplicated, not shared). Both copies get
-     the compound-merge fix and diagnostics wiring (Item 3 below).
+     `source_sheet: "Genesis"` from config, imports steps from shared `oems.hyundai_genesis.pipeline`.
    - `accy_v2/oems/genesis/config/` — new config directory with `pipeline.yaml` (`source_sheet:
      "Genesis"`), `enrichment.yaml` (Genesis brand config extracted from Hyundai's version),
      `transformations.yaml`, `schemas/upstream.yaml|intermediate.yaml|downstream.yaml` (copied,
@@ -224,12 +230,11 @@ categories. Low risk — straight port of existing working code.
 
 | File | Change |
 |---|---|
-| `accy_v2/oems/hyundai/pipeline/orchestrator.py` | Simplified `load_file()`: read `source_sheet` from config, drop `genesis_models` logic, set manufacturer constant |
-| `accy_v2/oems/hyundai/pipeline/step4_5_model_enrichment.py` | Fix `_merge_compound_model_names()` to use correct `classifier_config` key + YAML loader; (recommended) wire diagnostics |
+| `accy_v2/oems/hyundai_genesis/pipeline/` (new) | Shared step modules (moved from hyundai/pipeline): step1_validation.py, step2_header_normalization.py, step3_standardization.py, step3_5_extract_vehicle_year.py, step4_transformation.py, step4_5_model_enrichment.py, step5_output.py. Apply compound-merge fix + diagnostics wiring once here. |
+| `accy_v2/oems/hyundai/pipeline/orchestrator.py` | Simplified `load_file()`: read `source_sheet` from config, drop `genesis_models` logic, set manufacturer constant; update imports to use `oems.hyundai_genesis.pipeline` |
 | `accy_v2/oems/hyundai/config/pipeline.yaml` | Add `source_sheet: "Hyundai"` |
 | `accy_v2/oems/hyundai/config/enrichment.yaml` | Remove `brands.Genesis` block (moves to Genesis's own config) |
-| `accy_v2/oems/genesis/pipeline/orchestrator.py` (new) | `GenesisPipeline`, trimmed `load_file()` |
-| `accy_v2/oems/genesis/pipeline/step1_validation.py` … `step5_output.py` (new) | Standalone copies of Hyundai's steps; step4_5 gets compound-merge fix + diagnostics |
+| `accy_v2/oems/genesis/pipeline/orchestrator.py` (new) | `GenesisPipeline`, trimmed `load_file()`; imports from `oems.hyundai_genesis.pipeline` |
 | `accy_v2/oems/genesis/config/pipeline.yaml` (new) | `source_sheet: "Genesis"` |
 | `accy_v2/oems/genesis/config/enrichment.yaml` (new) | Genesis brand config (extracted from Hyundai's) |
 | `accy_v2/oems/genesis/config/transformations.yaml` (new) | Copy of Hyundai's |
@@ -238,7 +243,7 @@ categories. Low risk — straight port of existing working code.
 
 **No changes to:** `base_pipeline.py`, `config_loader_v2.py`, Mazda, Mitsubishi, Honda, shared
 `model_lookup` search engine, or `classification.yaml` files (existing `santa fe`/`santa cruz`
-entries are correct; the merge fix in code makes them match).
+entries are correct; the merge fix in shared code makes them match).
 
 ---
 
@@ -313,14 +318,15 @@ folder) that will:
 
 ## Implementation Steps (After Approval)
 
-1. Create new directories and files for Genesis pipeline (orchestrator, step modules, config).
-2. Update Hyundai orchestrator (drop genesis_models logic, read source_sheet from config).
-3. Update Hyundai step4_5 (fix compound-merge bug, wire diagnostics).
+1. Extract shared step modules to `accy_v2/oems/hyundai_genesis/pipeline/` (move from Hyundai).
+2. Apply compound-merge fix + diagnostics wiring in the shared step4_5_model_enrichment.py.
+3. Update Hyundai orchestrator (drop genesis_models logic, read source_sheet from config, update imports).
 4. Update Hyundai config (add source_sheet, remove Genesis brand block from enrichment.yaml).
-5. Create Genesis config by extracting and adapting Hyundai's.
-6. Create run_genesis.py entry script.
-7. Run verification steps (both pipelines against the test workbook).
-8. Commit all changes on this branch.
-9. Report verification results.
+5. Create Genesis orchestrator importing shared steps.
+6. Create Genesis config by extracting Genesis brand block and copying Hyundai's transformations/schemas.
+7. Create run_genesis.py entry script.
+8. Run verification steps (both pipelines against the test workbook).
+9. Commit all changes on this branch.
+10. Report verification results.
 
 No merge/PR until user confirms verification results and reviews the changes.
