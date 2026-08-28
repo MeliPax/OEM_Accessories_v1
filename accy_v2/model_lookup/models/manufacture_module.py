@@ -537,19 +537,28 @@ def build_word_boundary_pattern(keyword: str) -> str:
     """
     Build a regex pattern for exact word matching with word boundaries.
 
-    Ensures the keyword matches as a complete word/token, not as part of a
-    hyphenated term. For example, 'N' should not match the 'N' in 'N-Line'.
+    Ensures the keyword matches as a complete word/token. For single-character
+    keywords like 'N', avoids matching within hyphenated terms (e.g., 'N-Line').
+    For multi-character keywords, allows matching within hyphenated terms
+    (e.g., 'Preferred' in 'Preferred-Trend').
 
     Args:
         keyword: The keyword to match
 
     Returns:
-        str: Regex pattern with word boundaries excluding hyphen-adjacent matches
+        str: Regex pattern with appropriate word boundaries
     """
     import re as regex_module
     escaped_keyword = regex_module.escape(keyword)
-    # Don't match if preceded/followed by hyphen (to avoid 'N' matching in 'N-Line')
-    return rf"(?<![-])\b{escaped_keyword}\b(?![-])"
+
+    # For single-char keywords: strict hyphen avoidance (original behavior)
+    # This prevents 'N' from matching 'N-Line', 'S' from matching 'S-AWC', etc.
+    if len(keyword) == 1:
+        return rf"(?<![-])\b{escaped_keyword}\b(?![-])"
+
+    # For multi-char keywords: allow matching within hyphenated terms
+    # This allows 'Preferred' to match in 'Preferred-Trend', 'Trend' in same, etc.
+    return rf"\b{escaped_keyword}\b"
 
 
 def _extract_description_tokens(description: str) -> list[str]:
