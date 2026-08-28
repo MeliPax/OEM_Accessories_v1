@@ -1,14 +1,15 @@
 """
-Entry point for the Hyundai OEM pipeline (including Genesis brand routing).
+Entry point for the Hyundai OEM pipeline.
 
 Usage (run from the project root directory):
     python accy_v2/run_hyundai.py [path_to_excel_file]
 
-If no path is provided, auto-discovers the most recent .xlsx in landing_zone/hyundai/.
+If no path is provided, auto-discovers the most recent .xlsx in landing_zone/hyundai_genesis/
+(shared with Genesis pipeline, as both process the same source workbook).
 
 Examples:
     python accy_v2/run_hyundai.py
-    python accy_v2/run_hyundai.py "landing_zone/2026/Hyundia/2025-09/Hyundai_ACCY_2025-09.xlsx"
+    python accy_v2/run_hyundai.py "data/landing_zone/hyundai_genesis/Hyundai_Genesis_ACCY.xlsx"
 """
 
 import sys
@@ -28,7 +29,7 @@ from oems.hyundai.pipeline.orchestrator import HyundaiPipeline
 CONFIG_PATH = (
     accy_v2_dir / "oems" / "hyundai" / "config" / "hyundai_config.yaml"
 )
-DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai"
+DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai_genesis"
 
 
 def main() -> None:

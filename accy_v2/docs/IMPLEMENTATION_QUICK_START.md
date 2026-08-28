@@ -274,7 +274,7 @@ print(f"Found {len(results)} candidates")
 ### Test 2: Full Pipeline
 ```bash
 cd accy_v2/oems/hyundai
-python -c "from pipeline.orchestrator import HyundaiPipeline; p = HyundaiPipeline(); p.run('./data/landing_zone/hyundai/Hyundai.xlsx')"
+python -c "from pipeline.orchestrator import HyundaiPipeline; p = HyundaiPipeline(); p.run('./data/landing_zone/hyundai_genesis/Hyundai.xlsx')"
 ```
 
 ### Test 3: Check Output Records

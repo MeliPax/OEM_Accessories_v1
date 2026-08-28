@@ -111,7 +111,9 @@ maintenance burden, while orchestrators and configs remain fully separate.
      "Genesis"`), `enrichment.yaml` (Genesis brand config extracted from Hyundai's version),
      `transformations.yaml`, `schemas/upstream.yaml|intermediate.yaml|downstream.yaml` (copied,
      as sheets share identical 33-column layout).
-   - `accy_v2/run_genesis.py` — new entry script, mirrors `run_hyundai.py` pattern.
+   - `accy_v2/run_genesis.py` — new entry script, mirrors `run_hyundai.py` pattern. Both Hyundai
+     and Genesis auto-discover `.xlsx` files in the shared landing zone:
+     `accy_v2/data/landing_zone/hyundai_genesis/`.
 
 2. **New Genesis output locations (automatic, no code needed):**
    - Output workbook: `accy_v2/output/ready_to_upload/genesis/genesis_*.xlsx`

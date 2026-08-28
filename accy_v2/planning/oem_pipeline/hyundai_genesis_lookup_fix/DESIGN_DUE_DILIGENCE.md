@@ -137,25 +137,18 @@ but implementation should do a final grep for any unexpected references.
 
 ---
 
-## Landing Zone Discovery: Same Directory for Both
+## ✓ Landing Zone: Shared hyundai_genesis Directory
 
-**Finding:** Both `run_hyundai.py` and `run_genesis.py` will discover files in the same
-landing-zone location (`landing_zone/hyundai/`), since the source workbook contains both Hyundai
-and Genesis sheets.
+**Finding:** Both `run_hyundai.py` and `run_genesis.py` auto-discover files from the same
+landing-zone location: `accy_v2/data/landing_zone/hyundai_genesis/`.
 
-**Consequence:**
-```bash
-python accy_v2/run_hyundai.py   # Auto-finds latest .xlsx in landing_zone/hyundai/
-python accy_v2/run_genesis.py   # Auto-finds the SAME latest .xlsx in landing_zone/hyundai/
-```
+**Rationale:** The source workbook contains both Hyundai and Genesis sheets as pre-split data.
+Using a single, clearly-named shared landing zone (`hyundai_genesis`) makes it explicit that both
+pipelines consume the same file and process different sheets from it.
 
-Both point to the same physical file, but each processes a different sheet (`Hyundai` vs.
-`Genesis`). This is correct and intentional — no issue here.
+**Implementation:** Both entry scripts point to `DEFAULT_DATA_DIR = "landing_zone/hyundai_genesis"`.
 
-**Documentation note:** The `run_genesis.py` docstring should clarify: "Shares the landing zone
-with run_hyundai.py; each processes a different sheet from the same source workbook."
-
-**Risk Level:** **Very Low.** Design is intentional, but document it to prevent confusion.
+**Risk Level:** **None.** Design is intentional, naming is clear.
 
 ---
 
