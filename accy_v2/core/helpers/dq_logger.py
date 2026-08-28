@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-from core.helpers.path_utils import to_relative_path
+from accy_v2.core.helpers.path_utils import to_relative_path
 
 
 class DQLogger:
