@@ -1,6 +1,5 @@
 from typing import Any, Dict, List
 from pathlib import Path
-import yaml
 
 import pandas as pd
 
@@ -22,19 +21,19 @@ from oems.hyundai_genesis.pipeline import (
 )
 
 
-class HyundaiPipeline(BasePipeline):
+class GenesisPipeline(BasePipeline):
     """
-    Hyundai OEM pipeline.
+    Genesis OEM pipeline.
 
-    Reads Hyundai sheet from source workbook (sheet name configured in pipeline.yaml).
+    Reads Genesis sheet from source workbook (sheet name configured in pipeline.yaml).
     Groups rows by (year, model) before feeding to the step pipeline.
     Each group is header-promoted before grouping since groupby() requires clean column names.
 
-    Manufacturer is fixed as "Hyundai" for all rows (no per-row routing).
+    Manufacturer is fixed as "Genesis" for all rows (no per-row routing).
     """
 
-    OEM_NAME = "hyundai"
-    BRAND_NAME = "Hyundai"
+    OEM_NAME = "genesis"
+    BRAND_NAME = "Genesis"
 
     def _resolve_sheet(self, excel: pd.ExcelFile, wanted: str) -> str:
         """Resolve sheet name case-insensitively, raise clear error if not found."""
@@ -50,12 +49,12 @@ class HyundaiPipeline(BasePipeline):
 
     def load_file(self, file_path: str) -> Dict[str, pd.DataFrame]:
         """
-        Load Hyundai sheet and group rows by (year, model).
+        Load Genesis sheet and group rows by (year, model).
 
         Returns {f"{year}_{model_slug}": group_df} where each group_df is
         header-promoted and ready for step1.
 
-        Hyundai's load_file() pre-promotes headers because groupby() needs
+        Genesis's load_file() pre-promotes headers because groupby() needs
         clean column names.
 
         Step1 is responsible for setting group_key, year_from, model_name, manufacturer
@@ -67,7 +66,7 @@ class HyundaiPipeline(BasePipeline):
         pipeline_config = loader.load_pipeline_config()
 
         # Resolve sheet name from config with validation
-        sheet_name = self._resolve_sheet(excel, pipeline_config.get("source_sheet", "Hyundai"))
+        sheet_name = self._resolve_sheet(excel, pipeline_config.get("source_sheet", "Genesis"))
 
         # Read the resolved sheet
         raw = excel.parse(sheet_name=sheet_name, header=None)

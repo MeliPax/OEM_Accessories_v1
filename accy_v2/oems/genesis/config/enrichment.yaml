@@ -1,10 +1,9 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/enrichment.yaml
+# File: accy_v2/oems/genesis/config/enrichment.yaml
 # Description: Model lookup and enrichment rules
-# OEM: Hyundai
+# OEM: Genesis
 # Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
 # ============================================================================
-
 
 model_lookup:
   # DECISION [016]: use_model_lookup flag determines whether this step runs
@@ -13,44 +12,42 @@ model_lookup:
   enabled: true
 
   brands:
-    Hyundai:
-      # Year validity for this brand
+    Genesis:
+      # Genesis uses same base config as Hyundai with one key override
       valid_year_range:
         min: 2020
         max: 2100
 
-      # Fuel type keywords to recognize and categorize
       fuel_type_keywords:
         - EV
         - PHEV
         - HEV
         - FCEV
 
-      # Fields to search within (trim and model columns)
       search_fields:
         - trim
         - model
 
-      # Trim column name in the intermediate data
       trim_column_name: trim_level
 
-      # Keywords to exclude from matching
       exclude_keywords:
         - ice
         - combustion
 
-      # Keyword categories to ignore during classification
       ignore_keyword_categories:
         - INTERIOR
         - EXTERIOR_COLOR
         - ENGINE_SPEC
 
-      # Config file paths using central registry
-      # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
-      # Paths defined in accy_v2/paths.yaml for single source of truth
-      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
-      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
-      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
+      # Genesis-specific override: enable single-character token matching
+      # This allows "G" to match "G70", "G80" model names
+      use_single_char_token_matching: true
+
+      # DECISION [020]: Use centralized path registry
+      # Genesis uses its own configs (not Hyundai configs)
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/genesis/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/genesis/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/genesis/standardization.yaml"
 
 # ADS (AutoData Solutions) fallback for missing models
 ads_fallback:

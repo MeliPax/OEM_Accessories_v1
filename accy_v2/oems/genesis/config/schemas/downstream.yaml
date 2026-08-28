@@ -1,0 +1,221 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/schemas/downstream.yaml
+# Description: Final output structure with language-specific sheets and column mapping
+# OEM: Hyundai
+# Purpose: Defines output Excel sheets and programmatic column mapping
+# ============================================================================
+
+output:
+  # Filename pattern for generated Excel files
+  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"
+
+  # Whether to create an audit sheet
+  create_audit_sheet: true
+
+# Sheet definitions (what goes in each sheet)
+sheets:
+  # English Accessories Sheet
+  Accessories_EN:
+    display_name: "Accessories (English)"
+    language: EN
+    data_source: primary
+    description: "Vehicle accessory catalog with English descriptions"
+
+    # DECISION [019]: Explicit source→output mapping per column
+    # Unified structure: Model ← model_number (OEM code), ModelName ← model_name (human name)
+    columns:
+      - output_column: Year
+        source_column: year_from
+        data_type: integer
+        width: 10
+        description: "Vehicle model year"
+
+      - output_column: ModelName
+        source_column: model
+        data_type: string
+        width: 20
+        description: "Vehicle model name (e.g., Elantra, Santa Fe)"
+
+      - output_column: Part
+        source_column: part_number
+        data_type: string
+        width: 15
+        description: "Accessory part number"
+
+      - output_column: Description
+        source_column: description
+        data_type: string
+        width: 50
+        description: "English accessory description (post-transformation, language-split)"
+
+      - output_column: Comments
+        source_column: comments
+        data_type: string
+        width: 30
+        description: "English comments/restrictions (post-transformation, language-split)"
+
+      - output_column: Price
+        source_column: msrp
+        data_type: float
+        width: 12
+        formatting: currency
+        description: "Manufacturer Suggested Retail Price (USD)"
+
+      - output_column: Hours
+        source_column: labour_hours
+        data_type: float
+        width: 10
+        description: "Labor hours required for installation"
+
+      - output_column: Trim
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Vehicle trim level (e.g., Essential, Preferred, Luxury)"
+
+      - output_column: Model
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "OEM model number from database (fetched during enrichment)"
+
+    sorting:
+      - column: Year
+        order: ascending
+      - column: Model
+        order: ascending
+      - column: Part
+        order: ascending
+
+  # French Accessories Sheet
+  Accessories_FR:
+    display_name: "Accessories (Français)"
+    language: FR
+    data_source: primary
+    description: "Catalogue d'accessoires automobiles avec descriptions en français"
+
+    # DECISION [019]: Identical structure to EN sheet, but with FR-specific language columns
+    columns:
+      - output_column: Year
+        source_column: year_from
+        data_type: integer
+        width: 10
+        description: "Année du modèle du véhicule"
+
+      - output_column: ModelName
+        source_column: model
+        data_type: string
+        width: 20
+        description: "Nom du modèle du véhicule (p. ex. Elantra, Santa Fe)"
+
+      - output_column: Part
+        source_column: part_number
+        data_type: string
+        width: 15
+        description: "Numéro de pièce accessoire"
+
+      - output_column: Description
+        source_column: description
+        data_type: string
+        width: 50
+        description: "Description d'accessoire en français (post-transformation, language-split)"
+
+      - output_column: Comments
+        source_column: comments
+        data_type: string
+        width: 30
+        description: "Commentaires/restrictions en français (post-transformation, language-split)"
+
+      - output_column: Price
+        source_column: msrp
+        data_type: float
+        width: 12
+        formatting: currency
+        description: "Prix de détail suggéré par le fabricant (USD)"
+
+      - output_column: Hours
+        source_column: labour_hours
+        data_type: float
+        width: 10
+        description: "Heures de main-d'œuvre requises pour l'installation"
+
+      - output_column: Trim
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Niveau de garniture du véhicule (p. ex. Essential, Preferred, Luxury)"
+
+      - output_column: Model
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "Numéro de modèle OEM récupéré dans la base de données"
+
+    sorting:
+      - column: Year
+        order: ascending
+      - column: Model
+        order: ascending
+      - column: Part
+        order: ascending
+
+  # Data quality issues sheet
+  _Data_Issues:
+    display_name: "Data Issues"
+    description: "Records that failed validation or enrichment steps"
+    data_source: dq_logger
+
+    columns:
+      - column_name: ModelYear
+        display_name: "Year"
+
+      - column_name: ModelName
+        display_name: "Model"
+
+      - column_name: PartNumber
+        display_name: "Part #"
+
+      - column_name: IssueCategory
+        display_name: "Issue Type"
+        note: "DATABASE_NO_MATCH, MODEL_LINE_NOT_FOUND, KEYWORD_EXTRACTION_FAILED, ADS_FETCH_ERROR, etc."
+
+      - column_name: IssueDescription
+        display_name: "Issue Details"
+
+      - column_name: SourceColumn
+        display_name: "Affected Column"
+
+  # Summary report sheet
+  _Report:
+    display_name: "Summary Report"
+    description: "Processing statistics and quality metrics"
+    data_source: aggregated_stats
+
+    columns:
+      - column_name: MetricName
+        display_name: "Metric"
+
+      - column_name: Count
+        display_name: "Count"
+        data_type: integer
+
+      - column_name: Percentage
+        display_name: "% of Total"
+        data_type: float
+        formatting: percentage
+
+  # Audit trail sheet
+  _Audit:
+    display_name: "Audit Trail"
+    description: "Pipeline execution metadata"
+    data_source: pipeline_logger
+
+    columns:
+      - column_name: Timestamp
+        display_name: "Timestamp"
+
+      - column_name: Stage
+        display_name: "Pipeline Stage"
+
+      - column_name: Message
+        display_name: "Event"

@@ -1,7 +1,7 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/pipeline.yaml
+# File: accy_v2/oems/genesis/config/pipeline.yaml
 # Description: Orchestration settings and runtime configuration
-# OEM: Hyundai
+# OEM: Genesis
 # Purpose: Flow control, feature flags, and runtime behavior
 # ============================================================================
 # DECISION [015]: Modular 5-file config structure (replaces single JSON)
@@ -11,12 +11,11 @@
 # ============================================================================
 
 # Source sheet name in workbook (resolved case-insensitively)
-source_sheet: "Hyundai"
+source_sheet: "Genesis"
 
 # Model lookup enrichment
 # DECISION [016]: use_model_lookup flag is configurable per OEM
-# - Hyundai: true (needs trim-to-model translation)
-# - Mazda: false (already has model numbers in source)
+# - Genesis: true (needs trim-to-model translation)
 use_model_lookup: true
 
 # Data completeness threshold
