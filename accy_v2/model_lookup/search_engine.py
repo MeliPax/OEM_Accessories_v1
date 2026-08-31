@@ -1,6 +1,6 @@
 """OEM Vehicle Model Search Engine — translates, classifies, scores, and searches."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import pandas as pd
 
@@ -27,6 +27,8 @@ class SearchResult:
     fuel_type: Optional[str] = None  # Fuel type (e.g., "phev", "electric", or gasoline if None)
     color: Optional[str] = None  # Color keyword from config (e.g., "noir", "carbon")
     package: Optional[str] = None  # ADS numeric style ID from DB (e.g., "481877")
+    packages: List[Optional[str]] = field(default_factory=list)  # All package IDs for multi-variant results (parallel to model_numbers)
+    collapsed_duplicates: List[Dict] = field(default_factory=list)  # Duplicate groups detected and collapsed (for DQ logging)
 
 
 class VehicleSearchEngine:
@@ -152,28 +154,37 @@ class VehicleSearchEngine:
             oem_config=self.oem_config,
         )
 
-        # 5.5. Exact TRIM token-set matching (narrowing layer)
+        # 5.5. TRIM token-set matching (narrowing layer)
         # Apply ONLY when we have multiple candidates to disambiguate.
-        # Extracts TRIM tokens from both search and DB rows, keeps only exact matches.
-        # This fixes collisions like "GT" vs "GT Premium" vs "GT NOIR" where substring
-        # matching returns all three, but exact TRIM set matching narrows to one.
+        # Strategy: Try exact TRIM match first; fall back to subset match only if no exact match exists.
+        # This fixes collisions like "GT" vs "GT Premium" vs "GT NOIR" where all contain "gt",
+        # but exact match narrows to just "GT". Subset match still applies for trims like "Calligraphy"
+        # that have no bare row (always "Ultimate Calligraphy" in DB).
         if len(results) > 1:
             searched_trim_set = set(classified.get("TRIM", []))
             if searched_trim_set:  # Only apply if search includes TRIM tokens
-                narrowed_results = []
+                exact_matches = []
+                subset_matches = []
                 for idx, row in results.iterrows():
                     candidate_trim_set = self._extract_trim_token_set(
                         row["Description"], classification_config
                     )
+                    # Check for exact match first
                     if candidate_trim_set == searched_trim_set:
-                        narrowed_results.append(row)
+                        exact_matches.append(row)
+                    # Also collect subset matches as fallback
+                    elif searched_trim_set.issubset(candidate_trim_set):
+                        subset_matches.append(row)
 
+                # Use exact matches if found; otherwise fall back to subset matches
+                narrowed_results = exact_matches if exact_matches else subset_matches
                 if narrowed_results:
                     results = pd.DataFrame(narrowed_results).reset_index(drop=True)
+                    match_type = "exact" if exact_matches else "subset"
                     if self.logger:
                         self.logger.debug(
-                            f"Exact TRIM matching narrowed {len(results) + len(narrowed_results) - len(results)} "
-                            f"candidates to {len(results)} (searched TRIM: {searched_trim_set})"
+                            f"TRIM matching ({match_type}) narrowed to {len(results)} candidates "
+                            f"for searched TRIM: {searched_trim_set}"
                         )
 
         candidate_count = len(results)
@@ -218,69 +229,103 @@ class VehicleSearchEngine:
                 package=package,
             )
 
-        # Same vehicle re-coded under multiple model numbers: not real ambiguity.
-        # (Only applied if OEM config explicitly enables this behavior.)
-        # Duplicate model-number handling (unconditional): if multiple candidates normalize to
-        # the same (ModelYear, ModelName, Description), they are legitimate multiple model codes
-        # for the same vehicle config (e.g., old/new mfr part numbers), not ambiguity.
+        # Fix 1: Package-aware duplicate detection and variant handling.
+        # Group by (normalized_description, package_value) to detect true duplicates vs. package variants.
+        # - Rows in the same group with size > 1: true duplicates (collapsed) → track for DQ logging
+        # - Groups with different packages: package variants → return all separately
         if candidate_count > 1:
-            # Normalize each candidate description by filtering ignored categories
-            normalized_keys = [
-                self._normalize_description(desc, classification_config)
-                for desc in results["Description"]
-            ]
-            # If all normalized descriptions match, treat as duplicate codes for one vehicle
-            if len(set(normalized_keys)) == 1:
-                resolved_confidence = compute_confidence(score, MINIMUM_SCORE, candidate_count=1)
+            # Get package_differentiator_column from config (default: "Package")
+            if "model_lookup_rules" in self.oem_config:
+                oem_rules = self.oem_config.get("model_lookup_rules", {}).get(make, {})
+            else:
+                oem_rules = self.oem_config
+            package_col = oem_rules.get("package_differentiator_column", "Package")
+
+            # Group by (normalized_description, package_value)
+            groups = {}  # key: (frozenset(norm_desc), package), value: list of rows
+            for idx, row in results.iterrows():
+                norm_desc = self._normalize_description(row["Description"], classification_config)
+                pkg = row.get(package_col) if pd.notna(row.get(package_col)) else None
+                key = (norm_desc, pkg)
+                if key not in groups:
+                    groups[key] = []
+                groups[key].append(row)
+
+            # Track collapsed duplicates (groups with size > 1)
+            collapsed_duplicates = []
+            for (norm_desc, pkg), group_rows in groups.items():
+                if len(group_rows) > 1:
+                    # Multiple raw DB rows normalize to same description AND package
+                    collapsed_duplicates.append({
+                        "model_numbers": [r["ModelNumber"] for r in group_rows],
+                        "package": pkg,
+                        "description": group_rows[0]["Description"]
+                    })
+
+            # Build output: one row per group (keep first of each)
+            group_representatives = [group[0] for group in groups.values()]
+            num_groups = len(group_representatives)
+
+            # Check if all groups share same normalized description (but differ in package)
+            unique_norm_descs = set(self._normalize_description(r["Description"], classification_config)
+                                     for r in group_representatives)
+
+            if len(unique_norm_descs) == 1:
+                # All variants share same normalized description → package variants
+                model_nums = [r["ModelNumber"] for r in group_representatives]
+                pkgs = [r.get(package_col) if pd.notna(r.get(package_col)) else None for r in group_representatives]
+                row = group_representatives[0]
+                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
+                resolved_confidence = compute_confidence(score, MINIMUM_SCORE, candidate_count=1) if collapsed_duplicates else confidence
                 if self.logger:
                     self.logger.debug(
-                        f"Resolved {candidate_count} candidates to single vehicle with multiple "
-                        f"model numbers (ignoring {self.ignore_keyword_categories}): {results['ModelNumber'].tolist()}"
+                        f"Resolved {candidate_count} candidates to {num_groups} package variant(s) "
+                        f"with packages {pkgs} (ignoring {self.ignore_keyword_categories})"
                     )
-                row = results.iloc[0]
-                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 return SearchResult(
                     match=row["Description"],
-                    model_number=row["ModelNumber"],
-                    model_numbers=results["ModelNumber"].tolist(),
+                    model_number=model_nums[0],
+                    model_numbers=model_nums,
+                    packages=pkgs,
                     confidence=resolved_confidence,
                     score=score,
                     tokens_matched=classified,
                     candidate_count=candidate_count,
-                    is_duplicate_group=True,
+                    is_duplicate_group=bool(collapsed_duplicates),
                     drivetrain=drivetrain,
                     fuel_type=fuel_type,
                     color=color,
                     package=package,
+                    collapsed_duplicates=collapsed_duplicates,
                 )
 
-        # Multiple unique variants: not ambiguity, but variant handling (e.g., Manual/DCT, TCR variants).
-        # Accept if all model numbers are unique, indicating distinct trim/variant combinations.
-        # This handles cases like "Elantra N" returning both N Manual and N DCT with different model numbers.
-        if candidate_count > 1:
-            model_numbers = results["ModelNumber"].tolist()
-            if len(set(model_numbers)) == candidate_count:
-                # All model numbers are unique — these are variant combinations, not ambiguous
+            # Check if all model numbers are unique (variant handling: TCR Manual/DCT, fuel variants, etc.)
+            model_nums = [r["ModelNumber"] for r in group_representatives]
+            if len(set(model_nums)) == len(model_nums):
+                # All model numbers are unique — these are distinct variants
+                pkgs = [r.get(package_col) if pd.notna(r.get(package_col)) else None for r in group_representatives]
+                row = group_representatives[0]
+                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 if self.logger:
                     self.logger.debug(
                         f"Accepted {candidate_count} candidates with unique model numbers (variant handling): "
-                        f"{model_numbers}"
+                        f"{model_nums}"
                     )
-                row = results.iloc[0]
-                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 return SearchResult(
                     match=row["Description"],
-                    model_number=model_numbers[0],  # Primary model number
-                    model_numbers=model_numbers,  # ALL model numbers
+                    model_number=model_nums[0],
+                    model_numbers=model_nums,
+                    packages=pkgs,
                     confidence=confidence,
                     score=score,
                     tokens_matched=classified,
                     candidate_count=candidate_count,
-                    is_duplicate_group=False,  # Not duplicate codes, variant handling
+                    is_duplicate_group=False,
                     drivetrain=drivetrain,
                     fuel_type=fuel_type,
                     color=color,
                     package=package,
+                    collapsed_duplicates=collapsed_duplicates,
                 )
 
         return None

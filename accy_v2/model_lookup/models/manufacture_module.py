@@ -1076,6 +1076,30 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
     }
 
 
+def _matches_any_fuel_keyword(df: pd.DataFrame, fuel_keywords: list[str], columns: list[str]) -> pd.Series:
+    """
+    Check which DataFrame rows contain any fuel-type keyword in the specified columns.
+
+    Used for distinguishing ICE (gasoline) vs EV/PHEV variants. Checks multiple columns
+    with word-boundary regex to ensure keywords match as complete words/tokens.
+
+    Args:
+        df: DataFrame to check
+        fuel_keywords: List of fuel-type keywords (e.g., ['hybrid', 'ev', 'phev', 'electric'])
+        columns: List of column names to check (e.g., ['ModelName', 'engine_type', 'Description', 'TrimName'])
+
+    Returns:
+        Boolean Series (True = row contains at least one fuel keyword in any checked column)
+    """
+    mask = pd.Series(False, index=df.index)
+    for kw in fuel_keywords:
+        pattern = build_word_boundary_pattern(kw)
+        for col in columns:
+            if col in df.columns:
+                mask |= df[col].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+    return mask
+
+
 def find_model_line(df: pd.DataFrame, make: str, year: int, model_name: str) -> pd.DataFrame:
     """
     Direct column check: does this model line exist locally?
@@ -1165,7 +1189,20 @@ def search_models_by_description(
 
     use_single_char_token_matching = oem_rules.get("use_single_char_token_matching", False)
 
+    # Resolve fuel-type keywords early so both 'ice' and 'exclude_ev' blocks can use them
+    DEFAULT_FUEL_CHECK_COLUMNS = ["ModelName", "engine_type", "Description", "TrimName"]
+    fuel_type_check_columns = oem_rules.get("fuel_type_check_columns", DEFAULT_FUEL_CHECK_COLUMNS)
+    raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
+    fuel_type_keywords = translate_keywords([kw.lower() for kw in raw_fuel_keywords], translator) if translator else [kw.lower() for kw in raw_fuel_keywords]
+
     for keyword in keywords:
+        # Special case: 'ice' keyword matches records that are NOT electric/hybrid
+        # A record is ICE if it has NO fuel type keywords in the configured fuel-check columns
+        if keyword.lower() == 'ice':
+            has_fuel_type = _matches_any_fuel_keyword(df_filtered, fuel_type_keywords, fuel_type_check_columns)
+            df_filtered = df_filtered[~has_fuel_type]
+            continue
+
         if use_single_char_token_matching and len(keyword) == 1:
             # For single-char keywords: check ModelName first (e.g., "N" in "Elantra N"),
             # then fall back to token matching in TrimName/Description
@@ -1208,24 +1245,13 @@ def search_models_by_description(
                     df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
                 ]
 
-    # Get fuel type keywords from OEM config (already parsed above)
-
-    raw_fuel_keywords = oem_rules.get("fuel_type_keywords", EV_KEYWORDS)
-
-    # Translate fuel keywords through the same translator used for search keywords
-    # (ensures we match against DB text that was ingested, not against config spellings)
-    fuel_type_keywords = translate_keywords([kw.lower() for kw in raw_fuel_keywords], translator) if translator else [kw.lower() for kw in raw_fuel_keywords]
-
-    # Check if user explicitly requested any fuel type
+    # Apply default EV exclusion: if no fuel-type keyword was explicitly searched,
+    # exclude records that contain configured fuel-type keywords
     search_kw_lower = [k.lower() for k in keywords]
     if exclude_ev and not any(kw in search_kw_lower for kw in fuel_type_keywords):
         # No fuel type keyword found in search — exclude all configured fuel types
-        for fuel_keyword in fuel_type_keywords:
-            pattern = build_word_boundary_pattern(fuel_keyword)
-            # Fuel type keywords are trim-related, so check TrimName AND Description
-            has_ev_in_trim = df_filtered["TrimName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
-            has_ev_in_desc = df_filtered["Description"].str.contains(pattern, case=False, na=False, regex=True)
-            df_filtered = df_filtered[~(has_ev_in_trim | has_ev_in_desc)]
+        has_fuel_type = _matches_any_fuel_keyword(df_filtered, fuel_type_keywords, fuel_type_check_columns)
+        df_filtered = df_filtered[~has_fuel_type]
 
     # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
     # However: if any POWERTRAIN_TYPE keyword (fuel type) OR a TRIM keyword was explicitly requested,

@@ -31,13 +31,24 @@ model_lookup:
       trim_column_name: trim_level
 
       exclude_keywords:
-        - ice
         - combustion
 
       ignore_keyword_categories:
         - INTERIOR
         - EXTERIOR_COLOR
         - ENGINE_SPEC
+
+      # Package column as vehicle differentiator
+      # Used to distinguish between package variants when model numbers repeat
+      package_differentiator_column: Package
+
+      # Columns to check for fuel-type keywords when excluding EVs
+      # (checked with word-boundary regex in both 'ice' special case and default exclude_ev)
+      fuel_type_check_columns:
+        - ModelName
+        - engine_type
+        - Description
+        - TrimName
 
       # Genesis-specific override: enable single-character token matching
       # This allows "G" to match "G70", "G80" model names

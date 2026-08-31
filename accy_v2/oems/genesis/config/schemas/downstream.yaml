@@ -79,6 +79,12 @@ sheets:
         width: 15
         description: "OEM model number from database (fetched during enrichment)"
 
+      - output_column: Package
+        source_column: package
+        data_type: string
+        width: 12
+        description: "ADS numeric style ID from vehicle database"
+
     sorting:
       - column: Year
         order: ascending
@@ -150,6 +156,12 @@ sheets:
         data_type: string
         width: 15
         description: "Numéro de modèle OEM récupéré dans la base de données"
+
+      - output_column: Package
+        source_column: package
+        data_type: string
+        width: 12
+        description: "ADS numeric style ID from vehicle database"
 
     sorting:
       - column: Year

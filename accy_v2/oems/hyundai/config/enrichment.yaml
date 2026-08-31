@@ -36,14 +36,26 @@ model_lookup:
 
       # Keywords to exclude from matching
       exclude_keywords:
-        - ice
         - combustion
 
       # Keyword categories to ignore during classification
+      # (These differences don't affect which records match)
       ignore_keyword_categories:
         - INTERIOR
         - EXTERIOR_COLOR
         - ENGINE_SPEC
+
+      # Package column as vehicle differentiator
+      # Used to distinguish between package variants when model numbers repeat
+      package_differentiator_column: Package
+
+      # Columns to check for fuel-type keywords when excluding EVs
+      # (checked with word-boundary regex in both 'ice' special case and default exclude_ev)
+      fuel_type_check_columns:
+        - ModelName
+        - engine_type
+        - Description
+        - TrimName
 
       # Config file paths using central registry
       # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)

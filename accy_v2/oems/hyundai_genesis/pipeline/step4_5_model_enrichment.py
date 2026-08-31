@@ -131,7 +131,7 @@ def run(
     # If still empty, all trims will be marked as missing (handled in batch_lookup)
 
     # Batch lookup: one per unique trim
-    model_mapping, duplicate_trims, missing_trims = _batch_lookup_model_numbers(
+    model_mapping, package_mapping, duplicate_trims, missing_trims = _batch_lookup_model_numbers(
         year=vehicle_year,
         model_name=model_name,
         group_key=group_key,
@@ -151,6 +151,7 @@ def run(
         enriched_df = _add_model_number_columns(
             df=df,
             model_mapping=model_mapping,
+            package_mapping=package_mapping,
             duplicate_trims=duplicate_trims,
             missing_trims=missing_trims,
             vehicle_year=vehicle_year,
@@ -271,7 +272,7 @@ def _batch_lookup_model_numbers(
     oem_config: Dict[str, any],
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
-) -> Tuple[Dict[str, List[str]], set, List[str]]:
+) -> Tuple[Dict[str, List[str]], Dict[str, List], set, List[str]]:
     """
     Lookup model number for each unique trim (one lookup per trim, not per row).
 
@@ -282,10 +283,12 @@ def _batch_lookup_model_numbers(
 
     Returns:
         - model_mapping: {trim: [model_number, ...]} where model_numbers is a list (len 1 normally, >1 for duplicates)
+        - package_mapping: {trim: [package, ...]} where packages is a list (parallel to model_numbers)
         - duplicate_trims: set of trims resolved via the duplicate-code path
         - missing_trims: [trim1, trim2] where lookup failed
     """
     model_mapping = {}
+    package_mapping = {}
     duplicate_trims = set()
     missing_trims = []
 
@@ -344,11 +347,29 @@ def _batch_lookup_model_numbers(
 
             if result is not None:
                 model_mapping[trim] = result.model_numbers
+                package_mapping[trim] = result.packages if result.packages else [result.package] * len(result.model_numbers)
                 if result.is_duplicate_group:
                     duplicate_trims.add(trim)
+
+                # Log collapsed duplicates for DQ review
+                for dup in result.collapsed_duplicates:
+                    dq_logger.log_warning(
+                        sheet_name=group_key,
+                        model_name=model_name,
+                        record_index=None,
+                        record_snapshot={"trim": trim, "package": dup["package"], "description": dup["description"]},
+                        rule_violated="duplicate_model_code_rule",
+                        issue_description=(
+                            f"[DUPLICATE_MODEL_CODE] {vehicle_make} {year} {trim}: Multiple DB rows "
+                            f"({dup['model_numbers']}) share identical description and Package ({dup['package']}) "
+                            f"and were collapsed into one entry — verify this is a legitimate old/new part-number "
+                            f"pair, not a data-entry duplicate in the source DB."
+                        ),
+                    )
+
                 pipeline_logger.debug(
-                    f"  [OK] Found model_number(s)={result.model_numbers} confidence={result.confidence:.2f} "
-                    f"for {vehicle_make} {year} {trim}"
+                    f"  [OK] Found model_number(s)={result.model_numbers} package(s)={package_mapping[trim]} "
+                    f"confidence={result.confidence:.2f} for {vehicle_make} {year} {trim}"
                 )
 
             else:
@@ -390,12 +411,13 @@ def _batch_lookup_model_numbers(
                 f"  [ERROR] {vehicle_make} {year} {trim}: {str(e)}"
             )
 
-    return model_mapping, duplicate_trims, missing_trims
+    return model_mapping, package_mapping, duplicate_trims, missing_trims
 
 
 def _add_model_number_columns(
     df: pd.DataFrame,
     model_mapping: Dict[str, List[str]],
+    package_mapping: Dict[str, List],
     duplicate_trims: set,
     missing_trims: List[str],
     vehicle_year: int,
@@ -406,20 +428,23 @@ def _add_model_number_columns(
     pipeline_logger: PipelineLogger,
 ) -> pd.DataFrame:
     """
-    Add model_number and model_number_status columns to DataFrame.
-    For duplicate-code trims, explode rows (one output per model number).
+    Add model_number, package, and model_number_status columns to DataFrame.
+    For duplicate-code trims, explode rows (one output per model number/package pair).
     Exclude rows where trim is in missing_trims.
     """
     df = df.copy()
 
-    # Map trim -> list of model numbers (len 1 normally, >1 for duplicate codes)
+    # Map trim -> list of model numbers (len 1 normally, >1 for duplicates)
     df["model_number"] = df[trim_col].map(model_mapping)
+
+    # Map trim -> list of packages (parallel to model_numbers)
+    df["package"] = df[trim_col].map(package_mapping)
 
     # Flag rows resolved via the duplicate-model-number path, before exploding
     df["_is_duplicate_match"] = df[trim_col].isin(duplicate_trims)
 
-    # Explode: one output row per model number (no-op for length-1 lists)
-    df = df.explode("model_number", ignore_index=True)
+    # Explode: one output row per (model_number, package) pair (no-op for length-1 lists)
+    df = df.explode(["model_number", "package"], ignore_index=True)
 
     # Add status column
     df["model_number_status"] = df["model_number"].apply(
@@ -433,6 +458,9 @@ def _add_model_number_columns(
 
     # Remove the internal flag column
     df = df.drop(columns=["_is_duplicate_match"])
+
+    # Convert package column to string for consistency (was list before explode)
+    df["package"] = df["package"].astype(str) if not df["package"].isna().all() else df["package"]
 
     # Count rows with and without model numbers
     rows_total = len(df)
