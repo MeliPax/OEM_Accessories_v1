@@ -54,7 +54,10 @@ model_lookup:
       # This allows "G" to match "G70", "G80" model names
       use_single_char_token_matching: true
 
-      # Trims where only one fuel variant exists in DB (optional, for Genesis as needed)
+      # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
+      # Currently empty for Genesis. Add entries here if source data shows fuel-keyword gaps
+      # for Genesis-specific trims. See hyundai/config/enrichment.yaml for the pattern and
+      # how to identify candidates. trim_keywords must use TRANSLATED form (post-translator).
       implied_fuel_type_trims: []
 
       # DECISION [020]: Use centralized path registry
