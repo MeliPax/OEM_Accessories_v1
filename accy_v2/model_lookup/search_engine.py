@@ -29,6 +29,7 @@ class SearchResult:
     package: Optional[str] = None  # ADS numeric style ID from DB (e.g., "481877")
     packages: List[Optional[str]] = field(default_factory=list)  # All package IDs for multi-variant results (parallel to model_numbers)
     collapsed_duplicates: List[Dict] = field(default_factory=list)  # Duplicate groups detected and collapsed (for DQ logging)
+    implied_fuel_type: Optional[str] = None  # Fuel type inferred from config when source label omits it (for DQ logging)
 
 
 class VehicleSearchEngine:
@@ -136,6 +137,36 @@ class VehicleSearchEngine:
                 self.logger.debug(f"Search validation failed: {reason}")
             return None
 
+        # 3.5 Apply implied fuel type (Fix C): check if this model/trim combo is fuel-type-locked
+        implied_fuel = None
+        if "model_lookup_rules" in self.oem_config:
+            oem_rules = self.oem_config.get("model_lookup_rules", {}).get(make, {})
+        else:
+            oem_rules = self.oem_config
+
+        implied_rules = oem_rules.get("implied_fuel_type_trims", [])
+        model_tokens = set(classified.get("MODEL", []))
+        trim_tokens = set(classified.get("TRIM", []) + classified.get("TRIM_VARIANT", []))
+        has_fuel_keyword = bool(classified.get("ENGINE_TYPE", []))
+
+        if implied_rules and model_tokens and trim_tokens and not has_fuel_keyword:
+            for rule in implied_rules:
+                rule_models = set(rule.get("model_keywords", []))
+                rule_trims = set(rule.get("trim_keywords", []))
+                rule_years = rule.get("years", [])
+                rule_fuel = rule.get("fuel_type", "").lower()
+
+                if model_tokens == rule_models and trim_tokens == rule_trims:
+                    if not rule_years or year in rule_years:
+                        implied_fuel = rule_fuel
+                        filtered_keywords.append(rule_fuel)
+                        if self.logger:
+                            self.logger.debug(
+                                f"[IMPLIED_FUEL_TYPE] {make} {year} {model_tokens}/{trim_tokens}: "
+                                f"no fuel keyword in source, applying configured '{rule_fuel}'"
+                            )
+                        break
+
         # 4. Compute score
         score = compute_score(classified, CATEGORY_WEIGHTS)
 
@@ -227,6 +258,7 @@ class VehicleSearchEngine:
                 fuel_type=fuel_type,
                 color=color,
                 package=package,
+                implied_fuel_type=implied_fuel,
             )
 
         # Fix 1: Package-aware duplicate detection and variant handling.
@@ -297,13 +329,46 @@ class VehicleSearchEngine:
                     color=color,
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
+                    implied_fuel_type=implied_fuel,
+                )
+
+            # Check if all Package values are distinct (Fix A: package-variant with differing descriptions)
+            # This handles cases like Palisade Calli with base edition vs. NHL special edition:
+            # same ModelNumber, different Package, different description suffix
+            pkgs = [r.get(package_col) if pd.notna(r.get(package_col)) else None for r in group_representatives]
+            if len(set(pkgs)) == len(pkgs) and all(p is not None for p in pkgs):
+                # All Package values are unique and non-null → these are distinct package variants
+                # even though descriptions or ModelNumbers may overlap
+                model_nums = [r["ModelNumber"] for r in group_representatives]
+                row = group_representatives[0]
+                drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
+                if self.logger:
+                    self.logger.debug(
+                        f"Resolved {candidate_count} candidates to {num_groups} variant(s) by distinct Package "
+                        f"{pkgs} (descriptions differ, ModelNumbers may repeat)"
+                    )
+                return SearchResult(
+                    match=row["Description"],
+                    model_number=model_nums[0],
+                    model_numbers=model_nums,
+                    packages=pkgs,
+                    confidence=confidence,
+                    score=score,
+                    tokens_matched=classified,
+                    candidate_count=candidate_count,
+                    is_duplicate_group=False,
+                    drivetrain=drivetrain,
+                    fuel_type=fuel_type,
+                    color=color,
+                    package=package,
+                    collapsed_duplicates=collapsed_duplicates,
+                    implied_fuel_type=implied_fuel,
                 )
 
             # Check if all model numbers are unique (variant handling: TCR Manual/DCT, fuel variants, etc.)
             model_nums = [r["ModelNumber"] for r in group_representatives]
             if len(set(model_nums)) == len(model_nums):
                 # All model numbers are unique — these are distinct variants
-                pkgs = [r.get(package_col) if pd.notna(r.get(package_col)) else None for r in group_representatives]
                 row = group_representatives[0]
                 drivetrain, fuel_type, color, package = self._extract_row_metadata(row, classification_config)
                 if self.logger:
@@ -326,6 +391,7 @@ class VehicleSearchEngine:
                     color=color,
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
+                    implied_fuel_type=implied_fuel,
                 )
 
         return None

@@ -367,6 +367,21 @@ def _batch_lookup_model_numbers(
                         ),
                     )
 
+                # Log implied fuel type for DQ review (Fix C)
+                if result.implied_fuel_type:
+                    dq_logger.log_warning(
+                        sheet_name=group_key,
+                        model_name=model_name,
+                        record_index=None,
+                        record_snapshot={"trim": trim, "fuel_type": result.implied_fuel_type},
+                        rule_violated="implied_fuel_type_rule",
+                        issue_description=(
+                            f"[IMPLIED_FUEL_TYPE] {vehicle_make} {year} {trim}: Source label has no fuel keyword; "
+                            f"matched via configured implied_fuel_type rule ('{result.implied_fuel_type}' is the only variant in DB). "
+                            f"Verify this assignment is correct — if source intended a different fuel type, update the source label."
+                        ),
+                    )
+
                 pipeline_logger.debug(
                     f"  [OK] Found model_number(s)={result.model_numbers} package(s)={package_mapping[trim]} "
                     f"confidence={result.confidence:.2f} for {vehicle_make} {year} {trim}"

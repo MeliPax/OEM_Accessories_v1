@@ -54,6 +54,9 @@ model_lookup:
       # This allows "G" to match "G70", "G80" model names
       use_single_char_token_matching: true
 
+      # Trims where only one fuel variant exists in DB (optional, for Genesis as needed)
+      implied_fuel_type_trims: []
+
       # DECISION [020]: Use centralized path registry
       # Genesis uses its own configs (not Hyundai configs)
       translator_config: "${MODEL_LOOKUP_CONFIGS}/genesis/translator.yaml"

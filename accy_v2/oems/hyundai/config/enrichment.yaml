@@ -57,6 +57,19 @@ model_lookup:
         - Description
         - TrimName
 
+      # Trims where only one fuel variant exists in DB
+      # When source spreadsheet omits fuel keyword for a trim that's hybrid-only,
+      # this allowlist lets the search auto-apply the fuel type instead of failing
+      implied_fuel_type_trims:
+        - model_keywords: [tucson]
+          trim_keywords: [n-line]
+          fuel_type: hybrid
+          years: [2024, 2025, 2026]
+        - model_keywords: [tucson]
+          trim_keywords: [luxury]
+          fuel_type: hybrid
+          years: [2024]
+
       # Config file paths using central registry
       # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
       # Paths defined in accy_v2/paths.yaml for single source of truth
