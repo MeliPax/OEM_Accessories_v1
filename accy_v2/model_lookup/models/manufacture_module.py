@@ -1193,14 +1193,44 @@ def search_models_by_description(
 
     df = load_existing_csv(csv_path)
 
+    # Apply implied fuel type BEFORE exclude_ev filter runs (critical ordering)
+    # This ensures that fuel-type-locked trims get the fuel keyword injected
+    # before the exclude_ev logic decides whether to remove EV rows
+    oem_config = oem_config or {}
+    if "model_lookup_rules" in oem_config:
+        oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
+    else:
+        oem_rules = oem_config
+
+    implied_rules = oem_rules.get("implied_fuel_type_trims", [])
+    if implied_rules:
+        keywords_lower = {kw.lower() for kw in keywords}
+        has_fuel_keyword = any(kw in keywords_lower for kw in
+                              [kw.lower() for kw in oem_rules.get("fuel_type_keywords", EV_KEYWORDS)])
+
+        # Only inject if search doesn't already have a fuel keyword
+        if not has_fuel_keyword:
+            for rule in implied_rules:
+                rule_models = {kw.lower() for kw in rule.get("model_keywords", [])}
+                rule_trims = {kw.lower() for kw in rule.get("trim_keywords", [])}
+                rule_years = rule.get("years", [])
+                rule_fuel = rule.get("fuel_type", "").lower()
+
+                # Check if all model keywords AND all trim keywords are in the search
+                if rule_models and rule_trims:
+                    if rule_models.issubset(keywords_lower) and rule_trims.issubset(keywords_lower):
+                        if not rule_years or year in rule_years:
+                            # Inject fuel type keyword before exclude_ev filter
+                            keywords.append(rule_fuel)
+                            break
+
     if df.empty:
         return pd.DataFrame()
 
     df_filtered = df[df["Manufacturer"].str.lower() == make.lower()].copy()
     df_filtered = df_filtered[df_filtered["ModelYear"] == year]
 
-    # Parse OEM config to get search behavior flags
-    oem_config = oem_config or {}
+    # Parse OEM config to get search behavior flags (already initialized above for implied_fuel_type_trims)
     if "model_lookup_rules" in oem_config:
         oem_rules = oem_config.get("model_lookup_rules", {}).get(make, {})
     else:
