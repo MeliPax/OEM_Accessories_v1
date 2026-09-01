@@ -1278,14 +1278,29 @@ def search_models_by_description(
         else:
             pattern = build_word_boundary_pattern(keyword)
 
+            # Special handling for fuel-type keywords: also match related word forms
+            # (e.g., "electric" should match "electrified" in ModelName)
+            fuel_type_expansion = {}
+            if keyword.lower() == "electric":
+                fuel_type_expansion = {"electrified"}
+            elif keyword.lower() == "hybrid":
+                fuel_type_expansion = {"hybrid"}
+
             # Determine if this keyword is a model name or trim keyword
             # Check if keyword matches anything in ModelName column
             model_matches = df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True).sum()
 
+            # Also check expanded forms in ModelName
+            for expanded_kw in fuel_type_expansion:
+                expanded_pattern = build_word_boundary_pattern(expanded_kw)
+                model_matches += df_filtered["ModelName"].fillna("").str.contains(expanded_pattern, case=False, na=False, regex=True).sum()
+
             if model_matches > 0:
-                # This keyword appears in ModelName column - search ONLY in ModelName
+                # This keyword (or its expanded form) appears in ModelName column - search ONLY in ModelName
+                # Combine the main pattern with all expanded forms
+                combined_pattern = "|".join([pattern] + [build_word_boundary_pattern(exp) for exp in fuel_type_expansion])
                 df_filtered = df_filtered[
-                    df_filtered["ModelName"].fillna("").str.contains(pattern, case=False, na=False, regex=True)
+                    df_filtered["ModelName"].fillna("").str.contains(combined_pattern, case=False, na=False, regex=True)
                 ]
             else:
                 # This keyword doesn't match model names - search in TrimName AND Description (trim keywords)
