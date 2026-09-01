@@ -237,10 +237,11 @@ def _batch_lookup_model_numbers(
             result = engine.search(make=vehicle_make, year=int(year), raw_keywords=keywords)
 
             if result is not None:
-                model_number = result.model_number
-                # Store richer metadata from SearchResult (not just model_number)
+                # Store richer metadata including multi-variant support (model_numbers, packages lists)
                 model_mapping[trim] = {
-                    "model_number": model_number,
+                    "model_number": result.model_number,
+                    "model_numbers": result.model_numbers,  # All variants (plural)
+                    "packages": result.packages if result.packages else [result.package] * len(result.model_numbers),
                     "drivetrain": result.drivetrain,
                     "fuel_type": result.fuel_type,
                     "color": result.color,
@@ -327,12 +328,17 @@ def _add_model_number_columns(
             return model_mapping[trim_val].get(field_name)
         return None
 
-    # Extract model_number (and others) based on trim
-    df["model_number"] = df[trim_col].apply(lambda trim: extract_field(trim, "model_number"))
+    # Extract model_numbers (plural) and packages (plural) for multi-variant support
+    df["model_number"] = df[trim_col].apply(lambda trim: extract_field(trim, "model_numbers"))
+    df["package"] = df[trim_col].apply(lambda trim: extract_field(trim, "packages"))
+
+    # Also extract single-value fields for metadata
     df["drivetrain"] = df[trim_col].apply(lambda trim: extract_field(trim, "drivetrain"))
     df["fuel_type"] = df[trim_col].apply(lambda trim: extract_field(trim, "fuel_type"))
     df["color"] = df[trim_col].apply(lambda trim: extract_field(trim, "color"))
-    df["package"] = df[trim_col].apply(lambda trim: extract_field(trim, "package"))
+
+    # Explode: one output row per (model_number, package) pair (no-op for length-1 lists)
+    df = df.explode(["model_number", "package"], ignore_index=True)
 
     # Add status column
     df["model_number_status"] = df["model_number"].apply(

@@ -331,12 +331,14 @@ Search for 'electric' in '3.5T electric Prestige' = MATCH ✓
 **Purpose:** Check if model line exists locally BEFORE expensive per-trim lookups.
 
 **Process:**
+
 1. Column-based check: Direct match of incoming Model value vs database ModelName
 2. Uses word boundary regex (same pattern as 3g Database Search)
 3. Scoped to make + year combination
 4. Returns matching records from local CSV
 
 **Example:**
+
 ```
 Input:  make="Hyundai", year=2024, model_name="Santa Fe"
 Local DB records (Hyundai 2024):
@@ -347,11 +349,13 @@ Result: Non-empty → Proceed with existing per-trim search (translate→classif
 ```
 
 **If model line NOT found locally:**
+
 - Check run-scoped cache: has this (make, model_name, year) been attempted in THIS pipeline run?
 - If NOT in cache: attempt ADS (AutoData Solutions) online refresh
 - If already in cache: skip ADS (already tried), go directly to NOT_FOUND logging
 
 **Run-Scoped Cache:**
+
 - Plain `set()` of `(make, model_name, year)` tuples
 - Created once per pipeline execution in `BasePipeline.run()`
 - Prevents redundant ADS calls for same model/year within single run
@@ -364,11 +368,13 @@ Result: Non-empty → Proceed with existing per-trim search (translate→classif
 **Trigger:** Model line not found locally after gate check (3g1).
 
 **Service:** `ADSService` (chrome_api/service.py)
+
 - Fetches vehicle data by make, model_name, year
 - Returns DataFrame with vehicle database schema (same as local CSV)
 - Empty DataFrame = no match found in online database
 
 **Process:**
+
 1. Call `ADSService.fetch_vehicle(make, model_name, year)`
 2. If result is non-empty:
    - Save via `save_vehicle_models_to_csv()` (validation, dedup, standardization, vocab rebuild)
@@ -398,12 +404,14 @@ If no candidates:
 **Legitimate duplicates allowed:** Two records CAN share the same `(ModelYear, ModelName, Description)` with **different** `ModelNumber`s. This represents the same vehicle configuration with multiple valid part-lookup codes (e.g., old/new model codes).
 
 **Process:**
+
 1. When `search_models_by_description()` returns >1 candidates:
+
    - Check if all candidates normalize to the same `(ModelYear, ModelName, Description)` (differing only in `ModelNumber`)
    - If yes: Unconditionally return as one `SearchResult` with all ModelNumbers (`is_duplicate_group=True`)
    - If no: Return as separate candidates (model/trim variations)
-
 2. At CSV write time via `save_vehicle_models_to_csv()`:
+
    - Validate 4-column uniqueness key: `["Manufacturer", "ModelYear", "ModelNumber", "ModelName", "Description"]`
    - If true duplicate found: Log DQ warning (`csv_uniqueness_rule`)
    - If legitimate multi-code entry: Leave as-is (correct data)
@@ -466,6 +474,7 @@ rename_map = {
 ```
 
 **Issues:**
+
 1. Ignored `downstream.yaml` configuration even though it was loaded
 2. Code and config could drift (changing YAML had no effect)
 3. Inconsistent column naming across OEMs (model vs. model_name)
@@ -485,7 +494,7 @@ def apply_downstream_column_mapping(
 ) -> pd.DataFrame:
     """
     Rename/select columns per downstream_schema configuration.
-    
+  
     Process:
     1. Look up sheet definition from downstream_schema['sheets'][sheet_key]
     2. Build rename_map from source_column → output_column
@@ -529,6 +538,7 @@ output_df = apply_downstream_column_mapping(
 ```
 
 **Benefits:**
+
 - ✅ Single implementation across all OEMs (no duplication)
 - ✅ Config is source of truth (changing YAML automatically applies)
 - ✅ Code/config drift impossible (no hardcoded column lists)
@@ -541,17 +551,17 @@ output_df = apply_downstream_column_mapping(
 
 **Canonical Columns (Step 3 onward):**
 
-| Canonical Name | Source | Output Column | Semantics |
-|---|---|---|---|
-| `year_from` | Input file | Year | Vehicle model year (e.g., 2024) |
-| `model_name` | Metadata | ModelName | Vehicle model name (e.g., "Elantra") |
-| `model_number` | Step 4.5 enrichment | Model | OEM part code (e.g., "ELCS4V2BES00") |
-| `part_number` | Input file | Part | Accessory part code |
-| `description` | Step 4 language split | Description | Accessory description (language-specific) |
-| `comments` | Step 4 language split | Comments | Installation comments (language-specific) |
-| `msrp` | Input file | Price | Retail price |
-| `labour_hours` | Input file | Hours | Installation labor hours |
-| `trim_level` | Step 2 normalization | Trim | Trim level (Essential, Luxury, etc.) |
+| Canonical Name   | Source                | Output Column | Semantics                                 |
+| ---------------- | --------------------- | ------------- | ----------------------------------------- |
+| `year_from`    | Input file            | Year          | Vehicle model year (e.g., 2024)           |
+| `model_name`   | Metadata              | ModelName     | Vehicle model name (e.g., "Elantra")      |
+| `model_number` | Step 4.5 enrichment   | Model         | OEM part code (e.g., "ELCS4V2BES00")      |
+| `part_number`  | Input file            | Part          | Accessory part code                       |
+| `description`  | Step 4 language split | Description   | Accessory description (language-specific) |
+| `comments`     | Step 4 language split | Comments      | Installation comments (language-specific) |
+| `msrp`         | Input file            | Price         | Retail price                              |
+| `labour_hours` | Input file            | Hours         | Installation labor hours                  |
+| `trim_level`   | Step 2 normalization  | Trim          | Trim level (Essential, Luxury, etc.)      |
 
 **Important:** Column names before Step 3 are OEM-specific (raw Excel headers). Standardization happens at Step 3. By Step 5, all columns match the canonical names above.
 
@@ -571,6 +581,7 @@ language_specific_columns:
 ```
 
 Step 4 renames these to generic names:
+
 - `english_description` → `description` (EN sheet)
 - `comments_en` → `comments` (EN sheet)
 - `french_description` → `description` (FR sheet)
@@ -718,33 +729,34 @@ accy_v2/output/dq_reports/
 **Changes:**
 
 1. **Config Format:** JSON → YAML
+
    - `accy_v2/model_lookup/configs/{oem}_translator.json` → `{oem}/translator.yaml`
    - `accy_v2/model_lookup/configs/{oem}_classification.json` → `{oem}/classification.yaml`
    - `accy_v2/oems/{oem}/config/{oem}_config.json` → `{oem}_config.yaml`
    - All loaders updated: `translator.py`, `classifier.py`, `config_loader.py`, `service.py`
-
 2. **Duplicate Handling:** Flag removed, data-invariant enabled
+
    - Removed `allow_duplicate_model_numbers` from all OEM configs
    - Extended dedup key to 4 columns: `(Manufacturer, ModelYear, ModelNumber, ModelName, Description)`
    - Unconditional duplicate collapsing when same `(ModelYear, ModelName, Description)` with different `ModelNumber`
-
 3. **Model-Line Gate:** Column-based outer gate
+
    - Direct model-name matching before expensive per-trim lookups
    - Prevents model-not-found false negatives
    - Enables ADS fallback when local search fails
-
 4. **ADS Fallback:** Mandatory online refresh with run-scoped caching
+
    - Triggers automatically when local model line not found
    - Run-scoped `(make, model_name, year)` cache prevents redundant calls
    - Unconditional for all OEMs (no config toggle)
    - Non-halting: logs `[MODEL_LINE_NOT_FOUND]` once per model group, continues
-
 5. **DQ Categorization Fix:** Actual bracket tags
+
    - Updated `output_writer.py::_categorize_lookup_issue()` to check bracket tags
    - New categories: `[MODEL_LINE_NOT_FOUND]`, `[ADS_FETCH_ERROR]`, `[ADS_NOT_FOUND]`
    - Proper categorization in DQ reports and `_Report` sheet
-
 6. **Test Fixes:** Import paths corrected
+
    - Updated `test_search_engine.py` imports from bare `semantic.*` to full `model_lookup.semantic.*`
    - Added `configs_dir` argument to all config loader calls
 
@@ -992,26 +1004,27 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 **Four Critical Issues Fixed:**
 
 1. **Hardcoded Column Mappings Replaced with YAML-Driven Logic**
+
    - New file: `accy_v2/core/helpers/output_column_mapper.py`
    - Function: `apply_downstream_column_mapping()` (shared across all OEMs)
    - Removed: Duplicate internal `_apply_output_column_mapping()` from each OEM's step5_output.py
    - Impact: Column definitions now 100% configurable via `downstream.yaml`
    - Benefit: Scalable — new output columns added via config edit only
-
 2. **Inconsistent Canonical Column Names (Hyundai vs. Mitsubishi)**
+
    - Changed: Model column name from `model`/`model_name` → unified `model_name` (snake_case)
    - Files affected:
      - `accy_v2/oems/hyundai/config/hyundai_config.yaml` (line 13)
      - `accy_v2/oems/mitsubishi/pipeline/step1_validation.py` (added model_name as real column)
    - Impact: Consistent canonical naming across all OEMs and steps
-
 3. **Downstream Schema EN/FR Inconsistency**
+
    - Fixed: `downstream.yaml` for Hyundai and Mitsubishi had different `source_column` names between languages
    - Issue: Changing one sheet didn't match the other, causing missing output columns
    - Fix: Unified EN/FR sheet structure with identical source column references
    - Verified: All 9 output columns now present in both language variants
-
 4. **Language-Specific Column Processing Bug**
+
    - Fixed: `intermediate.yaml` column names didn't match post-split DataFrame column names
    - Issue: `description` → `english_description`, but step 4 produces generic `description` (post-split)
    - Fix: Updated `language_specific_columns` to reference pre-split names; step 4 handles renaming
@@ -1028,16 +1041,17 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 **Three Critical Bugs Fixed:**
 
 1. **French Description Optional** (`upstream.yaml`)
+
    - Changed: `required: true` → `required: false`
    - Reason: Source data (Hyundai Canada) provides only English descriptions
    - Impact: All 57 sheets now process instead of failing on missing French column
-
 2. **Auto-Generated col_data_type_dict** (`base_pipeline.py`)
+
    - Parses `transformations.yaml` to identify float conversion operations
    - Builds mapping: `{"to_float": [...], "to_string": [...]}`
    - Impact: Step 3 data type enforcement works without hardcoding
-
 3. **Fixed Column Mapper Exclusion Keywords** (`column_mapper.py`)
+
    - Changed: `kw.get("not_have")` → `kw.get("must_not_have")`
    - Reason: Schema uses `must_not_have` but code was looking for `not_have`
    - Impact: Model_Year_To correctly excluded from model detection (was causing duplicate columns)
@@ -1051,6 +1065,7 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 ### ✅ Completed
 
 **Phase 1-4 (2026-08-03):**
+
 - ✅ Modular 6-file YAML structure per OEM (pipeline, transformations, enrichment, schemas/*)
 - ✅ Centralized path registry with ${VAR} placeholder resolution
 - ✅ ModularConfigLoader class with full test coverage (29 tests passing)
@@ -1059,10 +1074,12 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 - ✅ End-to-end pipeline testing (57 sheets, 100% success rate)
 
 **Phase 5 (2026-08-03):**
+
 - ✅ Bug fixes for modular config integration (French optional, col_data_type_dict, column mapper keywords)
 - ✅ All 4 OEMs verified working with modular configs
 
 **Phase 6 (2026-08-20):**
+
 - ✅ Shared YAML-driven output column mapper (DECISION [019] implementation)
 - ✅ Canonical column name standardization (snake_case across all OEMs)
 - ✅ Downstream schema fixes (EN/FR consistency, correct source columns)
@@ -1071,6 +1088,7 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 - ✅ All 9 output columns verified present with correct semantics
 
 **Phase 7 (2026-08-26): Mitsubishi Model Lookup + Trim Disambiguation (In Progress)**
+
 - ✅ Exact TRIM token-set matching layer (fixes GT/GT Premium/GT NOIR collision)
 - ✅ Extended SearchResult with drivetrain, fuel_type, color, package fields
 - ✅ Threaded new fields through step4_5_model_enrichment.py and downstream output
@@ -1083,23 +1101,26 @@ Configuration drives business logic, not hardcoded Python logic. Eliminated code
 ### 🚀 Immediate Next Steps (Recommended Priority)
 
 **1. Optional: Migrate Mazda to Shared Helper** — 15 minutes
-   - File: `accy_v2/oems/mazda/pipeline/step5_output.py`
-   - Change: Switch to calling `apply_downstream_column_mapping()` instead of local copy
-   - Benefit: Consistent implementation, reduced maintenance burden
-   - Testing: Verify output byte-identical to current behavior
-   - Note: Optional — Mazda already works, this is cleanup only
+
+- File: `accy_v2/oems/mazda/pipeline/step5_output.py`
+- Change: Switch to calling `apply_downstream_column_mapping()` instead of local copy
+- Benefit: Consistent implementation, reduced maintenance burden
+- Testing: Verify output byte-identical to current behavior
+- Note: Optional — Mazda already works, this is cleanup only
 
 **2. Create Output Column Mapping Guide** — 30 minutes
-   - Document: How to define new output columns in `downstream.yaml`
-   - Example: Adding a new column (output_column, source_column, order)
-   - Guidelines: Canonical column naming conventions
-   - File: `accy_v2/docs/OUTPUT_COLUMN_MAPPING_GUIDE.md`
+
+- Document: How to define new output columns in `downstream.yaml`
+- Example: Adding a new column (output_column, source_column, order)
+- Guidelines: Canonical column naming conventions
+- File: `accy_v2/docs/OUTPUT_COLUMN_MAPPING_GUIDE.md`
 
 **3. Add Output Schema Validation** — Optional, 30 minutes
-   - Validate that `downstream.yaml` source columns exist in transformed data
-   - Add error messages if schema references non-existent columns
-   - File: `accy_v2/core/helpers/output_column_mapper.py` (add validation function)
-   - Benefit: Catch configuration errors early
+
+- Validate that `downstream.yaml` source columns exist in transformed data
+- Add error messages if schema references non-existent columns
+- File: `accy_v2/core/helpers/output_column_mapper.py` (add validation function)
+- Benefit: Catch configuration errors early
 
 ### 📋 Optional Enhancements
 

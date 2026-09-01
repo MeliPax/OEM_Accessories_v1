@@ -1027,27 +1027,33 @@ def batch_save_manufacturer_models(
     return results
 
 
-def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) -> set[str]:
+def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None, oem_config: dict = None) -> tuple[set[str], set[str]]:
     """
-    Return a set of keywords that discriminate between trim levels.
-    These are actual trim variant names and TRIM_VARIANT tokens (like "N", "N-Line"),
-    not fuel types (POWERTRAIN_TYPE) or transmission/drive specifications.
+    Return two sets: (trim_discriminators, model_sub_variant_tokens).
+
+    trim_discriminators: TRIM and TRIM_VARIANT tokens (like "N", "N-Line")
+    model_sub_variant_tokens: MODEL-category tokens that discriminate body styles (like "coupe")
 
     Fuel types (POWERTRAIN_TYPE: hybrid, hev, phev, ev) are excluded because they are
     handled separately by the earlier EV-exclusion logic in search_models_by_description().
     Treating them as trim discriminators would incorrectly require users to specify trim
     names when searching by fuel type.
 
-    Prefers to load from classification config if available, falls back to hardcoded set.
+    Prefers to load from classification config + OEM enrichment config if available,
+    falls back to hardcoded trim set.
 
     Args:
         make: Manufacturer name (optional, enables config-driven lookup)
         configs_dir: Directory with classification configs (optional)
+        oem_config: OEM enrichment config dict (optional, enables model_sub_variant_tokens)
 
     Returns:
-        set of known trim discriminator keywords (excluding POWERTRAIN_TYPE)
+        tuple of (trim_discriminators_set, model_sub_variant_tokens_set)
     """
-    # Try to load from classification config
+    trim_tokens = set()
+    model_sub_variant_tokens = set()
+
+    # Try to load TRIM tokens from classification config
     if make:
         try:
             try:
@@ -1062,18 +1068,31 @@ def _get_trim_discriminator_keywords(make: str = None, configs_dir: str = None) 
             trim_tokens = {
                 token for token, category in config.get("token_map", {}).items() if category in ("TRIM", "TRIM_VARIANT")
             }
-            if trim_tokens:
-                return trim_tokens
         except Exception:
             pass  # Fall through to hardcoded set
 
-    # Fallback to hardcoded set (backward compatibility)
-    return {
-        "premium", "noir", "se", "es", "gt", "le", "limited", "touring", "sel",
-        "ex", "ex-l", "lx", "sx", "sport", "l", "s", "plus", "ta",
-        "glx", "sport touring", "ex-l", "high line", "highline", "execline",
-        "comfortline", "trendline", "gli", "jetta",
-    }
+    # Try to load MODEL sub-variant tokens from OEM enrichment config
+    if oem_config:
+        try:
+            # Check nested path first (brands -> {make} -> model_sub_variant_tokens)
+            if "brands" in oem_config and make in oem_config.get("brands", {}):
+                model_sub_variant_tokens = set(oem_config["brands"][make].get("model_sub_variant_tokens", []))
+            # Also check flat path (model_sub_variant_tokens at top level)
+            elif "model_sub_variant_tokens" in oem_config:
+                model_sub_variant_tokens = set(oem_config.get("model_sub_variant_tokens", []))
+        except Exception:
+            pass  # No model_sub_variant_tokens configured
+
+    # If no TRIM tokens loaded from config, use hardcoded fallback
+    if not trim_tokens:
+        trim_tokens = {
+            "premium", "noir", "se", "es", "gt", "le", "limited", "touring", "sel",
+            "ex", "ex-l", "lx", "sx", "sport", "l", "s", "plus", "ta",
+            "glx", "sport touring", "ex-l", "high line", "highline", "execline",
+            "comfortline", "trendline", "gli", "jetta",
+        }
+
+    return trim_tokens, model_sub_variant_tokens
 
 
 def _matches_any_fuel_keyword(df: pd.DataFrame, fuel_keywords: list[str], columns: list[str]) -> pd.Series:
@@ -1259,24 +1278,33 @@ def search_models_by_description(
     # and should get all variants of that fuel type/trim (not just ones they explicitly named).
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
-        trim_discriminators = _get_trim_discriminator_keywords(make, configs_dir)
+        trim_discriminators, model_sub_variant_tokens = _get_trim_discriminator_keywords(make, configs_dir, oem_config)
         search_kw_set = {kw.lower() for kw in keywords}
+        all_discriminators = trim_discriminators | model_sub_variant_tokens
 
         # Check if any fuel-type keyword was in the search (before translation)
         user_requested_fuel_type = any(kw.lower() in fuel_type_keywords for kw in keywords)
 
-        # Check if any trim keyword was in the search
-        trim_kw_requested = bool(search_kw_set & trim_discriminators)
+        # Check if any discriminator keyword was in the search
+        discriminator_kw_requested = bool(search_kw_set & all_discriminators)
 
-        # Only apply trim discriminator filtering if neither fuel type nor trim keyword was explicitly requested
-        if not user_requested_fuel_type and not trim_kw_requested:
-            def _has_extra_discriminator_keywords(desc: str) -> bool:
-                tokens = set(_extract_description_tokens(desc))
-                discriminator_tokens = tokens & trim_discriminators
-                extra_discriminators = discriminator_tokens - search_kw_set
-                return bool(extra_discriminators)
+        # Only apply trim discriminator filtering if neither fuel type nor discriminator keyword was explicitly requested
+        if not user_requested_fuel_type and not discriminator_kw_requested:
+            def _has_extra_discriminator_keywords(row) -> bool:
+                # Check Description for TRIM/TRIM_VARIANT discriminators
+                desc_tokens = set(_extract_description_tokens(row["Description"]))
+                desc_discriminators = desc_tokens & trim_discriminators
+                extra_from_desc = desc_discriminators - search_kw_set
 
-            df_filtered = df_filtered[~df_filtered["Description"].apply(_has_extra_discriminator_keywords)]
+                # Check ModelName for MODEL sub-variant discriminators (e.g., "coupe")
+                model_name = row.get("ModelName", "")
+                model_tokens = set(_extract_description_tokens(model_name)) if model_name else set()
+                model_discriminators = model_tokens & model_sub_variant_tokens
+                extra_from_model = model_discriminators - search_kw_set
+
+                return bool(extra_from_desc or extra_from_model)
+
+            df_filtered = df_filtered[~df_filtered.apply(_has_extra_discriminator_keywords, axis=1)]
 
     # Filter by engine_type if provided
     if engine_type:

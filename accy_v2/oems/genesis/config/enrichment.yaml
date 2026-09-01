@@ -44,10 +44,12 @@ model_lookup:
 
       # Columns to check for fuel-type keywords when excluding EVs
       # (checked with word-boundary regex in both 'ice' special case and default exclude_ev)
+      # NOTE: Description deliberately excluded for Genesis because GV80 Coupe contains "Electric"
+      # in description (referring to e-SC electric supercharger), not a BEV powertrain.
+      # This prevents false exclusion of GV80 Coupe rows when fuel_type_check_columns was broadened.
       fuel_type_check_columns:
         - ModelName
         - engine_type
-        - Description
         - TrimName
 
       # Genesis-specific override: enable single-character token matching
@@ -55,10 +57,23 @@ model_lookup:
       use_single_char_token_matching: true
 
       # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
-      # Currently empty for Genesis. Add entries here if source data shows fuel-keyword gaps
-      # for Genesis-specific trims. See hyundai/config/enrichment.yaml for the pattern and
-      # how to identify candidates. trim_keywords must use TRANSLATED form (post-translator).
-      implied_fuel_type_trims: []
+      # Used when source data omits fuel keywords for trims exclusive to one powertrain variant.
+      # Confirmed via DB audit: these (model, trim, year) combinations exist ONLY as Electrified variants.
+      implied_fuel_type_trims:
+        - model_keywords: [gv70]
+          trim_keywords: [advanced]
+          fuel_type: electric
+          years: [2025, 2026]
+        - model_keywords: [gv70]
+          trim_keywords: [advanced, plus]
+          fuel_type: electric
+          years: [2025]
+
+      # MODEL-category tokens that discriminate between body-style variants (e.g., coupe)
+      # Used to prevent bare model searches (e.g., "gv80") from matching unwanted variants
+      # like "GV80 Coupe" when the user didn't explicitly request coupe.
+      model_sub_variant_tokens:
+        - coupe
 
       # DECISION [020]: Use centralized path registry
       # Genesis uses its own configs (not Hyundai configs)

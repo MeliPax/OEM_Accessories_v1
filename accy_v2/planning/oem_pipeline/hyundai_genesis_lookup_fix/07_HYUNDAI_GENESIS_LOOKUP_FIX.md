@@ -1,8 +1,8 @@
 # Hyundai/Genesis Full Pipeline Separation + Compound-Model Merge Fix
 
-**Status:** Planning complete, expanded scope approved, branch created, awaiting implementation approval  
-**Branch:** `feature/hyundai-genesis-lookup-fix`  
-**Date Created:** 2026-08-28  
+**Status:** Planning complete, expanded scope approved, branch created, awaiting implementation approval
+**Branch:** `feature/hyundai-genesis-lookup-fix`
+**Date Created:** 2026-08-28
 **Updated:** 2026-08-28 (scope expanded to include full separation + config-driven sheet names)
 
 ## Context
@@ -47,8 +47,7 @@ manufacturer = "Genesis" if str(model).strip() in genesis_models else "Hyundai"
 ```
 
 The code confuses **brand keys** with **model names**: `enrichment_config["model_lookup"]["brands"]`
-contains `{"Hyundai": {...}, "Genesis": {...}}`. After removing "Hyundai", `genesis_models ==
-["Genesis"]` — just the literal brand string. So `"G70" in genesis_models` is always False, and
+contains `{"Hyundai": {...}, "Genesis": {...}}`. After removing "Hyundai", `genesis_models == ["Genesis"]` — just the literal brand string. So `"G70" in genesis_models` is always False, and
 every Master sheet row is routed as `manufacturer="Hyundai"`. Downstream, the DB search filters on
 `Manufacturer == "HYUNDAI"`, silently excluding all real `GENESIS` rows in the CSV.
 
@@ -75,8 +74,7 @@ constructs path to `configs/hyundai_classification.json` which doesn't exist (re
 `configs/hyundai/classification.yaml`). Result: tokens stay unmerged as `["santa", "fe"]` instead
 of `["santa fe"]`.
 
-Hyundai's `classification.yaml` has only compound MODEL entries (`santa fe: MODEL`, `santa cruz:
-MODEL`) with no single-word fallback. Unmerged tokens never classify as MODEL, search validation
+Hyundai's `classification.yaml` has only compound MODEL entries (`santa fe: MODEL`, `santa cruz: MODEL`) with no single-word fallback. Unmerged tokens never classify as MODEL, search validation
 fails *before* the DB is queried, and the generic `DATABASE_NO_MATCH` masks the true cause.
 
 **Impact:** Santa Fe and Santa Cruz trims fail across all years — ~20+ more of the 128 warnings.
@@ -96,6 +94,7 @@ maintenance burden, while orchestrators and configs remain fully separate.
 **Implementation details:**
 
 1. **Shared step module extraction:**
+
    - Create `accy_v2/oems/hyundai_genesis/pipeline/` directory.
    - Move step modules here: `step1_validation.py`, `step2_header_normalization.py`,
      `step3_standardization.py`, `step3_5_extract_vehicle_year.py`, `step4_transformation.py`,
@@ -103,24 +102,23 @@ maintenance burden, while orchestrators and configs remain fully separate.
    - Apply compound-merge fix + diagnostics wiring once, both pipelines benefit.
    - Update import statements in both Hyundai's and Genesis's `orchestrator.py` to use
      `oems.hyundai_genesis.pipeline`.
-
 2. **New Genesis pipeline orchestrator:**
+
    - `accy_v2/oems/genesis/pipeline/orchestrator.py` — `GenesisPipeline(BasePipeline)`, reads
      `source_sheet: "Genesis"` from config, imports steps from shared `oems.hyundai_genesis.pipeline`.
-   - `accy_v2/oems/genesis/config/` — new config directory with `pipeline.yaml` (`source_sheet:
-     "Genesis"`), `enrichment.yaml` (Genesis brand config extracted from Hyundai's version),
+   - `accy_v2/oems/genesis/config/` — new config directory with `pipeline.yaml` (`source_sheet: "Genesis"`), `enrichment.yaml` (Genesis brand config extracted from Hyundai's version),
      `transformations.yaml`, `schemas/upstream.yaml|intermediate.yaml|downstream.yaml` (copied,
      as sheets share identical 33-column layout).
    - `accy_v2/run_genesis.py` — new entry script, mirrors `run_hyundai.py` pattern. Both Hyundai
      and Genesis auto-discover `.xlsx` files in the shared landing zone:
      `accy_v2/data/landing_zone/hyundai_genesis/`.
+3. **New Genesis output locations (automatic, no code needed):**
 
-2. **New Genesis output locations (automatic, no code needed):**
    - Output workbook: `accy_v2/output/ready_to_upload/genesis/genesis_*.xlsx`
    - DQ reports: `accy_v2/output/dq_reports/genesis/dq_report_*.json`
    - Pipeline logs: `accy_v2/output/pipeline_logs/genesis/pipeline_*.log`
+4. **Simplified Hyundai orchestrator:**
 
-3. **Simplified Hyundai orchestrator:**
    - Drop all `genesis_models` lookup/derivation logic (lines 72-99 of current file).
    - Read `source_sheet: "Hyundai"` from config (Item 2 below).
    - Set `manufacturer="Hyundai"` as a fixed constant (no per-row routing needed).
@@ -155,10 +153,10 @@ def load_file(self, file_path: str) -> Dict[str, pd.DataFrame]:
     config_root = Path(__file__).parent.parent / "config"
     loader = ModularConfigLoader(self.OEM_NAME, config_root)
     pipeline_config = loader.load_pipeline_config()
-    
+  
     # Resolve sheet name with validation
     sheet_name = self._resolve_sheet(excel, pipeline_config["source_sheet"])
-    
+  
     raw = excel.parse(sheet_name=sheet_name, header=None)
     # ... rest of grouping/metadata logic
 ```
@@ -230,18 +228,18 @@ categories. Low risk — straight port of existing working code.
 
 ## Files Touched
 
-| File | Change |
-|---|---|
-| `accy_v2/oems/hyundai_genesis/pipeline/` (new) | Shared step modules (moved from hyundai/pipeline): step1_validation.py, step2_header_normalization.py, step3_standardization.py, step3_5_extract_vehicle_year.py, step4_transformation.py, step4_5_model_enrichment.py, step5_output.py. Apply compound-merge fix + diagnostics wiring once here. |
-| `accy_v2/oems/hyundai/pipeline/orchestrator.py` | Simplified `load_file()`: read `source_sheet` from config, drop `genesis_models` logic, set manufacturer constant; update imports to use `oems.hyundai_genesis.pipeline` |
-| `accy_v2/oems/hyundai/config/pipeline.yaml` | Add `source_sheet: "Hyundai"` |
-| `accy_v2/oems/hyundai/config/enrichment.yaml` | Remove `brands.Genesis` block (moves to Genesis's own config) |
-| `accy_v2/oems/genesis/pipeline/orchestrator.py` (new) | `GenesisPipeline`, trimmed `load_file()`; imports from `oems.hyundai_genesis.pipeline` |
-| `accy_v2/oems/genesis/config/pipeline.yaml` (new) | `source_sheet: "Genesis"` |
-| `accy_v2/oems/genesis/config/enrichment.yaml` (new) | Genesis brand config (extracted from Hyundai's) |
-| `accy_v2/oems/genesis/config/transformations.yaml` (new) | Copy of Hyundai's |
-| `accy_v2/oems/genesis/config/schemas/*.yaml` (new) | Copies of Hyundai's (upstream, intermediate, downstream) |
-| `accy_v2/run_genesis.py` (new) | Entry script |
+| File                                                       | Change                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `accy_v2/oems/hyundai_genesis/pipeline/` (new)           | Shared step modules (moved from hyundai/pipeline): step1_validation.py, step2_header_normalization.py, step3_standardization.py, step3_5_extract_vehicle_year.py, step4_transformation.py, step4_5_model_enrichment.py, step5_output.py. Apply compound-merge fix + diagnostics wiring once here. |
+| `accy_v2/oems/hyundai/pipeline/orchestrator.py`          | Simplified`load_file()`: read `source_sheet` from config, drop `genesis_models` logic, set manufacturer constant; update imports to use `oems.hyundai_genesis.pipeline`                                                                                                                   |
+| `accy_v2/oems/hyundai/config/pipeline.yaml`              | Add`source_sheet: "Hyundai"`                                                                                                                                                                                                                                                                    |
+| `accy_v2/oems/hyundai/config/enrichment.yaml`            | Remove`brands.Genesis` block (moves to Genesis's own config)                                                                                                                                                                                                                                    |
+| `accy_v2/oems/genesis/pipeline/orchestrator.py` (new)    | `GenesisPipeline`, trimmed `load_file()`; imports from `oems.hyundai_genesis.pipeline`                                                                                                                                                                                                      |
+| `accy_v2/oems/genesis/config/pipeline.yaml` (new)        | `source_sheet: "Genesis"`                                                                                                                                                                                                                                                                       |
+| `accy_v2/oems/genesis/config/enrichment.yaml` (new)      | Genesis brand config (extracted from Hyundai's)                                                                                                                                                                                                                                                   |
+| `accy_v2/oems/genesis/config/transformations.yaml` (new) | Copy of Hyundai's                                                                                                                                                                                                                                                                                 |
+| `accy_v2/oems/genesis/config/schemas/*.yaml` (new)       | Copies of Hyundai's (upstream, intermediate, downstream)                                                                                                                                                                                                                                          |
+| `accy_v2/run_genesis.py` (new)                           | Entry script                                                                                                                                                                                                                                                                                      |
 
 **No changes to:** `base_pipeline.py`, `config_loader_v2.py`, Mazda, Mitsubishi, Honda, shared
 `model_lookup` search engine, or `classification.yaml` files (existing `santa fe`/`santa cruz`
@@ -252,48 +250,49 @@ entries are correct; the merge fix in shared code makes them match).
 ## Verification Plan (Once Implementation Approved)
 
 1. **Hyundai pipeline produces Hyundai-only output:**
+
    - `python accy_v2/run_hyundai.py` against `2026-8-1 HACC MAF DIST - 08102026.xlsx`
    - Output workbook should contain only Hyundai models (Elantra, Ioniq, Kona, Santa Fe, etc.)
    - Zero Genesis rows in Hyundai output
-
 2. **Genesis pipeline produces Genesis-only output:**
+
    - `python accy_v2/run_genesis.py` against the same file
    - New output workbook created under `output/ready_to_upload/genesis/`
    - Contains only Genesis models (G70, G80, G90, GV60, GV70, GV80)
    - Zero Hyundai rows in Genesis output
-
 3. **DQ warning counts drop to expected levels:**
+
    - Hyundai baseline (broken code): 128 warnings
    - Hyundai after fix: expect ~11-18 (genuine gaps: G70 "2.0T", 2026 Tucson "XRT", etc.)
    - Genesis: expect low count (no Hyundai routing bugs for this brand)
-
 4. **Spot-check Genesis models now resolve:**
+
    - Genesis output columns for `g70_EN`, `g80_EN`, `g90_EN`, `gv60_EN`, `gv70_EN`, `gv80_EN` are no longer blank
    - Confirm a sample (e.g., 2024 G70 "2.5T Advanced") has a model number
-
 5. **Spot-check Santa Fe / Santa Cruz now resolve:**
+
    - Hyundai output columns for `santa_fe_EN` and `santa_cruz_EN` are no longer blank
    - Confirm samples (e.g., 2025 Santa Fe "XRT", 2024 Santa Cruz "Preferred") have model numbers
-
 6. **Confirm genuine gaps still fail:**
+
    - G70 "2.0T" trim (doesn't exist in CSV) should still produce a warning
    - 2026 Tucson "XRT" (not yet loaded) should still produce a warning
    - Verifies the fix didn't over-correct into false negatives
-
 7. **Check sheet-name validation:**
+
    - Manually edit a `pipeline.yaml` to have an invalid `source_sheet: "NonExistent"` and re-run
    - Pipeline should fail fast with a clear error listing available sheets, not a cryptic KeyError
-
 8. **EV model naming mismatch (side issue, report as follow-up if unresolved):**
+
    - Genesis sheet has `G80 EV` and `GV70 EV`
    - CSV has `Electrified G80` and `Electrified GV70`
    - Do not attempt fix within this change; flag as a separate naming-alignment gap if unresolved
-
 9. **Regression checks:**
+
    - Run Mitsubishi and Mazda pipelines (unchanged code) — should execute identically to before
    - No shared code was touched, so this should be a no-op confirmation
-
 10. **If diagnostics wiring is included:**
+
     - Verify remaining ~11-18 warnings show specific reasons (`MODEL_YEAR_NOT_IN_DB`,
       `TRIM_VARIANT_NOT_FOUND`, etc.) instead of generic `[DATABASE_NO_MATCH]`
 

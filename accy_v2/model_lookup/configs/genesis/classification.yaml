@@ -26,6 +26,7 @@ token_map:
   quilting: INTERIOR
   suede: INTERIOR
   wood: INTERIOR
+  ice: ENGINE_TYPE
   electrified: ENGINE_TYPE
   electric: ENGINE_TYPE
   ev: ENGINE_TYPE
@@ -47,6 +48,8 @@ token_map:
   plus: PACKAGE
   5p: PACKAGE
   7p: PACKAGE
+  5-passenger: SEATING
+  7-passenger: SEATING
   w/tech: PACKAGE
   w/lsd: PACKAGE
   w/matte: EXTERIOR_COLOR
