@@ -4,6 +4,52 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [2.5.1] - 2026-09-08
+
+### 🎯 Status: IMPLEMENTED & VERIFIED
+
+**Genesis Model Lookup: GV70/G80 Electrified Inference Bug Fix**
+
+Fixed configuration error where `implied_fuel_type_trims` rules for GV70 (2025-2026) were unconditionally injecting "electric" fuel type into gas-engine searches, causing 4 model lookup failures. Also corrected database record for 2024 Electrified G80 "Prestige" (missing TrimName).
+
+### ✅ Fixes Implemented
+
+1. **Config-Only Fix: Remove Overly-Broad GV70 Rules**
+   - File: `accy_v2/oems/genesis/config/enrichment.yaml` (lines 80-87)
+   - Problem: Two `implied_fuel_type_trims` rules for GV70 "advanced" (2025-2026) and "advanced,plus" (2025) fired on all GV70 searches regardless of explicit fuel-type keywords (2.5T/3.5T), injecting "electric" into gas searches
+   - Root Cause: Rules were structurally unnecessary — Electrified GV70 searches already carry "ev" keyword from sheet naming (gv70_ev vs gv70), and gas searches explicitly include engine keywords. Injection logic existed twice with inconsistent safety gates
+   - Solution: Remove both GV70 rules (lines 80-87). Keep G90 e-SC rule (genuinely EV-only with no fuel signal in trim text)
+   - Impact: All 4 GV70 gas searches now resolve correctly
+   - Risk: None (strictly removed dead/harmful config, no code changes)
+
+2. **Database Correction: Add Missing TrimName**
+   - File: `accy_v2/model_lookup/db/db_vehicle_models.csv` (record for 2024 Electrified G80)
+   - Problem: ModelNumber G8ES4ZE1GP00 (2024 Electrified G80 "Prestige") had blank TrimName field, preventing search match
+   - Solution: Populate TrimName with "Prestige"
+   - Impact: 2024 Electrified G80 "Prestige" search now resolves
+
+### ✅ Search Failures Resolved (5 total)
+
+| Model | Year | Trim | Status |
+|-------|------|------|--------|
+| GV70 | 2025 | 2.5T Advanced | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2D27AD) |
+| GV70 | 2025 | 2.5T Advanced Plus | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGAAU) |
+| GV70 | 2026 | 2.5T Advanced | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGA00) |
+| GV70 | 2026 | 2.5T Advanced Tech Pkg | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGA55) |
+| Electrified G80 | 2024 | Prestige | ✅ Resolved (CSV_DUPLICATE found: G8ES4ZE1GP00) |
+
+### 🔄 Verification
+
+- All 4 OEM pipelines tested (Genesis, Hyundai, Mazda, Mitsubishi): **0 regressions**
+- Genesis pipeline warnings: 35 → 39 (4 new G90 e-SC detections, all expected)
+- Merged to dev branch and verified on dev: **all tests passing**
+
+### 📋 Documentation
+
+Detailed technical analysis and planning: [`accy_v2/planning/oem_pipeline/hyundai_genesis_lookup_fix/`](../../planning/oem_pipeline/hyundai_genesis_lookup_fix/)
+
+---
+
 ## [2.5.0] - 2026-08-31
 
 ### 🎯 Status: IMPLEMENTED & VERIFIED
