@@ -56,18 +56,37 @@ model_lookup:
       # This allows "G" to match "G70", "G80" model names
       use_single_char_token_matching: true
 
+      # Trim name normalization rules (applied before keyword extraction)
+      # Handles cases where engine spec is embedded in trim name by source provider
+      # Rules applied in order; later rules can use output of earlier rules
+      trim_name_normalization:
+        - pattern: "^3\\.5T e-SC Prestige"
+          replacement: "e-SC Prestige"
+          models: [g90]
+          reason: "DB normalizes to 'e-SC Prestige'; source includes engine spec."
+        - pattern: "^3\\.5T e-SC Prestige Black"
+          replacement: "e-SC Prestige Black"
+          models: [g90]
+          reason: "DB normalizes to 'e-SC Prestige Black'; source includes engine spec."
+        - pattern: "^3\\.5T e-SC$"
+          replacement: "e-SC Prestige"
+          models: [g90]
+          reason: "DB normalizes bare 'e-SC' to 'e-SC Prestige'; source missing trim variant."
+
       # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
       # Used when source data omits fuel keywords for trims exclusive to one powertrain variant.
-      # Confirmed via DB audit: these (model, trim, year) combinations exist ONLY as Electrified variants.
+      # NOTE: GV70 gas models share identical trim labels with Electrified GV70 for 2025/2026
+      # (DB confirms "Advanced" and "Advanced Plus" exist on both gas and Electrified lines).
+      # The _ev sheets already carry an explicit "ev" keyword from their sheet name, and gas
+      # searches carry explicit engine keywords (e.g., "2.5t"), so the GV70 rules below were
+      # never actually needed and would only fire incorrectly on gas searches — REMOVED.
+      # G90 e-SC is correctly left here: it is genuinely EV-only in the DB with no explicit
+      # engine-type label in the trim text, so this rule is load-bearing for that case.
       implied_fuel_type_trims:
-        - model_keywords: [gv70]
-          trim_keywords: [advanced]
+        - model_keywords: [g90]
+          trim_keywords: [e-sc]
           fuel_type: electric
-          years: [2025, 2026]
-        - model_keywords: [gv70]
-          trim_keywords: [advanced, plus]
-          fuel_type: electric
-          years: [2025]
+          years: [2024, 2025, 2026]
 
       # MODEL-category tokens that discriminate between body-style variants (e.g., coupe)
       # Used to prevent bare model searches (e.g., "gv80") from matching unwanted variants
