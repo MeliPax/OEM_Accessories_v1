@@ -190,18 +190,17 @@ def _merge_compound_model_names(tokens: List[str], oem_config: Dict[str, Any], p
 
     # Load classification config to get compound model names
     try:
-        # Try to get explicit path from config first
-        classification_path_str = oem_config.get("classification_config_path", "").strip()
+        # Use the already-resolved classifier_config path from ModularConfigLoader
+        classifier_config_path = oem_config.get("classifier_config", "").strip()
 
-        if classification_path_str:
-            classification_path = Path(classification_path_str)
-        else:
-            # Fallback: construct path from make name
-            make = oem_config.get("make", "hyundai").lower()
-            classification_path = (
-                Path(__file__).parent.parent.parent.parent
-                / "model_lookup" / "configs" / f"{make}_classification.json"
-            )
+        if not classifier_config_path:
+            if pipeline_logger:
+                pipeline_logger.debug("[MERGE] No classifier_config configured for this brand")
+            return tokens
+
+        # Resolve any placeholder paths (e.g., ${MODEL_LOOKUP_CONFIGS}/...)
+        # The ModularConfigLoader already handles this, so we expect a real path
+        classification_path = Path(classifier_config_path)
 
         if not classification_path.exists():
             if pipeline_logger:
@@ -211,10 +210,12 @@ def _merge_compound_model_names(tokens: List[str], oem_config: Dict[str, Any], p
         if pipeline_logger:
             pipeline_logger.debug(f"[MERGE] Loading classification from: {classification_path}")
 
+        # Load YAML config (not JSON - YAML is the actual format)
+        import yaml
         with open(classification_path, "r") as f:
-            classification = json.load(f)
+            classification = yaml.safe_load(f)
 
-        token_map = classification.get("token_map", {})
+        token_map = classification.get("token_map", {}) if classification else {}
     except Exception as e:
         # If we can't load the config, just return tokens as-is
         if pipeline_logger:

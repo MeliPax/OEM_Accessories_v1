@@ -69,10 +69,34 @@ class HyundaiPipeline(BasePipeline):
         loader = ModularConfigLoader(self.OEM_NAME, config_root)
         enrichment_config = loader.load_enrichment()
 
-        # Get Genesis models from enrichment config for manufacturer routing
-        genesis_models = list(enrichment_config.get("model_lookup", {}).get("brands", {}).keys())
-        if "Hyundai" in genesis_models:
-            genesis_models.remove("Hyundai")  # Only keep non-Hyundai brands (e.g., Genesis)
+        # Get Genesis models from the workbook's Genesis sheet (self-maintaining, no drift)
+        # The Genesis sheet contains reference data that authoritatively lists Genesis models
+        genesis_sheet_name = next(
+            (s for s in excel.sheet_names if s.strip().lower() == "genesis"), None
+        )
+        if genesis_sheet_name is None:
+            raise ValueError(
+                f"Required 'Genesis' reference sheet not found in workbook. "
+                f"Found sheets: {excel.sheet_names}."
+            )
+
+        genesis_raw = excel.parse(sheet_name=genesis_sheet_name, header=None)
+        genesis_working = promote_header_row(genesis_raw)
+        genesis_working.columns = [clean_column_name(str(c)) for c in genesis_working.columns]
+        genesis_col_lower = {c.lower(): c for c in genesis_working.columns}
+        genesis_model_col = next((c for c in genesis_col_lower if c == "model"), None)
+
+        if not genesis_model_col:
+            raise ValueError(
+                f"'Model' column not found in Genesis sheet. "
+                f"Found columns: {genesis_working.columns.tolist()}"
+            )
+
+        # Extract all unique Genesis models (lowercase for case-insensitive matching)
+        genesis_models = {
+            str(m).strip().lower()
+            for m in genesis_working[genesis_col_lower[genesis_model_col]].dropna().unique()
+        }
 
         # Find the actual year and model columns
         col_lower = {c.lower(): c for c in working.columns}
@@ -96,7 +120,7 @@ class HyundaiPipeline(BasePipeline):
 
             # Add metadata columns to dataframe so step1 can extract them
             # Store as special columns that step1 will read and put into meta_data
-            manufacturer = "Genesis" if str(model).strip() in genesis_models else "Hyundai"
+            manufacturer = "Genesis" if str(model).strip().lower() in genesis_models else "Hyundai"
             group_df = group_df.copy()
             group_df["__group_key__"] = key
             group_df["__year_from__"] = int(year)
