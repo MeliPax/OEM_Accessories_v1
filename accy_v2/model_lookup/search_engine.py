@@ -30,6 +30,7 @@ class SearchResult:
     packages: List[Optional[str]] = field(default_factory=list)  # All package IDs for multi-variant results (parallel to model_numbers)
     collapsed_duplicates: List[Dict] = field(default_factory=list)  # Duplicate groups detected and collapsed (for DQ logging)
     implied_fuel_type: Optional[str] = None  # Fuel type inferred from config when source label omits it (for DQ logging)
+    implied_fuel_rule: Optional[Dict] = None  # Config rule that matched for implied fuel type (for DQ logging)
 
 
 class VehicleSearchEngine:
