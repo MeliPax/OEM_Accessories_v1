@@ -28,6 +28,10 @@ model_lookup:
 
       trim_column_name: Package
 
+      implied_fuel_type_trims: []
+
+      implied_trim_variant_trims: []
+
       translator_config: "${MODEL_LOOKUP_CONFIGS}/mazda/translator.yaml"
       classifier_config: "${MODEL_LOOKUP_CONFIGS}/mazda/classification.yaml"
       standardization_config: "${MODEL_LOOKUP_CONFIGS}/mazda/standardization.yaml"

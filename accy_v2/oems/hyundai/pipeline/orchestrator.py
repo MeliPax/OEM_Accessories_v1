@@ -179,9 +179,10 @@ class HyundaiPipeline(BasePipeline):
         transformed: Dict[str, pd.DataFrame],
         meta_data: Dict,
         config: Dict,
+        dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, pd.DataFrame]:
-        return step5_output.prepare_frames(transformed, meta_data, config)
+        return step5_output.prepare_frames(transformed, meta_data, config, dq_logger)
 
     def run_write_combined_output(
         self,

@@ -91,6 +91,27 @@ model_lookup:
           fuel_type: hybrid
           years: [2024]
 
+      # Trims where only one model sub-line variant exists in DB (config-driven, cross-OEM reusable)
+      #
+      # PATTERN: When a trim is ONLY available under a model sub-line (e.g., "Elantra N" line),
+      # source spreadsheets may omit the sub-line designation in their labels (e.g., "TCR" instead
+      # of "Elantra N-TCR"). This allowlist lets the search auto-apply the missing trim variant
+      # instead of returning zero results. Applied after keyword translation/classification.
+      #
+      # HOW TO IDENTIFY CANDIDATES:
+      #   1. Query the vehicle DB: find trims where ModelName includes a sub-line (e.g., "Elantra N")
+      #   2. Cross-check source data: is this trim's label sub-line-keyword-free in those years?
+      #   3. If yes → add here with the trim variant and affected years
+      #
+      # CURRENT ENTRIES (Hyundai, 2024-2026):
+      #   - Elantra TCR: exists only under "Elantra N" (2026, confirmed unique)
+      #
+      implied_trim_variant_trims:
+        - model_keywords: [elantra]
+          trim_keywords: [tcr]
+          implied_trim_variant: n
+          years: [2026]
+
       # Config file paths using central registry
       # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
       # Paths defined in accy_v2/paths.yaml for single source of truth

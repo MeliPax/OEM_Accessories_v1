@@ -30,6 +30,7 @@ class SearchResult:
     packages: List[Optional[str]] = field(default_factory=list)  # All package IDs for multi-variant results (parallel to model_numbers)
     collapsed_duplicates: List[Dict] = field(default_factory=list)  # Duplicate groups detected and collapsed (for DQ logging)
     implied_fuel_type: Optional[str] = None  # Fuel type inferred from config when source label omits it (for DQ logging)
+    implied_trim_variant: Optional[str] = None  # Trim variant inferred from config (e.g., "n" for Elantra N when source says "TCR") (for DQ logging)
 
 
 class VehicleSearchEngine:
@@ -167,6 +168,29 @@ class VehicleSearchEngine:
                             )
                         break
 
+        # 3.6 Apply implied trim variant (trim sub-line fallback): check if this model/trim combo needs a variant token
+        implied_trim_variant = None
+        implied_trim_rules = oem_rules.get("implied_trim_variant_trims", [])
+        has_trim_variant = bool(classified.get("TRIM_VARIANT", []))
+
+        if implied_trim_rules and model_tokens and trim_tokens and not has_trim_variant:
+            for rule in implied_trim_rules:
+                rule_models = set(rule.get("model_keywords", []))
+                rule_trims = set(rule.get("trim_keywords", []))
+                rule_years = rule.get("years", [])
+                rule_variant = rule.get("implied_trim_variant", "").lower()
+
+                if model_tokens == rule_models and trim_tokens == rule_trims:
+                    if not rule_years or year in rule_years:
+                        implied_trim_variant = rule_variant
+                        filtered_keywords.append(rule_variant)
+                        if self.logger:
+                            self.logger.debug(
+                                f"[IMPLIED_TRIM_VARIANT] {make} {year} {model_tokens}/{trim_tokens}: "
+                                f"no trim variant in source, applying configured '{rule_variant}'"
+                            )
+                        break
+
         # 4. Compute score
         score = compute_score(classified, CATEGORY_WEIGHTS)
 
@@ -259,6 +283,7 @@ class VehicleSearchEngine:
                 color=color,
                 package=package,
                 implied_fuel_type=implied_fuel,
+                implied_trim_variant=implied_trim_variant,
             )
 
         # Fix 1: Package-aware duplicate detection and variant handling.
@@ -330,6 +355,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_trim_variant=implied_trim_variant,
                 )
 
             # Check if all Package values are distinct (Fix A: package-variant with differing descriptions)
@@ -363,6 +389,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_trim_variant=implied_trim_variant,
                 )
 
             # Check if all model numbers are unique (variant handling: TCR Manual/DCT, fuel variants, etc.)
@@ -392,6 +419,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_trim_variant=implied_trim_variant,
                 )
 
         return None

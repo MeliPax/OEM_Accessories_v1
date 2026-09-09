@@ -1,4 +1,9 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "allow": [
       "Bash(python run_mitsubishi.py \"../landing_zone/2026/Mitsubishi/Accessory Guide - February26.xlsx\")",
@@ -12,7 +17,8 @@
       "Bash(python accy_v2/run_hyundai.py)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\paxm\\\\OneDrive - PBS SYSTEMS\\\\Desktop\\\\Office\\\\Projects\\\\OEM Accessory project\\\\OEM_Accessories_v1\\\\accy_v2\\\\output\\\\ready_to_upload\\\\mitsubishi\" -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | ForEach-Object { $_.FullName })",
       "Bash(git status *)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(git commit *)"
     ],
     "deny": [
       "Read(**/.env*)",
@@ -27,12 +33,5 @@
       "Read(**/docker-compose*.yml)",
       "Read(**/config/database.yml)"
     ]
-  },
-  
-  "attribution": {
-      "commit": "",
-      "pr": "",
-      "sessionUrl": false
-    }
+  }
 }
-

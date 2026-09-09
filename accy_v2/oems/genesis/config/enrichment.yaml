@@ -88,6 +88,10 @@ model_lookup:
           fuel_type: electric
           years: [2024, 2025, 2026]
 
+      # Trims where only one model sub-line variant exists in DB (config-driven, cross-OEM reusable)
+      # Used when source data omits sub-line designation for trims exclusive to a model variant.
+      implied_trim_variant_trims: []
+
       # MODEL-category tokens that discriminate between body-style variants (e.g., coupe)
       # Used to prevent bare model searches (e.g., "gv80") from matching unwanted variants
       # like "GV80 Coupe" when the user didn't explicitly request coupe.
