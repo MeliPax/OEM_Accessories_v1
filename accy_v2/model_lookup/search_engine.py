@@ -139,6 +139,7 @@ class VehicleSearchEngine:
 
         # 3.5 Apply implied fuel type (Fix C): check if this model/trim combo is fuel-type-locked
         implied_fuel = None
+        implied_fuel_rule = None
         if "model_lookup_rules" in self.oem_config:
             oem_rules = self.oem_config.get("model_lookup_rules", {}).get(make, {})
         else:
@@ -159,6 +160,7 @@ class VehicleSearchEngine:
                 if model_tokens == rule_models and trim_tokens == rule_trims:
                     if not rule_years or year in rule_years:
                         implied_fuel = rule_fuel
+                        implied_fuel_rule = rule
                         filtered_keywords.append(rule_fuel)
                         if self.logger:
                             self.logger.debug(
@@ -259,6 +261,7 @@ class VehicleSearchEngine:
                 color=color,
                 package=package,
                 implied_fuel_type=implied_fuel,
+                implied_fuel_rule=implied_fuel_rule,
             )
 
         # Fix 1: Package-aware duplicate detection and variant handling.
@@ -330,6 +333,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_fuel_rule=implied_fuel_rule,
                 )
 
             # Check if all Package values are distinct (Fix A: package-variant with differing descriptions)
@@ -363,6 +367,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_fuel_rule=implied_fuel_rule,
                 )
 
             # Check if all model numbers are unique (variant handling: TCR Manual/DCT, fuel variants, etc.)
@@ -392,6 +397,7 @@ class VehicleSearchEngine:
                     package=package,
                     collapsed_duplicates=collapsed_duplicates,
                     implied_fuel_type=implied_fuel,
+                    implied_fuel_rule=implied_fuel_rule,
                 )
 
         return None
