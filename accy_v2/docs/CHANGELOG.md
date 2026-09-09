@@ -4,6 +4,39 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - DQ Report Cleanup
+
+### 🎯 Status: IN DEVELOPMENT
+
+**DQ Report: Filter csv_uniqueness_rule Noise**
+
+Removed `csv_uniqueness_rule` warnings from stakeholder-facing DQ export documents. These warnings are expected operational noise (duplicate detection from ADS refresh cycles) and do not represent actionable data quality issues. Warnings remain in pipeline logs for engineering diagnostics.
+
+### ✅ Changes Implemented
+
+1. **DQ Logger Filtering (Option A)**
+   - File: `accy_v2/core/helpers/dq_logger.py`
+   - Modified `write_dq_report()` to accept `exclude_rules` parameter with default `["csv_uniqueness_rule"]`
+   - Updated `_build_summary()` to filter records before counting/summarizing
+   - Added `"filtered_rules"` metadata field to DQ report payload for audit trail
+   - Backward compatible: existing call sites automatically use default filtering
+
+2. **Report Impact**
+   - Genesis: warnings 39 → 9 (30 csv_uniqueness_rule entries removed)
+   - Hyundai: warnings ~145 → ~115 (estimated)
+   - Mazda: warnings 0 → 0 (already clean)
+   - Mitsubishi: warnings ~124 → ~94 (estimated)
+
+### 📋 Verification Approach
+
+1. Run all 4 OEM pipelines and confirm DQ reports
+2. Verify `"filtered_rules": ["csv_uniqueness_rule"]` is present in payload
+3. Confirm all actionable rules (model_number_lookup_rule, etc.) still present
+4. Check pipeline logs still contain csv_uniqueness_rule entries
+5. No regression testing (rules still logged, just not in export)
+
+---
+
 ## [2.5.1] - 2026-09-08
 
 ### 🎯 Status: IMPLEMENTED & VERIFIED
