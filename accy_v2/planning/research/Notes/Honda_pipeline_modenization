@@ -1,0 +1,100 @@
+https://claude.ai/artifact/8gUA2VvaBGUDEgmfa8xJfe
+
+Honda Architecture:
+
+I. Section-Level Complexity
+
+Since these sections don't change, and we want 100% certainty, I would like us to configure the keywords:
+
+We can have config for French files and config for ENG file.
+
+To identify sections we can do:
+
+patterns:
+packages: - EN: "1.0 Packages and Kits" - FR: "1.0 Groupes et ensembles"
+Wheels and Wheel Accessories: - EN: "2.0 Wheels and Wheel Accessories" - FR: "2.0 Jantes et accessoires de jantes"
+Etc
+
+then all the section patterns will be defined, all these in our yaml file. this way we know exactly what is being processed.
+
+Also, we want to add that they must be there, and flag it if any of the section is not found.
+
+We'll enforce the order to be the same, flag if it ever changes
+
+If the section name is malformed, it will be fagged, but keep the pipeline running.
+
+Section Boundary Detection:
+
+Start of a section:
+
+- You will find a section identifier string, eg. 3.0 Exterior
+- The next row from it, it will be the head columns: Description, Part Number, List Price, FRT, Installed Price. These headers are different for EN/FR sheets
+
+End of the section criteria:
+
+- The row that has data that comes before the very first all empty row from the section identifier, before reaching another section identifier.
+- This should be very strict and clearly defined.
+
+As per the current design, there will be no overlap of records between sections.
+
+Challenge 1B: Packages/Kits Rollup (Honda-Specific)
+
+Excel structure:
+┌─────────────────────────────┐
+│ 1.0 Packages and Kits │ ← Section header
+├─────────────────────────────┤
+│ Part | Desc | Price | Trims │
+├─────────────────────────────┤
+│ PKG-001 | Premium Package | [data] │ ← Parent package
+│ PART-A | Item A in premium | $X │ ← Child item (indented or marker?)
+│ PART-B | Item B in premium | $Y │ ← Child item
+│ PKG-002 | Standard Package | [data] │ ← Parent package (new)
+│ PART-C | Item C in standard | $Z │ ← Child item
+└─────────────────────────────┘
+
+Goal: Roll up to one row per package
+└─ PKG-001 | Premium Package | [aggregated parts A+B] │
+└─ PKG-002 | Standard Package | [aggregated parts C] │
+
+This is the goal as described here,
+
+- Parent row has children, children have no child rows.
+- Children rows are characterized by: they are in the package section only, they are missing values in list price, FRT, INstalled PRice, and model columns,m and they come after a parent column that has description, and the rest of the compulsory columns filed (they will be defined). A parent can have 1 or more children, and you know the a part family has ended when you find another parent.
+- We will keep parent numeric values like price, labour, etc.
+- If parent row has part Number empty, count 2 columns from part number to the left (target column, Description, PartNumber), check if there's a value, if it's there take it, if it's not, log that. Column names will be diff by language version. It is expected that the partNumber will be in the backup column but it's possible not too.
+- Yes, description values of all the children will be concatenated into the comment section of the parent row.
+- If row looks like parent and child, we will need to flag it and pass it in the DQ report
+- All this will take place until the package section is over.
+
+Every action should be logged.
+
+Aggregation Strategy:
+
+Numeric values we keep only parent values. If they are empty, we need to flag that in the DQ report.
+Yes, aggregate child parts into a comment/description
+
+For string fields:
+Description: Concatenate? Replace? -> Description will be concatenated at the end of the value in comment section, with a ". " between the two
+Part number: Keep parent's or list all children? -> for partnumbers, only keep the parent one, with backup pull handled.
+
+What about trim applicability when rolling up?
+If parent applies to "X" trim and child to "Y" trim, result should be "X, Y" (union)?
+-> the rule is, where parent row applies, all children must apply. if not, this shoud be loged and flagged.
+-> We will only keep parent applicability indication
+
+I like what you thouhg of making this config driven.
+
+Rollup Correctness Verification:
+
+After rollup, how do we verify it's correct?
+DQ check: "Total child parts = X, rolled up to Y parents"
+Check for "orphaned" children (not assigned to parent)
+Check for children with no parent (malformed data)
+Decision Needed: DQ rules for rollup validation
+
+Yes, I want all the verifications done.
+
+II. Trim Detection & Applicability
+Challenge 2A: Trim Column Identification Across Sections
+
+Trim detection must come after header detection is complete. That way, we have established standard column structure.
