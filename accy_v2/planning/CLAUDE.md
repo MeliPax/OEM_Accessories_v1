@@ -217,7 +217,18 @@ git branch -d feature/my-feature
 
 - **Merge to `dev`** — Tested feature branch, ready for integration
 - **Merge to `main`** — Stable, release-ready code (via formal release process)
-- **Tag versions** — After `main` merge, tag as `v2.5.1`, `v2.6.0`, etc.
+- **Tag versions** — After `main` merge, tag with semantic version (see VERSIONING.md)
+
+### Version Scope (Quick Ref)
+
+| Type | Trigger | Branch | Version |
+|------|---------|--------|---------|
+| **HOTFIX** | Critical prod bug (data loss, crash) | `hotfix/*` from `main` | `v2.5.0-hotfix.1` |
+| **PATCH** | Bug fix, improvement, config | `fix/*` from `dev` | `v2.5.1` |
+| **MINOR** | Feature, OEM port, upgrade | `feature/*` from `dev` | `v2.6.0` |
+| **MAJOR** | Architecture change, redesign | `feature/*` from `dev` | `v3.0.0` |
+
+**See `VERSIONING.md` for full details**, release process, and emergency procedures.
 
 ---
 
