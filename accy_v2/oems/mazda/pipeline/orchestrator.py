@@ -28,8 +28,20 @@ class MazdaPipeline(BasePipeline):
     OEM_NAME = "mazda"
 
     def load_file(self, file_path: str) -> Dict[str, pd.DataFrame]:
-        """Load CSV file, group by CarLineCode, and return {model: raw_df} for each model."""
-        df = pd.read_csv(file_path)
+        """Load CSV or Excel file, group by CarLineCode, and return {model: raw_df} for each model."""
+        file_lower = file_path.lower()
+
+        if file_lower.endswith('.xlsx') or file_lower.endswith('.xls'):
+            df = pd.read_excel(file_path)
+        elif file_lower.endswith('.csv'):
+            # Try UTF-8 first, fall back to Windows-1252 if that fails
+            try:
+                df = pd.read_csv(file_path, encoding='utf-8')
+            except UnicodeDecodeError:
+                df = pd.read_csv(file_path, encoding='windows-1252')
+        else:
+            raise ValueError(f"Unsupported file format: {file_path}. Expected .csv, .xlsx, or .xls")
+
         return {model: group.reset_index(drop=True) for model, group in df.groupby("CarLineCode")}
 
     def run_step1_validation(

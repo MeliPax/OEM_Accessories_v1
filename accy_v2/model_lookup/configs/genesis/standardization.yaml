@@ -1,0 +1,36 @@
+make: "Hyundai"
+version: "1.0"
+description: "Hyundai-specific data standardization rules applied at ingestion and search"
+
+standardization_rules:
+  trim_level_aliases:
+    # Transform trim level names to standard form (case-insensitive matching)
+    "n line": "N-Line"
+    "n-line": "N-Line"
+    "nline": "N-Line"
+    "n line ultimate": "N-Line Ultimate"
+    "n line dcx": "N-Line DCT"
+    "n line manual": "N-Line Manual"
+
+  model_name_aliases:
+    # Transform model names if needed
+    "ioniq 5": "IONIQ 5"
+    "ioniq5": "IONIQ 5"
+    "ioniq 9": "IONIQ 9"
+    "ioniq9": "IONIQ 9"
+    "ioniq hybrid": "IONIQ Hybrid"
+
+  description_patterns:
+    # Regex patterns to fix formatting issues in Description
+    - pattern: "\\bN Line\\b"
+      replacement: "N-Line"
+      flags: "IGNORECASE"
+    - pattern: "\\s{2,}"
+      replacement: " "
+      flags: ""
+
+applied_to:
+  # Where these rules apply
+  - "TrimName"
+  - "Description"
+  - "ModelName"

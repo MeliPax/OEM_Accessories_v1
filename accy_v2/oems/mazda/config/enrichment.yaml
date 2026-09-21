@@ -1,0 +1,54 @@
+# ============================================================================
+# File: accy_v2/oems/mazda/config/enrichment.yaml
+# Description: Model lookup and enrichment rules
+# OEM: Mazda
+# Purpose: Vehicle identifier enrichment (not used; Mazda has model numbers)
+# ============================================================================
+# DECISION [016]: use_model_lookup: false (Mazda comes with model numbers)
+# ============================================================================
+
+model_lookup:
+  # Mazda does not use model lookup (disabled in pipeline.yaml)
+  enabled: false
+
+  brands:
+    Mazda:
+      valid_year_range:
+        min: 2020
+        max: 2100
+
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+
+      search_fields:
+        - trim
+        - model
+
+      trim_column_name: Package
+
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/mazda/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/mazda/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/mazda/standardization.yaml"
+
+# ADS fallback (not used for Mazda)
+ads_fallback:
+  enabled: false
+
+# Database path (for reference, not used)
+database:
+  db_path: "${MODEL_LOOKUP_DB}"
+  uniqueness_key:
+    - Manufacturer
+    - ModelYear
+    - ModelNumber
+    - ModelName
+    - Description
+
+validation:
+  on_model_not_found:
+    action: log_warning
+    dq_category: MODEL_LINE_NOT_FOUND
+
+  log_successful_enrichments: false

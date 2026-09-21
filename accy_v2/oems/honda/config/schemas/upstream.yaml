@@ -1,0 +1,172 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/schemas/upstream.yaml
+# Description: Incoming Excel file structure and validation rules
+# OEM: Hyundai
+# Purpose: Defines how to detect, validate, and rename columns from raw Excel
+# ============================================================================
+# DECISION [015]: Modular config (upstream schema separated from other concerns)
+# Naming improvements: detect_by → detect_by_keyword, rename_to → rename_to_canonical
+# ============================================================================
+
+# Required languages for this OEM
+# Hyundai requires both English and French columns
+languages:
+  - EN
+  - FR
+
+# Column detection and validation rules
+# Each column defined here with keyword detection, types, and completeness thresholds
+columns:
+  year_from:
+    # Keywords to detect this column in header row
+    detect_by_keyword:
+      must_have: [model, year, from]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: ModelYear
+    expected_data_type: integer
+    completeness_threshold: 0.8
+    description: "Model year (e.g., 2024, 2025)"
+
+  model:
+    detect_by_keyword:
+      must_have: [model]
+      must_have_one_of: []
+      must_not_have: [year]
+    required: true
+    rename_to_canonical: ModelName
+    expected_data_type: string
+    completeness_threshold: 1.0
+    description: "Vehicle model name (e.g., Elantra, Santa Fe)"
+
+  part_number:
+    detect_by_keyword:
+      must_have: [part, number]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: PartNumber
+    expected_data_type: string
+    completeness_threshold: 1.0
+    transformation: uppercase
+    description: "Accessory part number (e.g., 00000-ABC12)"
+
+  english_description:
+    detect_by_keyword:
+      must_have: [accessory, description]
+      must_have_one_of: []
+      must_not_have: ["(fr)"]
+    required: true
+    rename_to_canonical: Description
+    expected_data_type: string
+    completeness_threshold: 1.0
+    language: EN
+    description: "English accessory description"
+
+  french_description:
+    detect_by_keyword:
+      must_have: [accessory, description, "(fr)"]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: Description_FR
+    expected_data_type: string
+    completeness_threshold: 1.0
+    language: FR
+    description: "French accessory description"
+
+  msrp:
+    detect_by_keyword:
+      must_have: [msrp]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: MSRP
+    expected_data_type: float
+    completeness_threshold: 0.9
+    description: "Manufacturer Suggested Retail Price"
+
+  dnet:
+    detect_by_keyword:
+      must_have: [dnet]
+      must_have_one_of: []
+      must_not_have: []
+    required: false
+    rename_to_canonical: DNET
+    expected_data_type: float
+    completeness_threshold: 0.5
+    description: "Dealer net cost"
+
+  labour_rate:
+    detect_by_keyword:
+      must_have: [labour, rate]
+      must_have_one_of: []
+      must_not_have: []
+    required: false
+    rename_to_canonical: LaborRate
+    expected_data_type: float
+    completeness_threshold: 0.5
+    description: "Labor rate per hour"
+
+  labour_hours:
+    detect_by_keyword:
+      must_have: [labour, hours]
+      must_have_one_of: []
+      must_not_have: []
+    required: true
+    rename_to_canonical: LaborHours
+    expected_data_type: float
+    completeness_threshold: 0.8
+    description: "Labor hours required for installation"
+
+  comments_en:
+    detect_by_keyword:
+      must_have: [comments]
+      must_have_one_of: []
+      must_not_have: ["(fr)"]
+    required: false
+    rename_to_canonical: Comments
+    expected_data_type: string
+    completeness_threshold: 0.0
+    language: EN
+    description: "English comments/restrictions"
+
+  comments_fr:
+    detect_by_keyword:
+      must_have: [comments, "(fr)"]
+      must_have_one_of: []
+      must_not_have: []
+    required: false
+    rename_to_canonical: Comments_FR
+    expected_data_type: string
+    completeness_threshold: 0.0
+    language: FR
+    description: "French comments/restrictions"
+
+# Sheet-level validation rules
+sheet_validation:
+  # Pattern to match valid sheet names (regex)
+  # .* accepts all sheets (no filtering)
+  sheet_name_pattern: ".*"
+
+  # Sheets to explicitly exclude (empty = no exclusions)
+  exclude_sheet_names: []
+
+  # Trim table detection (identifies trim columns for parsing)
+  trim_table:
+    column_pattern: "^trim[\\s_]\\d+$"
+    required: true
+    detection_method: contains_pattern
+    description: "Trim level columns (e.g., 'Trim 1', 'Trim_2')"
+
+# Completeness validation gates
+validation_gates:
+  # Minimum fraction of columns that must be detected (0.0 - 1.0)
+  column_detection_threshold: 0.8
+
+  # Minimum number of data rows (after header detection)
+  minimum_data_rows: 1
+
+  # Behavior on incomplete data: fail, warn, skip_sheet
+  on_incomplete_data: warn

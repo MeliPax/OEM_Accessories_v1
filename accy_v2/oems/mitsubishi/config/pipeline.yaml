@@ -1,0 +1,43 @@
+# ============================================================================
+# File: accy_v2/oems/mitsubishi/config/pipeline.yaml
+# Description: Orchestration settings and runtime configuration
+# OEM: Mitsubishi
+# Purpose: Flow control, feature flags, and runtime behavior
+# ============================================================================
+# DECISION [015]: Modular 5-file config structure (replaces single JSON)
+# DECISION [016]: use_model_lookup remains configurable per OEM
+# DECISION [017]: non_null_threshold remains configurable
+# DECISION [018]: Output paths derived from OEM name in code (not configured)
+# ============================================================================
+
+# Model lookup enrichment
+# DECISION [016]: use_model_lookup flag is configurable per OEM
+# - Hyundai: true (needs trim-to-model translation)
+# - Mazda: false (already has model numbers in source)
+# - Mitsubishi: true (enriches trim data with OEM model numbers via ADS)
+use_model_lookup: true
+
+# Data completeness threshold
+# DECISION [017]: non_null_threshold is configurable per OEM
+# - Percentage of non-null values required in non-null columns (0.0 - 1.0)
+# - If null rate is BELOW threshold: log warnings, exclude null rows, continue processing
+# - If null rate is AT/ABOVE threshold: mark sheet as FATAL, skip entirely
+# - Example: 0.5 means "fail sheet if >50% of column is null"
+non_null_threshold: 0.5
+
+# DECISION [018]: Output paths are DERIVED from OEM name in code
+# - NOT configured here anymore
+# - Paths automatically derived as: accy_v2/output/{output_type}/{oem}/
+# - Derivation happens in orchestrator.py::get_output_paths()
+# - Rationale: All OEMs follow same pattern; unnecessary config overhead
+# - If an OEM needs custom paths in future, add here then; for now, derive
+
+# Feature flags (reserved for future use)
+# Examples of what might go here in the future:
+# features:
+#   dry_run: false              # Run without writing outputs
+#   parallel_workers: 1         # Number of concurrent processes
+#   enable_profiling: false     # Profile pipeline performance
+#   timeout_minutes: 60         # Pipeline timeout
+#   retry_on_failure: 1         # Retry count for transient errors
+#   notification_email: ops@company.com  # Alert on completion

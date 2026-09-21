@@ -125,6 +125,10 @@ class KeywordExtractor:
             if not trim_value:
                 return []
 
+            # Step 0.5: Split on periods between letters (e.g., "edt.hev" → "edt hev")
+            # but preserve periods in decimals (e.g., "1.6t" stays as-is, digit before period)
+            trim_value = re.sub(r'(?<=[a-zA-Z])\.(?=[a-zA-Z])', ' ', trim_value)
+
             # Step 1: Split by underscore OR space (main delimiters)
             components = [c.strip() for c in re.split(r'[\s_]+', trim_value)]
             components = [c for c in components if c]  # Remove empty strings

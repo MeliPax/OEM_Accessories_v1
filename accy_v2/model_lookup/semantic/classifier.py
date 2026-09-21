@@ -76,12 +76,16 @@ def classify_tokens(
         Dictionary mapping category names to lists of tokens.
         Example: {"MODEL": ["outlander"], "TRIM": ["gt"], "DRIVETRAIN": ["awd"]}
     """
-    token_map = classification_config.get("token_map", {})
+    # Normalize token_map keys to lowercase for case-insensitive matching
+    raw_token_map = classification_config.get("token_map", {})
+    token_map = {k.lower(): v for k, v in raw_token_map.items()}
+
     result = {}
     unclassified_tokens = []
 
     for token in tokens:
-        category = token_map.get(token, "UNCLASSIFIED")
+        token_lower = token.lower()
+        category = token_map.get(token_lower, "UNCLASSIFIED")
 
         if category == "UNCLASSIFIED":
             unclassified_tokens.append(token)

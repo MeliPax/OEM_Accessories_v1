@@ -10,7 +10,10 @@ Usage:
     python run_pipeline.py mitsubishi "accy_v2/data/landing_zone/mitsubishi/2026_Outlander_ES_EN.xlsx"
     python run_pipeline.py mazda
     python run_pipeline.py hyundai
+    python run_pipeline.py genesis (uses hyundai_genesis landing zone - shared with Hyundai)
     python run_pipeline.py honda
+
+Note: Genesis shares the hyundai_genesis landing zone with Hyundai pipeline.
 """
 
 import sys
@@ -26,10 +29,22 @@ from accy_v2.oems.mitsubishi.pipeline.orchestrator import MitsubishiPipeline
 from accy_v2.oems.mazda.pipeline.orchestrator import MazdaPipeline
 
 
+def get_landing_zone_dir(oem: str) -> str:
+    """Map OEM name to landing zone directory (handles shared directories like hyundai_genesis)."""
+    oem_lower = oem.lower()
+
+    # Genesis shares landing zone with Hyundai
+    if oem_lower == "genesis":
+        return "hyundai_genesis"
+
+    return oem_lower
+
+
 def get_landing_zone_files(oem: str, file_path: str = None) -> list:
     """Get files from landing_zone directory for specified OEM."""
     project_root = Path(__file__).parent
-    landing_zone = project_root / "accy_v2" / "data" / "landing_zone" / oem.lower()
+    landing_zone_dir = get_landing_zone_dir(oem)
+    landing_zone = project_root / "accy_v2" / "data" / "landing_zone" / landing_zone_dir
 
     if not landing_zone.exists():
         raise FileNotFoundError(f"Landing zone directory not found: {landing_zone}")
@@ -69,6 +84,12 @@ def get_pipeline_class(oem: str):
             return HyundaiPipeline
         except ImportError:
             raise ImportError(f"Hyundai pipeline not yet implemented. Please check accy_v2/oems/hyundai/")
+    elif oem_lower == "genesis":
+        try:
+            from accy_v2.oems.genesis.pipeline.orchestrator import GenesisPipeline
+            return GenesisPipeline
+        except ImportError:
+            raise ImportError(f"Genesis pipeline not yet implemented. Please check accy_v2/oems/genesis/")
     elif oem_lower == "honda":
         try:
             from accy_v2.oems.honda.pipeline.orchestrator import HondaPipeline
@@ -76,19 +97,24 @@ def get_pipeline_class(oem: str):
         except ImportError:
             raise ImportError(f"Honda pipeline not yet implemented. Please check accy_v2/oems/honda/")
     else:
-        raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda, hyundai, honda")
+        raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda, hyundai, genesis, honda")
 
 
-def get_config_path(oem: str) -> str:
-    """Get config file path for OEM."""
+def get_config_root(oem: str) -> str:
+    """Get config root directory for OEM (supports modular config structure)."""
     project_root = Path(__file__).parent
     oem_lower = oem.lower()
-    config_path = project_root / f"accy_v2/oems/{oem_lower}/config/{oem_lower}_config.yaml"
+    config_root = project_root / f"accy_v2/oems/{oem_lower}/config"
 
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
+    if not config_root.exists():
+        raise FileNotFoundError(f"Config directory not found: {config_root}")
 
-    return str(config_path)
+    # Check that pipeline.yaml exists (required file in modular structure)
+    pipeline_yaml = config_root / "pipeline.yaml"
+    if not pipeline_yaml.exists():
+        raise FileNotFoundError(f"pipeline.yaml not found in {config_root}")
+
+    return str(config_root)
 
 
 def main():
@@ -114,17 +140,17 @@ def main():
 
         # Get pipeline and config
         pipeline_class = get_pipeline_class(oem)
-        config_path = get_config_path(oem)
+        config_root = get_config_root(oem)
         pipeline = pipeline_class()
 
-        print(f"Config: {config_path}\n")
+        print(f"Config: {config_root}\n")
 
         # Process each file
         for file_to_process in files:
             print(f"Processing: {file_to_process.name}")
             print("-" * 80)
             try:
-                pipeline.run(str(file_to_process), config_path)
+                pipeline.run(str(file_to_process), config_root)
                 print(f"[OK] Pipeline completed for {file_to_process.name}\n")
             except Exception as e:
                 print(f"[ERROR] Pipeline failed: {str(e)}\n")

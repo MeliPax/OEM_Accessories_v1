@@ -21,30 +21,32 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
-# Add project to path (accy_v2 MUST be first to avoid model_lookup/core shadowing accy_v2/core)
-sys.path.insert(0, str(Path(__file__).parent))  # model_lookup
-sys.path.insert(0, str(Path(__file__).parent.parent))  # accy_v2
+# Add project root to path for proper package imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # project root
 
-from chrome_api.service import ADSService
-from models.manufacture_module import save_vehicle_models_to_csv
-from core.helpers.pipeline_logger import PipelineLogger
-from core.helpers.dq_logger import DQLogger
-from logging_config import setup_logging, get_logger
+from accy_v2.model_lookup.chrome_api.service import ADSService
+from accy_v2.model_lookup.models.manufacture_module import save_vehicle_models_to_csv
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.model_lookup.logging_config import setup_logging, get_logger
 
 
-def refresh_from_ads(makes=None, years=None):
+def refresh_from_ads(makes=None, years=None, no_archive=False):
     """
-    Refresh database from ADS API.
+    Fetch vehicle data from ADS API and save to CSV.
 
     Fetches vehicle data from AutoData Solutions API and saves to CSV with:
       - Engine type extraction (using ENGINE_TYPE keywords from classification)
       - Translator-based keyword normalization
       - Comprehensive logging (console + file)
-      - Database validation and archival
+      - Optional database archival before refresh
+      - Deduplication and standardization
 
     Args:
         makes: List of makes to fetch (default: all available)
         years: List of years to fetch (default: [2024, 2025, 2026])
+        no_archive: If True, skip archival step and append to existing data.
+                   If False (default), archive current DB before refresh (destructive).
 
     Returns:
         0 on success, 1 on failure
@@ -73,21 +75,24 @@ def refresh_from_ads(makes=None, years=None):
     dq_logger = DQLogger(run_id, source_file="ADS API")
 
     # Log startup
+    mode_str = "APPEND MODE (no archive)" if no_archive else "REFRESH MODE (with archive)"
     logger.info("=" * 80)
-    logger.info("DATABASE REFRESH FROM ADS STARTED")
+    logger.info(f"DATABASE REFRESH FROM ADS STARTED ({mode_str})")
     logger.info("=" * 80)
     logger.info(f"Run ID: {run_id}")
     logger.info(f"Makes: {', '.join(makes)}")
     logger.info(f"Years: {', '.join(map(str, years))}")
+    logger.info(f"Archive mode: {'disabled' if no_archive else 'enabled'}")
     logger.info(f"Log file: {log_file}")
     logger.info("=" * 80)
 
     # Print to console
     print("\n" + "=" * 70)
-    print("DATABASE REFRESH FROM ADS")
+    print(f"DATABASE REFRESH FROM ADS ({mode_str})")
     print("=" * 70)
     print(f"Makes: {', '.join(makes)}")
     print(f"Years: {', '.join(map(str, years))}")
+    print(f"Archive: {'disabled (will append to existing data)' if no_archive else 'enabled (will replace existing data)'}")
     print(f"Log file: {log_file}")
     print("=" * 70)
 
@@ -103,30 +108,42 @@ def refresh_from_ads(makes=None, years=None):
             logger.error(f"FAILED to initialize ADS service | Error: {str(e)}")
             raise
 
-        # Step 2: Archive current database
-        logger.info("\n[Step 2/4] Archiving current database...")
-        print("\n[2/4] Archiving current database...")
-        try:
-            db_path = Path(__file__).parent / "db" / "db_vehicle_models.csv"
-            archive_dir = db_path.parent / "archive"
-            archive_dir.mkdir(exist_ok=True)
+        # Get db_path early (used by both archive and save steps)
+        db_path = Path(__file__).parent / "db" / "db_vehicle_models.csv"
 
-            if db_path.exists():
-                timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-                archive_path = archive_dir / f"db_vehicle_models.{timestamp}.csv"
-                db_path.rename(archive_path)
-                logger.info(f"Database archived | File: {archive_path.name} | Size: {archive_path.stat().st_size} bytes")
-                print(f"      [OK] Archived to: {archive_path.name}")
-            else:
-                logger.debug("No existing database to archive")
-                print("      [SKIP] No existing database to archive")
-        except Exception as e:
-            logger.error(f"FAILED to archive database | Error: {str(e)}")
-            raise
+        # Step 2: Archive current database (optional, based on no_archive flag)
+        if not no_archive:
+            logger.info("\n[Step 2/4] Archiving current database...")
+            print("\n[2/4] Archiving current database...")
+            try:
+                archive_dir = db_path.parent / "archive"
+                archive_dir.mkdir(exist_ok=True)
 
-        # Step 3: Fetch from ADS
-        logger.info("\n[Step 3/4] Fetching data from ADS API...")
-        print("\n[3/4] Fetching data from ADS (this may take a moment)...")
+                if db_path.exists():
+                    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+                    archive_path = archive_dir / f"db_vehicle_models.{timestamp}.csv"
+                    db_path.rename(archive_path)
+                    logger.info(f"Database archived | File: {archive_path.name} | Size: {archive_path.stat().st_size} bytes")
+                    print(f"      [OK] Archived to: {archive_path.name}")
+                else:
+                    logger.debug("No existing database to archive")
+                    print("      [SKIP] No existing database to archive")
+            except Exception as e:
+                logger.error(f"FAILED to archive database | Error: {str(e)}")
+                raise
+            step_fetch = 3
+            step_save = 4
+            total_steps = 4
+        else:
+            logger.info("\n[Step 2/3] (Archival skipped - append mode enabled)")
+            print("\n[2/3] (Archival skipped - will append to existing data)")
+            step_fetch = 2
+            step_save = 3
+            total_steps = 3
+
+        # Step 3 or 2: Fetch from ADS
+        logger.info(f"\n[Step {step_fetch}/{total_steps}] Fetching data from ADS API...")
+        print(f"\n[{step_fetch}/{total_steps}] Fetching data from ADS (this may take a moment)...")
         try:
             logger.debug(f"Fetching for makes: {makes} | years: {years}")
             df = service.refresh_from_ads(makes=makes, years=years)
@@ -137,9 +154,9 @@ def refresh_from_ads(makes=None, years=None):
             logger.error(f"FAILED to fetch from ADS | Error: {str(e)}")
             raise
 
-        # Step 4: Save to CSV with validation and standardization
-        logger.info("\n[Step 4/4] Saving to database with validation and standardization...")
-        print("\n[4/4] Saving to database with validation...")
+        # Step 4 or 3: Save to CSV with validation and standardization
+        logger.info(f"\n[Step {step_save}/{total_steps}] Saving to database with validation and standardization...")
+        print(f"\n[{step_save}/{total_steps}] Saving to database with validation...")
         try:
             logger.debug(f"Saving to: {db_path} | Key columns: Manufacturer, ModelYear, ModelNumber, Package")
             result = save_vehicle_models_to_csv(
@@ -176,9 +193,11 @@ def refresh_from_ads(makes=None, years=None):
             logger.warning(f"Failed to write DQ report | Error: {str(e)}")
 
         # Summary and completion
+        completion_msg = "DATABASE REFRESH COMPLETE - SUCCESS" if not no_archive else "DATABASE APPEND COMPLETE - SUCCESS"
         logger.info("\n" + "=" * 80)
-        logger.info("DATABASE REFRESH COMPLETE - SUCCESS")
+        logger.info(completion_msg)
         logger.info("=" * 80)
+        logger.info(f"Mode: {'append (no archive)' if no_archive else 'refresh (with archive)'}")
         logger.info(f"Database location: {db_path}")
         logger.info(f"Records saved: {result['records_saved']}")
         logger.info(f"Total configurations fetched: {len(df)}")
@@ -188,8 +207,9 @@ def refresh_from_ads(makes=None, years=None):
         logger.info("=" * 80)
 
         print("\n" + "=" * 70)
-        print("[SUCCESS] DATABASE REFRESH COMPLETE")
+        print(f"[SUCCESS] {completion_msg}")
         print("=" * 70)
+        print(f"Mode: {'append (no archive)' if no_archive else 'refresh (with archive)'}")
         print(f"Database location: {db_path}")
         print(f"Records saved: {result['records_saved']}")
         print(f"Total configurations fetched: {len(df)}")
@@ -219,14 +239,17 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Fetch all makes (default)
-  python refresh_db_ads.py
-
-  # Fetch specific makes
+  # Full refresh (archives current DB, then replaces with new data)
   python refresh_db_ads.py --makes Hyundai Mazda Genesis
 
-  # Fetch specific makes and years
-  python refresh_db_ads.py --makes Hyundai Mazda Genesis --years 2024 2025 2026
+  # Targeted append (adds new makes without archiving/replacing)
+  python refresh_db_ads.py --makes Mitsubishi --no-archive
+
+  # Specific makes and years with archive
+  python refresh_db_ads.py --makes Hyundai --years 2024 2025 2026
+
+  # Specific makes and years without archive (append mode)
+  python refresh_db_ads.py --makes Mitsubishi --years 2023 2024 2025 --no-archive
         """,
     )
     parser.add_argument(
@@ -242,6 +265,12 @@ Examples:
         help="List of years to fetch (default: 2024 2025 2026)",
         default=None,
     )
+    parser.add_argument(
+        "--no-archive",
+        action="store_true",
+        help="Skip database archival; append new data to existing database instead of replacing it. "
+             "Use this for targeted updates (e.g., add Mitsubishi without touching Hyundai data).",
+    )
 
     args = parser.parse_args()
-    sys.exit(refresh_from_ads(makes=args.makes, years=args.years))
+    sys.exit(refresh_from_ads(makes=args.makes, years=args.years, no_archive=args.no_archive))

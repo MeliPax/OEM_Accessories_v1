@@ -1,0 +1,74 @@
+═══════════════════════════════════════════════════════════════════════════════
+  PHASE 5 QUICK REFERENCE CARD - 2026-08-03
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS: ✅ Ready for Multi-OEM Testing
+
+3 BUGS FIXED & VERIFIED:
+  1. French description: required → optional (upstream.yaml)
+  2. col_data_type_dict: auto-generated from transformations.yaml
+  3. Column mapper: fixed must_not_have keyword detection
+
+HYUNDAI TEST RESULT:
+  ✅ 57/57 sheets (100% success)
+  ✅ 1.7 MB output file
+  ✅ ~90 seconds processing
+
+NEXT STEPS (Recommended Order):
+───────────────────────────────────────────────────────────────────────────────
+
+1. TEST OTHER OEMS (30 min) ⭐ DO THIS FIRST
+
+   python run_pipeline.py mazda
+   python run_pipeline.py mitsubishi
+   python run_pipeline.py honda
+
+   Success: All show "0 sheets skipped" and ✅ completion
+
+2. COMPLETE DOCUMENTATION (1.5 hours)
+
+   Create CONFIG_GUIDE.md:
+   - How to modify column detection keywords
+   - How to add transformations
+   - Common configuration tasks
+
+   Create MIGRATION_NOTES.md:
+   - What changed from JSON to YAML
+   - Path reference updates
+   - How to add new OEM configs
+
+3. CLEANUP (5 min)
+
+   mkdir -p accy_v2/oems/hyundai/config/_archive
+   # Move old .json files if present
+
+───────────────────────────────────────────────────────────────────────────────
+
+KEY FILES:
+  accy_v2/docs/PHASE5_STATUS.md ......... Detailed status & steps
+  accy_v2/docs/SYSTEM_ARCHITECTURE.md .. System design
+  accy_v2/docs/CHANGELOG.md ............ Version history
+  accy_v2/oems/{oem}/config/ .......... Modular YAML structure
+  accy_v2/paths.yaml .................. Centralized paths
+
+GIT COMMITS:
+  02a334b Phase 5 (Partial): Fix modular config integration issues
+  84fa900 Phase 5: Update documentation with latest status
+  fd0a47d Add Phase 5 status report with clear next steps
+
+TESTS:
+  ✅ 29 unit tests passing
+  ✅ 1 E2E test passing (Hyundai: 57/57 sheets)
+  ⏳ 3 E2E tests pending (Mazda, Mitsubishi, Honda)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 IMMEDIATE ACTION:
+
+   Run: python run_pipeline.py mazda
+   Run: python run_pipeline.py mitsubishi
+   Run: python run_pipeline.py honda
+
+   Check results, then proceed to documentation creation.
+
+═══════════════════════════════════════════════════════════════════════════════

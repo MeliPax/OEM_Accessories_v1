@@ -1,0 +1,147 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/enrichment.yaml
+# Description: Model lookup and enrichment rules
+# OEM: Hyundai
+# Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
+# ============================================================================
+
+
+model_lookup:
+  # DECISION [016]: use_model_lookup flag determines whether this step runs
+  # - If true: Run model lookup + ADS fallback (normal enrichment flow)
+  # - If false: Skip enrichment entirely (OEM has model numbers already, like Mazda)
+  enabled: true
+
+  brands:
+    Hyundai:
+      # Year validity for this brand
+      valid_year_range:
+        min: 2020
+        max: 2100
+
+      # Fuel type keywords to recognize and categorize
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+        - FCEV
+
+      # Fields to search within (trim and model columns)
+      search_fields:
+        - trim
+        - model
+
+      # Trim column name in the intermediate data
+      trim_column_name: trim_level
+
+      # Keywords to exclude from matching
+      exclude_keywords:
+        - combustion
+
+      # Keyword categories to ignore during classification
+      # (These differences don't affect which records match)
+      ignore_keyword_categories:
+        - INTERIOR
+        - EXTERIOR_COLOR
+        - ENGINE_SPEC
+
+      # Package column as vehicle differentiator
+      # Used to distinguish between package variants when model numbers repeat
+      package_differentiator_column: Package
+
+      # Columns to check for fuel-type keywords when excluding EVs
+      # (checked with word-boundary regex in both 'ice' special case and default exclude_ev)
+      fuel_type_check_columns:
+        - ModelName
+        - engine_type
+        - Description
+        - TrimName
+
+      # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
+      #
+      # PATTERN: When a trim exists ONLY in one fuel variant (e.g., Hybrid-only, no gas row),
+      # source spreadsheets may omit the fuel keyword in their labels (e.g., "N-Line" instead
+      # of "N-Line HEV"). This allowlist lets the search auto-apply the missing fuel type
+      # instead of returning zero results. Applied after keyword translation/classification,
+      # so trim_keywords must use the TRANSLATED form ("luxury" not "lux", "n-line" not "nl").
+      #
+      # HOW TO IDENTIFY CANDIDATES:
+      #   1. Query the vehicle DB: find trims where engine_type has only 1 unique non-null value
+      #   2. Cross-check source data: is this trim's label fuel-keyword-free in those years?
+      #   3. If yes → add here with the fuel type and affected years (omit years list to apply all)
+      #
+      # CURRENT ENTRIES (Hyundai, 2024-2026):
+      #   - Tucson N-Line: exists only as Hybrid, no gas variant (2024/2025/2026)
+      #   - Tucson Luxury: exists only as Hybrid for 2024 (2025+ not verified)
+      #
+      # OTHER CANDIDATES IN DB (future implementation if source data shows fuel-keyword gaps):
+      #   - Tucson Night Edition (2026 only, Hybrid-only)
+      #   - Elantra Luxury (2024+, Hybrid-only)
+      #   - Santa Fe Preferred/Luxury (various years, Hybrid-only)
+      #   - Palisade Luxury/Calligraphy (2026+, Hybrid-only)
+      #   - Sonata Preferred-Trend (2026, Hybrid-only)
+      #
+      implied_fuel_type_trims:
+        - model_keywords: [tucson]
+          trim_keywords: [n-line]
+          fuel_type: hybrid
+          years: [2024, 2025, 2026]
+        - model_keywords: [tucson]
+          trim_keywords: [luxury]
+          fuel_type: hybrid
+          years: [2024]
+
+      # Config file paths using central registry
+      # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
+      # Paths defined in accy_v2/paths.yaml for single source of truth
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
+
+# ADS (AutoData Solutions) fallback for missing models
+ads_fallback:
+  # Always enabled for this OEM (mandatory, no opt-out)
+  enabled: true
+
+  # How many times to retry failed ADS calls
+  max_retries: 1
+
+  # Run-scoped cache to avoid redundant ADS calls
+  caching:
+    enabled: true
+    scope: run
+    description: "Cache prevents calling ADS twice for same (make, model, year) within one pipeline run"
+
+  # Database persistence after ADS refresh
+  persistence:
+    persist_ads_results: true
+    persist_to: "accy_v2/model_lookup/db/vehicle_models.csv"
+    rebuild_vocab_after_refresh: true
+
+# Model lookup database configuration
+database:
+  # Path to local model database
+  # DECISION [020]: Use centralized path registry (single source of truth)
+  db_path: "${MODEL_LOOKUP_DB}"
+
+  # Uniqueness constraint for deduplication
+  # DECISION: 4-column uniqueness invariant (no duplicates across all 4)
+  # - Same (Manufacturer, Year, Model, Description) CAN have different ModelNumbers
+  # - But cannot have duplicate (Manufacturer, Year, ModelNumber, Model, Description)
+  uniqueness_key:
+    - Manufacturer
+    - ModelYear
+    - ModelNumber
+    - ModelName
+    - Description
+
+# Enrichment validation and error handling
+validation:
+  # What happens if model lookup fails
+  on_model_not_found:
+    action: log_warning
+    dq_category: MODEL_LINE_NOT_FOUND
+    description: "Model exists in intermediate data but not in local DB or ADS"
+
+  # Log all successful enrichments for audit trail
+  log_successful_enrichments: true

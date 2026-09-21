@@ -6,6 +6,7 @@ import pandas as pd
 
 from core.helpers.dq_logger import DQLogger
 from core.helpers.pipeline_logger import PipelineLogger
+from core.helpers.path_utils import to_relative_path
 
 
 def write_combined_output(
@@ -96,6 +97,7 @@ def _build_run_summary(
     from collections import Counter
 
     source_file = run_stats[0].get("source_file", "unknown") if run_stats else "unknown"
+    source_file_display = to_relative_path(source_file) if source_file != "unknown" else "unknown"
     sheets_processed = len(run_stats)
     total_warnings = dq_logger.warning_count
     total_records_in = sum(s.get("records_in", 0) for s in run_stats)
@@ -171,7 +173,7 @@ def _build_run_summary(
 
     summary_data = [
         ["Run ID", run_id],
-        ["Source File", source_file],
+        ["Source File", source_file_display],
         ["Generated At", datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")],
         [sheets_models_label, sheets_models_value],
         ["Source Accessories", f"{total_records_in} rows (wide-format input, after step 1 validation)"],

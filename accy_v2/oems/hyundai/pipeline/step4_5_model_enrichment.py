@@ -437,23 +437,19 @@ def _add_model_number_columns(
     # Remove the internal flag column
     df = df.drop(columns=["_is_duplicate_match"])
 
-    # Count before exclusion
-    rows_before = len(df)
-
-    # Exclude rows with missing model numbers (missing_trims)
-    rows_to_exclude = df[df[trim_col].isin(missing_trims)]
-    excluded_count = len(rows_to_exclude)
-
-    df_filtered = df[~df[trim_col].isin(missing_trims)].copy()
-
-    rows_after = len(df_filtered)
+    # Count rows with and without model numbers
+    rows_total = len(df)
+    rows_with_model = len(df[df["model_number"].notna()])
+    rows_without_model = len(df[df["model_number"].isna()])
 
     pipeline_logger.debug(
-        f"Group '{group_key}': {rows_before} rows before, {excluded_count} excluded "
-        f"(missing trims: {missing_trims}), {rows_after} rows in output"
+        f"Group '{group_key}': {rows_total} total rows. {rows_with_model} rows with model numbers, "
+        f"{rows_without_model} rows with missing model numbers (empty ModelNumber for manual correction)."
     )
 
-    return df_filtered
+    # Return ALL rows, including those with missing model_number
+    # Rows with missing model_number will have empty ModelNumber column in output for manual correction
+    return df
 
 
 def _categorize_search_failure(

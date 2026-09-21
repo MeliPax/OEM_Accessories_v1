@@ -314,7 +314,7 @@ cd accy_v2/oems/hyundai
 python -c "
 from pipeline.orchestrator import HyundaiPipeline
 pipeline = HyundaiPipeline()
-result = pipeline.run('./data/landing_zone/hyundai/Hyundai.xlsx')
+result = pipeline.run('./data/landing_zone/hyundai_genesis/Hyundai.xlsx')
 print(f'Pipeline exit code: {result}')
 "
 ```

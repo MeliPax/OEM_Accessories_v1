@@ -1,0 +1,16 @@
+﻿python : [INFO] RUN START | oem=mazda | file=C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM 
+Accessory project\OEM_Accessories_v1\accy_v2\data\landing_zone\mazda\Mazda_accessory_feed.csv | run_id=75ab597a
+At line:1 char:410
++ ... project\OEM_Accessories_v1"; python accy_v2/run_mazda.py 2>&1 | tee m ...
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([INFO] RUN STAR...run_id=75ab597a:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[INFO] SHEET START | sheet=C50H
+[DEBUG] Column mapping for 'C50H': {'modelpartsid': None, 'modelyear': 'year_from', 'carlinecode': 'model', 
+'trimlevel': None, 'partnumber': 'part_number', 'accessoryname': None, 'accessorynamefr': None, 
+'additionaldescriptionen': 'english_description', 'additionaldescriptionfr': 'french_description', 'restrictionen': 
+'comments_en', 'restrictionfr': 'comments_fr', 'partresidualval': None, 'ispopular': None, 'msrp': 'msrp', 
+'standardinstalltime': 'labour_hours', 'displayorder': None}
+Auto-discovered: C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory project\OEM_Accessories_v1\accy_v2\data\landing_zone\mazda\Mazda_accessory_feed.csv
+Pipeline failed: 'model_number'

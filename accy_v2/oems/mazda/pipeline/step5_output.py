@@ -1,9 +1,8 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import pandas as pd
 
-from core.helpers.output_writer import write_combined_output
-from core.helpers.pipeline_logger import PipelineLogger
+from core.helpers.output_column_mapper import apply_downstream_column_mapping
 
 
 def prepare_frames(
@@ -12,53 +11,30 @@ def prepare_frames(
     config: dict,
 ) -> Dict[str, pd.DataFrame]:
     """
-    Prepare output frames: rename columns, enrich with metadata, filter.
-    Each language gets its own sheet: <model_name>_EN, <model_name>_FR.
-    Returns dict without writing to disk.
+    Prepare output frames using programmable downstream schema.
+
+    Process:
+    1. For each language (EN, FR from transformed dict)
+    2. Read language-specific column mapping from downstream.yaml
+    3. Rename columns to output names
+    4. Filter to required output columns (in order from YAML)
+    5. Return keyed by proper sheet name (model_EN, model_FR)
+
+    DECISION [019]: Explicit source→output mapping enables easy column additions.
+    All column naming is driven by YAML, not hardcoded.
     """
     model_name = meta_data.get("model_name", "unknown")
-    col_mapping = config.get("rate_import_column_mapping", {})
-    required_cols = config.get("rate_import_required_columns", [])
+    downstream_schema = config.get("downstream_schema", {})
 
     frames: Dict[str, pd.DataFrame] = {}
+
     for lang, df in transformed.items():
-        df = _enrich_with_metadata(df, meta_data)
-        df = _apply_rate_import_mapping(df, col_mapping)
-        df = _filter_to_required_columns(df, required_cols)
+        # Build sheet key with language code (elantra_EN, elantra_FR)
         sheet_key = f"{model_name}_{lang}"[:31]
+
+        # Apply language-specific column mapping from downstream schema
+        df = apply_downstream_column_mapping(df, downstream_schema, lang)
+
         frames[sheet_key] = df
 
     return frames
-
-
-# ---------------------------------------------------------------------------
-# Private helpers
-# ---------------------------------------------------------------------------
-
-
-def _enrich_with_metadata(df: pd.DataFrame, meta_data: Dict[str, Any]) -> pd.DataFrame:
-    df = df.copy()
-    df.insert(0, "model_name", meta_data.get("model_name", "unknown"))
-    df.insert(1, "sheet_name", meta_data.get("sheet_name", "unknown"))
-    return df
-
-
-def _apply_rate_import_mapping(df: pd.DataFrame, col_mapping: dict) -> pd.DataFrame:
-    rename = {k: v for k, v in col_mapping.items() if k in df.columns}
-    return df.rename(columns=rename)
-
-
-def _filter_to_required_columns(df: pd.DataFrame, required_cols: list) -> pd.DataFrame:
-    if not required_cols:
-        return df
-    existing = [col for col in required_cols if col in df.columns]
-    # Always include model_number and vehicle_year if they exist (but NOT model_number_status)
-    always_include = ["model_number", "vehicle_year"]
-    cols_to_return = []
-    for col in existing:
-        if col not in cols_to_return:
-            cols_to_return.append(col)
-    for col in always_include:
-        if col in df.columns and col not in cols_to_return:
-            cols_to_return.append(col)
-    return df[cols_to_return]

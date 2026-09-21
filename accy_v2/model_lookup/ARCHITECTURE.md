@@ -438,6 +438,54 @@ python -m pytest accy_v2/model_lookup/tests/test_search.py -v
 
 ---
 
+## Phase 7: Mitsubishi Model Lookup Enhancements (2026-08-26)
+
+### Extended SearchResult with Vehicle Metadata
+
+**New Fields (all Optional[str]):**
+- `drivetrain: Optional[str]` — Drivetrain type from database (e.g., "FRONT_WHEEL_DRIVE", "ALL_WHEEL_DRIVE")
+- `fuel_type: Optional[str]` — Fuel type classification (e.g., "phev", "electric", "hybrid")
+- `color: Optional[str]` — Color keyword from config (e.g., "noir", "carbon") for output tagging
+- `package: Optional[str]` — ADS numeric style ID from database (e.g., "481877")
+
+**Extraction Logic:**
+- `drivetrain`: Direct column read, no fallback (0 empty values in DB)
+- `fuel_type`: 3-tier fallback (column → classified tokens → text classification)
+- `color`: Config-driven lookup, output tagging only (not a matching gate)
+- `package`: Direct column read, no fallback (0 empty values in Mitsubishi rows)
+
+### Exact TRIM Token-Set Matching Layer
+
+**Problem:** Searching for "GT" returns multiple candidates: "GT", "GT Premium", "GT NOIR"
+
+**Solution:** New narrowing step applies after substring search:
+1. Extract TRIM tokens from searched keywords
+2. For each candidate DB row, extract its TRIM tokens
+3. Keep only candidates with **exact TRIM token set match** (not superset, not subset)
+4. Result: "GT" query → only matches plain GT trim (CO45-X), not GT Premium or GT NOIR
+
+**Why Safe:** Strictly additive, never removes a match that would have succeeded before. Unaffected for 1-candidate searches (early return).
+
+**New Helper Methods:**
+- `_extract_trim_token_set(description, classification_config) → set`
+- `_extract_row_metadata(row, classification_config, color_keywords) → tuple`
+
+### Diagnostic Failure Categorization
+
+**New Function:** `diagnose_search_failure(make, year, classified, csv_path) → Dict[str, str]`
+
+Replaces generic "NOT_FOUND" with specific reasons, walking Year → Model → Trim hierarchy:
+- `MANUFACTURER_NOT_IN_DB`
+- `MODEL_YEAR_NOT_IN_DB` (includes available_years list)
+- `MODEL_NAME_NOT_FOUND_FOR_YEAR` (includes available_models list)
+- `TRIM_VARIANT_NOT_FOUND` (includes available_trims list)
+- `AMBIGUOUS_TRIM_MULTIPLE_MODEL_NUMBERS`
+- `SCORE_BELOW_THRESHOLD`
+
+Integrated into `step4_5_model_enrichment.py` NOT_FOUND logging path. Zero performance impact (failure path only).
+
+---
+
 ## Future Enhancements
 
 1. **Database upgrade** → Replace CSV with SQLite or PostgreSQL

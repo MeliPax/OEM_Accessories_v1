@@ -1,0 +1,137 @@
+# ============================================================================
+# File: accy_v2/oems/hyundai/config/enrichment.yaml
+# Description: Model lookup and enrichment rules
+# OEM: Hyundai
+# Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
+# ============================================================================
+
+
+model_lookup:
+  # DECISION [016]: use_model_lookup flag determines whether this step runs
+  # - If true: Run model lookup + ADS fallback (normal enrichment flow)
+  # - If false: Skip enrichment entirely (OEM has model numbers already, like Mazda)
+  enabled: true
+
+  brands:
+    Hyundai:
+      # Year validity for this brand
+      valid_year_range:
+        min: 2020
+        max: 2100
+
+      # Fuel type keywords to recognize and categorize
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+        - FCEV
+
+      # Fields to search within (trim and model columns)
+      search_fields:
+        - trim
+        - model
+
+      # Trim column name in the intermediate data
+      trim_column_name: trim_level
+
+      # Keywords to exclude from matching
+      exclude_keywords:
+        - ice
+        - combustion
+
+      # Keyword categories to ignore during classification
+      ignore_keyword_categories:
+        - INTERIOR
+        - EXTERIOR_COLOR
+        - ENGINE_SPEC
+
+      # Config file paths using central registry
+      # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
+      # Paths defined in accy_v2/paths.yaml for single source of truth
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
+
+    Genesis:
+      # Genesis uses same base config as Hyundai with one key override
+      valid_year_range:
+        min: 2020
+        max: 2100
+
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+        - FCEV
+
+      search_fields:
+        - trim
+        - model
+
+      trim_column_name: trim_level
+
+      exclude_keywords:
+        - ice
+        - combustion
+
+      ignore_keyword_categories:
+        - INTERIOR
+        - EXTERIOR_COLOR
+        - ENGINE_SPEC
+
+      # Genesis-specific override: enable single-character token matching
+      # This allows "G" to match "G70", "G80" model names
+      use_single_char_token_matching: true
+
+      # DECISION [020]: Use centralized path registry
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/hyundai/standardization.yaml"
+
+# ADS (AutoData Solutions) fallback for missing models
+ads_fallback:
+  # Always enabled for this OEM (mandatory, no opt-out)
+  enabled: true
+
+  # How many times to retry failed ADS calls
+  max_retries: 1
+
+  # Run-scoped cache to avoid redundant ADS calls
+  caching:
+    enabled: true
+    scope: run
+    description: "Cache prevents calling ADS twice for same (make, model, year) within one pipeline run"
+
+  # Database persistence after ADS refresh
+  persistence:
+    persist_ads_results: true
+    persist_to: "accy_v2/model_lookup/db/vehicle_models.csv"
+    rebuild_vocab_after_refresh: true
+
+# Model lookup database configuration
+database:
+  # Path to local model database
+  # DECISION [020]: Use centralized path registry (single source of truth)
+  db_path: "${MODEL_LOOKUP_DB}"
+
+  # Uniqueness constraint for deduplication
+  # DECISION: 4-column uniqueness invariant (no duplicates across all 4)
+  # - Same (Manufacturer, Year, Model, Description) CAN have different ModelNumbers
+  # - But cannot have duplicate (Manufacturer, Year, ModelNumber, Model, Description)
+  uniqueness_key:
+    - Manufacturer
+    - ModelYear
+    - ModelNumber
+    - ModelName
+    - Description
+
+# Enrichment validation and error handling
+validation:
+  # What happens if model lookup fails
+  on_model_not_found:
+    action: log_warning
+    dq_category: MODEL_LINE_NOT_FOUND
+    description: "Model exists in intermediate data but not in local DB or ADS"
+
+  # Log all successful enrichments for audit trail
+  log_successful_enrichments: true

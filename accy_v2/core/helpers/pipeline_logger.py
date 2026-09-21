@@ -47,9 +47,9 @@ class PipelineLogger:
             f"SHEET COMPLETE | sheet={sheet_name} | records_in={records_in} | records_out={records_out}"
         )
 
-    def log_run_complete(self, sheets_processed: int, sheets_skipped: int) -> None:
+    def log_run_complete(self, sheets_processed: int, sheets_skipped: int, sheets_excluded: int = 0) -> None:
         self._logger.info(
-            f"RUN COMPLETE | sheets_processed={sheets_processed} | sheets_skipped={sheets_skipped}"
+            f"RUN COMPLETE | sheets_processed={sheets_processed} | sheets_skipped={sheets_skipped} | sheets_excluded={sheets_excluded}"
         )
 
     def info(self, msg: str) -> None:

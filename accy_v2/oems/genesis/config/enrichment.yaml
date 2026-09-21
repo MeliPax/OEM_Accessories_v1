@@ -1,0 +1,149 @@
+# ============================================================================
+# File: accy_v2/oems/genesis/config/enrichment.yaml
+# Description: Model lookup and enrichment rules
+# OEM: Genesis
+# Purpose: Vehicle identifier enrichment (model numbers) and ADS fallback strategy
+# ============================================================================
+
+model_lookup:
+  # DECISION [016]: use_model_lookup flag determines whether this step runs
+  # - If true: Run model lookup + ADS fallback (normal enrichment flow)
+  # - If false: Skip enrichment entirely (OEM has model numbers already, like Mazda)
+  enabled: true
+
+  brands:
+    Genesis:
+      # Genesis uses same base config as Hyundai with one key override
+      valid_year_range:
+        min: 2020
+        max: 2100
+
+      fuel_type_keywords:
+        - EV
+        - PHEV
+        - HEV
+        - FCEV
+
+      search_fields:
+        - trim
+        - model
+
+      trim_column_name: trim_level
+
+      exclude_keywords:
+        - combustion
+
+      ignore_keyword_categories:
+        - INTERIOR
+        - EXTERIOR_COLOR
+        - ENGINE_SPEC
+
+      # Package column as vehicle differentiator
+      # Used to distinguish between package variants when model numbers repeat
+      package_differentiator_column: Package
+
+      # Columns to check for fuel-type keywords when excluding EVs
+      # (checked with word-boundary regex in both 'ice' special case and default exclude_ev)
+      # NOTE: Description deliberately excluded for Genesis because GV80 Coupe contains "Electric"
+      # in description (referring to e-SC electric supercharger), not a BEV powertrain.
+      # This prevents false exclusion of GV80 Coupe rows when fuel_type_check_columns was broadened.
+      fuel_type_check_columns:
+        - ModelName
+        - engine_type
+        - TrimName
+
+      # Genesis-specific override: enable single-character token matching
+      # This allows "G" to match "G70", "G80" model names
+      use_single_char_token_matching: true
+
+      # Trim name normalization rules (applied before keyword extraction)
+      # Handles cases where engine spec is embedded in trim name by source provider
+      # Rules applied in order; later rules can use output of earlier rules
+      trim_name_normalization:
+        - pattern: "^3\\.5T e-SC Prestige"
+          replacement: "e-SC Prestige"
+          models: [g90]
+          reason: "DB normalizes to 'e-SC Prestige'; source includes engine spec."
+        - pattern: "^3\\.5T e-SC Prestige Black"
+          replacement: "e-SC Prestige Black"
+          models: [g90]
+          reason: "DB normalizes to 'e-SC Prestige Black'; source includes engine spec."
+        - pattern: "^3\\.5T e-SC$"
+          replacement: "e-SC Prestige"
+          models: [g90]
+          reason: "DB normalizes bare 'e-SC' to 'e-SC Prestige'; source missing trim variant."
+
+      # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
+      # Used when source data omits fuel keywords for trims exclusive to one powertrain variant.
+      # NOTE: GV70 gas models share identical trim labels with Electrified GV70 for 2025/2026
+      # (DB confirms "Advanced" and "Advanced Plus" exist on both gas and Electrified lines).
+      # The _ev sheets already carry an explicit "ev" keyword from their sheet name, and gas
+      # searches carry explicit engine keywords (e.g., "2.5t"), so the GV70 rules below were
+      # never actually needed and would only fire incorrectly on gas searches — REMOVED.
+      # G90 e-SC is correctly left here: it is genuinely EV-only in the DB with no explicit
+      # engine-type label in the trim text, so this rule is load-bearing for that case.
+      implied_fuel_type_trims:
+        - model_keywords: [g90]
+          trim_keywords: [e-sc]
+          fuel_type: electric
+          years: [2024, 2025, 2026]
+
+      # MODEL-category tokens that discriminate between body-style variants (e.g., coupe)
+      # Used to prevent bare model searches (e.g., "gv80") from matching unwanted variants
+      # like "GV80 Coupe" when the user didn't explicitly request coupe.
+      model_sub_variant_tokens:
+        - coupe
+
+      # DECISION [020]: Use centralized path registry
+      # Genesis uses its own configs (not Hyundai configs)
+      translator_config: "${MODEL_LOOKUP_CONFIGS}/genesis/translator.yaml"
+      classifier_config: "${MODEL_LOOKUP_CONFIGS}/genesis/classification.yaml"
+      standardization_config: "${MODEL_LOOKUP_CONFIGS}/genesis/standardization.yaml"
+
+# ADS (AutoData Solutions) fallback for missing models
+ads_fallback:
+  # Always enabled for this OEM (mandatory, no opt-out)
+  enabled: true
+
+  # How many times to retry failed ADS calls
+  max_retries: 1
+
+  # Run-scoped cache to avoid redundant ADS calls
+  caching:
+    enabled: true
+    scope: run
+    description: "Cache prevents calling ADS twice for same (make, model, year) within one pipeline run"
+
+  # Database persistence after ADS refresh
+  persistence:
+    persist_ads_results: true
+    persist_to: "accy_v2/model_lookup/db/vehicle_models.csv"
+    rebuild_vocab_after_refresh: true
+
+# Model lookup database configuration
+database:
+  # Path to local model database
+  # DECISION [020]: Use centralized path registry (single source of truth)
+  db_path: "${MODEL_LOOKUP_DB}"
+
+  # Uniqueness constraint for deduplication
+  # DECISION: 4-column uniqueness invariant (no duplicates across all 4)
+  # - Same (Manufacturer, Year, Model, Description) CAN have different ModelNumbers
+  # - But cannot have duplicate (Manufacturer, Year, ModelNumber, Model, Description)
+  uniqueness_key:
+    - Manufacturer
+    - ModelYear
+    - ModelNumber
+    - ModelName
+    - Description
+
+# Enrichment validation and error handling
+validation:
+  # What happens if model lookup fails
+  on_model_not_found:
+    action: log_warning
+    dq_category: MODEL_LINE_NOT_FOUND
+    description: "Model exists in intermediate data but not in local DB or ADS"
+
+  # Log all successful enrichments for audit trail
+  log_successful_enrichments: true

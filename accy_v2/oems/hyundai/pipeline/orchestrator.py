@@ -5,12 +5,13 @@ import yaml
 import pandas as pd
 
 from core.base_pipeline import BasePipeline
+from core.config_loader_v2 import ModularConfigLoader, get_output_paths
 from core.helpers.dq_logger import DQLogger
 from core.helpers.header_helpers import clean_column_name, promote_header_row
 from core.helpers.output_writer import write_combined_output
 from core.helpers.pipeline_logger import PipelineLogger
 
-from oems.hyundai.pipeline import (
+from oems.hyundai_genesis.pipeline import (
     step1_validation,
     step2_header_normalization,
     step3_standardization,
@@ -23,28 +24,37 @@ from oems.hyundai.pipeline import (
 
 class HyundaiPipeline(BasePipeline):
     """
-    Hyundai OEM pipeline (including Genesis brand routing).
+    Hyundai OEM pipeline.
 
-    Key difference from Mitsubishi: Hyundai source is a single "Master" sheet (all models as rows),
-    not multiple sheets per model. This orchestrator groups rows by (year, model) before
-    feeding to the step pipeline. Each group is header-promoted before grouping since
-    groupby() requires clean column names.
+    Reads Hyundai sheet from source workbook (sheet name configured in pipeline.yaml).
+    Groups rows by (year, model) before feeding to the step pipeline.
+    Each group is header-promoted before grouping since groupby() requires clean column names.
 
-    Genesis models are routed through the same pipeline with manufacturer="Genesis"
-    set in meta_data. Until Genesis DB rows exist, they'll fail model lookup and be
-    logged as DQ warnings (functionally safe, expected behavior).
+    Manufacturer is fixed as "Hyundai" for all rows (no per-row routing).
     """
 
     OEM_NAME = "hyundai"
+    BRAND_NAME = "Hyundai"
+
+    def _resolve_sheet(self, excel: pd.ExcelFile, wanted: str) -> str:
+        """Resolve sheet name case-insensitively, raise clear error if not found."""
+        match = next(
+            (s for s in excel.sheet_names if s.strip().lower() == wanted.strip().lower()),
+            None
+        )
+        if match is None:
+            raise ValueError(
+                f"Required sheet '{wanted}' not found in workbook. Found sheets: {excel.sheet_names}."
+            )
+        return match
 
     def load_file(self, file_path: str) -> Dict[str, pd.DataFrame]:
         """
-        Load Hyundai Master sheet and group rows by (year, model).
+        Load Hyundai sheet and group rows by (year, model).
 
         Returns {f"{year}_{model_slug}": group_df} where each group_df is
         header-promoted and ready for step1.
 
-        Note: Unlike Mitsubishi (which returns raw header=None frames),
         Hyundai's load_file() pre-promotes headers because groupby() needs
         clean column names.
 
@@ -52,22 +62,21 @@ class HyundaiPipeline(BasePipeline):
         in meta_data based on the sheet_name (which becomes the group key here).
         """
         excel = pd.ExcelFile(file_path)
+        config_root = Path(__file__).parent.parent / "config"
+        loader = ModularConfigLoader(self.OEM_NAME, config_root)
+        pipeline_config = loader.load_pipeline_config()
 
-        # Read only the "Master" sheet (ignore all others including the "Genesis" sheet
-        # — Genesis models are identified via the Model column within Master)
-        raw = excel.parse(sheet_name="Master", header=None)
+        # Resolve sheet name from config with validation
+        sheet_name = self._resolve_sheet(excel, pipeline_config.get("source_sheet", "Hyundai"))
+
+        # Read the resolved sheet
+        raw = excel.parse(sheet_name=sheet_name, header=None)
 
         # Promote header: row 0 = banner, row 1 becomes header
         working = promote_header_row(raw)
 
         # Sanitize column names (lowercase, spaces→underscores, etc.)
         working.columns = [clean_column_name(str(c)) for c in working.columns]
-
-        # Load config to get genesis_models list for manufacturer routing
-        config_path = Path(__file__).parent.parent / "config" / "hyundai_config.yaml"
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-        genesis_models = config.get("genesis_models", [])
 
         # Find the actual year and model columns
         col_lower = {c.lower(): c for c in working.columns}
@@ -91,12 +100,11 @@ class HyundaiPipeline(BasePipeline):
 
             # Add metadata columns to dataframe so step1 can extract them
             # Store as special columns that step1 will read and put into meta_data
-            manufacturer = "Genesis" if str(model).strip() in genesis_models else "Hyundai"
             group_df = group_df.copy()
             group_df["__group_key__"] = key
             group_df["__year_from__"] = int(year)
             group_df["__model_name__"] = model_slug
-            group_df["__manufacturer__"] = manufacturer
+            group_df["__manufacturer__"] = self.BRAND_NAME
 
             groups[key] = group_df.reset_index(drop=True)
 
