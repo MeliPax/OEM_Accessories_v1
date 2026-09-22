@@ -79,10 +79,10 @@ Part number: Keep parent's or list all children? -> for partnumbers, only keep t
 
 What about trim applicability when rolling up?
 If parent applies to "X" trim and child to "Y" trim, result should be "X, Y" (union)?
--> the rule is, where parent row applies, all children must apply. if not, this shoud be loged and flagged.
+-> the rule is, where parent row applies, all children must apply. if not, this should be logged and flagged.
 -> We will only keep parent applicability indication
 
-I like what you thouhg of making this config driven.
+I like what you though of making this config driven, this should live in a yaml file.
 
 Rollup Correctness Verification:
 
@@ -98,3 +98,141 @@ II. Trim Detection & Applicability
 Challenge 2A: Trim Column Identification Across Sections
 
 Trim detection must come after header detection is complete. That way, we have established standard column structure.
+
+Since some trims might be on a section not all sections, then the plan will be to process a section at a time and add them one by one to the unified list.
+
+Usually trims are supposed to be identical, meaning we don't expect Section 1 has "CR-V" and Section 2 has "CRV". IN that case it ti will tough to catch, but i want us to be able to catch it. However, using the db as source of through, we could use that to catch anomalies like that since they won't match the original trim name and there for won't get model number if that's the case.
+
+Just make sure that section are consolidated properly into a unified list by vehicle model.
+
+Section-Specific Trim Applicability:
+
+A part must apply to at least one trim in a model family.
+This means, it can apply to one trim and not the other on the list.
+
+When we unify them, there will be rows that specify each applicability by each trim, they all will be unified into one list showing the relationship between part and trim. It will start by section then, trickle down to the unified list.
+
+Detecting "X" vs. Blank vs. Null:
+
+The following structure would suffice. in the future if the indicatives change, we can add more characters.
+
+trim_column_values:
+applicability_markers: ["•", "T", "E"] Note: case insensitive # Variations for "applies"
+not_applicable_markers: [" ", "", "N/A"]
+
+Challenge 2B: Trim Applicability Validation
+
+A part has no trims marked (invalid row) -> it it an orphan record and should be report in the DQ report and excluded in the pipeline, we'll handle it separetly.
+
+A part applies to all trims (filled across all columns) -> very valid, thenn it it will have records for each trim indicated in that section.
+
+A part applies to one trim only -> that part will only have one record applied to that one trim
+
+Minimum trims per part: 1? - > Yes, one
+Maximum trims per part: all? -> Yes, all
+
+III. French Language & Encoding Issues
+
+Challenge 3A: FR Sheet Structure Assumptions
+
+Yes, they keep this naming structure always, but I think handling patterns would be a good idea.
+
+sheet_patterns:
+en: ["*_APP_EN", "*_EN", "*EN", "Sheet_EN"]
+fr: ["*_APP_FR", "*_FR", "*FR", "Sheet_FR"]
+
+As for column names and section names, they are different from EN/FR.
+
+These will be provided, a set for EN and another for FR, they will live in the config.
+
+Trim names must be same between EN and FR.
+
+I am not sure about the encoding, we need to confirm with the sample files we have. I would like to know how that affects our pipeline and what we can do to ensure they are standardized to ensure they are in one format or handle both styles.
+
+Structure Alignment Assumption:
+
+EN and FR documents must have:
+
+- Same exact number of sections, but we want independently identify them by language. If sections are not sames, in want you to report that in the DQ report page. ideally, we would handle them as independently and then merge them at the end.
+- Ideally same number of records by sections, and same part number apart form the data that wll be translated - Description and Comments. Sometime part numbers are different due to fr/En differences. in cases where they are different tho, they are some language difference like where we have a composite partnumber text. for instance: - On a french copy we would have "50977-565-45BH ou 50977-565-45SH" and the ENglish copy will be "50977-565-45BH or 50977-565-45SH". I am thinking we could handle this transformation to standardize them abd make it config driven for future changes.
+        To transform the part nubmers that have the compozite value, meaning have "or" for ENG, or "ou" for french, I would like us to just keep the first part number since they can be used interchangeably. Menaing, take the part number that is before the "or" or the "ou", slice and then strio to remove any trailing chars. Then check if it not an "" befors saving, if the sliced character is not null or empty string then pass it, otherwise pick the other half and see if it's not empty as well and save it. Priority is the left, hten right. With this we will end with only one partnumber.
+        - this will be applied on all partnumber columns in each sections. let me knwow if you have any questions, ask only it it's a legit question.
+        - i wnat ot know the best way to make sure englis and french use the same decision to pick left of right in this case. we need a strategy here to synchronized to make sure it's the same partnumber when they are unified english and french.
+        - I would ike to know how you plan to architect this.
+
+Challenge 3B: Language-Specific Content Issues
+
+We are matching records by
+
+Priority
+level 1:
+
+- partnumber is enough it they are identical
+- then maybe double check values in: List Price,FRT, Installed Price
+
+Level 2:
+
+- Whether comment has something, not null or empty
+- whether applied to the same set of trims
+
+With these conditions we are confident on the matching activity. Records that don't pass matching, we'll treat them as orphans and report them in the DQ report in teh doc.
+
+IV. Batch Processing Complexity
+Challenge 4A: File Naming & Metadata Extraction
+
+I want us to capture metadata from inside the file as opposed to the file name:
+
+- model name, model year : are inside the file and they contain the actual standard name as opposed to the names in the filename that are not always standardized.
+- Publication date: We will also capture publication date, which indicate the date these prices should be enforced. Each parts list should have it, if it doesn't add it in the list. I wan us to add this on the output file to indicate the date price for a specific model were published. Maybe we should add a lis tot report insights on processed model/tim/year combination and publish date and other meta date. OI want you to add a task for this as well, as a separate general feature across OEMs, capture of publish date might be different by OEM.
+
+Batch ID Assignment:
+
+Batch will be the same for batches that are run in the same pipeline.
+
+Future feature:
+Before running a file, we need to check if it want's run in the past. To implement this, we need to have a pipeline run history log db, that store pipeline job runs metadata, with file hashed values that will be check before running to see if a file has been run in the past.
+
+This need to be implemented to make sure no file is processed twice.
+
+Challenge 4B: Multi-File Processing & Failure Handling
+
+I believe i mentioned it above, but Honda files come separate, so they will be handled in batchfiles.
+
+I like the config error handling approach.
+Option C: Configurable per error type
+error_handling:
+FATAL: ["encoding_error", "missing_section"] # Stop batch
+WARNING: ["trim_parsing_error", "cost_mismatch"] # Log, continue
+Pros: Flexible Cons: Complex config
+
+But, the plan is that since job won't fail just like that, we will then quarantine records as opposed to fail, but maybe we could set a threshold of the number of issues that can be tolerated and the state were the whole file should be quarantined.
+
+Based on the following ideas, i think we need a more detailed summary fail pass report sheet. let me know what you suggest. Think of a strategic pass/fails report list.
+
+Should batch report include:
+File-level results (pass/fail per file)?
+Aggregated metrics (total parts, total warnings)?
+Failed files list (with reasons)?
+
+Reprocessing & Resumption: -> We are not ot the level of reprocessing yet, for nuw we reprocess because we don't have the pipeline run db to track what's happening.
+
+V. Model Lookup Edge Cases
+
+Model names will be grabbed as they are from the file.
+they should be striped to remove any trailing spaces on both sides.
+the model name will be stored as they were extracted form the file.
+
+Example: the file will have columns containing in tow different columns in the first 4 rows of the file, for both EN and FR.
+
+Model Name, CR-V
+Model Year, 2026
+
+They must be extracted and stripped and stored as metadata for each file.
+
+Trim Keyword Tokenization:
+
+Honda has a few things that i need to mention:
+
+- Trim generalization:
+  - There are cases when a trim name is provided as column in the file, but it's a general trim name with different options under it.
+    - For example: 2026 CR-V -> Sport. This sport trim will not be a trim named Sport, rather it will have sport AW will have multiple options in the trim family.
