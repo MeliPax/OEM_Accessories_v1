@@ -155,10 +155,7 @@ EN and FR documents must have:
 
 - Same exact number of sections, but we want independently identify them by language. If sections are not sames, in want you to report that in the DQ report page. ideally, we would handle them as independently and then merge them at the end.
 - Ideally same number of records by sections, and same part number apart form the data that wll be translated - Description and Comments. Sometime part numbers are different due to fr/En differences. in cases where they are different tho, they are some language difference like where we have a composite partnumber text. for instance: - On a french copy we would have "50977-565-45BH ou 50977-565-45SH" and the ENglish copy will be "50977-565-45BH or 50977-565-45SH". I am thinking we could handle this transformation to standardize them abd make it config driven for future changes.
-        To transform the part nubmers that have the compozite value, meaning have "or" for ENG, or "ou" for french, I would like us to just keep the first part number since they can be used interchangeably. Menaing, take the part number that is before the "or" or the "ou", slice and then strio to remove any trailing chars. Then check if it not an "" befors saving, if the sliced character is not null or empty string then pass it, otherwise pick the other half and see if it's not empty as well and save it. Priority is the left, hten right. With this we will end with only one partnumber.
-        - this will be applied on all partnumber columns in each sections. let me knwow if you have any questions, ask only it it's a legit question.
-        - i wnat ot know the best way to make sure englis and french use the same decision to pick left of right in this case. we need a strategy here to synchronized to make sure it's the same partnumber when they are unified english and french.
-        - I would ike to know how you plan to architect this.
+  To transform the part nubmers that have the compozite value, meaning have "or" for ENG, or "ou" for french, I would like us to just keep the first part number since they can be used interchangeably. Menaing, take the part number that is before the "or" or the "ou", slice and then strio to remove any trailing chars. Then check if it not an "" befors saving, if the sliced character is not null or empty string then pass it, otherwise pick the other half and see if it's not empty as well and save it. Priority is the left, hten right. With this we will end with only one partnumber. - this will be applied on all partnumber columns in each sections. let me knwow if you have any questions, ask only it it's a legit question. - i wnat ot know the best way to make sure englis and french use the same decision to pick left of right in this case. we need a strategy here to synchronized to make sure it's the same partnumber when they are unified english and french. - I would ike to know how you plan to architect this.
 
 Challenge 3B: Language-Specific Content Issues
 
@@ -234,5 +231,113 @@ Trim Keyword Tokenization:
 Honda has a few things that i need to mention:
 
 - Trim generalization:
-  - There are cases when a trim name is provided as column in the file, but it's a general trim name with different options under it.
-    - For example: 2026 CR-V -> Sport. This sport trim will not be a trim named Sport, rather it will have sport AW will have multiple options in the trim family.
+  - There are cases when a trim name is provided in the column, but it's a general trim name with different options under it.
+    - For example: 2026 CR-V -> "Sport" trim. This sport trim will not be a trim named "Sport", the db will have trim "Sport AWD", but they will have different model numbers and/or package number in the DB. This is where the multi-identification logic comes in. this means, if a trim input comes in for model number search and it has a general description like "Sport", this means it applies to all the vehicle in that family of drive trains "AWD". Like Hybrid or extra keywords that maybe pass still apply to the search. But if it is just a sport and int he search we find more than one that apply and they have different model numbers, then they will each be applicable to that lis tof parts.
+
+Trim Keyword Tokenization:
+
+- We will keep using Split on spaces and hyphens for tokenizations.
+- compound_keywords: Keep hyphenated keywords together if the keyword if the word after the hyphen is single word
+  - for example:
+    - Compound keywords: "Sport-L", "EX-L"
+    - To be tokenized: "Sport Touring Hybrid"
+  - However, trim "Type R" will be tokenized but the trailing "R", since it is a single character word, it must be search for instances where it is not part of another word.
+
+These apply to preparing incoming input for model number search in the database.
+
+Trim Lookup Confidence:
+
+Use the usual strategy we've implemented:
+
+- Search by keyword in the key columns : 'Description', 'Manufacturer', 'ModelName', 'ModelNumber','ModelYear', 'Package', 'TrimName', 'engine_type', based on the data that is available in the db.
+- The search strategy will be as we have for other OEMs, handling fuel types and other components.
+- The Fuel types must be configurable in the yaml file, as well as other different artifacts.
+- Create translator and other files as standards, tho I don't have cases where we will needs them for now, we will find use fo them as we go. Leave them empty for now.
+
+Challenge 5B: Batch Lookup Optimization
+
+- Since a file represents one model, then searching will be for trims in that model family base on what's on that file. Most files come with 4-6 trims max, which is 4-6 model number searches, I don't think is a big problem for now, maybe when volume increases we'll need to change.
+- Most of the time, we have about 11-13 files with about 150-200 rows each to process, which I think is too bad for now.
+- In the future, we'll think of better processing that handles mid point failures, cashing, resuming processing where it failed etc.
+
+Trim Normalization Timing:
+
+- Trim will be normalized before lookup, this way they are by the expected standards. Remember, normalization rules are configured, look at other OEMs, but if there's any other idea feel free to suggest.
+
+VI. Output Schema & Reconciliation Metadata
+
+Challenge 6A: Column Proliferation
+
+For Honda, I like where your mind is. Due to the uniqueness of Honda's incoming file, we need to produce a table that has all the records that were extracted in their row form. It should have columns: source file, manufacture, trim column with original values, to help with auditing and reviewing the data and how it was transformed. The sheet will be named raw_data. This raw file should have both EN/FR data merged, with specified Description_EN, Description_FR, comment_EN, Comment_FR, and the rest of the columns are identical. pay attention on making sure the compound partNumber values are well done to make sure they are identical. and add the merge confidence level, these will be produced either before or after model number look up.
+
+I need a pln for how to get a good file that will help to do a complete trace back. This help to check raw data without having to check each file one by one. As it merged the EN and FR data, we need add a column that reveals similarity scores for column values that needs to be checked, say cost (is optional, but should be check if it's in hte raw file), price columns, etc.
+
+Warning Representation:
+These will be put in a DQ sheet that will highlight the issues as per the structure we have in the other OEMs.
+
+VII. State Management & Step Interdependencies
+
+Challenge 7A: Data Flowing Across Steps
+
+Metadata Propagation:
+
+Each step receives: transformed: Dict, meta_data: Dict, config
+What goes in meta_data? Make it explicit.
+meta_data = {
+"group_key": "accord_2027",
+"model_name": "accord",
+"vehicle_year": 2027,
+"manufacturer": "Honda",
+"reconciliation_map": {...}, # NEW
+"trim_candidates": ["SE", "EX", "LX"], # Updated per step
+"section_structure": {...}, # NEW
+"fr_sheet_map": {...}, # FR data
+"validation_warnings": [...] # NEW
+}
+Decision Needed: Explicit metadata schema
+
+I like this proposed idea. I would like to hear your opinion in terms of efficiency.
+
+Step Failure Propagation:
+
+If Step 1.5 (reconciliation) fails partially, should we:
+Fail the entire file? and keep processing there files. but log the failure and each activity done.
+
+Trim Set Evolution:
+step 4 should normalize as we transform
+
+Challenge 7B: Checkpointing & Recovery
+We are not going to work on recovery plans now, this is for the future.
+
+VIII. Cross-Batch & Cross-OEM Consistency
+Challenge 8A: Data Changes Across Batches
+We are not going to work on change knowledge handling.
+
+Challenge 8B: Honda vs. Other OEM Consistency
+
+Downstream will have same exact structure, one model per workbook in the same structure. they are all feeding into the same system. hte only difference is raw data format and upstream transformations unique for Honda.
+
+IX. Performance & Scale Considerations
+
+I want you to give me a good sense of compute and propose a plan to optimize but sticking to the architecture.
+
+Challenge 9B: Reconciliation Engine Performance
+
+I am not sure about the way forward here, but I would say let's not focus on this now, we'll work on it in the future.
+
+X. Testing & Validation Complexity
+
+We can test with real data.
+
+Challenge 10B: Regression Testing Against Other OEMs
+
+I want us to create a minimal regression files for each OEM which will speed up test as opposed to running the whole pipeline. We should do this for all the OEM tests.
+
+also, have one script that helps to run all the supported OEMs.
+
+Raw files are stored in
+data/landing_zone/honda
+
+The data are under may_2026, from which you will pull the data.
+
+I am slo thinking that we could create a loader that loads one file in case we don't wnat to run the who folder.
