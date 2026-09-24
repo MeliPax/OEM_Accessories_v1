@@ -427,7 +427,6 @@ def _validate_columns(
     column_metadata = {}
 
     # Expected columns from config
-    section_config = config.get("section_config", {})
     expected_en_cols = config.get("column_headers", {}).get("en", [
         "Description", "Part Number", "Dealer Net", "List Price", "FRT", "Installed Price"
     ])
@@ -454,18 +453,166 @@ def _validate_columns(
         "Prix installé": "installed_price",
     }
 
-    # TODO: Implement per-section column validation
-    # For each section:
-    #   1. Get header row (section_row + 1)
-    #   2. Compare actual vs expected columns
-    #   3. Log warnings for mismatches
-    #   4. Extract trim columns (after "Installed Price" until "Application")
-    #   5. Store trim_columns per section
+    section_order = ["packages", "wheels", "exterior", "interior", "electrical", "paint_pens"]
+    trim_columns_dict = {}
+    en_trim_columns_by_section = {}
+    fr_trim_columns_by_section = {}
 
-    # For now: stub with basic metadata
+    # Validate columns and extract trim columns for each section
+    for section_name in section_order:
+        section_data = section_structure.get(section_name, {})
+        en_row = section_data.get("en_row")
+        fr_row = section_data.get("fr_row")
+
+        if en_row is None:
+            continue  # Section not found, already logged as FATAL in Part 3
+
+        # Determine header row: if section_row == 0, section header IS in df.columns
+        # and the ACTUAL headers are at df.iloc[0] (first data row)
+        # Otherwise, headers are at section_row + 1
+        if en_row == 0:
+            # Section header is in column names, actual headers are in first data row
+            if len(en_df) == 0:
+                warnings.append({
+                    "rule": "invalid_header_row_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"EN section has no data rows (cannot read headers)",
+                })
+                en_trim_columns_by_section[section_name] = []
+                continue
+            en_header_row = en_df.iloc[0]
+            en_headers = [str(h).strip() for h in en_header_row]
+        else:
+            # Headers are in the row immediately after section header
+            header_row_idx = en_row + 1
+            if header_row_idx >= len(en_df):
+                warnings.append({
+                    "rule": "invalid_header_row_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"EN section header row {header_row_idx} out of bounds (sheet has {len(en_df)} rows)",
+                })
+                en_trim_columns_by_section[section_name] = []
+                continue
+
+            # Read header row from EN sheet
+            en_header_row = en_df.iloc[header_row_idx]
+            en_headers = [str(h).strip() for h in en_header_row]
+
+            # Check for missing expected columns
+            missing_en = [col for col in expected_en_cols if col not in en_headers]
+            if missing_en:
+                warnings.append({
+                    "rule": "missing_columns_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"EN section missing columns: {', '.join(missing_en)}",
+                })
+
+            # Extract trim columns (after "Installed Price" until stop marker or end)
+            trim_cols = []
+            if "Installed Price" in en_headers:
+                price_idx = en_headers.index("Installed Price")
+                stop_markers = ["application", "notes", "remarks", ""]
+                for idx in range(price_idx + 1, len(en_headers)):
+                    col_name = en_headers[idx]
+                    col_lower = str(col_name).lower().strip()
+                    # Stop if we hit a marker or empty column
+                    if col_lower in stop_markers or not col_lower or col_lower == "nan":
+                        break
+                    # Filter out NaN values
+                    if col_lower != "nan":
+                        trim_cols.append(col_name)
+            else:
+                warnings.append({
+                    "rule": "missing_price_column_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"EN section missing 'Installed Price' column (cannot extract trim columns)",
+                })
+
+            en_trim_columns_by_section[section_name] = trim_cols
+
+        # Validate FR headers (if section exists in FR sheet)
+        if fr_row is not None:
+            if fr_row == 0:
+                # Section header is in column names, actual headers are in first data row
+                if len(fr_df) == 0:
+                    warnings.append({
+                        "rule": "invalid_header_row_rule",
+                        "severity": "WARNING",
+                        "section": section_name,
+                        "message": f"FR section has no data rows (cannot read headers)",
+                    })
+                    fr_trim_columns_by_section[section_name] = []
+                    continue
+                fr_header_row = fr_df.iloc[0]
+                fr_headers = [str(h).strip() for h in fr_header_row]
+            else:
+                # Headers are in the row immediately after section header
+                header_row_idx_fr = fr_row + 1
+                if header_row_idx_fr >= len(fr_df):
+                    warnings.append({
+                        "rule": "invalid_header_row_rule",
+                        "severity": "WARNING",
+                        "section": section_name,
+                        "message": f"FR section header row {header_row_idx_fr} out of bounds (sheet has {len(fr_df)} rows)",
+                    })
+                    fr_trim_columns_by_section[section_name] = []
+                    continue
+
+                # Read header row from FR sheet
+                fr_header_row = fr_df.iloc[header_row_idx_fr]
+                fr_headers = [str(h).strip() for h in fr_header_row]
+
+            # Check for missing expected columns
+            missing_fr = [col for col in expected_fr_cols if col not in fr_headers]
+            if missing_fr:
+                warnings.append({
+                    "rule": "missing_columns_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"FR section missing columns: {', '.join(missing_fr)}",
+                })
+
+            # Extract trim columns from FR sheet
+            trim_cols_fr = []
+            if "Prix installé" in fr_headers:
+                price_idx_fr = fr_headers.index("Prix installé")
+                stop_markers = ["application", "notes", "remarques", ""]
+                for idx in range(price_idx_fr + 1, len(fr_headers)):
+                    col_name = fr_headers[idx]
+                    col_lower = str(col_name).lower().strip()
+                    if col_lower in stop_markers or not col_lower or col_lower == "nan":
+                        break
+                    # Filter out NaN values
+                    if col_lower != "nan":
+                        trim_cols_fr.append(col_name)
+            else:
+                warnings.append({
+                    "rule": "missing_price_column_rule",
+                    "severity": "WARNING",
+                    "section": section_name,
+                    "message": f"FR section missing 'Prix installé' column",
+                })
+
+            fr_trim_columns_by_section[section_name] = trim_cols_fr
+        else:
+            fr_trim_columns_by_section[section_name] = []
+
+    # Build final trim columns structure (EN trim columns are primary)
+    trim_columns_dict = {
+        section_name: {
+            "en_trims": en_trim_columns_by_section.get(section_name, []),
+            "fr_trims": fr_trim_columns_by_section.get(section_name, []),
+        }
+        for section_name in section_order
+    }
+
     column_metadata["column_mappings_en"] = column_mappings_en
     column_metadata["column_mappings_fr"] = column_mappings_fr
-    column_metadata["trim_columns"] = {}  # Will be populated per section
+    column_metadata["trim_columns"] = trim_columns_dict
 
     return column_metadata, warnings
 
