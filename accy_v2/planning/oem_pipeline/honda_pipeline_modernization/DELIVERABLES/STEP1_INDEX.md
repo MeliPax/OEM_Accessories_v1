@@ -3,7 +3,7 @@
 **Quick Links:**
 - Phase 1 Details → [STEP1_COMPLETION_REPORT.md](./STEP1_COMPLETION_REPORT.md)
 - Phase 2 Details → [STEP1_PHASE2_COMPLETION.md](./STEP1_PHASE2_COMPLETION.md)
-- Implementation → [step1_validation.py](./pipeline/step1_validation.py)
+- Implementation → [step1_validation.py](../../../../oems/honda/pipeline/step1_validation.py)
 
 ---
 

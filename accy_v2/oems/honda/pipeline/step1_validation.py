@@ -11,16 +11,114 @@ Part 6: Output & Returns — Build metadata dict, return three outputs
 """
 
 from pathlib import Path
-from typing import Tuple, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, List
 import re
 
 import openpyxl
 import pandas as pd
+import yaml
 
 
 class ValidationError(Exception):
     """Raised when FATAL validation errors occur."""
     pass
+
+
+# ============================================================================
+# Configuration Loading & Validation
+# ============================================================================
+
+def _load_section_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Load section patterns from config.
+
+    Extracts column headers, canonical mappings, and trim extraction settings
+    from section_patterns.yaml configuration.
+
+    Args:
+        config: Pipeline configuration (may include inline config or file path)
+
+    Returns:
+        Dict with: column_headers, column_mappings, section_order, trim_extraction
+
+    Raises:
+        ValidationError: If required config is missing or malformed
+    """
+    # Get section config (either embedded or from file)
+    section_config = config.get("section_config", {})
+
+    # For now, expect column_headers to be in the main config
+    # (will be loaded from section_patterns.yaml by orchestrator)
+    column_headers = config.get("column_headers", {})
+
+    if not column_headers or "en" not in column_headers or "fr" not in column_headers:
+        raise ValidationError(
+            "Configuration error: column_headers with 'en' and 'fr' keys is required. "
+            "Check section_patterns.yaml is loaded in pipeline config."
+        )
+
+    # Build canonical mappings from column_headers
+    # Format: {original_name: canonical_name}
+    en_mappings = {}
+    fr_mappings = {}
+
+    for col_spec in column_headers.get("en", []):
+        if isinstance(col_spec, dict):
+            en_mappings[col_spec["name"]] = col_spec["canonical"]
+        else:
+            # Fallback for old format (just a string)
+            en_mappings[col_spec] = col_spec.lower()
+
+    for col_spec in column_headers.get("fr", []):
+        if isinstance(col_spec, dict):
+            fr_mappings[col_spec["name"]] = col_spec["canonical"]
+        else:
+            # Fallback for old format
+            fr_mappings[col_spec] = col_spec.lower()
+
+    # Get trim extraction settings
+    trim_extraction = config.get("trim_extraction", {})
+    if not trim_extraction:
+        trim_extraction = {
+            "price_column_en": "Installed Price",
+            "price_column_fr": "Prix installé",
+            "stop_markers": {
+                "en": ["application", "notes", "remarks", ""],
+                "fr": ["application", "notes", "remarques", ""]
+            },
+            "case_insensitive": True,
+            "strip_whitespace": True,
+        }
+
+    # Section order from config
+    section_order = config.get("section_order", [
+        "packages", "wheels", "exterior", "interior", "electrical", "paint_pens"
+    ])
+
+    return {
+        "column_headers": column_headers,
+        "en_mappings": en_mappings,
+        "fr_mappings": fr_mappings,
+        "trim_extraction": trim_extraction,
+        "section_order": section_order,
+    }
+
+
+def _get_column_list(column_headers_spec: List[Any]) -> List[str]:
+    """Extract just the column names from column_headers spec.
+
+    Args:
+        column_headers_spec: List of column specs (either strings or dicts with 'name' key)
+
+    Returns:
+        List of column name strings
+    """
+    result = []
+    for col_spec in column_headers_spec:
+        if isinstance(col_spec, dict):
+            result.append(col_spec["name"])
+        else:
+            result.append(col_spec)
+    return result
 
 
 # ============================================================================
@@ -414,46 +512,46 @@ def _validate_columns(
 ) -> Tuple[Dict[str, Any], list]:
     """Validate column headers and extract trim columns per section.
 
+    ALL configuration (column names, mappings, stop markers) is loaded from config.
+    No hardcoded values - enables flexibility across different OEMs.
+
     Args:
         en_df: English sheet DataFrame
         fr_df: French sheet DataFrame
-        config: Pipeline configuration
+        config: Pipeline configuration (includes column_headers, trim_extraction, section_order)
         section_structure: Section boundaries from Part 3
 
     Returns:
         Tuple of (column_metadata, warnings_list)
+
+    Raises:
+        ValidationError: If required config is missing
     """
     warnings = []
     column_metadata = {}
 
-    # Expected columns from config
-    expected_en_cols = config.get("column_headers", {}).get("en", [
-        "Description", "Part Number", "Dealer Net", "List Price", "FRT", "Installed Price"
-    ])
-    expected_fr_cols = config.get("column_headers", {}).get("fr", [
-        "La description", "Numéro de pièce", "Prix net", "Prix de liste", "T.F.F.", "Prix installé"
-    ])
+    # Load all column config and mappings from configuration
+    try:
+        section_cfg = _load_section_config(config)
+    except ValidationError as e:
+        raise ValidationError(f"Column validation cannot proceed: {e}") from e
 
-    # Column name mappings (standardized names for downstream processing)
-    column_mappings_en = {
-        "Description": "description",
-        "Part Number": "part_number",
-        "Dealer Net": "dealer_net",
-        "List Price": "list_price",
-        "FRT": "frt",
-        "Installed Price": "installed_price",
-    }
+    # Extract from loaded config (not hardcoded)
+    expected_en_cols = _get_column_list(section_cfg["column_headers"]["en"])
+    expected_fr_cols = _get_column_list(section_cfg["column_headers"]["fr"])
+    en_mappings = section_cfg["en_mappings"]
+    fr_mappings = section_cfg["fr_mappings"]
+    section_order = section_cfg["section_order"]
+    trim_extraction = section_cfg["trim_extraction"]
 
-    column_mappings_fr = {
-        "La description": "description",
-        "Numéro de pièce": "part_number",
-        "Prix net": "dealer_net",
-        "Prix de liste": "list_price",
-        "T.F.F.": "frt",
-        "Prix installé": "installed_price",
-    }
+    # Get trim extraction settings from config
+    price_col_en = trim_extraction.get("price_column_en", "Installed Price")
+    price_col_fr = trim_extraction.get("price_column_fr", "Prix installé")
+    stop_markers_en = trim_extraction.get("stop_markers", {}).get("en", ["application", "notes", "remarks", ""])
+    stop_markers_fr = trim_extraction.get("stop_markers", {}).get("fr", ["application", "notes", "remarques", ""])
+    case_insensitive = trim_extraction.get("case_insensitive", True)
+    strip_whitespace = trim_extraction.get("strip_whitespace", True)
 
-    section_order = ["packages", "wheels", "exterior", "interior", "electrical", "paint_pens"]
     trim_columns_dict = {}
     en_trim_columns_by_section = {}
     fr_trim_columns_by_section = {}
@@ -510,18 +608,20 @@ def _validate_columns(
                     "message": f"EN section missing columns: {', '.join(missing_en)}",
                 })
 
-            # Extract trim columns (after "Installed Price" until stop marker or end)
+            # Extract trim columns (after price column until stop marker or end)
+            # Uses config-defined price column and stop markers - not hardcoded
             trim_cols = []
-            if "Installed Price" in en_headers:
-                price_idx = en_headers.index("Installed Price")
-                stop_markers = ["application", "notes", "remarks", ""]
+            if price_col_en in en_headers:
+                price_idx = en_headers.index(price_col_en)
                 for idx in range(price_idx + 1, len(en_headers)):
                     col_name = en_headers[idx]
-                    col_lower = str(col_name).lower().strip()
-                    # Stop if we hit a marker or empty column
-                    if col_lower in stop_markers or not col_lower or col_lower == "nan":
+                    col_check = str(col_name).strip() if strip_whitespace else str(col_name)
+                    col_lower = col_check.lower() if case_insensitive else col_check
+
+                    # Check against stop markers from config
+                    stop_markers_check = [m.lower() if case_insensitive else m for m in stop_markers_en]
+                    if col_lower in stop_markers_check or not col_lower or col_lower == "nan":
                         break
-                    # Filter out NaN values
                     if col_lower != "nan":
                         trim_cols.append(col_name)
             else:
@@ -529,7 +629,7 @@ def _validate_columns(
                     "rule": "missing_price_column_rule",
                     "severity": "WARNING",
                     "section": section_name,
-                    "message": f"EN section missing 'Installed Price' column (cannot extract trim columns)",
+                    "message": f"EN section missing '{price_col_en}' column (cannot extract trim columns)",
                 })
 
             en_trim_columns_by_section[section_name] = trim_cols
@@ -576,17 +676,19 @@ def _validate_columns(
                     "message": f"FR section missing columns: {', '.join(missing_fr)}",
                 })
 
-            # Extract trim columns from FR sheet
+            # Extract trim columns from FR sheet (uses config values, not hardcoded)
             trim_cols_fr = []
-            if "Prix installé" in fr_headers:
-                price_idx_fr = fr_headers.index("Prix installé")
-                stop_markers = ["application", "notes", "remarques", ""]
+            if price_col_fr in fr_headers:
+                price_idx_fr = fr_headers.index(price_col_fr)
                 for idx in range(price_idx_fr + 1, len(fr_headers)):
                     col_name = fr_headers[idx]
-                    col_lower = str(col_name).lower().strip()
-                    if col_lower in stop_markers or not col_lower or col_lower == "nan":
+                    col_check = str(col_name).strip() if strip_whitespace else str(col_name)
+                    col_lower = col_check.lower() if case_insensitive else col_check
+
+                    # Check against stop markers from config
+                    stop_markers_check = [m.lower() if case_insensitive else m for m in stop_markers_fr]
+                    if col_lower in stop_markers_check or not col_lower or col_lower == "nan":
                         break
-                    # Filter out NaN values
                     if col_lower != "nan":
                         trim_cols_fr.append(col_name)
             else:
@@ -594,7 +696,7 @@ def _validate_columns(
                     "rule": "missing_price_column_rule",
                     "severity": "WARNING",
                     "section": section_name,
-                    "message": f"FR section missing 'Prix installé' column",
+                    "message": f"FR section missing '{price_col_fr}' column",
                 })
 
             fr_trim_columns_by_section[section_name] = trim_cols_fr
@@ -602,6 +704,7 @@ def _validate_columns(
             fr_trim_columns_by_section[section_name] = []
 
     # Build final trim columns structure (EN trim columns are primary)
+    # Uses config-loaded mappings, not hardcoded values
     trim_columns_dict = {
         section_name: {
             "en_trims": en_trim_columns_by_section.get(section_name, []),
@@ -610,8 +713,9 @@ def _validate_columns(
         for section_name in section_order
     }
 
-    column_metadata["column_mappings_en"] = column_mappings_en
-    column_metadata["column_mappings_fr"] = column_mappings_fr
+    # Store loaded mappings from config (not hardcoded)
+    column_metadata["column_mappings_en"] = en_mappings
+    column_metadata["column_mappings_fr"] = fr_mappings
     column_metadata["trim_columns"] = trim_columns_dict
 
     return column_metadata, warnings

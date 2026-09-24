@@ -230,7 +230,7 @@ PASS: DQ logging (Part 5)
 PASS: Validation status = PASS_WITH_WARNINGS
   (Correct: no FATAL errors, but WARNINGs present)
 
-RESULT: END-TO-END TEST PASSED ✅
+RESULT: END-TO-END TEST PASSED
 ```
 
 ---
@@ -272,7 +272,7 @@ RESULT: END-TO-END TEST PASSED ✅
 
 ## What's Next (Part 6 Extension / Step 2 Prep)
 
-### Step 1 is COMPLETE ✅
+### Step 1 is COMPLETE
 All 6 parts implemented, tested, and validated. The pipeline now:
 - Validates sheet structure
 - Extracts model metadata

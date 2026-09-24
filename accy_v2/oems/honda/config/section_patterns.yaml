@@ -59,24 +59,65 @@ section_order:
 
 # Expected Column Headers per Section
 # Used to validate section structure
+# Columns are defined with both original names and canonical mappings
 column_headers:
   en:
-    - "Description"
-    - "Part Number"
-    - "Dealer Net"
-    - "List Price"
-    - "FRT"
-    - "Installed Price"
+    - name: "Description"
+      canonical: "description"
+      is_numeric: false
+    - name: "Part Number"
+      canonical: "part_number"
+      is_numeric: false
+    - name: "Dealer Net"
+      canonical: "dealer_net"
+      is_numeric: true
+    - name: "List Price"
+      canonical: "list_price"
+      is_numeric: true
+    - name: "FRT"
+      canonical: "frt"
+      is_numeric: true
+    - name: "Installed Price"
+      canonical: "installed_price"
+      is_numeric: true
     # Trim columns follow after Installed Price (variable per section)
 
   fr:
-    - "La description"
-    - "Numéro de pièce"
-    - "Prix net"
-    - "Prix de liste"
-    - "T.F.F."
-    - "Prix installé"
+    - name: "La description"
+      canonical: "description"
+      is_numeric: false
+    - name: "Numéro de pièce"
+      canonical: "part_number"
+      is_numeric: false
+    - name: "Prix net"
+      canonical: "dealer_net"
+      is_numeric: true
+    - name: "Prix de liste"
+      canonical: "list_price"
+      is_numeric: true
+    - name: "T.F.F."
+      canonical: "frt"
+      is_numeric: true
+    - name: "Prix installé"
+      canonical: "installed_price"
+      is_numeric: true
     # Trim columns follow after Prix installé (variable per section)
+
+# Trim extraction settings
+trim_extraction:
+  # Column after which trim columns begin
+  price_column_canonical: "installed_price"  # Use canonical name for language-agnostic reference
+  price_column_en: "Installed Price"
+  price_column_fr: "Prix installé"
+
+  # Stop markers: trim extraction stops when hitting these
+  stop_markers:
+    en: ["application", "notes", "remarks", ""]
+    fr: ["application", "notes", "remarques", ""]
+
+  # Marker matching behavior
+  case_insensitive: true
+  strip_whitespace: true
 
 # DQ Validation Rules
 validation:
