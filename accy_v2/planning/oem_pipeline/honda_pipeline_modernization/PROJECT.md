@@ -64,15 +64,18 @@ Port the Honda accessory pipeline from legacy monolithic scripts into the modula
 
 | Phase | Name | Duration | Status |
 |-------|------|----------|--------|
-| 1 | Foundation & Setup | Weeks 1–2 | Ready to start |
-| 2 | Design Docs & Utilities | Weeks 2–3 | Ready to start (parallel to Phase 3) |
-| 3 | Configuration & Validation | Weeks 3–4 | **Ready to start** (Requirements confirmed, see PHASE_3_REQUIREMENTS.md) |
-| 4 | Core Pipeline Steps | Weeks 4–6 | Blocked on Phase 3 |
+| 1 | Foundation & Setup | Weeks 1–2 | ✅ COMPLETE |
+| 2 | Design Docs & Utilities | Weeks 2–3 | ✅ COMPLETE |
+| 3 | Configuration & Step 1 Implementation | Weeks 3–4 | 🔄 IN PROGRESS |
+|   | 3a. Config files | — | ✅ COMPLETE (section_patterns, reconciliation, trim_config, pipeline.yaml) |
+|   | 3b. Step 1 (Validation) | — | ⏳ NEXT: Implement (~6-8 hours) |
+| 4 | Core Pipeline Steps (2-4) | Weeks 4–6 | Blocked on Phase 3b |
 | 5 | Model Lookup & Enrichment | Weeks 6–7 | Blocked on Phase 4 |
 | 6 | Output & DQ Reporting | Weeks 7–8 | Blocked on Phase 5 |
 | 7 | Testing & Documentation | Weeks 8–12 | Blocked on Phase 6 |
 
-**Total Effort:** ~156 hours (~10 weeks @ 15h/week or ~7 weeks @ 22h/week)
+**Total Effort:** ~164 hours (~156h for phases + ~8h for Step 1)  
+**Current Phase Effort:** 24h total (16h config + 8h Step 1)
 
 ---
 
