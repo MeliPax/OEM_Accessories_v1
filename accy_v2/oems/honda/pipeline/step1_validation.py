@@ -622,18 +622,40 @@ def _validate_columns(
 # ============================================================================
 
 def _build_dq_warnings(warnings_list: list) -> list:
-    """Convert warnings collected during validation to DQ format.
+    """Consolidate and format DQ warnings from all validation parts.
 
     Args:
         warnings_list: List of warning dicts from parts 3-4
+                      Expected format: {rule, severity, section, message}
 
     Returns:
-        List of DQ warning records
+        List of consolidated DQ warning records, ordered by severity (FATAL → WARNING)
     """
-    # TODO: Implement Part 5
-    # Consolidate all warnings from parts 3-4
-    # Return list of {rule, severity, section, message} dicts
-    return warnings_list
+    if not warnings_list:
+        return []
+
+    # Define severity ordering (lower index = higher priority)
+    severity_order = {"FATAL": 0, "ERROR": 1, "WARNING": 2}
+
+    # Sort warnings by severity (FATAL first, then ERROR, then WARNING)
+    sorted_warnings = sorted(
+        warnings_list,
+        key=lambda w: (severity_order.get(w.get("severity"), 3), w.get("section", ""))
+    )
+
+    # Format each warning for output
+    formatted_warnings = []
+    for warning in sorted_warnings:
+        # Ensure all required fields are present
+        formatted_warning = {
+            "rule": warning.get("rule", "unknown_rule"),
+            "severity": warning.get("severity", "WARNING"),
+            "section": warning.get("section", "unknown"),
+            "message": warning.get("message", "No message provided"),
+        }
+        formatted_warnings.append(formatted_warning)
+
+    return formatted_warnings
 
 
 # ============================================================================
