@@ -1,0 +1,81 @@
+# Honda EN/FR Reconciliation Configuration
+#
+# Defines how to match and reconcile English and French accessory data from separate sheets.
+#
+# Will be populated in Phase 3 with actual sheet naming patterns and reconciliation rules.
+# Each Excel file has separate EN_APP and FR_APP sheets that must be matched on:
+#   1. Part number (with composite handling)
+#   2. Cost/pricing (with variance tolerance)
+#   3. Trim applicability
+#   4. Description & comments
+
+sheet_patterns:
+  # Pattern for identifying English sheets
+  english:
+    - "*_APP_EN"                         # Placeholder - confirm with actual files
+    - "*_EN"
+
+  # Pattern for identifying French sheets
+  french:
+    - "*_APP_FR"                         # Placeholder
+    - "*_FR"
+
+# Composite Part Number Strategy
+# Honda part numbers sometimes have alternatives (e.g., "50977-565-45BH or 50977-565-45SH")
+# Strategy: Keep left side (priority side), normalize both EN and FR the same way
+composite_part_number:
+  enabled: true
+  strategy: "left"                       # Keep left of "or"/"ou"
+  or_keywords_en: ["or"]
+  or_keywords_fr: ["ou"]
+  normalization:
+    strip_whitespace: true
+    lowercase_for_comparison: false      # Keep case for part numbers
+
+# Matching Priority
+# When EN and FR records have multiple candidates, match by priority level
+matching_strategy:
+  # Level 1: Exact part number match (highest confidence)
+  part_number_match:
+    required: true
+    normalization: composite            # Use composite part number strategy
+
+  # Level 2: Cost match (within tolerance)
+  cost_match:
+    required: false                      # Flag if missing, don't fail
+    tolerance_percent: 0.05              # 5% variance tolerance
+
+  # Level 3: Trim applicability
+  trim_match:
+    required: false                      # Flag if children diverge
+    description: "Verify children have same applicable trims"
+
+  # Level 4: Description match (lowest confidence)
+  description_match:
+    required: false
+
+# Divergence Detection & DQ Logging
+# When EN/FR records don't perfectly match, flag for review
+divergence_rules:
+  cost_divergence:
+    enabled: true
+    variance_threshold: 0.10             # 10% difference triggers warning
+    rule_name: "en_fr_cost_divergence_rule"
+
+  part_count_divergence:
+    enabled: true
+    threshold: 1                         # 1+ part count difference triggers warning
+    rule_name: "en_fr_part_count_divergence_rule"
+
+  part_number_divergence:
+    enabled: true
+    rule_name: "en_fr_part_number_divergence_rule"
+
+# Reconciliation Map Output
+# After matching, store metadata for downstream use
+metadata_fields:
+  - reconciliation_status              # MAPPED, EN_ONLY, FR_ONLY, DIVERGED
+  - cost_match                         # true/false
+  - part_count_match                   # true/false
+  - confidence                         # 0.0-1.0 score
+  - dq_warnings                        # List of issues detected

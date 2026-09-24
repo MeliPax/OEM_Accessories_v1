@@ -1,42 +1,91 @@
-# ============================================================================
-# File: accy_v2/oems/hyundai/config/pipeline.yaml
-# Description: Orchestration settings and runtime configuration
-# OEM: Hyundai
-# Purpose: Flow control, feature flags, and runtime behavior
-# ============================================================================
-# DECISION [015]: Modular 5-file config structure (replaces single JSON)
-# DECISION [016]: use_model_lookup remains configurable per OEM
-# DECISION [017]: non_null_threshold remains configurable
-# DECISION [018]: Output paths derived from OEM name in code (not configured)
-# ============================================================================
+# Honda Pipeline Configuration
+#
+# High-level orchestration settings, error handling, and batch processing behavior.
+#
+# Will be updated in Phase 3 with actual error thresholds and batch settings.
 
-# Model lookup enrichment
-# DECISION [016]: use_model_lookup flag is configurable per OEM
-# - Hyundai: true (needs trim-to-model translation)
-# - Mazda: false (already has model numbers in source)
-use_model_lookup: true
+# Feature Flags
+features:
+  use_model_lookup: true                # Enrich with VehicleSearchEngine
+  enable_en_fr_reconciliation: true     # Separate sheets + merge
+  enable_rollup_logic: true             # Parent-child aggregation
+  enable_batch_processing: true         # Multi-file directory orchestration
 
-# Data completeness threshold
-# DECISION [017]: non_null_threshold is configurable per OEM
-# - Percentage of non-null values required in non-null columns (0.0 - 1.0)
-# - If null rate is BELOW threshold: log warnings, exclude null rows, continue processing
-# - If null rate is AT/ABOVE threshold: mark sheet as FATAL, skip entirely
-# - Example: 0.5 means "fail sheet if >50% of column is null"
-non_null_threshold: 0.5
+# Error Handling Strategy
+# FATAL: Stops processing immediately for this file
+# WARNING: Logs warning, continues processing
+# QUARANTINE: File marked for review, logs warning, continues batch
+error_handling:
+  FATAL:
+    - missing_section                   # Required section not found
+    - encoding_error                    # File encoding issue
+    - file_not_readable                 # Excel file corrupted
 
-# DECISION [018]: Output paths are DERIVED from OEM name in code
-# - NOT configured here anymore
-# - Paths automatically derived as: accy_v2/output/{output_type}/{oem}/
-# - Derivation happens in orchestrator.py::get_output_paths()
-# - Rationale: All OEMs follow same pattern; unnecessary config overhead
-# - If an OEM needs custom paths in future, add here then; for now, derive
+  WARNING:
+    - trim_parsing_error                # Applicability marker not recognized
+    - cost_mismatch                     # EN/FR cost divergence > threshold
+    - part_number_divergence            # EN/FR part numbers don't match
+    - section_order_divergence          # Sections out of order
+    - missing_column                    # Expected column not found
 
-# Feature flags (reserved for future use)
-# Examples of what might go here in the future:
-# features:
-#   dry_run: false              # Run without writing outputs
-#   parallel_workers: 1         # Number of concurrent processes
-#   enable_profiling: false     # Profile pipeline performance
-#   timeout_minutes: 60         # Pipeline timeout
-#   retry_on_failure: 1         # Retry count for transient errors
-#   notification_email: ops@company.com  # Alert on completion
+  # Batch-level quarantine
+  quarantine:
+    enabled: true
+    threshold: 0.10                     # Quarantine file if >10% errors
+    action: "log_and_skip"              # Log warning and skip file
+
+# Batch Processing Settings
+batch_settings:
+  # Directory scanning pattern (relative to landing_zone/honda/)
+  scan_pattern: "**/*.xlsx"             # Recursive scan for Excel files
+  
+  # Publication date extraction
+  publication_date_extraction: true     # Extract from file headers if present
+  publication_date_columns:
+    - "Publication Date"
+    - "Date de publication"
+    - "Release Date"
+    - "Date de sortie"
+  
+  # Single-model-per-file handling
+  # Honda files typically contain one model per file (unlike Hyundai's master sheet)
+  single_model_per_file: true
+  model_name_from: "config"             # Extract from filename or config
+  
+  # Batch aggregation
+  aggregation:
+    enabled: true
+    output_format: "json"               # batch_summary_dq.json
+    aggregate_metrics:
+      - files_processed
+      - files_failed
+      - total_rows_processed
+      - total_rows_output
+      - reconciliation_success_rate
+      - model_lookup_success_rate
+
+# Output Settings
+output:
+  # Output directory (relative to project root)
+  output_dir: "output/"
+  
+  # Sheet names for Excel output
+  sheets:
+    main: "Accessories"                 # Main data sheet
+    raw_data: "raw_data"                # EN/FR merge audit trail
+    confidence: "Confidence"            # Quality metrics
+    dq_report: "DQ Report"              # Data quality issues
+  
+  # Language-specific outputs
+  languages:
+    - EN
+    - FR
+
+# Logging
+logging:
+  pipeline_log_level: "INFO"            # DEBUG, INFO, WARNING, ERROR
+  dq_log_level: "INFO"
+  
+  # Log output locations
+  pipeline_logs_dir: "output/pipeline_logs/"
+  dq_reports_dir: "output/dq_reports/"

@@ -1,0 +1,64 @@
+# Honda Trim Configuration
+#
+# Defines applicability markers, tokenization rules, and trim normalization.
+#
+# Will be populated in Phase 3 with actual applicability markers confirmed from real Honda files.
+
+# Applicability Markers
+# Characters used to indicate whether an accessory applies to a trim level
+trim_column_values:
+  applicability_markers:
+    - "•"                               # Bullet/checkmark (placeholder)
+    - "T"                               # Typical marker (placeholder)
+    - "E"                               # Extended marker (placeholder)
+  case_insensitive: true                # Treat "t" and "T" as same
+
+  # Non-applicability markers
+  not_applicable_markers:
+    - " "                               # Blank/space
+    - ""                                # Empty string
+    - "N/A"
+    - "-"                               # Sometimes used for not applicable
+
+# Tokenization Rules
+# How to split trim names into keywords for model lookup
+tokenization:
+  # Split on whitespace and hyphens
+  split_on: [" ", "-"]
+
+  # Compound keywords to keep together (don't split on these hyphens)
+  # Example: "Sport-L" should NOT split into ["Sport", "L"]
+  compound_keywords:
+    - "EX-L"                            # Keep EX-L as one token
+    - "Sport-L"
+    - "e-SC"                            # Keep e-SC as one token
+
+  # Single-letter handling
+  # Compound keywords with single-letter suffix (preserve hyphen)
+  preserve_single_letter_suffix: true
+
+  # Normalization after tokenization
+  normalization:
+    lowercase: true                     # Normalize to lowercase for matching
+    deduplicate: true                   # Remove duplicate tokens
+    preserve_order: true                # Keep original order
+
+# Trim-Specific Classification
+# Some trims may have special handling for model lookup
+trim_families:
+  # Example: "Sport" trim may resolve to multiple database variants
+  # (Sport AWD, Sport FWD, Sport Hybrid, etc.)
+  # Will be extended in Phase 2 design phase
+  enabled: false                        # Deferred to Phase 2
+  strategy: "multi-match"               # When ambiguous, return all matches
+
+# Trim Validation Rules
+validation:
+  # Require trim column headers to be present
+  require_trim_columns: true
+
+  # Flag if no trim applicability detected (entire row blank)
+  flag_empty_trim_rows: true
+
+  # DQ categorization
+  dq_rule_name: "trim_applicability_validation_rule"

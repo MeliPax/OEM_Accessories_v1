@@ -1,0 +1,58 @@
+# Honda Section Pattern Configuration
+# Defines how to identify and extract the 6 main accessory sections
+#
+# Will be populated in Phase 3 with actual section identifiers from real Honda Excel files.
+# Each section appears in both EN (English) and FR (French) sheets.
+#
+# Format:
+#   - English pattern: Text to match in EN_APP sheets (case-insensitive)
+#   - French pattern: Text to match in FR_APP sheets (case-insensitive)
+#   - Row index range: Optional override (if patterns insufficient)
+
+sections:
+  packages:
+    en: "1.0 Packages and Kits"          # Placeholder - confirm with actual files
+    fr: "1.0 Groupes et ensembles"       # Placeholder
+    description: "Package bundles and accessory kits"
+
+  electronics:
+    en: "2.0 Electronics"                # Placeholder
+    fr: "2.0 Électronique"               # Placeholder
+    description: "Electronic accessories and systems"
+
+  interior:
+    en: "3.0 Interior"                   # Placeholder
+    fr: "3.0 Intérieur"                  # Placeholder
+    description: "Interior trim and comfort accessories"
+
+  exterior:
+    en: "4.0 Exterior"                   # Placeholder
+    fr: "4.0 Extérieur"                  # Placeholder
+    description: "Exterior body and trim accessories"
+
+  cargo:
+    en: "5.0 Cargo and Storage"          # Placeholder
+    fr: "5.0 Cargo et rangement"         # Placeholder
+    description: "Cargo management and storage solutions"
+
+  general:
+    en: "6.0 General Accessories"        # Placeholder
+    fr: "6.0 Accessoires généraux"       # Placeholder
+    description: "Miscellaneous and general-purpose accessories"
+
+# Section order enforcement
+# Honda files should have sections in this order (1-6)
+section_order:
+  - packages
+  - electronics
+  - interior
+  - exterior
+  - cargo
+  - general
+
+# DQ validation
+validation:
+  require_all_sections: true
+  enforce_section_order: true
+  flag_missing_sections: true
+  flag_out_of_order_sections: true
