@@ -23,7 +23,6 @@ Part 9: EN/FR Reconciliation
 
 from pathlib import Path
 from typing import Tuple, Dict, Any, Optional, List
-import re
 import logging
 
 import pandas as pd
@@ -259,8 +258,204 @@ def _clean_section_data(df: pd.DataFrame, config: Dict[str, Any]) -> pd.DataFram
 
 
 # ============================================================================
-# PART 8: Data Standardization & Packages Rollup (Stub)
+# PART 8: Data Standardization & Packages Rollup
 # ============================================================================
+
+def _cleanup_section_data(df: pd.DataFrame, section_name: str, config: Dict[str, Any]) -> pd.DataFrame:
+    """Cleanup: trim, type coerce, deduplicate, sort.
+
+    Step 8.1: For each section, standardize data types and remove duplicates.
+
+    Args:
+        df: Section DataFrame with canonical column names
+        section_name: Section name (for logging)
+        config: Pipeline configuration
+
+    Returns:
+        Cleaned DataFrame
+    """
+    if df is None or df.empty:
+        return df
+
+    df = df.copy()
+
+    # Drop rows where all values are null
+    df = df.dropna(how="all")
+
+    # Type coercion: standardize known column types
+    type_mappings = {
+        "description": "string",
+        "part_number": "string",
+        "dealer_net": "float",
+        "list_price": "float",
+        "frt": "float",
+        "installed_price": "float",
+    }
+
+    for col, dtype in type_mappings.items():
+        if col in df.columns:
+            if dtype == "string":
+                df[col] = df[col].astype("string", errors="ignore")
+            elif dtype == "float":
+                try:
+                    df[col] = pd.to_numeric(df[col], errors="coerce")
+                except Exception:
+                    pass
+
+    # Title case for descriptions
+    if "description" in df.columns:
+        df["description"] = df["description"].apply(
+            lambda x: x.title() if isinstance(x, str) and x else x
+        )
+
+    # Uppercase for part numbers
+    if "part_number" in df.columns:
+        df["part_number"] = df["part_number"].apply(
+            lambda x: x.upper() if isinstance(x, str) and x else x
+        )
+
+    # Deduplicate: remove exact duplicates (same values across all columns)
+    df = df.drop_duplicates(subset=None, keep="first")
+
+    # Sort by description, then part number
+    sort_cols = []
+    if "description" in df.columns:
+        sort_cols.append("description")
+    if "part_number" in df.columns:
+        sort_cols.append("part_number")
+
+    if sort_cols:
+        df = df.sort_values(by=sort_cols, na_position="last").reset_index(drop=True)
+
+    return df
+
+
+def _detect_parent_child(df: pd.DataFrame) -> pd.DataFrame:
+    """Detect parent-child relationships in packages section.
+
+    Step 8.2: Identify parent rows (main packages with price + trims) and
+    child rows (variant packages with no price or minimal price).
+
+    Args:
+        df: Section DataFrame (packages section)
+
+    Returns:
+        DataFrame with new columns: relationship, parent_idx
+    """
+    if df is None or df.empty:
+        return df
+
+    df = df.copy()
+
+    # Add tracking columns
+    df["relationship"] = "standalone"  # default
+    df["parent_idx"] = None
+
+    # Determine parent vs child
+    for idx, row in df.iterrows():
+        has_description = pd.notna(row.get("description"))
+        installed_price = row.get("installed_price")
+        has_price = pd.notna(installed_price) and installed_price > 0
+
+        # Parent: has description + price + (possibly) trims
+        if has_description and has_price:
+            df.at[idx, "relationship"] = "parent"
+        # Child: has description but no/zero price
+        elif has_description and not has_price:
+            df.at[idx, "relationship"] = "child"
+
+    # Link children to parents
+    # Simple heuristic: each child links to the parent immediately before it
+    for idx, row in df.iterrows():
+        if row["relationship"] == "child":
+            # Find parent (should be immediately above, or last parent)
+            for prev_idx in range(idx - 1, -1, -1):
+                if df.at[prev_idx, "relationship"] == "parent":
+                    df.at[idx, "parent_idx"] = prev_idx
+                    break
+
+    return df
+
+
+def _rollup_packages(df: pd.DataFrame, config: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """Rollup: aggregate children into parents.
+
+    Step 8.3: For each parent, aggregate child variants into the parent row.
+
+    Args:
+        df: Packages DataFrame with relationship tracking
+        config: Pipeline configuration
+
+    Returns:
+        Tuple of:
+        - Rolled up DataFrame (parents only, with aggregated info)
+        - Metadata dict with rollup stats
+    """
+    if df is None or df.empty:
+        return df, {}
+
+    df = df.copy()
+
+    # Track stats
+    parent_count = 0
+    child_count = 0
+    trim_mismatches = 0
+
+    # Process parents and aggregate children
+    parents_to_keep = []
+    for idx, row in df.iterrows():
+        if row["relationship"] != "parent":
+            continue
+
+        parent_count += 1
+        parent_row = row.copy()
+
+        # Find children for this parent
+        children = df[
+            (df["relationship"] == "child") & (df["parent_idx"] == idx)
+        ]
+        child_count += len(children)
+
+        if len(children) > 0:
+            # Aggregate child descriptions
+            child_descriptions = children["description"].tolist()
+            parent_row["description"] = f"{parent_row['description']} ({', '.join(str(d) for d in child_descriptions)})"
+
+            # Track trim mismatches (warning only, don't change parent)
+            # This would be expanded later if we have trim data
+
+            # Mark that this parent has children
+            parent_row["has_children"] = True
+            parent_row["child_count"] = len(children)
+        else:
+            parent_row["has_children"] = False
+            parent_row["child_count"] = 0
+
+        parents_to_keep.append(parent_row)
+
+    # Also keep any standalone rows (non-package items)
+    standalones = df[df["relationship"] == "standalone"]
+    for idx, row in standalones.iterrows():
+        parent_row = row.copy()
+        parent_row["has_children"] = False
+        parent_row["child_count"] = 0
+        parents_to_keep.append(parent_row)
+
+    # Build rolled-up DataFrame
+    if parents_to_keep:
+        rolled_up = pd.DataFrame(parents_to_keep).reset_index(drop=True)
+    else:
+        rolled_up = pd.DataFrame()
+
+    # Metadata
+    metadata = {
+        "parent_count": parent_count,
+        "child_count": child_count,
+        "trim_mismatches": trim_mismatches,
+    }
+
+    return rolled_up, metadata
+
 
 def _standardize_data(
     section_data: Dict[str, Any],
@@ -270,24 +465,69 @@ def _standardize_data(
 
     Part 8: Clean data, detect parent-child (packages only), aggregate.
 
-    This is a stub for Part 8 implementation.
-
     Args:
-        section_data: Section data from Part 7
+        section_data: Section data from Part 7 with structure:
+            {section_name: {"en_df": ..., "fr_df": ..., "trim_columns": [...]}, ...}
         config: Pipeline configuration
 
     Returns:
         Dict with standardized data and rollup metadata
     """
-    # TODO: Implement Part 8
-    # - Data cleanup (type coercion, deduplication, sorting)
-    # - Parent-child detection (packages section only)
-    # - Rollup aggregation (children → parent)
-    # - Rollup metadata tracking
+    standardized_data = {}
+    rollup_metadata = {}
+    warnings = []
+
+    # Process each section
+    for section_name, section_info in section_data.items():
+        en_df = section_info.get("en_df")
+        fr_df = section_info.get("fr_df")
+        trim_columns = section_info.get("trim_columns", [])
+
+        # Step 8.1: Cleanup EN section
+        en_cleaned = _cleanup_section_data(en_df, section_name, config)
+
+        # Step 8.1: Cleanup FR section
+        fr_cleaned = _cleanup_section_data(fr_df, section_name, config) if fr_df is not None else None
+
+        # Step 8.2-8.3: Packages-specific rollup (only for "packages" section)
+        en_unified = en_cleaned
+        fr_unified = fr_cleaned
+        section_rollup_metadata = {}
+
+        if section_name == "packages" and en_cleaned is not None and not en_cleaned.empty:
+            # Detect parent-child
+            en_with_relationships = _detect_parent_child(en_cleaned)
+
+            # Rollup packages
+            en_unified, en_rollup_metadata = _rollup_packages(en_with_relationships, config)
+            section_rollup_metadata.update(en_rollup_metadata)
+
+            # Same for FR if present
+            if fr_cleaned is not None and not fr_cleaned.empty:
+                fr_with_relationships = _detect_parent_child(fr_cleaned)
+                fr_unified, fr_rollup_metadata = _rollup_packages(fr_with_relationships, config)
+                # Merge metadata (for comparison)
+                if fr_rollup_metadata.get("child_count", 0) != en_rollup_metadata.get("child_count", 0):
+                    warnings.append({
+                        "section": section_name,
+                        "severity": "WARNING",
+                        "message": f"EN/FR child count mismatch: EN={en_rollup_metadata.get('child_count')}, FR={fr_rollup_metadata.get('child_count')}"
+                    })
+
+        # Store standardized section
+        standardized_data[section_name] = {
+            "en_unified": en_unified,
+            "fr_unified": fr_unified,
+            "trim_columns": trim_columns,
+        }
+
+        if section_rollup_metadata:
+            rollup_metadata[section_name] = section_rollup_metadata
+
     return {
-        "standardized_data": section_data,
-        "rollup_metadata": {},
-        "warnings": [],
+        "standardized_data": standardized_data,
+        "rollup_metadata": rollup_metadata,
+        "warnings": warnings,
     }
 
 
