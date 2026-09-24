@@ -1,7 +1,8 @@
 # Architecture Review: Honda Pipeline & accy_v2 System
-**Date:** 2026-09-24  
-**Scope:** Step 1 Complete (Parts 1-6) + System Architecture Assessment  
-**Reviewer:** Senior Engineering  
+
+**Date:** 2026-09-24
+**Scope:** Step 1 Complete (Parts 1-6) + System Architecture Assessment
+**Reviewer:** Senior Engineering
 **Status:** Critical gaps identified, recommendations prioritized
 
 ---
@@ -25,22 +26,25 @@ The Honda Step 1 validation pipeline is **technically sound** for its current sc
 ## 1. Configuration Management (CRITICAL)
 
 ### Current State
+
 - **Just Fixed:** Column headers, mappings, trim markers now config-driven ✅
 - **Problem:** Config structure lacks formal validation and versioning
 - **Risk:** Config changes can silently break pipelines
 
 ### Gaps
-| Gap | Impact | Priority |
-|-----|--------|----------|
-| No config schema validation | Invalid config caught at runtime, not deployment | P1 |
-| No config versioning strategy | Backward compatibility unclear | P1 |
-| No config change tracking | No audit trail for config changes | P2 |
-| No environment-specific configs | Can't separate dev/prod settings | P2 |
-| No config reload capability | Changes require restart | P3 |
+
+| Gap                             | Impact                                           | Priority |
+| ------------------------------- | ------------------------------------------------ | -------- |
+| No config schema validation     | Invalid config caught at runtime, not deployment | P1       |
+| No config versioning strategy   | Backward compatibility unclear                   | P1       |
+| No config change tracking       | No audit trail for config changes                | P2       |
+| No environment-specific configs | Can't separate dev/prod settings                 | P2       |
+| No config reload capability     | Changes require restart                          | P3       |
 
 ### Recommendations
 
 **P1: Config Schema Validation (2-4 hours)**
+
 ```yaml
 # Add JSONSchema or Pydantic validation
 config_schema.yaml:
@@ -57,6 +61,7 @@ Action:
 ```
 
 **P1: Config Versioning (1-2 hours)**
+
 ```yaml
 # Every config file needs version key:
 metadata:
@@ -71,6 +76,7 @@ Action:
 ```
 
 **P2: Environment Configuration (2-3 hours)**
+
 ```
 accy_v2/oems/honda/config/
 ├── defaults.yaml          # Base config (all OEMs share)
@@ -87,21 +93,24 @@ Load order: defaults → environment → local
 ## 2. Error Handling & Resilience (CRITICAL)
 
 ### Current State
+
 - **FATAL/ERROR/WARNING severity levels** ✅
 - **Problem:** No recovery strategy, no graceful degradation
 
 ### Gaps
-| Gap | Impact | Mitigation |
-|-----|--------|-----------|
-| No retry logic | Transient failures cause file rejection | Add exponential backoff retry for I/O errors |
-| No partial success handling | One warning = whole file rejected | Track which parts succeeded, fail only necessary parts |
-| No circuit breaker | Cascading failures in batch processing | Stop processing after N consecutive failures |
-| Limited error context | Debugging production issues is hard | Add correlation IDs and full error stacks |
-| No fallback strategies | Missing data = file rejection | Allow configurable fallback behaviors |
+
+| Gap                         | Impact                                  | Mitigation                                             |
+| --------------------------- | --------------------------------------- | ------------------------------------------------------ |
+| No retry logic              | Transient failures cause file rejection | Add exponential backoff retry for I/O errors           |
+| No partial success handling | One warning = whole file rejected       | Track which parts succeeded, fail only necessary parts |
+| No circuit breaker          | Cascading failures in batch processing  | Stop processing after N consecutive failures           |
+| Limited error context       | Debugging production issues is hard     | Add correlation IDs and full error stacks              |
+| No fallback strategies      | Missing data = file rejection           | Allow configurable fallback behaviors                  |
 
 ### Recommendations
 
 **P1: Retry Logic with Backoff (3-4 hours)**
+
 ```python
 @retry(max_attempts=3, backoff=exponential, exceptions=[IOError, TimeoutError])
 def _load_sheets(excel_file, config):
@@ -120,6 +129,7 @@ error_handling:
 ```
 
 **P1: Partial Success Tracking (2-3 hours)**
+
 ```python
 # Track which parts succeeded, even if overall FATAL
 result = {
@@ -133,13 +143,14 @@ result = {
 ```
 
 **P2: Circuit Breaker Pattern (2-3 hours)**
+
 ```python
 # Stop processing batch after N failures
 class CircuitBreaker:
     def __init__(self, failure_threshold=5, timeout=60):
         self.failures = 0
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
-    
+  
     def is_healthy(self):
         """Check if should continue processing."""
         return self.state != "OPEN"
@@ -156,21 +167,24 @@ batch_settings:
 ## 3. Observability & Instrumentation (HIGH PRIORITY)
 
 ### Current State
+
 - **DQ Logging:** ✅ Post-processing warnings collected
 - **Problem:** No structured logging, no tracing, limited metrics
 
 ### Gaps
-| Gap | Symptom | Impact |
-|-----|---------|--------|
-| No structured logging | Logs unstructured text; hard to parse/aggregate | Prod debugging extremely difficult |
-| No correlation IDs | Can't trace a single file through all steps | Multi-step issues impossible to debug |
-| No span/event timing | No visibility into performance bottlenecks | Can't optimize; don't know what's slow |
-| No metrics exported | No dashboards, no alerting | Blind to production issues |
-| DQ warnings only at end | Can't fail early; process continues on errors | Wastes resources processing bad data |
+
+| Gap                     | Symptom                                         | Impact                                 |
+| ----------------------- | ----------------------------------------------- | -------------------------------------- |
+| No structured logging   | Logs unstructured text; hard to parse/aggregate | Prod debugging extremely difficult     |
+| No correlation IDs      | Can't trace a single file through all steps     | Multi-step issues impossible to debug  |
+| No span/event timing    | No visibility into performance bottlenecks      | Can't optimize; don't know what's slow |
+| No metrics exported     | No dashboards, no alerting                      | Blind to production issues             |
+| DQ warnings only at end | Can't fail early; process continues on errors   | Wastes resources processing bad data   |
 
 ### Recommendations
 
 **P1: Structured Logging (3-4 hours)**
+
 ```python
 # Instead of: "File loaded successfully"
 # Write structured events:
@@ -200,6 +214,7 @@ logging:
 ```
 
 **P1: Correlation IDs (2-3 hours)**
+
 ```python
 # Every file gets unique ID through all processing steps
 correlation_id = f"batch_{date}_{batch_sequence}_{file_sequence}"
@@ -213,11 +228,12 @@ def validate(excel_file, config, correlation_id):
 ```
 
 **P1: Step Instrumentation (2-3 hours)**
+
 ```python
 # Time each major step
 with Timer("step1_validation", correlation_id):
     _load_sheets(...)
-    
+  
 with Timer("step2_metadata", correlation_id):
     _extract_metadata(...)
 
@@ -231,6 +247,7 @@ with Timer("step2_metadata", correlation_id):
 ```
 
 **P2: Metrics Export (3-5 hours)**
+
 ```python
 # Track and expose metrics
 metrics:
@@ -249,22 +266,25 @@ metrics:
 ## 4. Testability & Data Contracts (HIGH PRIORITY)
 
 ### Current State
+
 - **Unit Tests:** ✅ Basic tests for each part
 - **E2E Tests:** ✅ End-to-end test with synthetic data
 - **Problem:** No schema validation, no contract testing
 
 ### Gaps
-| Gap | Problem | Example |
-|-----|---------|---------|
-| No input schema validation | Accept any Excel; validation happens in-process | Invalid Excel crashes; should reject at boundary |
-| No output schema validation | Return dict without structure guarantee | Downstream code assumes fields that may be missing |
-| No data contracts | Callers don't know what to expect | Breaking changes happen silently |
-| Synthetic test data only | Real data catches edge cases synthetic doesn't | Trim column markers, encoding issues missed |
-| No regression test suite | Fixes can regress without notice | Must manually retest old issues |
+
+| Gap                         | Problem                                         | Example                                            |
+| --------------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| No input schema validation  | Accept any Excel; validation happens in-process | Invalid Excel crashes; should reject at boundary   |
+| No output schema validation | Return dict without structure guarantee         | Downstream code assumes fields that may be missing |
+| No data contracts           | Callers don't know what to expect               | Breaking changes happen silently                   |
+| Synthetic test data only    | Real data catches edge cases synthetic doesn't  | Trim column markers, encoding issues missed        |
+| No regression test suite    | Fixes can regress without notice                | Must manually retest old issues                    |
 
 ### Recommendations
 
 **P1: Input Schema (2-3 hours)**
+
 ```python
 # Define what valid Honda Excel file looks like
 input_schema = {
@@ -297,6 +317,7 @@ def validate(excel_file, config):
 ```
 
 **P1: Output Schema (2-3 hours)**
+
 ```python
 # Guarantee what callers receive
 output_schema = {
@@ -329,6 +350,7 @@ def validate(...):
 ```
 
 **P2: Regression Test Suite (4-6 hours)**
+
 ```
 tests/regressions/
 ├── 2026_q3_trim_marker_encoding.yaml    # Issue: UTF-8 checkmarks
@@ -347,21 +369,24 @@ tests/regressions/
 ## 5. Modularity & Extensibility (MEDIUM PRIORITY)
 
 ### Current State
+
 - **Structure:** Parts 1-6 organized sequentially
 - **Problem:** Honda-specific code mixed with generic patterns; hard to extend to new OEMs
 
 ### Gaps
-| Gap | Today | With Fix |
-|-----|-------|----------|
-| No abstraction for OEM-specific rules | Hardcoded 6 Honda sections | Config file defines sections; code generic |
-| No plugin architecture | Adding new OEM = copy-paste | Each OEM plugs config into same orchestrator |
-| No strategy pattern | Validation logic baked in | Switch validation strategies by config |
-| No factory pattern | Validators created inline | Factory creates appropriate validator per OEM |
-| Tight coupling | Parts 1-6 deeply coupled | Parts loosely coupled, depend on interfaces |
+
+| Gap                                   | Today                       | With Fix                                      |
+| ------------------------------------- | --------------------------- | --------------------------------------------- |
+| No abstraction for OEM-specific rules | Hardcoded 6 Honda sections  | Config file defines sections; code generic    |
+| No plugin architecture                | Adding new OEM = copy-paste | Each OEM plugs config into same orchestrator  |
+| No strategy pattern                   | Validation logic baked in   | Switch validation strategies by config        |
+| No factory pattern                    | Validators created inline   | Factory creates appropriate validator per OEM |
+| Tight coupling                        | Parts 1-6 deeply coupled    | Parts loosely coupled, depend on interfaces   |
 
 ### Recommendations
 
 **P2: Plugin Architecture (4-6 hours)**
+
 ```
 OEM Plugin Pattern:
   
@@ -382,6 +407,7 @@ result = pipeline.validate(excel_file, config)
 ```
 
 **P2: Strategy Pattern for Validators (3-4 hours)**
+
 ```python
 # Validator strategies pluggable by config
 class ColumnValidator:
@@ -405,6 +431,7 @@ validators:
 ```
 
 **P3: Abstraction Layers (5-7 hours)**
+
 ```
 ┌─────────────────────────────┐
 │ Orchestrator (Pipeline)     │ OEM-agnostic
@@ -424,43 +451,46 @@ validators:
 ## 6. Data Quality & Consistency (MEDIUM PRIORITY)
 
 ### Current State
+
 - **Validation:** ✅ Parts 1-5 detect issues post-hoc
 - **Problem:** Warnings at end; doesn't validate data structure early
 
 ### Gaps
-| Gap | Today | Needed |
-|-----|-------|--------|
-| Validation at boundary | Accept any Excel | Reject invalid structure at ingestion |
-| No schema enforcement | Check headers after load | Validate schema before processing |
-| No invariant checking | Check mismatches at end | Catch divergence immediately |
-| No audit trail | Warnings logged; source lost | Track which cell violated which rule |
-| Silent partial success | Continue on warnings | Flag exactly what failed, why |
+
+| Gap                    | Today                        | Needed                                |
+| ---------------------- | ---------------------------- | ------------------------------------- |
+| Validation at boundary | Accept any Excel             | Reject invalid structure at ingestion |
+| No schema enforcement  | Check headers after load     | Validate schema before processing     |
+| No invariant checking  | Check mismatches at end      | Catch divergence immediately          |
+| No audit trail         | Warnings logged; source lost | Track which cell violated which rule  |
+| Silent partial success | Continue on warnings         | Flag exactly what failed, why         |
 
 ### Recommendations
 
 **P1: Ingestion Validation (2-3 hours)**
+
 ```python
 # Validate BEFORE processing parts 1-6
 class HondaValidator:
     def validate_ingestion(self, excel_file):
         """Check file is valid Honda before touching it."""
         errors = []
-        
+      
         # Check: Has sheets
         if not has_sheets(excel_file, ["*_APP_EN", "*_APP_FR"]):
             errors.append("Missing EN/FR sheets")
-        
+      
         # Check: Sheets have data
         if not has_rows(excel_file):
             errors.append("Sheets are empty")
-        
+      
         # Check: Not corrupted
         if not is_valid_excel(excel_file):
             errors.append("File corrupted")
-        
+      
         if errors:
             return {"status": "INVALID", "errors": errors}
-        
+      
         return {"status": "VALID"}
 
 # Call FIRST
@@ -472,6 +502,7 @@ if result["status"] == "INVALID":
 ```
 
 **P2: Invariant Checking (3-4 hours)**
+
 ```python
 # Define rules that MUST always be true
 invariants = {
@@ -493,22 +524,25 @@ for name, check in invariants.items():
 ## 7. Performance & Scalability (MEDIUM PRIORITY)
 
 ### Current State
+
 - **Single-file:** ✅ Processes one file correctly
 - **Batch:** ⏳ Stubbed; not tested
 - **Problem:** No performance analysis, no optimization strategy
 
 ### Gaps
-| Scenario | Today | Needed |
-|----------|-------|--------|
-| Process 1 file (100 rows) | Unknown | Baseline: < 1 second |
-| Process 100 files (10K rows) | Unknown | Should scale: < 2 min |
-| Process 1000 files (100K rows) | Unknown | Batch processing needed; < 30 min |
-| Large sections (10K rows per section) | Loads full DataFrame | Streaming/chunking needed |
-| Memory usage | Unknown | Track & optimize |
+
+| Scenario                              | Today                | Needed                            |
+| ------------------------------------- | -------------------- | --------------------------------- |
+| Process 1 file (100 rows)             | Unknown              | Baseline: < 1 second              |
+| Process 100 files (10K rows)          | Unknown              | Should scale: < 2 min             |
+| Process 1000 files (100K rows)        | Unknown              | Batch processing needed; < 30 min |
+| Large sections (10K rows per section) | Loads full DataFrame | Streaming/chunking needed         |
+| Memory usage                          | Unknown              | Track & optimize                  |
 
 ### Recommendations
 
 **P2: Performance Benchmarks (2-3 hours)**
+
 ```python
 # Establish baseline for each step
 benchmarks:
@@ -536,6 +570,7 @@ benchmarks:
 ```
 
 **P3: Batch Optimization (4-6 hours)**
+
 ```python
 # Process multiple files in parallel
 from concurrent.futures import ThreadPoolExecutor
@@ -547,7 +582,7 @@ def process_batch(excel_files, config):
             lambda f: validate(f, config),
             excel_files
         )
-    
+  
     return aggregate_results(results)
 
 # Config:
@@ -566,22 +601,25 @@ batch_settings:
 ## 8. Documentation & Contracts (HIGH PRIORITY)
 
 ### Current State
+
 - **Completion Reports:** ✅ Excellent (Phase 1 & 2)
 - **API Documentation:** ❌ Missing
 - **Architecture Decisions:** ⚠️ Scattered in comments
 
 ### Gaps
-| Gap | Needed | Example |
-|-----|--------|---------|
-| No API contracts | Callers don't know interface | What does `validate()` return? |
-| No ADR (Architecture Decisions) | Why were decisions made? | Why semantic versioning for config? |
-| No runbook | Operations doesn't know how to handle errors | What to do if batch processing fails? |
-| No troubleshooting guide | Support can't debug issues | "Column validation failed" - now what? |
-| No data dictionary | Schema unclear | What does "trim_columns" contain? |
+
+| Gap                             | Needed                                       | Example                                |
+| ------------------------------- | -------------------------------------------- | -------------------------------------- |
+| No API contracts                | Callers don't know interface                 | What does`validate()` return?        |
+| No ADR (Architecture Decisions) | Why were decisions made?                     | Why semantic versioning for config?    |
+| No runbook                      | Operations doesn't know how to handle errors | What to do if batch processing fails?  |
+| No troubleshooting guide        | Support can't debug issues                   | "Column validation failed" - now what? |
+| No data dictionary              | Schema unclear                               | What does "trim_columns" contain?      |
 
 ### Recommendations
 
 **P1: API Contract Documentation (2-3 hours)**
+
 ```markdown
 # Honda Pipeline Step 1 - API Reference
 
@@ -634,25 +672,28 @@ Returns tuple[3]:
 ```python
 try:
     (en_df, fr_df), metadata, warnings = validate("2026_Accord.xlsx", config)
-    
+  
     if metadata["validation_status"] == "PASS_WITH_WARNINGS":
         print(f"Processed with {len(warnings)} warnings")
-        
+      
     trim_cols = metadata["trim_columns"]["packages"]["en_trims"]
     print(f"Package trims: {trim_cols}")
-    
+  
 except ValidationError as e:
     print(f"File validation failed: {e}")
 ```
 
 ### Backward Compatibility
+
 - Config version 1.0 - current version
 - Breaking changes will increment major version
 - Deprecation warnings issued one release in advance
+
 ```
 
 **P1: Architecture Decision Records (3-4 hours)**
 ```
+
 docs/adr/
 ├── README.md
 ├── ADR-001-config-driven.md
@@ -661,45 +702,61 @@ docs/adr/
 └── ADR-004-section-boundary-detection.md
 
 # Template:
+
 # Title: [Context] - [Decision]
+
 # Status: Accepted | Proposed | Deprecated
+
 # Context: Problem we faced
+
 # Decision: What we chose
+
 # Rationale: Why this over alternatives
+
 # Consequences: Tradeoffs of this decision
+
 # Alternatives Considered: Why not those
 
 Example:
+
 # Title: Config-Driven Column Definitions
 
 ## Status: Accepted (2026-09-24)
 
 ## Context
+
 Initially, column names were hardcoded in step1_validation.py:
+
 - "Description", "Part Number", "Installed Price", etc.
 - Stop markers were hardcoded: ["application", "notes", "remarks"]
 - This prevented extending to new OEMs without code changes
 
 ## Decision
+
 Move all column definitions, mappings, and trim markers to YAML config files:
+
 - `section_patterns.yaml` defines column headers with canonical mappings
 - `trim_config.yaml` defines stop markers and extraction behavior
 - Code loads from config on startup, not at compile-time
 
 ## Rationale
+
 1. OEM model flexibility: Each OEM can have different column names
 2. Runtime updates: Config changes don't require code deployment
 3. Separation of concerns: Domain logic in config, generic code in Python
 
 ## Consequences
+
 - Requires config schema validation (new dependency)
 - Config errors now possible (mitigated by schema validation)
 - Faster iteration on OEM-specific issues
 
 ## Alternatives Considered
+
 1. Hardcoded constants - rejected (not flexible across OEMs)
 2. Database-driven config - rejected (adds complexity, slower for small configs)
 3. Environment variables - rejected (verbose, hard to maintain large structures)
+
 ```
 
 ---
@@ -739,6 +796,7 @@ python -m pytest oems/honda/tests/
 ```
 
 ## Staging Deployment
+
 ```bash
 # Load staging config
 export HONDA_ENV=staging
@@ -749,6 +807,7 @@ python orchestrator.py process_batch \
 ```
 
 ## Production Deployment
+
 ```bash
 # Load production config
 export HONDA_ENV=prod
@@ -767,17 +826,21 @@ python check_batch.py output/batch_summary_dq.json
 ```
 
 ## Monitoring & Alerts
+
 - Dashboard: metrics/honda-pipeline.json
 - Alert on: batch_files_failed > 5, validation_duration_ms > 60000
 - Escalate: errors in prod, contact on-call engineer
 
 ## Rollback
+
 If new release breaks prod:
+
 ```bash
 git revert HEAD
 pip install -r requirements.txt
 # Reprocess last batch
 ```
+
 ```
 
 **P1: On-Call Runbook (2-3 hours)**
@@ -814,6 +877,7 @@ python orchestrator.py validate \
   --config prod.yaml \
   --verbose
 ```
+
 ```
 
 ---
@@ -893,3 +957,4 @@ With architecture solidified, Step 2 (data standardization, reconciliation) can 
 2. Prioritize gaps (propose P1 tasks for Week 1)
 3. Create tracking tickets for each recommendation
 4. Schedule kickoff for Phase 2 (Config & Observability)
+```
