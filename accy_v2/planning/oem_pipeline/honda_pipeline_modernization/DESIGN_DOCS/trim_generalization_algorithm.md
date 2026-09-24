@@ -37,12 +37,15 @@ Honda trim names are sometimes "general" categories that correspond to multiple 
 **Tier 2: Family/Prefix Match (new, Phase 2 stubs)**
 - If exact match fails: search for records starting with "Sport"
 - Match all: "Sport AWD", "Sport FWD", "Sport Hybrid"
-- Return as alternatives for model lookup
+- **Filter results:** Remove any results with trim discriminator keywords (AWD, FWD, Hybrid, etc.) NOT present in incoming keywords
+  - Example: If search keywords = ["sport"] only, remove "Sport Hybrid", "Sport AWD", "Sport FWD" from results
+  - Example: If search keywords = ["sport", "hybrid"], keep only "Sport Hybrid"
+- Return filtered alternatives for model lookup
 
 ### Pseudocode
 
 ```
-extract_trim_family(trim_name, model_name, model_year):
+extract_trim_family(trim_name, model_name, model_year, incoming_keywords):
   
   1. Exact Match (fast path):
      candidates = db.search(
@@ -59,12 +62,31 @@ extract_trim_family(trim_name, model_name, model_year):
        year = model_year,
        trim_name LIKE trim_name + "%"  # STARTS WITH
      )
-     if family_candidates not empty:
-        return family_candidates
-  
-  3. No Match:
-     return []
+     if family_candidates empty:
+        return []
+     
+  3. Filter Discriminator Keywords:
+     # Remove candidates with trim discriminator keywords NOT in incoming_keywords
+     # This ensures downstream VehicleSearchEngine.search() won't reject them
+     trim_discriminators = ["AWD", "FWD", "Hybrid", "Coupe", ...]
+     filtered_candidates = []
+     
+     for candidate in family_candidates:
+       candidate_tokens = tokenize(candidate)  # ["Sport", "Hybrid"]
+       candidate_discriminators = candidate_tokens & trim_discriminators
+       
+       # Check: are there discriminators in candidate NOT in incoming_keywords?
+       extra_discriminators = candidate_discriminators - incoming_keywords
+       
+       if extra_discriminators is empty:
+          # All candidate's discriminators are in incoming keywords
+          # Safe to include - downstream search won't reject it
+          filtered_candidates.add(candidate)
+     
+     return filtered_candidates
 ```
+
+**Rationale:** VehicleSearchEngine.search() applies strict AND filtering. It rejects candidates with trim discriminator keywords not present in the search keywords. By pre-filtering here, we ensure only viable candidates reach the downstream search.
 
 ---
 
@@ -77,25 +99,35 @@ def extract_trim_family(
     trim_name: str,
     model_name: str,
     model_year: int,
+    incoming_keywords: List[str],
     db: Optional[Any] = None,
     config: Optional[Dict] = None
 ) -> List[str]:
     """
-    Extract all database trim variants matching a general trim name.
+    Extract database trim variants matching a general trim name.
+    Filters results to respect incoming search keywords (VehicleSearchEngine architecture).
     
-    Example:
-      extract_trim_family("Sport", "CR-V", 2026)
-      → ["Sport", "Sport AWD", "Sport FWD", "Sport Hybrid"]
+    Examples:
+      extract_trim_family("Sport", "CR-V", 2026, incoming_keywords=["cr-v", "sport"])
+      → ["Sport", "Sport AWD", "Sport FWD", "Sport Hybrid"]  (all prefix matches, no extra discriminators)
+      
+      extract_trim_family("Sport", "CR-V", 2026, incoming_keywords=["cr-v", "sport", "hybrid"])
+      → ["Sport Hybrid"]  (only results where all discriminators are in incoming_keywords)
+      
+      extract_trim_family("Sport", "CR-V", 2026, incoming_keywords=["cr-v", "sport", "awd"])
+      → ["Sport AWD"]  (only results where all discriminators are in incoming_keywords)
     
     Args:
         trim_name: General trim name (may be prefix)
         model_name: Model name (e.g., "CR-V", "Accord")
         model_year: Vehicle year
+        incoming_keywords: Keywords from Step 4.5 model lookup (already classified)
+                          Used to filter results to match downstream VehicleSearchEngine behavior
         db: Optional database connection/service
-        config: Optional config with matching rules
+        config: Optional config with matching rules (trim_discriminators, etc.)
     
     Returns:
-        List of database trim names matching the family
+        List of database trim names matching the family and incoming keywords
         (empty list if no matches)
     """
 ```
@@ -167,16 +199,26 @@ for trim in unique_trims:
 ```python
 # Step 4.5: Model Lookup (Phase 5)
 for trim in unique_trims:
-    # Get all family variants
-    family_trims = extract_trim_family(trim, model_name, year)
+    # Classify incoming keywords (already done by tokenizer/classifier)
+    incoming_keywords = ["cr-v", "sport", ...]  # May include discriminators like "hybrid", "awd"
+    
+    # Get family variants, filtered by incoming keywords
+    family_trims = extract_trim_family(
+        trim_name=trim, 
+        model_name=model_name, 
+        model_year=year,
+        incoming_keywords=incoming_keywords
+    )
     
     # Search for each family variant
+    # NOTE: family_trims now only contains candidates that won't be rejected
+    # by VehicleSearchEngine's discriminator post-filter
     all_results = []
     for family_trim in family_trims:
         result = VehicleSearchEngine.search(
             make="Honda",
             year=year,
-            keywords=[model_name, family_trim]
+            keywords=incoming_keywords  # Pass full keyword set, not just family_trim
         )
         if result:
             all_results.append(result)
@@ -184,6 +226,12 @@ for trim in unique_trims:
     # Store results (may be multiple per trim if family match)
     model_mapping[trim] = all_results
 ```
+
+**Key Insight:** The `incoming_keywords` parameter is passed both to:
+1. `extract_trim_family()` - to filter candidates upfront
+2. `VehicleSearchEngine.search()` - the actual search (unchanged)
+
+This ensures consistency: candidates filtered by `extract_trim_family()` will not be rejected by VehicleSearchEngine's discriminator post-filter.
 
 ---
 
@@ -230,6 +278,29 @@ for trim in unique_trims:
 - ✅ "Touring" → "Touring AWD", "Touring Hybrid" (expand)
 - ❌ "Sport Premium" → only exact match (don't expand, too specific)
 
+### Decision 5: Respect VehicleSearchEngine Discriminator Filtering
+
+**Rule:** Pre-filter prefix matches to respect incoming keywords. Remove candidates with trim discriminator keywords (AWD, FWD, Hybrid, etc.) NOT present in incoming_keywords.
+
+**Rationale:**
+- VehicleSearchEngine.search() applies strict AND filtering AND post-filter discriminator validation
+- Discriminator post-filter excludes rows with extra trim keywords not in the search
+- Example: search(keywords=["sport"]) will REJECT "Sport Hybrid" because "hybrid" is not in keywords
+- Pre-filtering here ensures only viable candidates reach downstream search
+- Maintains architectural consistency: trim family matching respects same rules as keyword-based search
+
+**Implementation:** See pseudocode section (Step 3: Filter Discriminator Keywords)
+
+**Example:**
+- Input: trim="Sport", incoming_keywords=["cr-v", "sport"]
+  - Prefix match finds: ["Sport AWD", "Sport FWD", "Sport Hybrid"]
+  - Filter: all have extra discriminators (AWD, FWD, Hybrid) → remove all
+  - Return: []
+- Input: trim="Sport", incoming_keywords=["cr-v", "sport", "hybrid"]
+  - Prefix match finds: ["Sport AWD", "Sport FWD", "Sport Hybrid"]
+  - Filter: only "Sport Hybrid" has all discriminators in keywords → keep it
+  - Return: ["Sport Hybrid"]
+
 ---
 
 ## Unit Test Cases
@@ -242,36 +313,48 @@ for trim in unique_trims:
 def test_extract_exact_match():
     """Exact trim exists in database → return exact."""
     # Mock database with "EX-L"
-    result = extract_trim_family("EX-L", "Accord", 2026)
+    result = extract_trim_family("EX-L", "Accord", 2026, ["accord", "ex-l"])
     assert result == ["EX-L"]
 
 def test_extract_no_expansion_on_exact():
     """Even if family exists, return only exact if exact matches."""
     # Mock database with "Touring" and "Touring AWD", "Touring Hybrid"
-    result = extract_trim_family("Touring", "CR-V", 2026)
+    result = extract_trim_family("Touring", "CR-V", 2026, ["cr-v", "touring"])
     assert result == ["Touring"]  # Only exact, not family
 ```
 
-#### Family/Prefix Match Cases
+#### Family/Prefix Match Cases (Respecting Incoming Keywords)
 
 ```python
-def test_extract_family_prefix_match():
-    """No exact match → return all prefix matches."""
+def test_extract_family_prefix_match_no_discriminators():
+    """No exact match → return prefix matches (no extra discriminators in keywords)."""
     # Mock database with "Sport AWD", "Sport FWD" (no exact "Sport")
-    result = extract_trim_family("Sport", "CR-V", 2026)
-    assert set(result) == {"Sport AWD", "Sport FWD"}
+    # Incoming keywords don't have "awd" or "fwd", so exclude those
+    result = extract_trim_family("Sport", "CR-V", 2026, ["cr-v", "sport"])
+    assert result == []  # Both "Sport AWD" and "Sport FWD" have extra discriminators
+
+def test_extract_family_prefix_match_with_discriminators():
+    """Prefix match + incoming keywords include discriminators."""
+    # Mock database with "Sport AWD", "Sport FWD" (no exact "Sport")
+    # Incoming keywords include "awd", so keep "Sport AWD" only
+    result = extract_trim_family("Sport", "CR-V", 2026, ["cr-v", "sport", "awd"])
+    assert result == ["Sport AWD"]
 
 def test_extract_family_multiple_variants():
-    """Return all family variants."""
+    """Return family variants filtered by incoming keywords."""
     # Mock database with "Sport", "Sport AWD", "Sport FWD", "Sport Hybrid"
-    result = extract_trim_family("Sport", "CR-V", 2026)
-    # Exact "Sport" exists → return only it
-    assert result == ["Sport"]
+    # No exact "Sport" exists for 2027
+    result = extract_trim_family("Sport", "CR-V", 2027, ["cr-v", "sport"])
+    # No incoming discriminators → all variants with discriminators filtered out
+    assert result == []
     
-    # But if exact doesn't exist:
-    # (use different mock)
-    result = extract_trim_family("Sport", "CR-V", 2027)  # Different year
-    assert set(result) == {"Sport AWD", "Sport FWD", "Sport Hybrid"}
+    # With "hybrid" keyword
+    result = extract_trim_family("Sport", "CR-V", 2027, ["cr-v", "sport", "hybrid"])
+    assert result == ["Sport Hybrid"]  # Only hybrid variant passes filter
+    
+    # With multiple discriminators
+    result = extract_trim_family("Sport", "CR-V", 2027, ["cr-v", "sport", "awd", "fwd", "hybrid"])
+    assert set(result) == {"Sport AWD", "Sport FWD", "Sport Hybrid"}  # All pass filter
 ```
 
 #### Edge Cases
@@ -279,20 +362,26 @@ def test_extract_family_multiple_variants():
 ```python
 def test_extract_no_match():
     """No exact or family match → empty list."""
-    result = extract_trim_family("NonExistent", "Accord", 2026)
+    result = extract_trim_family("NonExistent", "Accord", 2026, ["accord"])
     assert result == []
 
 def test_extract_case_insensitive():
-    """Case-insensitive prefix match."""
+    """Case-insensitive prefix match, respecting incoming keywords."""
     # Database has "Sport AWD" (capitalized)
-    result = extract_trim_family("sport", "CR-V", 2026)
+    # Without "awd" keyword, filtered out
+    result = extract_trim_family("sport", "CR-V", 2026, ["cr-v", "sport"])
+    assert result == []  # "Sport AWD" has extra discriminator
+    
+    # With "awd" keyword
+    result = extract_trim_family("sport", "CR-V", 2026, ["cr-v", "sport", "awd"])
     assert "Sport AWD" in result
 
 def test_extract_whitespace_normalization():
     """Whitespace normalized before match."""
     # Input has extra spaces
-    result = extract_trim_family("  Sport  ", "CR-V", 2026)
-    assert "Sport AWD" in result  # Still finds "Sport AWD"
+    # With "awd" keyword
+    result = extract_trim_family("  Sport  ", "CR-V", 2026, ["cr-v", "sport", "awd"])
+    assert "Sport AWD" in result  # Still finds and returns "Sport AWD"
 ```
 
 ---
@@ -304,9 +393,10 @@ def test_extract_whitespace_normalization():
 **Deliverable:** Stub function with signature and basic tests
 
 ```python
-def extract_trim_family(trim_name, model_name, model_year, db=None, config=None):
+def extract_trim_family(trim_name, model_name, model_year, incoming_keywords, db=None, config=None):
     """Phase 2 stub: return empty list."""
     # Full implementation in Phase 5
+    # incoming_keywords parameter ensures architecture alignment early
     return []
 ```
 
@@ -314,6 +404,7 @@ def extract_trim_family(trim_name, model_name, model_year, db=None, config=None)
 - Requires VehicleSearchEngine integration (Phase 5 dependency)
 - Requires actual database access patterns (Phase 5 context)
 - Design document establishes algorithm; implementation deferred
+- **CRITICAL:** incoming_keywords parameter signature established now to ensure Phase 5 implementation respects VehicleSearchEngine's discriminator filtering
 
 ### Phase 5 Scope
 
