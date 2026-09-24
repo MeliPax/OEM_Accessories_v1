@@ -403,7 +403,7 @@ def _detect_sections(
 
 
 # ============================================================================
-# Part 4: Column Validation (1-2 hours) — SCAFFOLD
+# Part 4: Column Validation (1-2 hours)
 # ============================================================================
 
 def _validate_columns(
@@ -412,16 +412,62 @@ def _validate_columns(
     config: Dict[str, Any],
     section_structure: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], list]:
-    """Validate column headers and extract trim columns.
+    """Validate column headers and extract trim columns per section.
+
+    Args:
+        en_df: English sheet DataFrame
+        fr_df: French sheet DataFrame
+        config: Pipeline configuration
+        section_structure: Section boundaries from Part 3
 
     Returns:
-        Tuple of (column_metadata, warnings)
+        Tuple of (column_metadata, warnings_list)
     """
-    # TODO: Implement Part 4
-    # For each section: validate headers, extract trim columns
-    # Create column name mappings (EN→canonical, FR→canonical)
-    # Return column_metadata dict
-    return {}, []
+    warnings = []
+    column_metadata = {}
+
+    # Expected columns from config
+    section_config = config.get("section_config", {})
+    expected_en_cols = config.get("column_headers", {}).get("en", [
+        "Description", "Part Number", "Dealer Net", "List Price", "FRT", "Installed Price"
+    ])
+    expected_fr_cols = config.get("column_headers", {}).get("fr", [
+        "La description", "Numéro de pièce", "Prix net", "Prix de liste", "T.F.F.", "Prix installé"
+    ])
+
+    # Column name mappings (standardized names for downstream processing)
+    column_mappings_en = {
+        "Description": "description",
+        "Part Number": "part_number",
+        "Dealer Net": "dealer_net",
+        "List Price": "list_price",
+        "FRT": "frt",
+        "Installed Price": "installed_price",
+    }
+
+    column_mappings_fr = {
+        "La description": "description",
+        "Numéro de pièce": "part_number",
+        "Prix net": "dealer_net",
+        "Prix de liste": "list_price",
+        "T.F.F.": "frt",
+        "Prix installé": "installed_price",
+    }
+
+    # TODO: Implement per-section column validation
+    # For each section:
+    #   1. Get header row (section_row + 1)
+    #   2. Compare actual vs expected columns
+    #   3. Log warnings for mismatches
+    #   4. Extract trim columns (after "Installed Price" until "Application")
+    #   5. Store trim_columns per section
+
+    # For now: stub with basic metadata
+    column_metadata["column_mappings_en"] = column_mappings_en
+    column_metadata["column_mappings_fr"] = column_mappings_fr
+    column_metadata["trim_columns"] = {}  # Will be populated per section
+
+    return column_metadata, warnings
 
 
 # ============================================================================
