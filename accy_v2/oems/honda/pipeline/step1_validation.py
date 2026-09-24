@@ -260,7 +260,7 @@ def _extract_metadata(
 
 
 # ============================================================================
-# Part 3: Section Detection (1-2 hours) — SCAFFOLD
+# Part 3: Section Detection (1-2 hours)
 # ============================================================================
 
 def _detect_sections(
@@ -270,15 +270,136 @@ def _detect_sections(
 ) -> Tuple[Dict[str, Any], list]:
     """Detect all 6 sections in EN and FR sheets.
 
+    Args:
+        en_df: English sheet DataFrame
+        fr_df: French sheet DataFrame
+        config: Pipeline configuration
+
     Returns:
-        Tuple of (section_structure, warnings)
+        Tuple of (section_structure, warnings_list)
     """
-    # TODO: Implement Part 3
-    # Load section patterns from config
-    # Search for each section header (EN and FR)
-    # Verify all 6 found, verify order
-    # Return section_structure dict with row numbers
-    return {}, []
+    warnings = []
+    section_config = config.get("section_config", {})
+
+    # Load section patterns - use inline config if section_patterns.yaml not loaded
+    if "sections" in config:
+        sections_data = config["sections"]
+    else:
+        # Use default from section_patterns.yaml structure
+        sections_data = {
+            "packages": {"en": "1.0 Packages and Kits", "fr": "1.0 Groupes et ensembles"},
+            "wheels": {"en": "2.0 Wheels and Wheel Accessories", "fr": "2.0 Jantes et accessoires de jantes"},
+            "exterior": {"en": "3.0 Exterior", "fr": "3.0 Extérieur"},
+            "interior": {"en": "4.0 Interior", "fr": "4.0 Intérieur"},
+            "electrical": {"en": "5.0 Electrical", "fr": "5.0 Électrique"},
+            "paint_pens": {"en": "6.0 Paint Pens", "fr": "6.0 Stylos à peinture"},
+        }
+
+    section_order = ["packages", "wheels", "exterior", "interior", "electrical", "paint_pens"]
+    section_structure = {}
+    en_section_rows = {}
+    fr_section_rows = {}
+
+    # Detect sections in EN sheet
+    for section_name in section_order:
+        section_data = sections_data.get(section_name, {})
+        en_text = section_data.get("en", "")
+
+        # Search for section header in EN sheet
+        found_row = None
+
+        # Check column names first (pandas uses first row with data as header)
+        for col_name in en_df.columns:
+            if str(col_name).strip() == en_text:
+                found_row = 0  # Section header is in first row (used as column name)
+                break
+
+        # If not found in columns, search data rows
+        if found_row is None:
+            for idx, row in en_df.iterrows():
+                for cell_val in row:
+                    if str(cell_val).strip() == en_text:
+                        found_row = idx
+                        break
+                if found_row is not None:
+                    break
+
+        if found_row is not None:
+            en_section_rows[section_name] = found_row
+        else:
+            # Section not found
+            warnings.append({
+                "rule": "missing_section_rule",
+                "severity": "FATAL",
+                "section": section_name,
+                "message": f"Section '{en_text}' not found in EN sheet",
+            })
+
+    # Detect sections in FR sheet
+    for section_name in section_order:
+        section_data = sections_data.get(section_name, {})
+        fr_text = section_data.get("fr", "")
+
+        # Search for section header in FR sheet
+        found_row = None
+
+        # Check column names first (pandas uses first row with data as header)
+        for col_name in fr_df.columns:
+            if str(col_name).strip() == fr_text:
+                found_row = 0  # Section header is in first row (used as column name)
+                break
+
+        # If not found in columns, search data rows
+        if found_row is None:
+            for idx, row in fr_df.iterrows():
+                for cell_val in row:
+                    if str(cell_val).strip() == fr_text:
+                        found_row = idx
+                        break
+                if found_row is not None:
+                    break
+
+        if found_row is not None:
+            fr_section_rows[section_name] = found_row
+        else:
+            # Section not found in FR
+            warnings.append({
+                "rule": "missing_section_rule",
+                "severity": "WARNING",
+                "section": section_name,
+                "message": f"Section '{fr_text}' not found in FR sheet",
+            })
+
+    # Check all sections found in EN
+    if len(en_section_rows) < len(section_order):
+        missing_sections = [s for s in section_order if s not in en_section_rows]
+        if section_config.get("require_all_sections", True):
+            # FATAL if all sections required
+            pass  # Already logged above
+
+    # Verify section order in EN sheet
+    if section_config.get("enforce_section_order", True):
+        en_rows = [en_section_rows.get(s) for s in section_order if s in en_section_rows]
+        # Check if rows are in increasing order
+        for i in range(len(en_rows) - 1):
+            if en_rows[i] is not None and en_rows[i+1] is not None:
+                if en_rows[i] >= en_rows[i+1]:
+                    warnings.append({
+                        "rule": "section_order_rule",
+                        "severity": "WARNING",
+                        "section": f"{section_order[i]} vs {section_order[i+1]}",
+                        "message": f"Sections out of order: {section_order[i]} (row {en_rows[i]}) >= {section_order[i+1]} (row {en_rows[i+1]})",
+                    })
+
+    # Build section_structure dict with status
+    for section_name in section_order:
+        section_structure[section_name] = {
+            "en_row": en_section_rows.get(section_name),
+            "fr_row": fr_section_rows.get(section_name),
+            "status": "found" if section_name in en_section_rows else "missing",
+        }
+
+    return section_structure, warnings
 
 
 # ============================================================================
@@ -352,6 +473,12 @@ def validate(
     # Part 3: Detect sections
     section_structure, section_warnings = _detect_sections(en_df, fr_df, config)
     metadata["section_structure"] = section_structure
+
+    # Check for FATAL section errors
+    fatal_warnings = [w for w in section_warnings if w.get("severity") == "FATAL"]
+    if fatal_warnings:
+        fatal_msg = "; ".join([w.get("message", "Unknown error") for w in fatal_warnings])
+        raise ValidationError(f"Section detection failed: {fatal_msg}")
 
     # Part 4: Validate columns
     column_metadata, column_warnings = _validate_columns(
