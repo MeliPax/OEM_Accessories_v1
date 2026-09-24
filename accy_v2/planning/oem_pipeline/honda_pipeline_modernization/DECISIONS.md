@@ -341,6 +341,30 @@ honda_pipeline_modernization/
 
 ---
 
+## D16: Trim Family Matching Architecture Alignment
+
+**Decision:** Pre-filter trim family prefix matches to respect incoming keywords and VehicleSearchEngine discriminator filtering
+
+**Rationale:**
+- VehicleSearchEngine.search() applies strict AND filtering on all keywords AND a post-filter for trim discriminator keywords (AWD, FWD, Hybrid, etc.)
+- The post-filter explicitly EXCLUDES results with trim discriminator keywords not present in the search keywords
+- Example: search(keywords=["cr-v", "sport"]) will REJECT "Sport Hybrid" because "hybrid" is an extra discriminator not in the incoming keywords
+- Tier 2 prefix matching in `extract_trim_family()` must account for this
+- Without pre-filtering, prefix matches like "Sport Hybrid" would be returned by the family algorithm but then rejected by downstream VehicleSearchEngine, causing silent failures
+
+**Implementation:**
+- Add `incoming_keywords` parameter to `extract_trim_family()`
+- Filter prefix match results: remove any with trim discriminator keywords NOT in incoming_keywords
+- Example:
+  - trim="Sport", incoming_keywords=["cr-v", "sport"] → return [] (all prefix matches have extra discriminators)
+  - trim="Sport", incoming_keywords=["cr-v", "sport", "hybrid"] → return ["Sport Hybrid"] (all discriminators in incoming keywords)
+
+**Tradeoff:** Adds parameter and filtering logic, but ensures Phase 5 implementation respects existing architecture from day one
+
+**Impact:** Prevents subtle bugs where family matches silently fail due to discriminator post-filter; maintains consistency with accy_v2 strict AND filtering philosophy
+
+---
+
 ## Open Decisions (Awaiting User Input)
 
 None — all critical decisions made. Minor clarifications needed during implementation:
@@ -358,10 +382,11 @@ None — all critical decisions made. Minor clarifications needed during impleme
 |----------|------|--------|
 | D1–D14 | 2026-09-23 | ✅ Approved |
 | D15 (Metadata extraction) | 2026-09-24 | ✅ Approved |
+| D16 (Trim family matching architecture alignment) | 2026-09-24 | ✅ Approved |
 | Encoding confirm | TBD Phase 3 | ⏳ Pending (non-blocking) |
 
 ---
 
-**Last Updated:** 2026-09-23  
+**Last Updated:** 2026-09-24 (D16 trim family matching architecture alignment added)  
 **Decision Authority:** User (makeville00@gmail.com)  
 **Review Status:** ✅ Approved for implementation
