@@ -532,8 +532,215 @@ def _standardize_data(
 
 
 # ============================================================================
-# PART 9: EN/FR Reconciliation (Stub)
+# PART 9: EN/FR Reconciliation
 # ============================================================================
+
+def _compute_description_similarity(en_desc: str, fr_desc: str) -> float:
+    """Compute similarity between EN and FR descriptions (0.0–1.0).
+
+    Simple approach: check key word overlap (case-insensitive).
+    """
+    if not en_desc or not fr_desc:
+        return 0.0
+
+    en_words = set(str(en_desc).lower().split())
+    fr_words = set(str(fr_desc).lower().split())
+
+    if not en_words or not fr_words:
+        return 0.0
+
+    intersection = en_words & fr_words
+    union = en_words | fr_words
+
+    if not union:
+        return 0.0
+
+    # Jaccard similarity
+    return len(intersection) / len(union)
+
+
+def _match_en_fr_parts(
+    en_df: pd.DataFrame,
+    fr_df: Optional[pd.DataFrame],
+    config: Dict[str, Any],
+) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """Match EN and FR parts using priority strategy.
+
+    Strategy (in order):
+    1. Exact part number match (confidence 0.95)
+    2. Description similarity > 0.6 (confidence 0.80)
+    3. Cost match (within ±$10, confidence 0.60)
+
+    Args:
+        en_df: EN section DataFrame (with canonical columns)
+        fr_df: FR section DataFrame (may be None)
+        config: Pipeline configuration
+
+    Returns:
+        Tuple of:
+        - reconciliation_map: {en_part_id: {"fr_equivalent": ..., "status": ..., ...}}
+        - divergences: List of divergence warnings
+    """
+    reconciliation_map = {}
+    divergences = []
+
+    if en_df is None or en_df.empty:
+        return reconciliation_map, divergences
+
+    if fr_df is None or fr_df.empty:
+        # EN-only case: all EN parts are unmapped
+        for idx, row in en_df.iterrows():
+            part_id = row.get("part_number", f"EN_{idx}")
+            reconciliation_map[part_id] = {
+                "fr_equivalent": None,
+                "status": "EN_ONLY",
+                "cost_match": False,
+                "part_count_match": False,
+                "confidence": 0.0,
+                "dq_warnings": ["FR section not available"],
+            }
+        return reconciliation_map, divergences
+
+    # Build lookup tables
+    fr_by_part_number = {}
+    fr_by_cost = {}
+
+    for idx, row in fr_df.iterrows():
+        part_num = row.get("part_number")
+        if pd.notna(part_num):
+            fr_by_part_number[str(part_num).upper()] = (idx, row)
+
+        cost = row.get("installed_price")
+        if pd.notna(cost):
+            cost_key = round(float(cost), 2)
+            if cost_key not in fr_by_cost:
+                fr_by_cost[cost_key] = []
+            fr_by_cost[cost_key].append((idx, row))
+
+    matched_fr_indices = set()
+
+    # Match EN parts
+    for en_idx, en_row in en_df.iterrows():
+        en_part_id = en_row.get("part_number", f"EN_{en_idx}")
+        en_desc = en_row.get("description")
+        en_cost = en_row.get("installed_price")
+
+        fr_match = None
+        confidence = 0.0
+        match_method = None
+
+        # Strategy 1: Exact part number match
+        en_part_upper = str(en_part_id).upper() if pd.notna(en_part_id) else None
+        if en_part_upper and en_part_upper in fr_by_part_number:
+            fr_idx, fr_row = fr_by_part_number[en_part_upper]
+            fr_match = fr_row
+            confidence = 0.95
+            match_method = "exact_part_number"
+            matched_fr_indices.add(fr_idx)
+
+        # Strategy 2: Description similarity (if no part number match)
+        if fr_match is None:
+            best_sim = 0.0
+            best_fr_idx = None
+            best_fr_row = None
+
+            for fr_idx, fr_row in fr_df.iterrows():
+                if fr_idx in matched_fr_indices:
+                    continue
+
+                fr_desc = fr_row.get("description")
+                sim = _compute_description_similarity(en_desc, fr_desc)
+
+                if sim > best_sim and sim > 0.6:
+                    best_sim = sim
+                    best_fr_idx = fr_idx
+                    best_fr_row = fr_row
+
+            if best_fr_row is not None:
+                fr_match = best_fr_row
+                confidence = 0.80
+                match_method = "description_similarity"
+                matched_fr_indices.add(best_fr_idx)
+
+        # Strategy 3: Cost match within ±$10 (if no prior match)
+        if fr_match is None and pd.notna(en_cost):
+            try:
+                en_cost_float = float(en_cost)
+                for cost_offset in range(-10, 11):
+                    check_cost = round(en_cost_float + cost_offset, 2)
+                    if check_cost in fr_by_cost:
+                        candidates = [
+                            (idx, row) for idx, row in fr_by_cost[check_cost]
+                            if idx not in matched_fr_indices
+                        ]
+                        if candidates:
+                            fr_idx, fr_row = candidates[0]
+                            fr_match = fr_row
+                            confidence = 0.60
+                            match_method = "cost_match"
+                            matched_fr_indices.add(fr_idx)
+                            break
+            except (ValueError, TypeError):
+                pass
+
+        # Record match
+        if fr_match is not None:
+            fr_part_id = fr_match.get("part_number", "UNKNOWN_FR")
+
+            # Check for divergences
+            dq_warnings = []
+
+            en_cost_float = float(en_cost) if pd.notna(en_cost) else None
+            fr_cost_float = float(fr_match.get("installed_price")) if pd.notna(fr_match.get("installed_price")) else None
+
+            cost_match = False
+            if en_cost_float is not None and fr_cost_float is not None:
+                cost_diff = abs(en_cost_float - fr_cost_float)
+                cost_match = cost_diff < 0.01  # Allow tiny float rounding
+                if cost_diff > 0.01:
+                    dq_warnings.append(f"Cost divergence: EN=${en_cost_float:.2f} vs FR=${fr_cost_float:.2f}")
+
+            reconciliation_map[en_part_id] = {
+                "fr_equivalent": fr_part_id,
+                "status": "MAPPED",
+                "cost_match": cost_match,
+                "part_count_match": True,  # Since matched
+                "confidence": confidence,
+                "match_method": match_method,
+                "dq_warnings": dq_warnings,
+            }
+        else:
+            # EN part with no FR match
+            reconciliation_map[en_part_id] = {
+                "fr_equivalent": None,
+                "status": "EN_ONLY",
+                "cost_match": False,
+                "part_count_match": False,
+                "confidence": 0.0,
+                "dq_warnings": ["No FR equivalent found"],
+            }
+            divergences.append({
+                "section": "unknown",  # filled by caller
+                "severity": "INFO",
+                "type": "en_only_part",
+                "en_part": en_part_id,
+                "message": f"EN part {en_part_id} has no FR equivalent"
+            })
+
+    # Find FR-only parts (not matched to any EN part)
+    for fr_idx, fr_row in fr_df.iterrows():
+        if fr_idx not in matched_fr_indices:
+            fr_part_id = fr_row.get("part_number", f"FR_{fr_idx}")
+            divergences.append({
+                "section": "unknown",
+                "severity": "INFO",
+                "type": "fr_only_part",
+                "fr_part": fr_part_id,
+                "message": f"FR part {fr_part_id} has no EN equivalent"
+            })
+
+    return reconciliation_map, divergences
+
 
 def _reconcile_en_fr(
     standardized_data: Dict[str, Any],
@@ -543,25 +750,60 @@ def _reconcile_en_fr(
 
     Part 9: Build reconciliation map, match parts, track divergence.
 
-    This is a stub for Part 9 implementation.
-
     Args:
-        standardized_data: Standardized data from Part 8
+        standardized_data: Standardized data from Part 8 with structure:
+            {section_name: {"en_unified": ..., "fr_unified": ..., ...}, ...}
         config: Pipeline configuration
 
     Returns:
         Dict with unified data, reconciliation map, and divergence report
     """
-    # TODO: Implement Part 9
-    # - Build reconciliation map (EN ↔ FR matching)
-    # - Matching strategy: part number → description → cost
-    # - Divergence tracking (cost, part count, trims)
-    # - Confidence scoring
+    reconciliation_map = {}
+    all_divergences = []
+    warnings = []
+
+    # Process each section
+    for section_name, section_info in standardized_data.items():
+        en_df = section_info.get("en_unified")
+        fr_df = section_info.get("fr_unified")
+
+        if en_df is None or en_df.empty:
+            continue
+
+        # Match EN and FR parts for this section
+        section_map, section_divergences = _match_en_fr_parts(en_df, fr_df, config)
+
+        # Update divergences with section info
+        for div in section_divergences:
+            div["section"] = section_name
+
+        reconciliation_map[section_name] = section_map
+        all_divergences.extend(section_divergences)
+
+        # Summary stats
+        total_en = len(en_df) if en_df is not None else 0
+        en_only_count = sum(1 for m in section_map.values() if m["status"] == "EN_ONLY")
+        mapped_count = sum(1 for m in section_map.values() if m["status"] == "MAPPED")
+        low_confidence_count = sum(
+            1 for m in section_map.values()
+            if m["status"] == "MAPPED" and m["confidence"] < 0.80
+        )
+
+        if mapped_count < total_en:
+            warnings.append({
+                "section": section_name,
+                "severity": "WARNING",
+                "message": f"Partial EN/FR mapping: {mapped_count}/{total_en} EN parts mapped, {en_only_count} EN-only, {low_confidence_count} low-confidence"
+            })
+
+    # Unified data: keep standardized data as-is (transformation happens in Step 4)
+    unified_data = standardized_data
+
     return {
-        "unified_data": standardized_data,
-        "reconciliation_map": {},
-        "divergence_report": [],
-        "warnings": [],
+        "unified_data": unified_data,
+        "reconciliation_map": reconciliation_map,
+        "divergence_report": all_divergences,
+        "warnings": warnings,
     }
 
 
