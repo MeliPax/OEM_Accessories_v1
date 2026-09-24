@@ -1,81 +1,198 @@
-# Honda EN/FR Reconciliation Configuration
-#
-# Defines how to match and reconcile English and French accessory data from separate sheets.
-#
-# Will be populated in Phase 3 with actual sheet naming patterns and reconciliation rules.
-# Each Excel file has separate EN_APP and FR_APP sheets that must be matched on:
-#   1. Part number (with composite handling)
-#   2. Cost/pricing (with variance tolerance)
-#   3. Trim applicability
-#   4. Description & comments
+# ============================================================================
+# File: accy_v2/oems/honda/config/reconciliation.yaml
+# Purpose: Define EN/FR reconciliation strategy and divergence handling
+# Status: Phase 3 Configuration
+# Key Decision: Same priority for both EN and FR; divergent rows INCLUDED in output (not excluded)
+# ============================================================================
 
+# Sheet Pattern Matching
+# Identify EN and FR sheets in Excel files
 sheet_patterns:
-  # Pattern for identifying English sheets
-  english:
-    - "*_APP_EN"                         # Placeholder - confirm with actual files
-    - "*_EN"
+  english_sheet_pattern: "*_APP_EN"     # e.g., 26MY_ACCORD_APP_EN
+  french_sheet_pattern: "*_APP_FR"      # e.g., 26MY_ACCORD_APP_FR
 
-  # Pattern for identifying French sheets
-  french:
-    - "*_APP_FR"                         # Placeholder
-    - "*_FR"
+  # If both sheets not found: FATAL error (fail file)
+  require_both_sheets: true
 
-# Composite Part Number Strategy
-# Honda part numbers sometimes have alternatives (e.g., "50977-565-45BH or 50977-565-45SH")
-# Strategy: Keep left side (priority side), normalize both EN and FR the same way
+# ============================================================================
+# Composite Part Number Normalization
+# ============================================================================
+# Honda part numbers may have alternatives: "50977-565-45BH or 50977-565-45SH"
+# Strategy: LEFT-PRIORITY for both EN and FR (ensures same result)
+
 composite_part_number:
   enabled: true
-  strategy: "left"                       # Keep left of "or"/"ou"
-  or_keywords_en: ["or"]
-  or_keywords_fr: ["ou"]
+  strategy: "left"                      # Prioritize left side of separator
+
+  # Separator keywords (case-insensitive)
+  separators:
+    en: ["or"]                          # English: "or"
+    fr: ["ou"]                          # French: "ou"
+
+  # Normalization options
   normalization:
-    strip_whitespace: true
-    lowercase_for_comparison: false      # Keep case for part numbers
+    strip_whitespace: true              # Remove leading/trailing spaces
+    preserve_case: true                 # Keep original case (important for part numbers)
+    fallback_to_right: true             # If left is empty, use right side
 
-# Matching Priority
-# When EN and FR records have multiple candidates, match by priority level
+# ============================================================================
+# Matching & Reconciliation Strategy
+# ============================================================================
+# Goal: Create reconciliation map linking EN and FR records
+# Matching occurs on multiple criteria with priority levels
+
 matching_strategy:
-  # Level 1: Exact part number match (highest confidence)
+
+  # Primary match: Composite part number (normalized)
   part_number_match:
-    required: true
-    normalization: composite            # Use composite part number strategy
+    required: true                      # Must have matching part numbers
+    method: "composite_normalized"      # Use composite part normalization
+    confidence_weight: 1.0              # Exact match = 100% confidence
 
-  # Level 2: Cost match (within tolerance)
+  # Secondary match: Cost/pricing
   cost_match:
-    required: false                      # Flag if missing, don't fail
-    tolerance_percent: 0.05              # 5% variance tolerance
+    enabled: true
+    fields:
+      - "Dealer Net"                    # EN: "Dealer Net" / FR: "Prix net"
+      - "List Price"                    # EN: "List Price" / FR: "Prix de liste"
+      - "FRT"                           # EN: "FRT" / FR: "T.F.F."
+    method: "exact_match"               # Cost must match EXACTLY (zero tolerance)
+    tolerance_percent: 0                # Zero tolerance for cost divergence
+    severity_on_divergence: "ERROR"     # Cost divergence is ERROR, not warning
 
-  # Level 3: Trim applicability
+  # Tertiary match: Trim applicability
   trim_match:
-    required: false                      # Flag if children diverge
-    description: "Verify children have same applicable trims"
+    enabled: false                      # Optional, checked after match
+    description: "Verify EN/FR trims are consistent"
 
-  # Level 4: Description match (lowest confidence)
+  # Quaternary match: Description
   description_match:
-    required: false
+    enabled: false                      # Optional, checked after match
+    method: "semantic"                  # EN and FR naturally differ; not a matching criterion
 
-# Divergence Detection & DQ Logging
-# When EN/FR records don't perfectly match, flag for review
-divergence_rules:
+# ============================================================================
+# Divergence Detection & Reporting
+# ============================================================================
+# When EN/FR records have discrepancies, mark with divergence type and include in output
+
+divergence_types:
+
+  # Cost Divergence (highest severity)
   cost_divergence:
     enabled: true
-    variance_threshold: 0.10             # 10% difference triggers warning
-    rule_name: "en_fr_cost_divergence_rule"
+    fields:
+      - "List Price"
+      - "Dealer Net"
+      - "FRT"
+      - "Installed Price"
+    check: "exact_match"
+    tolerance_percent: 0                # Zero tolerance
+    severity: "ERROR"                   # Cost divergence is ERROR
+    action: "include_in_output"         # Include row, mark with divergence flag
+    dq_rule: "cost_mismatch_rule"
+    merge_confidence_penalty: 0.25      # Reduce merge_confidence by 25%
 
-  part_count_divergence:
-    enabled: true
-    threshold: 1                         # 1+ part count difference triggers warning
-    rule_name: "en_fr_part_count_divergence_rule"
-
+  # Part Number Divergence
   part_number_divergence:
     enabled: true
-    rule_name: "en_fr_part_number_divergence_rule"
+    check: "after_composite_normalization"
+    severity: "WARNING"                 # Part number divergence is warning (may be translation)
+    action: "include_in_output"
+    dq_rule: "part_number_divergence_rule"
+    merge_confidence_penalty: 0.15      # Reduce merge_confidence by 15%
 
+  # Description Divergence
+  description_divergence:
+    enabled: true
+    check: "language_aware"             # EN and FR naturally differ
+    severity: "INFO"                    # Just informational
+    action: "include_in_output"
+    dq_rule: "description_divergence_rule"
+    merge_confidence_penalty: 0.0       # No penalty (expected)
+
+  # Trim Applicability Divergence
+  trim_divergence:
+    enabled: true
+    check: "exact_match"                # Trim applicability must match EN/FR
+    severity: "WARNING"                 # Flag if children trims diverge from parent
+    action: "include_in_output"
+    dq_rule: "trim_applicability_divergence_rule"
+    merge_confidence_penalty: 0.10      # Reduce merge_confidence by 10%
+
+# ============================================================================
 # Reconciliation Map Output
-# After matching, store metadata for downstream use
-metadata_fields:
-  - reconciliation_status              # MAPPED, EN_ONLY, FR_ONLY, DIVERGED
-  - cost_match                         # true/false
-  - part_count_match                   # true/false
-  - confidence                         # 0.0-1.0 score
-  - dq_warnings                        # List of issues detected
+# ============================================================================
+# Metadata stored after reconciliation for downstream steps
+
+reconciliation_metadata:
+  # Status of the EN/FR match
+  reconciliation_status:                # MAPPED | EN_ONLY | FR_ONLY | DIVERGED
+    field_name: "reconciliation_status"
+    description: "Result of EN/FR reconciliation"
+
+  # Quality metrics for this row
+  cost_match:
+    field_name: "cost_match"
+    type: "boolean"
+    description: "True if EN and FR costs match exactly"
+
+  part_count_match:
+    field_name: "part_count_match"
+    type: "boolean"
+    description: "True if EN and FR have same number of parts"
+
+  merge_confidence:
+    field_name: "merge_confidence"
+    type: "float (0.0-1.0)"
+    description: "Confidence score for EN/FR merge (starts at 1.0, reduced by divergences)"
+
+  divergence_flags:
+    field_name: "divergence_flags"
+    type: "list"
+    description: "List of divergence types detected (cost_divergence, part_number_divergence, etc.)"
+
+  dq_warnings:
+    field_name: "dq_warnings"
+    type: "list"
+    description: "List of DQ rule violations for this row"
+
+# ============================================================================
+# Output Behavior
+# ============================================================================
+
+output_behavior:
+  # Include divergent rows in output Excel workbook?
+  include_divergent_rows: true          # YES: include all rows, mark divergence
+
+  # Output format
+  output_structure:
+    main_sheet: "Accessories"           # Primary output (all rows, including divergent)
+    raw_data_sheet: "raw_data"          # Source data before reconciliation
+    confidence_sheet: "Confidence"      # Merge confidence scores and divergence details
+    dq_sheet: "DQ Report"               # Data quality issues
+
+  # Visibility of divergent rows
+  row_filtering:
+    # Main sheet: include all (user filters if needed)
+    main_include: "all"                 # ALL rows (no filtering)
+    main_highlight: "divergent_rows"    # Highlight rows with divergences
+
+    # Raw data sheet: full audit trail
+    raw_data_include: "all"             # All EN/FR values before reconciliation
+
+    # Confidence sheet: detailed metrics
+    confidence_sheet_include: "all"     # All confidence scores and penalties
+
+# ============================================================================
+# Metadata
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-09-24"
+  strategy: "Include divergent rows, mark confidence, report in DQ"
+  critical_notes:
+    - "Cost divergence (List Price, Dealer Net, FRT) = ZERO tolerance = ERROR"
+    - "Same priority for EN and FR (not separate rules)"
+    - "Divergent rows included in output (not excluded) with merge_confidence score"
+    - "Raw data sheet shows full EN/FR audit trail before reconciliation"

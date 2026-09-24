@@ -26,7 +26,7 @@ For each phase, read the detailed phase file:
 |-------|----------|-----------|--------------|
 | 1 | Weeks 1–2 | [PHASES/phase_1_foundation.md](PHASES/phase_1_foundation.md) | Create directories, scaffolds, run script |
 | 2 | Weeks 2–3 | [PHASES/phase_2_design.md](PHASES/phase_2_design.md) | Write design docs, core utilities |
-| 3 | Weeks 3–4 | [PHASES/phase_3_configuration.md](PHASES/phase_3_configuration.md) | Populate configs, implement Step 1 |
+| 3 | Weeks 3–4 | **[PHASE_3_REQUIREMENTS.md](PHASE_3_REQUIREMENTS.md)** (then [PHASES/phase_3_configuration.md](PHASES/phase_3_configuration.md)) | Confirm requirements, populate configs, implement Step 1 |
 | 4 | Weeks 4–6 | [PHASES/phase_4_core_steps.md](PHASES/phase_4_core_steps.md) | Implement Steps 2–4 (transformation pipeline) |
 | 5 | Weeks 6–7 | [PHASES/phase_5_model_lookup.md](PHASES/phase_5_model_lookup.md) | Implement Steps 3.5–4.5 (model enrichment) |
 | 6 | Weeks 7–8 | [PHASES/phase_6_output_dq.md](PHASES/phase_6_output_dq.md) | Implement Step 5 (output generation) |

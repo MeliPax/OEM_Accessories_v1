@@ -1,91 +1,218 @@
-# Honda Pipeline Configuration
-#
-# High-level orchestration settings, error handling, and batch processing behavior.
-#
-# Will be updated in Phase 3 with actual error thresholds and batch settings.
+# ============================================================================
+# File: accy_v2/oems/honda/config/pipeline.yaml
+# Purpose: High-level orchestration, error handling, metadata extraction, batch processing
+# Status: Phase 3 Configuration
+# ============================================================================
 
+# ============================================================================
 # Feature Flags
+# ============================================================================
 features:
   use_model_lookup: true                # Enrich with VehicleSearchEngine
-  enable_en_fr_reconciliation: true     # Separate sheets + merge
-  enable_rollup_logic: true             # Parent-child aggregation
+  enable_en_fr_reconciliation: true     # Process EN and FR sheets separately, then reconcile
+  enable_rollup_logic: true             # Parent-child aggregation for packages/kits
   enable_batch_processing: true         # Multi-file directory orchestration
 
+# ============================================================================
+# Metadata Extraction (Step 1)
+# ============================================================================
+# Two-level progressive fallback: top 5 rows → regex search
+# Strict failure if both fail (no silent fallback to sheet name)
+
+metadata_extraction:
+
+  # Level 1: Quick Scan (Top 5 Rows)
+  level_1_quick_scan:
+    enabled: true
+    rows_to_scan: 5                     # Scan rows 1-5
+    keywords:
+      model_name:
+        en: ["Model Name", "Model", "Name"]
+        fr: ["Nom du modèle", "Modèle", "Nom"]
+      model_year:
+        en: ["Model Year", "Year", "MY"]
+        fr: ["Année modèle", "Année", "Year"]
+
+  # Level 2: Regex Search (If Level 1 Fails)
+  level_2_regex_search:
+    enabled: true
+    scan_entire_sheet: true
+    patterns:
+      model_name:
+        en: "(?i)(model\\s*name|nom\\s*du\\s*modèle)\\s*:?\\s*([A-Za-z0-9\\s\\-]+)"
+        fr: "(?i)(nom\\s*du\\s*modèle|modèle)\\s*:?\\s*([A-Za-z0-9\\s\\-]+)"
+      model_year:
+        en: "(?i)(model\\s*year|année\\s*modèle)\\s*:?\\s*(\\d{4})"
+        fr: "(?i)(année\\s*modèle|year)\\s*:?\\s*(\\d{4})"
+
+  # Validation
+  validation:
+    year_range_min: 2020
+    year_range_max: 2030
+    model_name_required: true
+    model_year_required: true
+
+  # Failure handling
+  failure_action: "FATAL"               # FAIL file if metadata extraction fails at both levels
+  error_message: "Metadata extraction failed. Attempted: Level 1 (top 5 rows), Level 2 (regex search)"
+
+# ============================================================================
 # Error Handling Strategy
-# FATAL: Stops processing immediately for this file
+# ============================================================================
+# FATAL: Stops processing this file immediately
 # WARNING: Logs warning, continues processing
-# QUARANTINE: File marked for review, logs warning, continues batch
+# ERROR: Logs error, may reduce merge_confidence, continues processing
+
 error_handling:
+
   FATAL:
+    - metadata_extraction_failed        # Can't get model name or year
     - missing_section                   # Required section not found
     - encoding_error                    # File encoding issue
     - file_not_readable                 # Excel file corrupted
+    - missing_both_sheets               # Both EN_APP and FR_APP sheets missing
+
+  ERROR:
+    - cost_mismatch                     # EN List Price ≠ FR List Price (zero tolerance)
+    - metadata_missing_sheet            # Missing EN or FR sheet
 
   WARNING:
     - trim_parsing_error                # Applicability marker not recognized
-    - cost_mismatch                     # EN/FR cost divergence > threshold
-    - part_number_divergence            # EN/FR part numbers don't match
+    - part_number_divergence            # EN/FR part numbers don't match after normalization
     - section_order_divergence          # Sections out of order
     - missing_column                    # Expected column not found
+    - header_mismatch                   # Column headers don't match expected pattern
+    - trim_header_missing               # Section has no trim columns
+
+# ============================================================================
+# Batch Processing Settings
+# ============================================================================
+batch_settings:
+
+  # Directory scanning
+  scan_pattern: "**/*.xlsx"             # Recursive scan for all Excel files
+  scan_root: "landing_zone/honda/"      # Base directory to scan
+
+  # Single-model-per-file handling
+  single_model_per_file: true           # Honda: one model per file (vs. Hyundai master sheet)
+  metadata_extraction_method: "headers" # Extract model name/year from file headers
+
+  # Publication date extraction (optional)
+  publication_date_extraction: true
+  publication_date_keywords:
+    en: ["Publication Date", "Release Date", "Date"]
+    fr: ["Date de publication", "Date de sortie"]
 
   # Batch-level quarantine
   quarantine:
     enabled: true
-    threshold: 0.10                     # Quarantine file if >10% errors
-    action: "log_and_skip"              # Log warning and skip file
+    threshold_percent: 10               # Quarantine file if >10% errors
+    action: "log_and_skip"              # Log warning and skip file from batch
+    quarantine_severity: "WARNING"
 
-# Batch Processing Settings
-batch_settings:
-  # Directory scanning pattern (relative to landing_zone/honda/)
-  scan_pattern: "**/*.xlsx"             # Recursive scan for Excel files
-  
-  # Publication date extraction
-  publication_date_extraction: true     # Extract from file headers if present
-  publication_date_columns:
-    - "Publication Date"
-    - "Date de publication"
-    - "Release Date"
-    - "Date de sortie"
-  
-  # Single-model-per-file handling
-  # Honda files typically contain one model per file (unlike Hyundai's master sheet)
-  single_model_per_file: true
-  model_name_from: "config"             # Extract from filename or config
-  
-  # Batch aggregation
-  aggregation:
-    enabled: true
-    output_format: "json"               # batch_summary_dq.json
-    aggregate_metrics:
-      - files_processed
-      - files_failed
-      - total_rows_processed
-      - total_rows_output
-      - reconciliation_success_rate
-      - model_lookup_success_rate
+# ============================================================================
+# Section & Trim Configuration
+# ============================================================================
+# Reference to external config files
 
+section_config:
+  file: "section_patterns.yaml"
+  require_all_sections: true
+  enforce_section_order: true
+
+trim_config:
+  file: "trim_config.yaml"
+  require_trim_columns: true
+  normalize_checkmarks: true
+
+# ============================================================================
+# Reconciliation Settings
+# ============================================================================
+# Reference to external config file
+
+reconciliation_config:
+  file: "reconciliation.yaml"
+  require_both_sheets: true             # FATAL if EN or FR sheet missing
+  composite_part_number_strategy: "left" # Prioritize left side of "or"/"ou"
+  cost_tolerance_percent: 0             # Zero tolerance for cost divergence
+
+# ============================================================================
 # Output Settings
+# ============================================================================
 output:
-  # Output directory (relative to project root)
+
+  # Output directory structure
   output_dir: "output/"
-  
-  # Sheet names for Excel output
+  output_structure:
+    by_model: false                     # Single output file per batch (not per model)
+    by_date: false                      # Single output file per batch (not per date)
+
+  # Excel workbook sheets
   sheets:
-    main: "Accessories"                 # Main data sheet
-    raw_data: "raw_data"                # EN/FR merge audit trail
-    confidence: "Confidence"            # Quality metrics
+    main: "Accessories"                 # Primary output (all rows)
+    raw_data: "raw_data"                # Audit trail (EN/FR before reconciliation)
+    confidence: "Confidence"            # Merge confidence scores and divergence details
     dq_report: "DQ Report"              # Data quality issues
-  
-  # Language-specific outputs
+
+  # Language handling
   languages:
     - EN
     - FR
 
-# Logging
+  # Row filtering
+  include_divergent_rows: true          # Include rows with EN/FR divergence
+  divergent_row_highlight: true         # Highlight divergent rows in main sheet
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
 logging:
+
+  # Log levels
   pipeline_log_level: "INFO"            # DEBUG, INFO, WARNING, ERROR
   dq_log_level: "INFO"
-  
+
   # Log output locations
   pipeline_logs_dir: "output/pipeline_logs/"
   dq_reports_dir: "output/dq_reports/"
+
+  # Log file naming
+  log_naming_pattern: "{process}_{batch_id}_{timestamp}.log"
+
+  # What to log
+  log_file_processing_start_end: true   # Log when each file starts/ends
+  log_step_timing: true                 # Log timing for each step (Step 1, 2, 3, etc.)
+  log_error_details: true               # Include full error details in logs
+
+# ============================================================================
+# Batch Aggregation & Reporting
+# ============================================================================
+batch_aggregation:
+
+  enabled: true
+  output_format: "json"                 # batch_summary_dq.json
+
+  metrics_to_aggregate:
+    - files_processed                   # Total files processed
+    - files_success                     # Files that completed successfully
+    - files_failed                      # Files that failed (FATAL error)
+    - files_quarantined                 # Files flagged for review
+    - total_rows_extracted              # Total data rows extracted
+    - total_rows_output                 # Rows in final output
+    - reconciliation_success_rate       # % of rows with successful EN/FR match
+    - model_lookup_success_rate         # % of rows with model number found
+    - average_merge_confidence          # Average merge_confidence score
+
+# ============================================================================
+# Metadata & Version Info
+# ============================================================================
+
+metadata:
+  version: "1.0"
+  created: "2026-09-24"
+  status: "Ready for Phase 3 Implementation"
+  critical_notes:
+    - "Metadata extraction: Two-level fallback with STRICT failure (no sheet name fallback)"
+    - "Cost divergence: Zero tolerance (ERROR severity)"
+    - "Divergent rows: INCLUDED in output, not excluded"
+    - "Batch quarantine: >10% error rate triggers quarantine (per-file isolation)"

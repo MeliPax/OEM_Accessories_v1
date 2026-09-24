@@ -1,64 +1,145 @@
-# Honda Trim Configuration
-#
-# Defines applicability markers, tokenization rules, and trim normalization.
-#
-# Will be populated in Phase 3 with actual applicability markers confirmed from real Honda files.
+# ============================================================================
+# File: accy_v2/oems/honda/config/trim_config.yaml
+# Purpose: Define trim column handling, applicability markers, and tokenization
+# Status: Phase 3 Configuration
+# Verified: From actual Honda Excel files (Accord, Civic, CR-V, Pilot)
+# ============================================================================
 
+# ============================================================================
 # Applicability Markers
-# Characters used to indicate whether an accessory applies to a trim level
+# ============================================================================
+# Values used in trim columns to indicate whether an accessory applies to that trim
+# Legend (from Honda files, rows 5-8):
+#   ✓ = Applicable (checkmark symbol)
+#   S = Standard (accessory comes with trim as standard)
+#   T = Tire Size Change (trim has different tire size)
+#   E = Exchange Standard Equipment (replaces factory standard equipment)
+#   N/A = Not Applicable (not available for this trim)
+
 trim_column_values:
+
+  # Applicable markers (accessory DOES apply to this trim)
   applicability_markers:
-    - "•"                               # Bullet/checkmark (placeholder)
-    - "T"                               # Typical marker (placeholder)
-    - "E"                               # Extended marker (placeholder)
-  case_insensitive: true                # Treat "t" and "T" as same
+    - "✓"                               # Checkmark (primary marker)
+    - "✔"                               # Alternate checkmark encoding
+    - "•"                               # Bullet (alternate encoding)
+    - "■"                               # Square (alternate encoding)
+    - "S"                               # Standard (comes with trim)
+    - "T"                               # Tire Size Change variant
+    - "E"                               # Exchange Standard Equipment
 
-  # Non-applicability markers
+  # Case sensitivity
+  case_sensitive: false                 # Treat "s", "S", "t", "T", "e", "E" as equivalent
+
+  # Not-Applicable markers (accessory DOES NOT apply to this trim)
   not_applicable_markers:
-    - " "                               # Blank/space
+    - "N/A"                             # Explicit not applicable
+    - " "                               # Single space
     - ""                                # Empty string
-    - "N/A"
-    - "-"                               # Sometimes used for not applicable
 
+  # Checkmark encoding normalization
+  # Excel may encode checkmarks differently (✓, ✔, •, ■, etc.)
+  # Normalize all variants to canonical "✓"
+  normalize_checkmarks: true
+  checkmark_canonical: "✓"              # Use this as the standard representation
+
+# ============================================================================
+# Trim Header Extraction & Promotion
+# ============================================================================
+# Trim column headers appear after "Installed Price" in source file
+# Goal: Extract them and promote to output column headers
+
+trim_header_extraction:
+  # Column after which trim headers appear
+  header_boundary: "Installed Price"    # EN header name
+  header_boundary_fr: "Prix installé"   # FR header name
+
+  # Column before which headers stop
+  header_stop_before: "Application"     # Stop before "Application" column
+
+  # Extraction method
+  method: "promote_to_headers"          # Take trim header row and make it output headers
+
+  # Order preservation
+  preserve_column_order: true           # Keep trim columns in original left-to-right order
+
+# ============================================================================
 # Tokenization Rules
-# How to split trim names into keywords for model lookup
-tokenization:
-  # Split on whitespace and hyphens
-  split_on: [" ", "-"]
+# ============================================================================
+# How to split trim names into keywords for VehicleSearchEngine lookup
 
-  # Compound keywords to keep together (don't split on these hyphens)
-  # Example: "Sport-L" should NOT split into ["Sport", "L"]
+tokenization:
+
+  # Split characters
+  split_on: [" ", "-"]                  # Split on space and hyphen
+
+  # Compound keywords to keep together (DON'T split on these hyphens)
+  # Example: "EX-L" should stay as one token, not ["EX", "L"]
   compound_keywords:
     - "EX-L"                            # Keep EX-L as one token
-    - "Sport-L"
-    - "e-SC"                            # Keep e-SC as one token
-
-  # Single-letter handling
-  # Compound keywords with single-letter suffix (preserve hyphen)
-  preserve_single_letter_suffix: true
+    - "e-SC"                            # Keep e-SC (electric supercharger) as one token
+    - "S-AWD"                           # Keep S-AWD as one token
 
   # Normalization after tokenization
   normalization:
-    lowercase: true                     # Normalize to lowercase for matching
+    lowercase: true                     # Convert all tokens to lowercase for matching
     deduplicate: true                   # Remove duplicate tokens
     preserve_order: true                # Keep original order
+    strip_special_chars: false          # Keep hyphens, underscores, etc.
 
-# Trim-Specific Classification
-# Some trims may have special handling for model lookup
-trim_families:
-  # Example: "Sport" trim may resolve to multiple database variants
-  # (Sport AWD, Sport FWD, Sport Hybrid, etc.)
-  # Will be extended in Phase 2 design phase
-  enabled: false                        # Deferred to Phase 2
-  strategy: "multi-match"               # When ambiguous, return all matches
+# ============================================================================
+# Trim Validation & DQ Rules
+# ============================================================================
 
-# Trim Validation Rules
 validation:
-  # Require trim column headers to be present
+
+  # Require trim column headers?
   require_trim_columns: true
 
-  # Flag if no trim applicability detected (entire row blank)
-  flag_empty_trim_rows: true
+  # What to do if no trim headers found
+  missing_trim_headers_action: "WARNING"
 
-  # DQ categorization
-  dq_rule_name: "trim_applicability_validation_rule"
+  # Flag rows with no applicable trims (orphan records)?
+  flag_empty_trim_rows: true
+  flag_empty_trim_rows_severity: "WARNING"
+
+  # Marker validation
+  validate_marker_values: true          # Check markers against allowed set
+  invalid_marker_action: "WARNING"      # Log warning if invalid marker found
+
+# ============================================================================
+# Trim-Specific Classification (Future)
+# ============================================================================
+# Deferred to Phase 2 design phase
+# Some trims may resolve to multiple database variants (e.g., "Sport" → Sport AWD, Sport FWD)
+
+trim_families:
+  enabled: false
+  strategy: "multi-match"               # Return all matches when ambiguous
+  # Details TBD in Phase 2
+
+# ============================================================================
+# Metadata & DQ Rules
+# ============================================================================
+
+dq_rules:
+  trim_applicability_invalid_marker_rule:
+    description: "Trim column has marker not in allowed set"
+    severity: "WARNING"
+
+  trim_applicability_missing_rule:
+    description: "Accessory has no applicable trims (orphan record)"
+    severity: "WARNING"
+
+  trim_header_missing_rule:
+    description: "Section has no trim column headers"
+    severity: "WARNING"
+
+metadata:
+  version: "1.0"
+  created: "2026-09-24"
+  verified_against: "Accord, Civic 4D, Civic 5D, CR-V, Pilot (2026 model year files)"
+  notes: |
+    Trim applicability markers are: ✓ (applicable), S/T/E (special conditions), N/A (not applicable)
+    Checkmark encoding may vary; all variants normalized to canonical ✓
+    Trim headers extracted after "Installed Price" and promoted to output column headers

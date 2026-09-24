@@ -312,6 +312,35 @@ honda_pipeline_modernization/
 
 ---
 
+## D15: Metadata Extraction Strategy
+
+**Decision:** Two-level fallback approach (top 5 rows → regex search; strict failure if both fail)
+
+**Rationale:**
+- Strict cell references (e.g., C2, C3) are fragile — vary by file, hard to debug
+- Sheet names are NOT reliably standardized across Honda files — remove as fallback (user feedback)
+- Two reliable levels:
+  - **Level 1 (Fast):** Scan top 5 rows for keywords (most common case, ~100ms)
+  - **Level 2 (Thorough):** Regex search entire sheet (handles variations, ~500ms)
+- If both fail: **explicit error, file fails** (no silent fallback)
+- Errors are debuggable: logs which level was attempted and why it failed
+- Flexible: keywords/patterns configurable in `pipeline.yaml` without code changes
+
+**Implementation:**
+- Keywords to search: "Model Name", "Nom du modèle", "Model Year", "Année modèle"
+- Regex patterns: configurable in `pipeline.yaml`
+- Validation: year range 2020–2030, model name non-empty
+- Error handling: if extraction fails at both levels, raise ValueError with details
+
+**DQ Rules:**
+- `metadata_extraction_rule` — Fired if both levels fail
+- Severity: ERROR (file cannot be processed without metadata)
+- Action: Fail file, include error message in DQ log (shows which attempts were made)
+
+**Tradeoff:** More conservative (strict failure vs. risky fallback), but much more robust. Failures are explicit & debuggable, not silent.
+
+---
+
 ## Open Decisions (Awaiting User Input)
 
 None — all critical decisions made. Minor clarifications needed during implementation:
@@ -328,8 +357,8 @@ None — all critical decisions made. Minor clarifications needed during impleme
 | Decision | Date | Status |
 |----------|------|--------|
 | D1–D14 | 2026-09-23 | ✅ Approved |
+| D15 (Metadata extraction) | 2026-09-24 | ✅ Approved |
 | Encoding confirm | TBD Phase 3 | ⏳ Pending (non-blocking) |
-| Section text verify | TBD Phase 3 | ⏳ Pending (non-blocking) |
 
 ---
 

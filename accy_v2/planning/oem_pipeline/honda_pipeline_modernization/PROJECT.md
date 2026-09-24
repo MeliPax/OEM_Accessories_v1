@@ -29,9 +29,16 @@ Port the Honda accessory pipeline from legacy monolithic scripts into the modula
 - Layer 5: Support Systems (config, translators, loggers)
 
 ✅ **Section-Based Processing** (Honda-unique)
-- 6 sections per Excel file: Packages, Electronics, Interior, Exterior, Cargo, General
+- 6 sections per Excel file (CONFIRMED across all models):
+  1. Packages and Kits
+  2. Wheels and Wheel Accessories
+  3. Exterior
+  4. Interior
+  5. Electrical
+  6. Paint Pens
 - Config-driven section detection (EN/FR patterns)
 - Section-aware trim extraction
+- Trim header promotion (move from data row to column headers)
 
 ✅ **EN/FR Reconciliation** (Honda-unique)
 - Separate `*_APP_EN` and `*_APP_FR` sheets
@@ -59,7 +66,7 @@ Port the Honda accessory pipeline from legacy monolithic scripts into the modula
 |-------|------|----------|--------|
 | 1 | Foundation & Setup | Weeks 1–2 | Ready to start |
 | 2 | Design Docs & Utilities | Weeks 2–3 | Ready to start (parallel to Phase 3) |
-| 3 | Configuration & Validation | Weeks 3–4 | Ready to start (parallel to Phase 4) |
+| 3 | Configuration & Validation | Weeks 3–4 | **Ready to start** (Requirements confirmed, see PHASE_3_REQUIREMENTS.md) |
 | 4 | Core Pipeline Steps | Weeks 4–6 | Blocked on Phase 3 |
 | 5 | Model Lookup & Enrichment | Weeks 6–7 | Blocked on Phase 4 |
 | 6 | Output & DQ Reporting | Weeks 7–8 | Blocked on Phase 5 |
