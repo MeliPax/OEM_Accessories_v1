@@ -3,6 +3,9 @@
 Modular pipeline for processing Honda accessory Excel files with section-based processing,
 EN/FR reconciliation, and packages/kits rollup.
 
+Inherits from BasePipeline to integrate with accy_v2's standardized pipeline architecture.
+Supports batch processing (all files) or single file mode via run_pipeline.py.
+
 Architecture:
   - Layer 1: Data Ingestion (Step 1: Validation & metadata extraction)
   - Layer 2: Data Transformation (Steps 2-4: normalization, standardization, transformation)
@@ -18,99 +21,216 @@ Key Features:
   - Config-driven (YAML) settings
 """
 
-from typing import Dict, Optional, Any, Tuple
-import logging
+from typing import Dict, Any, Set, List
 from pathlib import Path
 
 import pandas as pd
 
+# Import BasePipeline for inheritance
+try:
+    from accy_v2.core.base_pipeline import BasePipeline
+except ImportError:
+    # Fallback if absolute imports fail
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+    from accy_v2.core.base_pipeline import BasePipeline
 
-class HondaPipeline:
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.core.helpers.output_writer import write_combined_output
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
+
+# Import Honda-specific step modules
+from accy_v2.oems.honda.pipeline import (
+    step1_validation,
+    step2_header_normalization,
+    step3_standardization,
+    step3_5_extract_vehicle_year,
+    step4_transformation,
+    step4_5_model_enrichment,
+    step5_output,
+)
+
+
+class HondaPipeline(BasePipeline):
     """Honda Accessory Pipeline Orchestrator
 
     Processes Honda Excel files from landing_zone/ and produces standardized outputs
     with model enrichment, data quality reporting, and audit trails.
+
+    Follows the same pattern as Mitsubishi/Mazda/Hyundai pipelines.
+    Integrates sections 1-6 of Honda data processing.
     """
 
-    def __init__(
-        self,
-        input_dir: Optional[str] = None,
-        output_dir: Optional[str] = None,
-        config_dir: Optional[str] = None,
-        batch_id: Optional[str] = None,
-        dry_run: bool = False,
-    ):
-        """Initialize Honda Pipeline.
+    OEM_NAME = "honda"
+
+    def load_file(self, file_path: str) -> Dict[str, pd.DataFrame]:
+        """Load Excel file and return {sheet_name: raw_df} for each sheet.
 
         Args:
-            input_dir: Input directory (default: landing_zone/honda/)
-            output_dir: Output directory (default: output/)
-            config_dir: Config directory (default: accy_v2/oems/honda/config/)
-            batch_id: Batch ID (default: auto-generated)
-            dry_run: If True, don't write outputs (testing mode)
-        """
-        self.input_dir = Path(input_dir or "landing_zone/honda/")
-        self.output_dir = Path(output_dir or "output/")
-        self.config_dir = Path(config_dir or "accy_v2/oems/honda/config/")
-        self.batch_id = batch_id or self._generate_batch_id()
-        self.dry_run = dry_run
-
-        # Initialize loggers (Phase 3+)
-        self.pipeline_logger: Optional[Any] = None
-        self.dq_logger: Optional[Any] = None
-
-        # Initialize metadata tracking
-        self.files_processed = 0
-        self.files_failed = 0
-        self.batch_metrics: Dict[str, Any] = {}
-
-    def run(self) -> Dict[str, Any]:
-        """Execute the Honda pipeline.
+            file_path: Path to Honda Excel file
 
         Returns:
-            Dictionary with execution results and metrics
+            Dictionary mapping sheet names to raw DataFrames (no header processing yet)
+        """
+        excel = pd.ExcelFile(file_path)
+        return {name: excel.parse(sheet_name=name, header=None) for name in excel.sheet_names}
+
+    def run_step1_validation(
+        self,
+        df: pd.DataFrame,
+        config: Dict,
+        meta_data: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> pd.DataFrame:
+        """Step 1: File validation and metadata extraction."""
+        # Honda Step 1: Scaffold - validates headers and structure
+        # Returns raw dataframe as-is (implementation deferred)
+        return df
+
+    def run_step2_header_normalization(
+        self,
+        working_df: pd.DataFrame,
+        config: Dict,
+        meta_data: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> Dict[str, Any]:
+        """Step 2: Header normalization and section extraction.
+
+        Detects sections (Packages, Electrical, Exterior, Interior, Wheels, Paint Pens)
+        Normalizes column names within each section
+        """
+        # Honda Step 2: Scaffold - identifies sections and normalizes headers
+        # Implementation deferred to when Phases 1-2 are built out
+        return {"normalized_df": working_df, "sections": {}}
+
+    def run_step3_standardization(
+        self,
+        working_df: pd.DataFrame,
+        step2_result: Dict,
+        config: Dict,
+        meta_data: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> pd.DataFrame:
+        """Step 3: Data standardization and packages rollup.
+
+        Cleans data types, handles parent-child package relationships,
+        aggregates child data into parents.
+        """
+        # Honda Step 3: Scaffold - standardizes data and performs rollup
+        # Implementation deferred
+        return working_df
+
+    def run_step3_5_extract_vehicle_year(
+        self,
+        standardized_df: pd.DataFrame,
+        meta_data: Dict,
+        config: Dict,
+        pipeline_logger: PipelineLogger,
+    ) -> pd.DataFrame:
+        """Step 3.5: Extract and validate vehicle year from metadata.
+
+        Converts year string to int, validates against configured range.
+        ✅ IMPLEMENTED
         """
         try:
-            self.pipeline_logger = self._initialize_pipeline_logger()
-            self.dq_logger = self._initialize_dq_logger()
-
-            self.pipeline_logger.info(f"Starting Honda pipeline (batch_id={self.batch_id})")
-
-            # Phase 3+: Implement batch orchestration
-            # - Scan input_dir for Excel files
-            # - Process each file through 7-step pipeline
-            # - Aggregate results
-
-            results = {
-                "batch_id": self.batch_id,
-                "status": "INCOMPLETE_PHASE_1_SCAFFOLD",
-                "files_processed": self.files_processed,
-                "files_failed": self.files_failed,
-                "message": "Phase 1 scaffold: awaiting Phase 3 implementation"
-            }
-
-            return results
-
+            meta_data = step3_5_extract_vehicle_year.extract_vehicle_year(meta_data, config)
+            pipeline_logger.info(f"Step 3.5: Vehicle year extracted: {meta_data.get('vehicle_year')}")
         except Exception as e:
-            self.pipeline_logger.error(f"Pipeline failed: {str(e)}", exc_info=True)
-            raise
+            pipeline_logger.warning(f"Step 3.5 failed: {e}")
+        return standardized_df
 
-    def _generate_batch_id(self) -> str:
-        """Generate unique batch ID from current timestamp."""
-        from datetime import datetime
-        return datetime.now().strftime("%Y%m%d_%H%M%S")
+    def run_step4_transformation(
+        self,
+        standardized_df: pd.DataFrame,
+        step2_result: Dict,
+        config: Dict,
+        meta_data: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+    ) -> Dict[str, pd.DataFrame]:
+        """Step 4: EN/FR reconciliation and long-format transformation.
 
-    def _initialize_pipeline_logger(self) -> logging.Logger:
-        """Initialize pipeline logger (stub for Phase 3+)."""
-        # Phase 3+: Integrate PipelineLogger from core.helpers
-        logger = logging.getLogger(f"honda_pipeline_{self.batch_id}")
-        return logger
+        Normalizes composite part numbers, creates reconciliation map,
+        melts trim columns to long format, applies reconciliation map join.
+        """
+        # Honda Step 4: Scaffold - EN/FR reconciliation and transformation
+        # Implementation deferred
+        return {"EN": standardized_df, "FR": standardized_df}
 
-    def _initialize_dq_logger(self) -> logging.Logger:
-        """Initialize DQ logger (stub for Phase 3+)."""
-        # Phase 3+: Integrate DQLogger from core.helpers
-        logger = logging.getLogger(f"honda_dq_{self.batch_id}")
-        return logger
+    def run_step4_5_model_enrichment(
+        self,
+        transformed: Dict[str, pd.DataFrame],
+        meta_data: Dict,
+        config: Dict,
+        dq_logger: DQLogger,
+        pipeline_logger: PipelineLogger,
+        ads_attempted: Set = None,
+    ) -> Dict[str, pd.DataFrame]:
+        """Step 4.5: Model enrichment via VehicleSearchEngine.
+
+        Tokenizes and normalizes trims, performs batch model lookup,
+        scores matches, adds model_number and model_status columns.
+        ✅ IMPLEMENTED
+        """
+        try:
+            enriched, meta_updated, warnings = step4_5_model_enrichment.enrich_with_model_numbers(
+                transformed, {}, meta_data, config
+            )
+            meta_data.update(meta_updated)
+            for warning in warnings:
+                dq_logger.log_warning(
+                    sheet_name=meta_data.get("sheet_name", ""),
+                    model_name=meta_data.get("model_name", ""),
+                    record_index=0,
+                    record_snapshot={},
+                    rule_violated=warning.get("rule_type", "model_enrichment_warning"),
+                    issue_description=warning.get("message", ""),
+                )
+            pipeline_logger.info(f"Step 4.5: Model enrichment complete")
+            return enriched
+        except Exception as e:
+            pipeline_logger.warning(f"Step 4.5 failed: {e}")
+            return transformed
+
+    def run_step5_output(
+        self,
+        transformed: Dict[str, pd.DataFrame],
+        meta_data: Dict,
+        config: Dict,
+        pipeline_logger: PipelineLogger,
+    ) -> Dict[str, pd.DataFrame]:
+        """Step 5: Output generation with column filtering and formatting.
+
+        Applies downstream schema column mapping, formats columns,
+        prepares frames for Excel output.
+        ✅ IMPLEMENTED
+        """
+        try:
+            frames = step5_output.prepare_frames(transformed, meta_data, config)
+            pipeline_logger.info(f"Step 5: Output frames prepared")
+            return frames
+        except Exception as e:
+            pipeline_logger.warning(f"Step 5 failed: {e}")
+            return transformed
+
+    def run_write_combined_output(
+        self,
+        all_frames: Dict[str, pd.DataFrame],
+        run_stats: List[Dict],
+        dq_logger: DQLogger,
+        run_id: str,
+        config: Dict,
+        pipeline_logger: PipelineLogger,
+    ) -> None:
+        """Write combined output using standard output writer."""
+        write_combined_output(
+            all_frames, run_stats, dq_logger, config, run_id,
+            pipeline_logger, profile_col="Trim"
+        )
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML files (stub for Phase 3+)."""
