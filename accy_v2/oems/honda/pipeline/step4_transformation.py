@@ -36,10 +36,13 @@ def transform(
     dq_warnings = []
 
     # Identify product columns (metadata/description columns)
-    # Include patterns for all Honda product columns: part number, description, pricing, etc.
+    # Include patterns for: part number, description, pricing, AND metadata columns (not trims)
     product_col_patterns = [
         "part", "number", "description", "item", "name", "frt", "residual",
-        "price", "installed", "net", "dealer", "list", "comments", "_col_"
+        "price", "installed", "net", "dealer", "list", "comments", "_col_",
+        # Metadata columns that are NOT trims
+        "sitecore", "overlay", "display", "order", "dependanc", "exclusion",
+        "publication", "application"
     ]
     product_cols = []
     trim_cols = []
@@ -75,6 +78,19 @@ def transform(
 
         # Drop the applicability column (we only need trim_level)
         df_melted = df_melted.drop(columns=["applicability"])
+
+        # Filter out garbage rows (e.g., header rows that got melted)
+        # Keep only rows where part number looks like a real part number (length >= 2, not "Part Number")
+        if "Part Number" in df_melted.columns:
+            part_nums = df_melted["Part Number"].astype(str)
+            # Valid part numbers: at least 2 chars, not "Part Number", not single digit like "2"
+            is_valid = (
+                (part_nums.str.len() >= 2) &
+                (part_nums.str.lower() != "part number") &
+                (part_nums != "nan") &
+                ~part_nums.str.match(r"^\d+$")  # Exclude pure digits like "2", "26"
+            )
+            df_melted = df_melted[is_valid]
 
         # Reset index
         df_melted = df_melted.reset_index(drop=True)
