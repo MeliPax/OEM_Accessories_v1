@@ -1,20 +1,16 @@
-"""Step 3: Standardization & Packages/Kits Rollup
+"""Step 3: Data Standardization
 
-Standardizes data types, cleans data, and implements parent-child aggregation logic.
+Cleans and standardizes the data after header normalization.
 
-Will implement in Phase 4:
-  - Data cleanup per section (trim whitespace, type coercion)
-  - Packages/Kits rollup:
-    - Parent detection (has description + price + trims; children don't)
-    - Child aggregation (concatenate descriptions into comments)
-    - Numeric values (keep parent; flag if empty)
-    - Trim applicability (keep parent; flag if children diverge)
-  - DQ logging (orphaned children, parent-child mismatches)
-  - Produce unified dataframe (one row per unique part, all sections merged)
+Process:
+1. Drop empty rows (all NaN)
+2. Drop empty columns (all NaN)
+3. Strip whitespace from string columns
+4. Convert numeric columns to proper types
+5. Prepare for transformation (Step 4)
 """
 
-from typing import Tuple, Dict, Any
-
+from typing import Tuple, Dict, Any, List
 import pandas as pd
 
 
@@ -22,22 +18,68 @@ def standardize(
     df: pd.DataFrame,
     metadata: Dict[str, Any],
     config: Dict[str, Any],
-) -> Tuple[pd.DataFrame, Dict[str, Any], list]:
-    """Standardize data and implement rollup logic.
+) -> Tuple[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
+    """Standardize data types and clean values.
 
     Args:
-        df: Normalized DataFrame from Step 2
+        df: Normalized DataFrame from Step 2 (with proper column names)
         metadata: Metadata from Steps 1-2
         config: Pipeline configuration
 
     Returns:
-        Tuple of (standardized_dataframe, updated_metadata, dq_warnings)
+        Tuple of (standardized_df, updated_metadata, dq_warnings)
     """
-    # Phase 4: Implementation
-    # 1. Clean data per section
-    # 2. Detect parent-child relationships
-    # 3. Aggregate children into parents
-    # 4. Merge all sections into unified dataframe
-    # 5. Extract vehicle_year from metadata
-    # 6. Log DQ warnings (rollup_verification_rule, etc.)
-    pass
+    if df is None or df.empty:
+        return df, metadata, []
+
+    df = df.copy()
+    dq_warnings = []
+
+    # Drop completely empty rows (all NaN)
+    df = df.dropna(how='all')
+    df = df.reset_index(drop=True)
+
+    # Drop columns that are completely empty (all NaN)
+    # This is important for Honda files which have NaN column headers as artifacts
+    df = df.dropna(axis=1, how='all')
+
+    # Rename NaN columns to avoid reindexing issues
+    # Replace any remaining NaN column names with placeholder names
+    new_columns = []
+    for i, col in enumerate(df.columns):
+        if pd.isna(col):
+            new_columns.append(f"_unnamed_{i}")
+        else:
+            new_columns.append(col)
+    df.columns = new_columns
+
+    # Clean string columns: strip whitespace
+    for col in df.columns:
+        try:
+            # Only process columns that aren't just placeholders and are object type
+            if not col.startswith("_unnamed_") and df[col].dtype == 'object':
+                df[col] = df[col].apply(
+                    lambda x: str(x).strip() if pd.notna(x) and isinstance(x, str) else x
+                )
+        except Exception:
+            pass  # Skip if error
+
+    # Try to identify and convert numeric columns
+    numeric_patterns = ["price", "frt", "residual", "cost", "installed", "dealer", "net"]
+    for col in df.columns:
+        if col.startswith("_unnamed_"):
+            continue
+
+        col_lower = str(col).lower()
+        # If column name suggests it's numeric, try to convert
+        if any(pattern in col_lower for pattern in numeric_patterns):
+            try:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+            except Exception:
+                pass  # Keep as-is if conversion fails
+
+    # Store column info in metadata
+    metadata["standardized_columns"] = df.columns.tolist()
+    metadata["standardized_shape"] = df.shape
+
+    return df, metadata, dq_warnings

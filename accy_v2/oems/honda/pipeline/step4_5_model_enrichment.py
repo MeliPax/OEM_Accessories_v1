@@ -4,15 +4,14 @@ Integrates VehicleSearchEngine to add OEM model numbers to accessories.
 
 Process:
 1. Extract unique trim values from data
-2. Tokenize and normalize each trim using KeywordExtractor
-3. Batch lookup: one VehicleSearchEngine.search() per unique trim
-4. Build trim→model_number mapping
-5. Add model_number and model_status columns to output
-6. Handle multiple candidates (packages, drivetrain variants)
-7. DQ logging for NOT_FOUND, LOW_CONFIDENCE cases
+2. For each unique trim, do one VehicleSearchEngine.search()
+3. Build trim→model_number mapping (cache)
+4. Add model_number and model_status columns to output
+5. DQ logging for NOT_FOUND, LOW_CONFIDENCE cases
 """
 
 from typing import Tuple, Dict, Any, Optional, List
+from pathlib import Path
 import logging
 
 import pandas as pd
@@ -25,134 +24,133 @@ logger = logging.getLogger(__name__)
 
 
 def enrich_with_model_numbers(
-    unified_data: Dict[str, Any],
+    transformed: Dict[str, pd.DataFrame],
     reconciliation_map: Dict[str, Any],
     metadata: Dict[str, Any],
     config: Dict[str, Any],
-) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
-    """Enrich data with model numbers from VehicleSearchEngine.
+) -> Tuple[Dict[str, pd.DataFrame], Dict[str, Any], List[Dict[str, Any]]]:
+    """Enrich language-keyed data with model numbers via VehicleSearchEngine.
 
     Args:
-        unified_data: Unified data from Step 2 (section-based structure)
-        reconciliation_map: EN/FR reconciliation map from Step 2
-        metadata: Metadata from Steps 1-3 (includes vehicle_year, model_name, manufacturer)
-        config: Pipeline configuration
+        transformed: Dict mapping language -> DataFrame (e.g., {"EN": df_en, "FR": df_fr})
+        reconciliation_map: EN/FR reconciliation map (unused in Honda context)
+        metadata: Metadata including vehicle_year, model_name, manufacturer
+        config: Pipeline configuration with model_lookup_rules
 
     Returns:
-        Tuple of (enriched_data, updated_metadata, dq_warnings)
+        Tuple of (enriched_dict, metadata, dq_warnings)
     """
     vehicle_year = metadata.get("vehicle_year")
     model_name = metadata.get("model_name", "unknown")
     manufacturer = metadata.get("manufacturer", "Honda")
 
     if not vehicle_year:
-        raise ValueError(f"vehicle_year not found in metadata")
+        raise ValueError(f"vehicle_year not found in metadata for model '{model_name}'")
 
-    enriched_data = {}
+    # Get OEM model lookup configuration
+    oem_config = config.get("model_lookup_rules", {}).get(manufacturer, {})
+    if not oem_config:
+        raise ValueError(
+            f"No model_lookup_rules configured for OEM '{manufacturer}'. "
+            f"Available: {list(config.get('model_lookup_rules', {}).keys())}"
+        )
+
+    enriched_dict = {}
     all_warnings = []
     trim_lookup_cache = {}  # Cache: trim → SearchResult
 
-    # Get model lookup config
-    oem_rules = config.get("model_lookup_rules", {}).get(manufacturer, {})
-    if not oem_rules:
-        raise ValueError(f"No model_lookup_rules configured for {manufacturer}")
+    # Initialize search engine
+    csv_path = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "db" / "db_vehicle_models.csv")
+    configs_dir = str(Path(__file__).parent.parent.parent.parent / "model_lookup" / "configs")
 
-    engine = VehicleSearchEngine(oem_rules=oem_rules, logger=logger)
+    engine = VehicleSearchEngine(
+        csv_path=csv_path,
+        configs_dir=configs_dir,
+        oem_config=oem_config,
+        ignore_keyword_categories=oem_config.get("ignore_keyword_categories", []),
+        pipeline_logger=logger
+    )
 
-    # Process each section
-    for section_name, section_info in unified_data.items():
-        en_df = section_info.get("en_unified")
-        fr_df = section_info.get("fr_unified")
-        trim_columns = section_info.get("trim_columns", [])
+    # Get first language DataFrame to extract unique trims (same trims in all languages)
+    if not transformed:
+        return transformed, metadata, all_warnings
 
-        if en_df is None or en_df.empty:
-            enriched_data[section_name] = section_info
-            continue
+    first_lang_df = next(iter(transformed.values()))
+    if first_lang_df.empty:
+        return transformed, metadata, all_warnings
 
-        # Extract unique trims from EN data (same trims in FR)
-        unique_trims = []
-        for trim_col in trim_columns:
-            if trim_col in en_df.columns:
-                col_trims = en_df[trim_col].dropna().unique().tolist()
-                unique_trims.extend([str(t).strip() for t in col_trims if t and str(t).strip()])
+    # Extract unique trims (assume "trim_level" column from Step 4 transformation)
+    trim_col = oem_config.get("trim_column_name", "trim_level")
+    if trim_col not in first_lang_df.columns:
+        # Fallback: use any column that might contain trims
+        logger.warning(f"trim_column '{trim_col}' not found; available: {first_lang_df.columns.tolist()}")
+        return transformed, metadata, all_warnings
 
-        unique_trims = sorted(list(set(unique_trims)))
-        logger.debug(f"Section '{section_name}': unique trims={unique_trims}")
+    unique_trims = sorted(first_lang_df[trim_col].dropna().unique().tolist())
+    logger.debug(f"Model '{model_name}' {vehicle_year}: unique trims={unique_trims}")
 
-        # Batch lookup: one search per unique trim
-        for trim in unique_trims:
-            if trim not in trim_lookup_cache:
-                # Search using trim keyword
+    # Batch lookup: one search per unique trim
+    for trim in unique_trims:
+        if trim not in trim_lookup_cache:
+            # Build keyword list: model name + trim
+            keywords = [str(model_name).lower().replace(" ", "_"), str(trim).lower()]
+
+            try:
                 search_result = engine.search(
                     make=manufacturer,
-                    model_keywords=[model_name.lower()],
-                    trim_keywords=[trim.lower()],
                     year=vehicle_year,
+                    raw_keywords=keywords,
+                    exclude_ev=True,
                 )
                 trim_lookup_cache[trim] = search_result
 
                 # Log DQ for missing/low-confidence matches
                 if search_result is None:
                     all_warnings.append({
-                        "section": section_name,
                         "severity": "WARNING",
                         "type": "model_number_lookup_rule",
                         "trim": trim,
-                        "message": f"[DATABASE_NO_MATCH] No model found for trim '{trim}'",
+                        "message": f"[DATABASE_NO_MATCH] No model found for {manufacturer} {vehicle_year} {model_name} trim '{trim}'",
                     })
                 elif search_result.confidence < 0.80:
                     all_warnings.append({
-                        "section": section_name,
                         "severity": "INFO",
                         "type": "model_number_lookup_rule",
                         "trim": trim,
-                        "message": f"[LOW_CONFIDENCE] Model found for trim '{trim}' with confidence {search_result.confidence}",
+                        "message": f"[LOW_CONFIDENCE] Found model with confidence {search_result.confidence:.2f} for trim '{trim}'",
                     })
+            except Exception as e:
+                logger.warning(f"Model lookup failed for trim '{trim}': {e}")
+                trim_lookup_cache[trim] = None
+                all_warnings.append({
+                    "severity": "WARNING",
+                    "type": "model_number_lookup_rule",
+                    "trim": trim,
+                    "message": f"[LOOKUP_ERROR] {str(e)}",
+                })
 
-        # Enrich EN data
-        en_enriched = _add_model_number_columns(
-            df=en_df,
-            trim_columns=trim_columns,
-            trim_lookup_cache=trim_lookup_cache,
-            section_name=section_name,
-        )
+    # Enrich each language version
+    for lang, df in transformed.items():
+        if df is None or df.empty:
+            enriched_dict[lang] = df
+            continue
 
-        # Enrich FR data
-        fr_enriched = None
-        if fr_df is not None and not fr_df.empty:
-            fr_enriched = _add_model_number_columns(
-                df=fr_df,
-                trim_columns=trim_columns,
-                trim_lookup_cache=trim_lookup_cache,
-                section_name=section_name,
-            )
+        enriched_dict[lang] = _add_model_number_columns(df, trim_col, trim_lookup_cache)
 
-        # Store enriched section
-        enriched_data[section_name] = {
-            "en_enriched": en_enriched,
-            "fr_enriched": fr_enriched,
-            "trim_columns": trim_columns,
-        }
-
-    return enriched_data, metadata, all_warnings
+    return enriched_dict, metadata, all_warnings
 
 
 def _add_model_number_columns(
     df: pd.DataFrame,
-    trim_columns: List[str],
-    trim_lookup_cache: Dict[str, Optional[Any]],
-    section_name: str,
+    trim_column: str,
+    trim_lookup_cache: Dict[str, Optional[SearchResult]],
 ) -> pd.DataFrame:
     """Add model_number and model_status columns to DataFrame.
 
-    For each row, extract trim values from trim_columns, lookup in cache,
-    and add model_number and model_status.
-
     Args:
-        df: Section DataFrame
-        trim_columns: List of trim column names
+        df: Input DataFrame from Step 4 transformation
+        trim_column: Name of the trim column (e.g., "trim_level")
         trim_lookup_cache: Cached trim → SearchResult mapping
-        section_name: Section name (for logging)
 
     Returns:
         DataFrame with added model_number and model_status columns
@@ -165,36 +163,29 @@ def _add_model_number_columns(
     df["model_status"] = "NOT_FOUND"
 
     for idx, row in df.iterrows():
-        # Extract trim values for this row
-        row_trims = []
-        for trim_col in trim_columns:
-            if trim_col in row.index:
-                trim_val = row[trim_col]
-                if pd.notna(trim_val):
-                    row_trims.append(str(trim_val).strip())
+        # Get trim value for this row
+        if trim_column not in row.index:
+            continue
 
-        # Try to find matching model in cache
-        best_result = None
-        best_confidence = 0.0
+        trim_val = row[trim_column]
+        if pd.isna(trim_val):
+            continue
 
-        for trim in row_trims:
-            if trim in trim_lookup_cache:
-                result = trim_lookup_cache[trim]
-                if result and result.confidence > best_confidence:
-                    best_result = result
-                    best_confidence = result.confidence
+        trim_str = str(trim_val).strip()
 
-        # Add model_number and status
-        if best_result:
-            df.at[idx, "model_number"] = best_result.model_number
-            if best_result.confidence >= 0.95:
-                df.at[idx, "model_status"] = "EXACT_MATCH"
-            elif best_result.confidence >= 0.80:
-                df.at[idx, "model_status"] = "HIGH_CONFIDENCE"
-            else:
-                df.at[idx, "model_status"] = "LOW_CONFIDENCE"
-        else:
-            df.at[idx, "model_number"] = None
-            df.at[idx, "model_status"] = "NOT_FOUND"
+        # Look up in cache
+        if trim_str in trim_lookup_cache:
+            result = trim_lookup_cache[trim_str]
+            if result:
+                df.at[idx, "model_number"] = result.model_number
+                # Map confidence to status
+                if result.confidence >= 0.95:
+                    df.at[idx, "model_status"] = "EXACT_MATCH"
+                elif result.confidence >= 0.80:
+                    df.at[idx, "model_status"] = "HIGH_CONFIDENCE"
+                elif result.confidence > 0:
+                    df.at[idx, "model_status"] = "LOW_CONFIDENCE"
+                else:
+                    df.at[idx, "model_status"] = "NOT_FOUND"
 
     return df

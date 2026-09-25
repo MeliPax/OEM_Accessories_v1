@@ -23,38 +23,27 @@ sheets:
 
     # DECISION [019]: Explicit source→output mapping per column
     columns:
-      - output_column: Year
-        source_column: year_from
-        data_type: integer
-        width: 10
-        description: "Vehicle model year"
-
-      - output_column: ModelName
-        source_column: model
-        data_type: string
-        width: 20
-        description: "Vehicle model name (e.g., Accord, Civic)"
-
-      - output_column: Part
-        source_column: part_number
+      - output_column: Part Number
+        source_column: Part Number
         data_type: string
         width: 15
         description: "Accessory part number"
 
-      - output_column: Description
-        source_column: description
+      - output_column: Description English
+        source_column: Description English
         data_type: string
         width: 50
         description: "English accessory description"
 
-      - output_column: Comments
-        source_column: comments
-        data_type: string
-        width: 30
-        description: "English comments/restrictions"
+      - output_column: List Price
+        source_column: List Price
+        data_type: float
+        width: 12
+        formatting: currency
+        description: "List price (USD)"
 
-      - output_column: Price
-        source_column: installed_price
+      - output_column: Install Price
+        source_column: Install Price
         data_type: float
         width: 12
         formatting: currency
@@ -93,38 +82,27 @@ sheets:
 
     # Same columns as EN but for French descriptions
     columns:
-      - output_column: Année
-        source_column: year_from
-        data_type: integer
-        width: 10
-        description: "Année du modèle de véhicule"
-
-      - output_column: Modèle
-        source_column: model
-        data_type: string
-        width: 20
-        description: "Nom du modèle de véhicule"
-
-      - output_column: Pièce
-        source_column: part_number
+      - output_column: Numéro de pièce
+        source_column: Numéro de pièce
         data_type: string
         width: 15
         description: "Numéro de pièce d'accessoire"
 
-      - output_column: Description
-        source_column: description_fr
+      - output_column: La description
+        source_column: La description
         data_type: string
         width: 50
         description: "Description d'accessoire en français"
 
-      - output_column: Commentaires
-        source_column: comments_fr
-        data_type: string
-        width: 30
-        description: "Commentaires/restrictions en français"
+      - output_column: Prix de liste
+        source_column: Prix de liste
+        data_type: float
+        width: 12
+        formatting: currency
+        description: "Prix de liste (USD)"
 
-      - output_column: Prix
-        source_column: installed_price
+      - output_column: Prix installé
+        source_column: Prix installé
         data_type: float
         width: 12
         formatting: currency
@@ -136,7 +114,7 @@ sheets:
         width: 20
         description: "Niveau de garniture du véhicule"
 
-      - output_column: Modèle
+      - output_column: Model
         source_column: model_number
         data_type: string
         width: 15
