@@ -1,157 +1,285 @@
 # ============================================================================
-# File: accy_v2/oems/hyundai/config/schemas/downstream.yaml
-# Description: Output sheet structure and column formatting
-# OEM: Hyundai
-# Purpose: Defines which columns appear in each output sheet and how they're formatted
+# File: accy_v2/oems/honda/config/schemas/downstream.yaml
+# Description: Output sheet structure with language-specific sheets and column mapping
+# OEM: Honda
+# Purpose: Defines output Excel sheets and programmatic column mapping per language
 # ============================================================================
 
 output:
-  # Maps internal column names to export column names
-  # Used by step5_output.py to rename columns before writing to Excel
-  column_mapping:
-    part_number: Part
-    description: Description
-    comments: Comments
-    msrp: Price
-    labour_hours: Hours
-    trim_level: Trim
-
-  # DECISION [019]: Required columns (formerly rate_import_required_columns)
-  # Which columns to include in the final output sheet
-  # Only listed columns will be written to Excel (others are dropped)
-  # Note: model_number and Year are always included if present
-  required_columns:
-    - Year
-    - Part
-    - Description
-    - Comments
-    - Price
-    - Hours
-    - Trim
-
-# Output file configuration
-output_file:
   # Filename pattern for generated Excel files
-  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"  # e.g., hyundai_abc123_20260803_120000.xlsx
+  filename_pattern: "{oem}_{run_id}_{timestamp}.xlsx"
 
   # Whether to create an audit sheet
   create_audit_sheet: true
 
 # Sheet definitions (what goes in each sheet)
 sheets:
-  # Main accessory catalog sheet
-  Accessories:
-    display_name: "Accessories"
-    description: "Complete vehicle accessory catalog with model numbers and pricing"
-    data_source: primary  # Main output from step5
+  # English Accessories Sheet
+  Accessories_EN:
+    display_name: "Accessories (English)"
+    language: EN
+    data_source: primary
+    description: "Vehicle accessory catalog with English descriptions"
 
+    # DECISION [019]: Explicit source→output mapping per column
     columns:
-      - column_name: ModelYear
-        display_name: "Year"
+      - output_column: Year
+        source_column: year_from
         data_type: integer
         width: 10
+        description: "Vehicle model year"
 
-      - column_name: ModelName
-        display_name: "Model"
+      - output_column: ModelName
+        source_column: model
         data_type: string
         width: 20
+        description: "Vehicle model name (e.g., Accord, Civic)"
 
-      - column_name: PartNumber
-        display_name: "Part #"
+      - output_column: Part
+        source_column: part_number
         data_type: string
         width: 15
+        description: "Accessory part number"
 
-      - column_name: Description
-        display_name: "Accessory Description"
+      - output_column: Description
+        source_column: description
         data_type: string
         width: 50
+        description: "English accessory description"
 
-      - column_name: Description_FR
-        display_name: "Description Accessoire"
+      - output_column: Comments
+        source_column: comments
         data_type: string
-        width: 50
+        width: 30
+        description: "English comments/restrictions"
 
-      - column_name: ModelNumber
-        display_name: "Model Number"
-        data_type: string
-        width: 15
-        note: "Added during enrichment step"
-
-      - column_name: MSRP
-        display_name: "MSRP"
+      - output_column: Price
+        source_column: installed_price
         data_type: float
         width: 12
         formatting: currency
+        description: "Installed price (USD)"
 
-      - column_name: LaborHours
-        display_name: "Labor Hours"
+      - output_column: Trim
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Vehicle trim level"
+
+      - output_column: Model
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "OEM model number from database"
+
+      - output_column: Status
+        source_column: model_status
+        data_type: string
+        width: 15
+        description: "Model lookup status (EXACT_MATCH, HIGH_CONFIDENCE, LOW_CONFIDENCE, NOT_FOUND)"
+
+      - output_column: Package
+        source_column: package
+        data_type: string
+        width: 15
+        description: "Package/kit identifier"
+
+  # French Accessories Sheet
+  Accessories_FR:
+    display_name: "Accessories (French)"
+    language: FR
+    data_source: primary
+    description: "Catalogue d'accessoires avec descriptions en français"
+
+    # Same columns as EN but for French descriptions
+    columns:
+      - output_column: Année
+        source_column: year_from
+        data_type: integer
+        width: 10
+        description: "Année du modèle de véhicule"
+
+      - output_column: Modèle
+        source_column: model
+        data_type: string
+        width: 20
+        description: "Nom du modèle de véhicule"
+
+      - output_column: Pièce
+        source_column: part_number
+        data_type: string
+        width: 15
+        description: "Numéro de pièce d'accessoire"
+
+      - output_column: Description
+        source_column: description_fr
+        data_type: string
+        width: 50
+        description: "Description d'accessoire en français"
+
+      - output_column: Commentaires
+        source_column: comments_fr
+        data_type: string
+        width: 30
+        description: "Commentaires/restrictions en français"
+
+      - output_column: Prix
+        source_column: installed_price
         data_type: float
         width: 12
+        formatting: currency
+        description: "Prix installé (USD)"
 
-    # Sort by year ascending, then model ascending
-    sorting:
-      - column: ModelYear
-        order: ascending
-      - column: ModelName
-        order: ascending
+      - output_column: Garniture
+        source_column: trim_level
+        data_type: string
+        width: 20
+        description: "Niveau de garniture du véhicule"
 
-  # Data quality issues sheet
-  _Data_Issues:
-    display_name: "Data Issues"
-    description: "Records that failed validation or enrichment steps"
-    data_source: dq_logger  # Populated from quality checks
+      - output_column: Modèle
+        source_column: model_number
+        data_type: string
+        width: 15
+        description: "Numéro de modèle OEM de la base de données"
 
-    columns:
-      - column_name: ModelYear
-        display_name: "Year"
+      - output_column: Statut
+        source_column: model_status
+        data_type: string
+        width: 15
+        description: "Statut de recherche de modèle"
 
-      - column_name: ModelName
-        display_name: "Model"
+      - output_column: Ensemble
+        source_column: package
+        data_type: string
+        width: 15
+        description: "Identifiant de package/kit"
 
-      - column_name: PartNumber
-        display_name: "Part #"
-
-      - column_name: IssueCategory
-        display_name: "Issue Type"
-        note: "DATABASE_NO_MATCH, MODEL_LINE_NOT_FOUND, KEYWORD_EXTRACTION_FAILED, ADS_FETCH_ERROR, etc."
-
-      - column_name: IssueDescription
-        display_name: "Issue Details"
-
-      - column_name: SourceColumn
-        display_name: "Affected Column"
-
-  # Summary report sheet
-  _Report:
-    display_name: "Summary Report"
-    description: "Processing statistics and quality metrics"
-    data_source: aggregated_stats  # Calculated from pipeline execution
+  # Raw Data Sheet (audit trail)
+  RawData:
+    display_name: "Raw Data"
+    language: MIXED
+    data_source: audit_trail
+    description: "Source tracking and EN/FR merge confidence metrics"
 
     columns:
-      - column_name: MetricName
-        display_name: "Metric"
+      - output_column: PartNumber
+        source_column: part_number
+        data_type: string
+        width: 15
 
-      - column_name: Count
-        display_name: "Count"
+      - output_column: SourceModel
+        source_column: model
+        data_type: string
+        width: 15
+
+      - output_column: SourceYear
+        source_column: year_from
         data_type: integer
+        width: 10
 
-      - column_name: Percentage
-        display_name: "% of Total"
+      - output_column: ENFound
+        source_column: en_found
+        data_type: boolean
+        width: 10
+
+      - output_column: FRFound
+        source_column: fr_found
+        data_type: boolean
+        width: 10
+
+      - output_column: MergeConfidence
+        source_column: merge_confidence
         data_type: float
+        width: 12
+        formatting: percentage
+        description: "Confidence score for EN/FR reconciliation"
+
+      - output_column: ReconciliationStatus
+        source_column: reconciliation_status
+        data_type: string
+        width: 20
+        description: "MAPPED, EN_ONLY, FR_ONLY, DIVERGED"
+
+  # Confidence Metrics Sheet
+  Confidence:
+    display_name: "Confidence Metrics"
+    language: MIXED
+    data_source: quality_metrics
+    description: "Model lookup confidence scores and quality indicators"
+
+    columns:
+      - output_column: PartNumber
+        source_column: part_number
+        data_type: string
+        width: 15
+
+      - output_column: Model
+        source_column: model
+        data_type: string
+        width: 15
+
+      - output_column: ModelNumber
+        source_column: model_number
+        data_type: string
+        width: 15
+
+      - output_column: Confidence
+        source_column: confidence
+        data_type: float
+        width: 12
         formatting: percentage
 
-  # Audit trail sheet
-  _Audit:
-    display_name: "Audit Trail"
-    description: "Pipeline execution metadata"
-    data_source: pipeline_logger  # From pipeline execution log
+      - output_column: Status
+        source_column: model_status
+        data_type: string
+        width: 15
+
+      - output_column: CostMatch
+        source_column: cost_match
+        data_type: boolean
+        width: 10
+        description: "EN/FR cost variance <5%"
+
+      - output_column: PartCountMatch
+        source_column: part_count_match
+        data_type: boolean
+        width: 10
+        description: "EN/FR part count match"
+
+  # Data Quality Issues Sheet
+  DQ:
+    display_name: "Data Quality"
+    language: MIXED
+    data_source: dq_logger
+    description: "All DQ warnings and validation issues"
 
     columns:
-      - column_name: Timestamp
-        display_name: "Timestamp"
+      - output_column: PartNumber
+        source_column: part_number
+        data_type: string
+        width: 15
 
-      - column_name: Stage
-        display_name: "Pipeline Stage"
+      - output_column: Model
+        source_column: model
+        data_type: string
+        width: 15
 
-      - column_name: Message
-        display_name: "Event"
+      - output_column: RuleType
+        source_column: rule_type
+        data_type: string
+        width: 25
+
+      - output_column: Severity
+        source_column: severity
+        data_type: string
+        width: 10
+
+      - output_column: Message
+        source_column: message
+        data_type: string
+        width: 60
+
+      - output_column: Section
+        source_column: section
+        data_type: string
+        width: 15
