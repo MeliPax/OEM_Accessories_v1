@@ -1,7 +1,9 @@
-try:
-    from db_queries.manufacturer import GET_BY_NAME
-except ImportError:
-    from model_lookup.db_queries.manufacturer import GET_BY_NAME
+# Legacy import - db_queries module no longer exists in this codebase
+# Commenting out as GET_BY_NAME is not used in this module
+# try:
+#     from db_queries.manufacturer import GET_BY_NAME
+# except ImportError:
+#     from model_lookup.db_queries.manufacturer import GET_BY_NAME
 
 import pandas as pd
 from sqlalchemy import text
