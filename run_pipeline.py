@@ -25,8 +25,8 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "accy_v2"))
 
-from accy_v2.oems.mitsubishi.pipeline.orchestrator import MitsubishiPipeline
-from accy_v2.oems.mazda.pipeline.orchestrator import MazdaPipeline
+# Note: OEM imports are now done lazily in get_pipeline_class() to avoid
+# import errors from unrelated OEM modules that may have issues
 
 
 def get_landing_zone_dir(oem: str) -> str:
@@ -44,7 +44,22 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
     """Get files from landing_zone directory for specified OEM."""
     project_root = Path(__file__).parent
     landing_zone_dir = get_landing_zone_dir(oem)
-    landing_zone = project_root / "accy_v2" / "data" / "landing_zone" / landing_zone_dir
+
+    # Try multiple landing zone paths (modern first, then legacy)
+    possible_paths = [
+        project_root / "landing_zone" / "2026" / landing_zone_dir.title(),  # landing_zone/2026/Honda
+        project_root / "accy_v2" / "data" / "landing_zone" / landing_zone_dir,  # Legacy path
+        project_root / "landing_zone" / landing_zone_dir,  # Flat landing_zone
+    ]
+
+    landing_zone = None
+    for path in possible_paths:
+        if path.exists():
+            landing_zone = path
+            break
+
+    if landing_zone is None:
+        raise FileNotFoundError(f"Landing zone directory not found for {landing_zone_dir}. Tried: {possible_paths}")
 
     if not landing_zone.exists():
         raise FileNotFoundError(f"Landing zone directory not found: {landing_zone}")
@@ -56,9 +71,9 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
             raise FileNotFoundError(f"File not found: {file_to_process}")
         return [file_to_process]
 
-    # Auto-discover files
-    excel_files = sorted(landing_zone.glob("*.xlsx"))
-    csv_files = sorted(landing_zone.glob("*.csv"))
+    # Auto-discover files (recursive, handles subdirectories)
+    excel_files = sorted(landing_zone.glob("**/*.xlsx"))
+    csv_files = sorted(landing_zone.glob("**/*.csv"))
     all_files = excel_files + csv_files
 
     if not all_files:
@@ -71,31 +86,42 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
 
 
 def get_pipeline_class(oem: str):
-    """Get the appropriate pipeline class for the OEM."""
+    """Get the appropriate pipeline class for the OEM.
+
+    Uses lazy loading to avoid import errors from unrelated OEM modules.
+    """
     oem_lower = oem.lower()
 
     if oem_lower == "mitsubishi":
-        return MitsubishiPipeline
+        try:
+            from accy_v2.oems.mitsubishi.orchestrator import MitsubishiPipeline
+            return MitsubishiPipeline
+        except ImportError as e:
+            raise ImportError(f"Mitsubishi pipeline import failed: {e}. Please check accy_v2/oems/mitsubishi/")
     elif oem_lower == "mazda":
-        return MazdaPipeline
+        try:
+            from accy_v2.oems.mazda.orchestrator import MazdaPipeline
+            return MazdaPipeline
+        except ImportError as e:
+            raise ImportError(f"Mazda pipeline import failed: {e}. Please check accy_v2/oems/mazda/")
     elif oem_lower == "hyundai":
         try:
-            from accy_v2.oems.hyundai.pipeline.orchestrator import HyundaiPipeline
+            from accy_v2.oems.hyundai.orchestrator import HyundaiPipeline
             return HyundaiPipeline
-        except ImportError:
-            raise ImportError(f"Hyundai pipeline not yet implemented. Please check accy_v2/oems/hyundai/")
+        except ImportError as e:
+            raise ImportError(f"Hyundai pipeline import failed: {e}. Please check accy_v2/oems/hyundai/")
     elif oem_lower == "genesis":
         try:
-            from accy_v2.oems.genesis.pipeline.orchestrator import GenesisPipeline
+            from accy_v2.oems.genesis.orchestrator import GenesisPipeline
             return GenesisPipeline
-        except ImportError:
-            raise ImportError(f"Genesis pipeline not yet implemented. Please check accy_v2/oems/genesis/")
+        except ImportError as e:
+            raise ImportError(f"Genesis pipeline import failed: {e}. Please check accy_v2/oems/genesis/")
     elif oem_lower == "honda":
         try:
-            from accy_v2.oems.honda.pipeline.orchestrator import HondaPipeline
+            from accy_v2.oems.honda.orchestrator import HondaPipeline
             return HondaPipeline
-        except ImportError:
-            raise ImportError(f"Honda pipeline not yet implemented. Please check accy_v2/oems/honda/")
+        except ImportError as e:
+            raise ImportError(f"Honda pipeline import failed: {e}. Please check accy_v2/oems/honda/")
     else:
         raise ValueError(f"Unknown OEM: {oem}. Supported: mitsubishi, mazda, hyundai, genesis, honda")
 
