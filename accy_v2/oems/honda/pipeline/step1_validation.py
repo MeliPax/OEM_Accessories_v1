@@ -353,6 +353,9 @@ def _validate_section_headers(
         # Header row is at data_start
         header_row = df.iloc[data_start]
 
+        # Trim sub-header is at data_start + 1
+        trim_sub_header_row = df.iloc[data_start + 1] if data_start + 1 < len(df) else None
+
         # Extract header column names
         headers = []
         for i, col_val in enumerate(header_row):
@@ -372,18 +375,28 @@ def _validate_section_headers(
             "price", "net", "dealer", "list", "comments", "application", "installed", "cost",
         ]
 
-        # Identify trim columns (columns that are not product columns)
+        # Identify trim columns: NOT product columns AND have actual values in trim sub-header row
         trim_cols = []
         for i, header in enumerate(headers):
             header_lower = header.lower()
             is_product = any(keyword in header_lower for keyword in product_col_keywords)
+
             if not is_product and not header.startswith("_col_"):
                 trim_cols.append(i)
+            elif header.startswith("_col_") and trim_sub_header_row is not None:
+                # For unnamed columns, check if they have a value in the trim sub-header row
+                trim_val = trim_sub_header_row.iloc[i]
+                if pd.notna(trim_val):
+                    trim_str = str(trim_val).strip()
+                    # Accept as trim if it has content and looks like a trim name (not just a number like "0.0")
+                    if trim_str and trim_str.lower() not in ("nan", "0", "0.0"):
+                        trim_cols.append(i)
 
         trim_columns_per_section[section_name] = trim_cols
+        data_rows = data_end - (data_start + 2) + 1 if data_start + 2 <= data_end else 0
         logger.debug(
             f"Sheet '{sheet_name}': Section '{section_name}' - "
-            f"{len(headers)} total columns, {len(trim_cols)} trim columns"
+            f"{len(headers)} total columns, {len(trim_cols)} trim columns, {data_rows} data rows"
         )
 
     return trim_columns_per_section
