@@ -89,21 +89,23 @@ class HondaPipeline(BasePipeline):
             name_upper = name.upper()
 
             # EN data sheets to include:
-            # New format: _DATA (flat), _APP_EN (applicability)
-            # Legacy format: LoadFile sheets (flat), Master sheets (wide)
+            # Primary: _APP_EN (section-based applicability with product data)
+            # Secondary: LoadFile sheets (flat product data from legacy format)
+            # NOTE: _DATA sheet contains metadata only (Model Name, Year, etc.), NOT products
             include = (
-                "_DATA" in name_upper or
                 "_APP_EN" in name_upper or
                 ("loadfile" in name_upper and "master" not in name_upper)
             )
 
-            # Exclude FR, SELL, SELECT PROVINCE, and other non-data sheets
+            # Explicitly exclude all non-product sheets
             exclude = (
-                "_APP_FR" in name_upper or
-                "SELL" in name_upper or
-                "SELECT" in name_upper or
-                "PROVINCE" in name_upper or
-                "TEMPLATE" in name_upper
+                "_DATA" in name_upper or  # Metadata only, not product data
+                "_APP_FR" in name_upper or  # FR data (process separately)
+                "SELL" in name_upper or  # Summary view
+                "SELECT" in name_upper or  # Province selector
+                "PROVINCE" in name_upper or  # Province names
+                "TEMPLATE" in name_upper or  # Template sheet
+                "MASTER" in name_upper  # Master sheets (wide format, different processing)
             )
 
             if include and not exclude:
@@ -212,23 +214,29 @@ class HondaPipeline(BasePipeline):
         dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, Any]:
-        """Step 2: Header normalization.
+        """Step 2: Build reconciliation dataframe.
 
-        Extracts proper column names from the identified header row and applies them.
-        Drops all metadata rows that come before the actual data.
+        Iterates through all sections, extracts headers, combines into single reconciliation DF.
+        Preserves section information and original column values.
         """
         try:
-            from accy_v2.oems.honda.pipeline.step2_header_normalization import normalize_headers
+            from accy_v2.oems.honda.pipeline.step2_reconciliation import build_reconciliation_dataframe
 
-            normalized_df, meta_updated = normalize_headers(working_df, meta_data, config)
+            reconciliation_df, meta_updated = build_reconciliation_dataframe(working_df, meta_data, config)
             meta_data.update(meta_updated)
 
-            pipeline_logger.info(f"Step 2: Headers normalized - {len(normalized_df.columns)} columns, {len(normalized_df)} rows")
-            pipeline_logger.debug(f"Step 2: Column names: {normalized_df.columns.tolist()[:10]}")
+            pipeline_logger.info(
+                f"Step 2: Reconciliation DF built - "
+                f"{len(reconciliation_df.columns)} columns, {len(reconciliation_df)} rows, "
+                f"{meta_data.get('sections_combined', 0)} sections combined"
+            )
+            pipeline_logger.debug(f"Step 2: Column names: {reconciliation_df.columns.tolist()[:10]}")
 
-            return {"normalized_df": normalized_df, "sections": {}}
+            return {"normalized_df": reconciliation_df, "sections": {}}
         except Exception as e:
             pipeline_logger.warning(f"Step 2 failed: {e}")
+            import traceback
+            pipeline_logger.debug(traceback.format_exc())
             return {"normalized_df": working_df, "sections": {}}
 
     def run_step3_standardization(
