@@ -137,19 +137,31 @@ def _detect_language(sheet_name: str, logger: PipelineLogger) -> str:
 def _extract_model_name(df: pd.DataFrame, dq_logger: DQLogger, logger: PipelineLogger) -> str:
     """Extract model name from file headers (rows 0-5).
 
-    Typically found in row 1, column 1 (B) with label "Model Name" in column A.
+    Handles both EN ("Model Name") and FR ("Nom du modèle") labels.
+    The label and value are in the same row, typically columns 2-3.
     """
     if len(df) < 6:
         return None
 
-    # Try rows 0-5 for a row containing "Model Name"
+    # Keywords to search for (EN and FR)
+    model_name_keywords = ["model name", "nom du modèle", "nom du model"]
+
+    # Try rows 0-5 for a row containing model name label
     for idx in range(min(6, len(df))):
         row = df.iloc[idx]
-        row_str = " ".join(str(v) for v in row.values if pd.notna(v)).lower()
 
-        if "model name" in row_str:
-            # Extract value from next columns
-            for col_idx in range(1, min(len(row), 5)):
+        # Find which column contains the label
+        label_col = None
+        for col_idx, val in enumerate(row):
+            if pd.notna(val):
+                val_str = str(val).lower()
+                if any(keyword in val_str for keyword in model_name_keywords):
+                    label_col = col_idx
+                    break
+
+        # If we found the label, extract the value from the NEXT column
+        if label_col is not None:
+            for col_idx in range(label_col + 1, len(row)):
                 val = row.iloc[col_idx]
                 if pd.notna(val):
                     val_str = str(val).strip()
@@ -164,19 +176,31 @@ def _extract_vehicle_year(
 ) -> int:
     """Extract vehicle year from file headers or filename.
 
-    Typically found in row 2, column 1 (B) with label "Model Year" in column A.
+    Handles both EN ("Model Year") and FR ("Année modèle") labels.
+    The label and value are in the same row, typically columns 2-3.
     """
     if len(df) < 6:
         return None
 
-    # Try rows 0-5 for a row containing "Model Year"
+    # Keywords to search for (EN and FR)
+    year_keywords = ["model year", "année modèle", "année du modèle"]
+
+    # Try rows 0-5 for a row containing year label
     for idx in range(min(6, len(df))):
         row = df.iloc[idx]
-        row_str = " ".join(str(v) for v in row.values if pd.notna(v)).lower()
 
-        if "model year" in row_str:
-            # Extract value from next columns
-            for col_idx in range(1, min(len(row), 5)):
+        # Find which column contains the label
+        label_col = None
+        for col_idx, val in enumerate(row):
+            if pd.notna(val):
+                val_str = str(val).lower()
+                if any(keyword in val_str for keyword in year_keywords):
+                    label_col = col_idx
+                    break
+
+        # If we found the label, extract the value from the NEXT column
+        if label_col is not None:
+            for col_idx in range(label_col + 1, len(row)):
                 val = row.iloc[col_idx]
                 if pd.notna(val):
                     try:
