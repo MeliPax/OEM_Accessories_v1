@@ -1,0 +1,155 @@
+# Honda Pipeline Configuration
+# Defines OEM-specific rules, validation thresholds, and data structure expectations
+
+# ============================================================================
+# Step 1: Data Loading & Validation
+# ============================================================================
+
+step1:
+  # Sheet and language patterns
+  sheets:
+    en_pattern: "*_APP_EN"
+    fr_pattern: "*_APP_FR"
+    exclude_patterns:
+      - "*_DATA"
+      - "*SELL*"
+      - "*SELECT*"
+      - "*PROVINCE*"
+      - "*TEMPLATE*"
+
+  # Section structure expectations (Honda has 6 sections)
+  expected_section_count: 6
+
+  sections:
+    - name: "Packages and Kits"
+      marker_pattern: "^1\\.0\\s+"
+      required: true
+    - name: "Wheels and Wheel Accessories"
+      marker_pattern: "^2\\.0\\s+"
+      required: true
+    - name: "Exterior"
+      marker_pattern: "^3\\.0\\s+"
+      required: true
+    - name: "Interior"
+      marker_pattern: "^4\\.0\\s+"
+      required: true
+    - name: "Electrical"
+      marker_pattern: "^5\\.0\\s+"
+      required: true
+    - name: "Paint Pens"
+      marker_pattern: "^6\\.0\\s+"
+      required: true
+
+  # Per-section validation
+  validation:
+    min_data_rows_per_section: 1  # At least one non-empty data row required
+
+    # Required columns (must be present in every section header)
+    required_columns:
+      - "Description"
+      - "Part Number"
+
+    # Optional columns (may be present but not required)
+    optional_columns:
+      - "Cost"
+      - "Dealer Net"
+      - "Hours"
+      - "MSRP"
+      - "List Price"
+      - "FRT"
+      - "Installed Price"
+      - "Comments"
+      - "Application"
+
+  # Error handling thresholds
+  error_handling:
+    fatal_errors:
+      - missing_section
+      - wrong_sheet_name
+      - no_model_name
+      - section_out_of_order
+
+    warning_errors:
+      - empty_section
+      - invalid_cost
+      - missing_trim_marker
+      - sparse_data_row
+
+    non_null_threshold: 0.5  # Warn if >50% of required column is null
+
+    min_non_empty_rows_per_section: 1
+
+# ============================================================================
+# Step 2: Header Normalization (Phase 2)
+# ============================================================================
+
+step2:
+  enabled: false  # Not yet implemented
+  description: "Extract headers per section and normalize column names"
+
+# ============================================================================
+# Step 3: Data Standardization (Phase 2)
+# ============================================================================
+
+step3:
+  enabled: false  # Not yet implemented
+  description: "Clean data types, standardize values, handle rollups"
+
+# ============================================================================
+# Step 4: Transformation (Phase 2)
+# ============================================================================
+
+step4:
+  enabled: false  # Not yet implemented
+  description: "Melt wide-to-long format, create trim_level column"
+
+# ============================================================================
+# Step 4.5: Model Enrichment (Phase 2)
+# ============================================================================
+
+step4_5:
+  enabled: false  # Not yet implemented
+  description: "Integrate with VehicleSearchEngine for model lookup"
+
+# ============================================================================
+# Step 5: Output Generation (Phase 2)
+# ============================================================================
+
+step5:
+  enabled: false  # Not yet implemented
+  description: "Generate Excel output with flat data sheets"
+
+# ============================================================================
+# Batch Processing Configuration
+# ============================================================================
+
+batch:
+  # Batch mode settings
+  multi_file_mode: true
+  quarantine_threshold: 0.3  # If >30% of files fail, quarantine the batch
+
+  # Output settings
+  add_source_file_column: true  # Track which file each row came from
+  add_section_column: true      # Identify which section each row belongs to
+
+# ============================================================================
+# Logging & Debugging
+# ============================================================================
+
+logging:
+  log_level: "INFO"
+  debug_mode: false
+
+  # Which steps to log at DEBUG level
+  debug_steps:
+    - step1  # Always debug Step 1 during development
+
+# ============================================================================
+# Feature Flags (for gradual rollout)
+# ============================================================================
+
+features:
+  section_based_processing: true
+  en_fr_reconciliation: false  # Phase 2
+  packages_rollup: false        # Phase 2
+  model_lookup_enrichment: false  # Phase 2

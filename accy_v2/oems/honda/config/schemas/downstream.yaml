@@ -1,0 +1,39 @@
+# Honda Downstream Schema (Phase 2)
+# Output data model for Excel workbook sheets
+
+# Placeholder for Phase 2
+description: "Output data schema for Excel workbook generation"
+status: "Not yet implemented (Phase 2)"
+
+output_columns:
+  - name: "source_file"
+    type: "string"
+    description: "Name of the source Excel file (batch tracking)"
+
+  - name: "section"
+    type: "string"
+    description: "Section name (Packages, Wheels, etc.)"
+
+  - name: "description"
+    type: "string"
+    description: "Product description"
+
+  - name: "part_number"
+    type: "string"
+    description: "Honda part number"
+
+  - name: "cost"
+    type: "float"
+    description: "Dealer net/cost"
+
+  - name: "model_number"
+    type: "string"
+    description: "Vehicle model number (from VehicleSearchEngine)"
+
+  - name: "trim_level"
+    type: "string"
+    description: "Trim level applicable for this row"
+
+  - name: "model_status"
+    type: "string"
+    description: "Model lookup result status (FOUND, NOT_FOUND, LOW_CONFIDENCE)"

@@ -1,0 +1,94 @@
+# Honda Model Lookup Enrichment Configuration
+# (Phase 2 - Model lookup integration)
+
+# ============================================================================
+# Vehicle Search Engine Configuration
+# ============================================================================
+
+model_lookup:
+  enabled: false  # Phase 2: Will be enabled after Step 4 implementation
+
+  # How to handle multiple candidate matches
+  package_differentiator_column: "Package"
+
+  # Fuel type configuration
+  fuel_type_check_columns:
+    - ModelName
+    - engine_type
+
+  # Implied fuel type rules (for trims exclusive to certain fuel types)
+  implied_fuel_type_trims: []  # Phase 2: Will populate after DB analysis
+
+  # Implied trim variant rules
+  implied_trim_variant_trims: []  # Phase 2: Will populate after DB analysis
+
+# ============================================================================
+# Translator Configuration
+# (Maps abbreviations to full names before classification)
+# ============================================================================
+
+translator_config:
+  file: "honda_translator.yaml"
+  enabled: true
+
+  # Note: Translator runs BEFORE classifier
+  # Maps like: "pkg" → "package", "tech" → "technology"
+  # This allows classifier to work with expanded forms
+
+# ============================================================================
+# Classifier Configuration
+# (Maps keywords to semantic categories)
+# ============================================================================
+
+classifier_config:
+  file: "honda_classification.yaml"
+  enabled: true
+
+  # Expected token categories (used by VehicleSearchEngine)
+  token_categories:
+    - MODEL          # Model name (Civic, Accord, etc.)
+    - TRIM           # Trim level (EX, EX-L, Sport, etc.)
+    - ENGINE_TYPE    # Engine/fuel type (2.0T, Hybrid, CVT, etc.)
+    - DRIVETRAIN     # Transmission/drive (AWD, CVT, etc.)
+    - PACKAGE        # Package/option (Tech, Premium, etc.)
+    - BODY_STYLE     # Body style (Sedan, Hatchback, Coupe)
+    - SEATING        # Seating (5-passenger, 7-passenger)
+    - TRANSMISSION   # Transmission type
+    - TRIM_VARIANT   # Variant of trim (e.g., "N-Line HEV" as variant of "N-Line")
+    - MODEL_VARIANT  # Variant of model (e.g., "Type R" as variant of "Civic")
+    - UNCLASSIFIED   # Unrecognized tokens
+
+# ============================================================================
+# DQ Rules Configuration (Phase 2)
+# ============================================================================
+
+dq_rules:
+  enabled: false  # Phase 2: Will enable after implementation
+
+  rules:
+    # Data quality checks during model enrichment
+    - rule_name: "model_number_lookup_rule"
+      description: "Model number assignment success rate"
+      threshold: 0.9  # 90% of rows should get a model number
+
+    - rule_name: "lookup_confidence_rule"
+      description: "Model lookup confidence score"
+      threshold: 0.75  # Warn if <75% confidence
+
+    - rule_name: "database_no_match_rule"
+      description: "Rows with zero candidates in DB"
+      threshold: 0.05  # Warn if >5% have no DB match
+
+    - rule_name: "trim_family_matching_rule"
+      description: "Trim generalization/family matching"
+      enabled: false  # Phase 2: Disabled until trim family logic built
+
+# ============================================================================
+# Feature Flags (Phase 2+)
+# ============================================================================
+
+features:
+  model_lookup_enabled: false  # Step 4.5
+  multi_package_variants: false  # Explode when multiple packages match
+  trim_family_generalization: false  # Try to match trim families
+  dynamic_scoring: false  # Adaptive scoring based on candidate count

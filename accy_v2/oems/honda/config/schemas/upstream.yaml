@@ -1,0 +1,201 @@
+# Honda Upstream Schema
+# Defines the raw data structure expected from Honda Excel files
+
+# ============================================================================
+# File Structure
+# ============================================================================
+
+file:
+  format: "Excel"
+  extension: ".xlsx"
+  encoding: "UTF-8"
+
+# ============================================================================
+# Metadata Rows (Rows 0-9)
+# ============================================================================
+
+metadata_rows:
+  model_row: 1              # "Model Name" label in column A, value in column B
+  year_row: 2               # "Model Year" label in column A, value in column B
+  legend_rows: [3, 4, 5, 6, 7, 8]  # Legend entries (optional, informational)
+  publication_date_row: 9   # May contain publication date
+
+  # Expected metadata fields
+  expected_fields:
+    - field: "Model Name"
+      location: "row 1, column B"
+      required: true
+      example: "Civic Hatch & Type R"
+
+    - field: "Model Year"
+      location: "row 2, column B"
+      required: true
+      example: "2026"
+
+# ============================================================================
+# Sheet Patterns
+# ============================================================================
+
+sheets:
+  data_sheet:
+    name_pattern: "*_DATA"
+    purpose: "Metadata only (not processed by pipeline)"
+    processing: "SKIP"
+
+  en_sheet:
+    name_pattern: "*_APP_EN"
+    purpose: "English product data with section-based layout"
+    processing: "PROCESS"
+    language: "EN"
+    header_row: "null"  # No header row in raw file; headers are inside sections
+
+  fr_sheet:
+    name_pattern: "*_APP_FR"
+    purpose: "French product data with section-based layout"
+    processing: "PROCESS"
+    language: "FR"
+    header_row: "null"  # No header row in raw file; headers are inside sections
+
+  sell_sheet:
+    name_pattern: "*SELL*"
+    purpose: "Sales/summary view (not processed)"
+    processing: "SKIP"
+
+  select_province_sheet:
+    name_pattern: "*SELECT PROVINCE*"
+    purpose: "Province selector (not processed)"
+    processing: "SKIP"
+
+# ============================================================================
+# Section Structure (Rows 10+)
+# ============================================================================
+
+sections:
+  marker_pattern: "^\\d+\\.\\d+\\s+(.+)$"
+  marker_examples:
+    - "1.0 Packages and Kits"
+    - "2.0 Wheels and Wheel Accessories"
+    - "3.0 Exterior"
+    - "4.0 Interior"
+    - "5.0 Electrical"
+    - "6.0 Paint Pens"
+
+  # For each section:
+  header_structure:
+    - offset: 1
+      name: "header_row"
+      content: "Column names (Description, Part Number, Cost, etc.)"
+      example: "Unnamed: 0 = NaN, Unnamed: 1 = Description, Unnamed: 2 = Part Number, ..."
+
+    - offset: 2
+      name: "trim_sub_header"
+      content: "Trim level names (e.g., 'SPORT', 'SPORT \\nHybrid', 'Type R', etc.)"
+      example: "Row with trim names, often split across columns Unnamed: 10+, Unnamed: 11+, ..."
+
+    - offset: 3+
+      name: "data_rows"
+      content: "Actual product data (one row per product)"
+      example: "First column has part number, subsequent columns have prices/applicability"
+
+# ============================================================================
+# Column Structure (Generic)
+# ============================================================================
+
+columns:
+  # Product columns (mandatory in every section)
+  product_columns:
+    - name: "Description"
+      type: "string"
+      required: true
+      examples: ["Racing Package - Type R", "Platinum White Pearl (NH-883P)"]
+
+    - name: "Part Number"
+      type: "string"
+      required: true
+      examples: ["26TYPER-RACE", "TUCH-NH883P-A1"]
+
+  # Price columns (common but optional)
+  price_columns:
+    - name: "Cost"
+      type: "float"
+      required: false
+      alt_names: ["Dealer Net", "DNP"]
+      examples: [3928, 13.25]
+
+    - name: "Hours"
+      type: "float"
+      required: false
+      examples: [6431, 0]
+
+    - name: "MSRP"
+      type: "float"
+      required: false
+      alt_names: ["List Price", "Retail Price"]
+      examples: [6612, 22]
+
+    - name: "FRT"
+      type: "float"
+      required: false
+      examples: [0.9999999999999999, 0]
+
+    - name: "Installed Price"
+      type: "float"
+      required: false
+      examples: [6612, 22]
+
+  # Other common columns
+  other_columns:
+    - name: "Comments"
+      type: "string"
+      required: false
+      examples: ["Quantity of 5", "Quantity of 25"]
+
+    - name: "Application"
+      type: "string"
+      required: false
+      examples: ["0", "NaN"]
+
+  # Trim applicability columns (variable per section)
+  trim_columns:
+    description: "Columns indicating if a product applies to a specific trim"
+    marker_values: ["•", "1", "True"]
+    empty_values: ["NaN", "0", "", "False", "N/A"]
+    examples:
+      - "Column header: 'SPORT'"
+      - "Column header: 'SPORT \\nHybrid' (newline in middle)"
+      - "Column header: 'Type R'"
+      - "Data value: '•' (bullet) = applies to this trim"
+      - "Data value: '0.0' or 'NaN' = does not apply"
+
+# ============================================================================
+# Data Quality Expectations
+# ============================================================================
+
+data_quality:
+  # Expected data ranges
+  row_counts:
+    total_rows_per_sheet: "~150-170"
+    rows_per_section: "~10-50"
+    min_non_empty_rows: 1
+
+  # Column value patterns
+  part_number_pattern: "^[A-Z0-9\\-]+$"
+
+  # Missing data tolerance
+  non_null_threshold:
+    required_columns: 0.9  # At least 90% non-null
+    optional_columns: 0.5  # At least 50% non-null
+
+  # Known anomalies
+  known_issues:
+    - issue: "Newlines in column headers"
+      example: "SPORT \\nHybrid"
+      mitigation: "Strip/replace newlines during header extraction"
+
+    - issue: "Empty rows between sections"
+      example: "Row with all NaN values"
+      mitigation: "Filter empty rows, don't count them as data"
+
+    - issue: "Publication date rows at end"
+      example: "Last 2-3 rows contain 'Publication Date:' metadata"
+      mitigation: "Filter out rows after last section data ends"

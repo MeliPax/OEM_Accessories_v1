@@ -1,0 +1,64 @@
+# Honda Transformations Configuration
+# (Phase 2 - Data transformations for Steps 3-4)
+
+# ============================================================================
+# Column Standardization (Phase 2)
+# ============================================================================
+
+column_transformations:
+  enabled: false  # Phase 2
+
+  # Map raw column names to standardized output names
+  standard_columns:
+    - from: "Description"
+      to: "description"
+      type: "string"
+      transform: "title_case"
+
+    - from: "Part Number"
+      to: "part_number"
+      type: "string"
+      transform: "uppercase"
+
+    - from: "Cost"
+      to: "cost"
+      type: "float"
+      transform: "none"
+
+# ============================================================================
+# Trim Transformations (Phase 2)
+# ============================================================================
+
+trim_transformations:
+  enabled: false  # Phase 2
+
+  # How to handle trim columns when melting to long format
+  applicability_markers:
+    - "•"        # Bullet symbol (most common)
+    - "1"        # Numeric 1
+    - "True"     # Boolean true
+
+  non_applicability_markers:
+    - "0"        # Numeric 0
+    - ""         # Empty string
+    - "NaN"      # Missing value
+    - "N/A"      # Explicit not applicable
+
+# ============================================================================
+# Output Transformations (Phase 2)
+# ============================================================================
+
+output_transformations:
+  enabled: false  # Phase 2
+
+  # Format columns in output
+  formatting:
+    - column: "description"
+      format: "title_case"
+
+    - column: "part_number"
+      format: "uppercase"
+
+    - column: "cost"
+      format: "currency"
+      decimals: 2
