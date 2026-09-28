@@ -370,9 +370,15 @@ def _validate_section_headers(
                     headers.append(f"_col_{i}")
 
         # Define product columns (should NOT be trim columns)
+        # Include both English and French keywords
         product_col_keywords = [
+            # English
             "part", "number", "description", "item", "name", "frt", "residual",
             "price", "net", "dealer", "list", "comments", "application", "installed", "cost",
+            # French
+            "pièce", "numero", "description", "article", "nom", "t.f.f.", "tarif", "net",
+            "concessionnaire", "liste", "remarques", "commentaire", "application", "instalé",
+            "coût", "numéro", "prix",
         ]
 
         # Identify trim columns: NOT product columns AND have actual values in trim sub-header row
