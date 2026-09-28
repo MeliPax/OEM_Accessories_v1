@@ -1,19 +1,47 @@
-# Step 1: Validation & Metadata Extraction — Implementation Plan
+# Step 1: Validation & Metadata Extraction — Business Requirements & Implementation Plan
 
 **Status:** Ready for Implementation  
 **Phase:** Phase 3b  
-**Effort Estimate:** 6-8 hours  
-**Dependencies:** Config files (section_patterns.yaml, pipeline.yaml) ✅ READY
+**Effort Estimate:** 8-10 hours (validation + dual-sheet handling)  
+**Dependencies:** Config files (section_patterns.yaml, pipeline.yaml) ✅ READY  
+**Business Owner:** Accessory Platform Team  
+**Success Criteria:** Load both EN/FR, extract all metadata, validate all 6 sections, pass DQ checks
+
+---
+
+## Business Problem & Requirements
+
+### Why This Matters
+- **Data Integrity:** Need to ensure file structure is valid BEFORE processing 155+ accessories
+- **Bilingual Support:** Both English and French data must be loaded separately, then reconciled
+- **Accuracy:** Section boundaries determine how 6 categories of accessories are parsed
+- **Auditability:** Metadata extraction enables traceability (model, year, publication date)
+
+### What We're Extracting & Why
+
+| What | Why | Business Impact |
+|------|-----|-----------------|
+| **Sheet existence** | Both EN and FR required | Incomplete data if one sheet missing |
+| **Model + Year** | Identifies vehicle variant | Can't match accessories to correct model |
+| **Publication date** | Tracks data freshness | Need to know if data is current |
+| **6 Section boundaries** | Each section needs separate processing | Wrong section ranges = wrong accessories |
+| **Trim column headers** | Identifies which trims apply | Can't determine applicability without this |
+| **DQ warnings** | Catches structural problems early | Prevents bad data downstream |
 
 ---
 
 ## Overview
 
-Step 1 validates the Honda Excel file structure and extracts metadata needed by downstream steps (Steps 2-4).
+**Step 1 transforms raw Excel → validated data ready for flattening.**
 
-**Input:** Raw Excel workbook (EN and FR sheets)  
-**Output:** (validated_df, metadata_dict, dq_warnings_list)  
-**Returns:** Validated data + extracted metadata + DQ log entries
+**Input:** Raw Excel workbook with EN sheet (`*_APP_EN`) and FR sheet (`*_APP_FR`)  
+**Output:**
+1. EN DataFrame (170 rows, 17 columns, raw)
+2. FR DataFrame (170 rows, 17 columns, raw)
+3. Metadata dictionary (sections, trims, model info)
+4. DQ warnings list (validation results)
+
+**Constraint:** Both sheets must be loaded and analyzed independently, then metadata merged for reconciliation
 
 ---
 
@@ -75,51 +103,119 @@ Step 1 validates the Honda Excel file structure and extracts metadata needed by 
     }
     ```
 
-### Part 3: Section Detection (1-2 hours)
+### Part 3: Section Detection (2-3 hours) — CRITICAL FOR DATA PARSING
+
+**Business Requirement:** 
+Every accessory belongs to ONE of 6 categories. Section boundaries MUST be accurate or accessories are misclassified.
+
+**Expected Sections** (from config, confirmed in actual files):
+1. **Packages and Kits** (bundled deals, 40-50 rows typically)
+2. **Wheels and Wheel Accessories** (tire/wheel products, 10-20 rows)
+3. **Exterior** (exterior trim/protection, 40-60 rows)
+4. **Interior** (mats, seat covers, 15-25 rows)
+5. **Electrical** (chargers, heated seats, 5-15 rows)
+6. **Paint Pens** (touch-up paints, 10-20 rows)
+
+**Total Expected:** 155-190 rows of actual accessories (vs. headers/footers)
+
+---
 
 - [ ] **Detect sections in EN sheet**
-  - [ ] Load section patterns from config: section_patterns.yaml
+  - [ ] **Use regex pattern:** `^\d+\.\d+\s+(.+)$` to find section markers
   - [ ] For each section (packages, wheels, exterior, interior, electrical, paint_pens):
-    - [ ] Search for EN text (e.g., "1.0 Packages and Kits")
-    - [ ] Record row number where section header found
-    - [ ] Store in metadata: `section_boundaries = {"packages": 11, "wheels": 57, ...}`
-  - [ ] Verify all 6 sections found
-  - [ ] Verify sections in correct order (1 before 2, 2 before 3, etc.)
-  - [ ] If any section missing: raise FATAL error, DQ log `missing_section_rule`
-  - [ ] If out of order: DQ log WARNING `section_order_rule`
+    - [ ] Search EN text from config: `"1.0 Packages and Kits"`, `"2.0 Wheels..."`, etc.
+    - [ ] Identify **exact row number** of section marker
+    - [ ] Calculate data range: (marker_row + 1) to (next_marker_row - 1)
+    - [ ] Store in metadata: `section_boundaries["packages"] = {"en_row": 9, "data_start": 10, "data_end": 55}`
+  - [ ] **Quality Gate:** Verify all 6 sections found
+    - If any missing: FATAL error → cannot process file
+    - Log: `missing_section_rule`
+  - [ ] **Quality Gate:** Verify sections in correct order (1.0 < 2.0 < ... < 6.0)
+    - If out of order: WARNING → log `section_order_rule` but continue
+  - [ ] **Count rows per section**
+    - Calculate total_rows = data_end - data_start + 1
+    - This becomes important for reconciliation later
 
-- [ ] **Detect sections in FR sheet**
-  - [ ] Repeat for FR sheet using FR text patterns
-  - [ ] Store in metadata: `fr_section_boundaries = {...}`
-  - [ ] Verify same sections found as EN (if not: DQ log warning)
+- [ ] **Detect sections in FR sheet** (INDEPENDENT PROCESSING)
+  - [ ] Repeat same logic for FR sheet using FR text: `"1.0 Groupes et ensembles"`, etc.
+  - [ ] Store in separate metadata: `fr_section_boundaries = {...}`
+  - [ ] **Quality Gate:** Verify FR has same sections as EN
+    - If FR missing a section: WARNING → log `fr_section_missing_rule` but continue with EN data
 
-- [ ] **Store section structure in metadata**
+- [ ] **Store dual-sheet section structure in metadata**
   ```python
   metadata["section_structure"] = {
-    "packages": {"en_row": 11, "fr_row": 11, "status": "found"},
-    "wheels": {"en_row": 57, "fr_row": 57, "status": "found"},
+    "packages": {
+      "en_row": 9,              # Row marker "1.0 Packages and Kits" in EN sheet
+      "fr_row": 9,              # Row marker "1.0 Groupes..." in FR sheet (usually same)
+      "data_start": 10,         # First data row (after marker)
+      "data_end": 55,           # Last data row (before next section)
+      "total_rows": 46,         # Number of accessories in this section
+      "status": "found"         # "found" | "missing_en" | "missing_fr" | "mismatch"
+    },
+    "wheels": {"en_row": 56, "fr_row": 56, "data_start": 57, "data_end": 71, "total_rows": 15, "status": "found"},
     # ... etc
   }
   ```
 
-### Part 4: Column Header Validation (1-2 hours)
+### Part 4: Column Header Validation & Trim Detection (2-3 hours)
 
-- [ ] **Validate column headers in each section**
-  - [ ] For each section:
-    - [ ] Get expected headers from config: column_headers.en (Description, Part Number, Dealer Net, etc.)
-    - [ ] Read header row of section (row after section header)
+**Business Requirement:**
+Each section has standard columns (Description, Part#, Prices) PLUS trim columns (which trims apply?).
+Must identify all columns correctly to flatten data later.
+
+#### Part 4a: Column Header Validation
+
+- [ ] **Validate column headers in each section** (EN Sheet)
+  - [ ] For each of 6 sections:
+    - [ ] Get expected headers from config: `section_patterns.yaml` → `column_headers.en`
+    - [ ] Expected: `["Description", "Part Number", "Dealer Net", "List Price", "FRT", "Installed Price"]`
+    - [ ] Find header row location: (section marker row + 1) = header row
+    - [ ] Read actual column headers from that row
     - [ ] Compare actual vs. expected
-    - [ ] If headers don't match: DQ log WARNING `header_mismatch_rule` (continue)
-  - [ ] Trim columns appear after "Installed Price" (variable per section)
-  - [ ] Extract trim column names and store in metadata
+    - [ ] If mismatch: DQ log WARNING `header_mismatch_rule` → but continue processing
+  
+  - [ ] **Validate column headers in each section** (FR Sheet)
+    - [ ] Repeat for FR sheet using FR expected headers: `section_patterns.yaml` → `column_headers.fr`
+    - [ ] Expected: `["La description", "Numéro de pièce", "Prix net", "Prix de liste", "T.F.F.", "Prix installé"]`
 
-- [ ] **Detect trim columns per section**
+#### Part 4b: Trim Column Detection (MOST CRITICAL)
+
+**Why This Matters:**
+Trim columns determine WHICH trims apply to WHICH accessories. Wrong detection = broken product applicability.
+
+- [ ] **Identify trim columns in EN Sheet**
   - [ ] For each section:
-    - [ ] Find "Installed Price" column (or "Prix installé" for FR)
-    - [ ] All non-empty columns after "Installed Price" until "Application" = trim columns
-    - [ ] Extract trim column names (LX, SPORT, EX, TOURING, etc.)
-    - [ ] Store in metadata: `trim_columns = ["LX", "SPORT", "EX", "TOURING"]`
-    - [ ] If no trim columns found: DQ log WARNING `trim_header_missing_rule`
+    - [ ] Locate "Installed Price" column
+    - [ ] **All columns AFTER "Installed Price"** = potential trim columns
+    - [ ] Stop before: "Application", "Notes", "Remarks", empty columns
+    - [ ] Extract column names: Read header row from those columns
+    - [ ] Store in metadata: `trim_columns_per_section["packages"] = ["LX", "SPORT", "EX", "EX-L", "TOURING"]`
+    - [ ] If NO trim columns found: DQ log WARNING `trim_header_missing_rule`
+
+- [ ] **Identify trim columns in FR Sheet**
+  - [ ] Repeat trim detection for FR sheet
+  - [ ] Expected stop markers: "Application", "Notes", "Remarques"
+  - [ ] Store separately: `fr_trim_columns_per_section = {...}`
+  - [ ] Compare EN vs FR trim counts:
+    - If EN has 5 trims but FR has 3: DQ log WARNING `trim_count_mismatch_rule`
+
+- [ ] **Create dual-language trim mapping**
+  ```python
+  metadata["trim_columns"] = {
+    "packages": {
+      "en": ["LX", "SPORT", "EX", "EX-L", "TOURING"],
+      "fr": ["LX", "SPORT", "EX", "EX-L", "TOURING"],  # Usually identical
+      "count": 5
+    },
+    "wheels": {
+      "en": ["LX", "SPORT", "EX"],
+      "fr": ["LX", "SPORT", "EX"],
+      "count": 3
+    },
+    # ... (4 more sections)
+  }
+  ```
 
 - [ ] **Normalize column names for processing**
   - [ ] Create standardized column name mapping:

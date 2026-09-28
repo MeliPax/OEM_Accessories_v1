@@ -215,8 +215,10 @@ def generate_output(
     dq_warnings: list,
     output_dir: Optional[str] = None,
     run_id: str = "",
+    flat_data_en: Optional[pd.DataFrame] = None,
+    flat_data_fr: Optional[pd.DataFrame] = None,
 ) -> Tuple[str, Dict[str, Any]]:
-    """Generate Excel workbook with 4 sheets (EN, FR, RawData, Confidence, DQ).
+    """Generate Excel workbook with sheets (Accessories_EN/FR, FlatData_EN/FR, RawData, Confidence, DQ).
 
     Args:
         df: Enriched DataFrame from Step 4.5 (combined EN/FR)
@@ -225,6 +227,8 @@ def generate_output(
         dq_warnings: All DQ warnings from pipeline
         output_dir: Output directory (default: accy_v2/output/honda)
         run_id: Run identifier for filename
+        flat_data_en: Flat (melted) EN DataFrame from Step 4
+        flat_data_fr: Flat (melted) FR DataFrame from Step 4
 
     Returns:
         Tuple of (output_file_path, output_metrics)
@@ -272,6 +276,22 @@ def generate_output(
                 for c_idx, value in enumerate(row, 1):
                     ws_fr.cell(row=r_idx, column=c_idx, value=value)
             _format_excel_sheet(ws_fr, fr_mapped, "Accessories_FR")
+
+    # Add FlatData_EN sheet (melted/standardized data before enrichment)
+    if flat_data_en is not None and not flat_data_en.empty:
+        ws_flat_en = wb.create_sheet("FlatData_EN")
+        for r_idx, row in enumerate(dataframe_to_rows(flat_data_en, index=False, header=True), 1):
+            for c_idx, value in enumerate(row, 1):
+                ws_flat_en.cell(row=r_idx, column=c_idx, value=value)
+        _format_excel_sheet(ws_flat_en, flat_data_en, "FlatData_EN")
+
+    # Add FlatData_FR sheet (melted/standardized data before enrichment)
+    if flat_data_fr is not None and not flat_data_fr.empty:
+        ws_flat_fr = wb.create_sheet("FlatData_FR")
+        for r_idx, row in enumerate(dataframe_to_rows(flat_data_fr, index=False, header=True), 1):
+            for c_idx, value in enumerate(row, 1):
+                ws_flat_fr.cell(row=r_idx, column=c_idx, value=value)
+        _format_excel_sheet(ws_flat_fr, flat_data_fr, "FlatData_FR")
 
     # Add RawData sheet
     raw_data = prepare_raw_data_sheet(df_en, metadata)

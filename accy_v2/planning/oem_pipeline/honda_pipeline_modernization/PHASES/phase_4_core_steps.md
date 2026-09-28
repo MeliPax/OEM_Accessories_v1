@@ -1,15 +1,46 @@
-# Phase 4: Core Pipeline Steps
+# Phase 4: Core Pipeline Steps — Flattening & Reconciliation
 
 **Duration:** Weeks 4–6  
 **Effort:** ~32 hours  
 **Status:** Ready to start (after Phase 3)  
-**Dependencies:** Phase 3 (Step 1, config), Phase 2 (utilities)
+**Dependencies:** Phase 3 (Step 1 validates & extracts sections), Phase 2 (utilities)
+
+---
+
+## Business Context
+
+**The Problem We're Solving:**
+
+Honda Excel data is in **WIDE format** (trims as columns):
+```
+Description        | Part# | Price | LX  | EX  | SPORT | ...
+Racing Package - R | 123   | $500  | •   | •   | •     | ...
+```
+
+But we NEED **LONG format** (one row per trim) for our database:
+```
+Description        | Part# | Price | Trim   | Applicable
+Racing Package - R | 123   | $500  | LX     | TRUE
+Racing Package - R | 123   | $500  | EX     | TRUE
+Racing Package - R | 123   | $500  | SPORT  | TRUE
+```
+
+**Phase 4 Goal:**
+1. **Flatten** wide → long (melting trims into rows)
+2. **Standardize** data (clean, normalize formats)
+3. **Reconcile** EN ↔ FR (match parts across languages)
+4. Output ready for model lookup (Step 5)
 
 ---
 
 ## Objectives
 
-Implement Steps 2–4 (data transformation pipeline + EN/FR reconciliation).
+Implement Steps 2–4 (header normalization, data standardization, wide→long transformation, EN/FR reconciliation).
+
+**Key Transformation:**
+- INPUT: 170 raw rows × 17 columns (wide, EN + FR separate)
+- PROCESSING: Identify trim columns, melt, detect parent-child relationships, reconcile languages
+- OUTPUT: ~400-500 rows in long format (one part-trim combination per row) with EN/FR columns merged
 
 ---
 
@@ -43,10 +74,67 @@ Implement Steps 2–4 (data transformation pipeline + EN/FR reconciliation).
 **DQ Rules:**
 - `rollup_verification_rule`, `parent_child_trim_mismatch_rule`, `parent_missing_numeric_rule`
 
-### Step 4: Transformation (`step4_transformation.py`) — COMPLEX
+### Step 4: Transformation (`step4_transformation.py`) — CRITICAL FLATTENING STEP
 
-**Step 4a: EN/FR Reconciliation (NEW Step 1.5 logic, here)**
-- Load FR sheet independently
+**The Flattening Problem Explained:**
+
+Before (WIDE format):
+```
+Row 12 (Packages section)
+Description              | Part#     | List_Price | Installed | LX  | EX  | SPORT | TOURING
+Racing Package - Type R  | 26TYPER.. | 6431       | 6612      | •   | •   | •     | •
+```
+
+After (LONG format, one row per trim):
+```
+Row 1: Description | Part# | List_Price | Installed | Trim    | Applicable
+       Racing Pkg  | 26... | 6431       | 6612      | LX      | TRUE
+
+Row 2: Racing Pkg  | 26... | 6431       | 6612      | EX      | TRUE
+Row 3: Racing Pkg  | 26... | 6431       | 6612      | SPORT   | TRUE
+Row 4: Racing Pkg  | 26... | 6431       | 6612      | TOURING | TRUE
+```
+
+**Step 4a: Melt/Flatten (Wide → Long)**
+- FOR EACH row in raw data:
+  - Keep standard columns: Description, Part#, Prices
+  - Find all trim columns (identified in Step 1: `trim_columns_per_section`)
+  - For each trim:
+    - Check if marked with "•" (or "T", "E" per trim_config.yaml)
+    - Create new output row: [description, part_num, price, trim_name, applicable=TRUE/FALSE]
+- Result: Transform 170 rows → ~400-500 rows (expanded by number of trims per section)
+
+**Example Pseudocode:**
+```python
+def flatten_section(df, section_data, trim_columns):
+    """
+    Melt one section from wide to long format.
+    Input: 46 rows (packages section), 5 trim columns (LX, EX, SPORT, EX-L, TOURING)
+    Output: 46 * 5 = 230 rows (each part × each trim combination)
+    """
+    flattened = []
+    for idx, row in df.iterrows():
+        description = row["Description"]
+        part_number = row["Part Number"]
+        price = row["Installed Price"]
+        
+        for trim in trim_columns:  # ["LX", "EX", "SPORT", "EX-L", "TOURING"]
+            trim_marker = row[trim]  # Get "•" or "" or NaN
+            applicable = trim_marker in ["•", "T", "E"]  # Per config
+            
+            flattened.append({
+                "description": description,
+                "part_number": part_number,
+                "installed_price": price,
+                "trim": trim,
+                "applicable": applicable
+            })
+    
+    return pd.DataFrame(flattened)
+```
+
+**Step 4b: EN/FR Reconciliation (After Flattening)**
+- Load FR sheet, flatten it the same way
 - Normalize composite part numbers (both EN & FR) using Phase 2 utility
 - Create reconciliation map:
   ```python
@@ -55,28 +143,18 @@ Implement Steps 2–4 (data transformation pipeline + EN/FR reconciliation).
       "fr_equivalent": "FR_part_456",
       "status": "MAPPED" | "EN_ONLY" | "FR_ONLY" | "DIVERGED",
       "cost_match": True | False,
-      "part_count_match": True | False,
-      "confidence": 0.92,
-      "dq_warnings": [...]
+      "trim_count_match": True | False,
+      "confidence": 0.92
     }
   }
   ```
-- Store in metadata for later use
+- **Merge EN + FR:** For each EN part-trim row, find matching FR row via reconciliation map
+  - If matched: create output with both EN and FR descriptions + confidence score
+  - If EN-only: output EN only, FR cols = NULL
+  - If FR-only: log as anomaly (should not happen if Step 1 validation worked)
 
-**Step 4b: Trim Melting & Reconciliation-Aware Join**
-- Melt EN trims → long format
-- Melt FR trims → long format (separately)
-- **Apply reconciliation map:**
-  - For each EN part: lookup FR equivalent via map
-  - If FR exists: join via reconciliation (not simple left-join)
-  - If EN-only: mark in output (null for FR columns)
-  - If FR-only: log as anomaly
-- Produce output row with both EN and FR columns
-- Add `merge_confidence` metadata column
-- Track join quality (% successfully mapped)
-
-**Input:** Standardized data (EN) + FR sheet (raw) + reconciliation_map  
-**Output:** Long-format dataframe with EN/FR columns + metadata
+**Input:** Standardized data (EN) + raw FR sheet + section boundaries + trim columns  
+**Output:** Long-format dataframe (400-500 rows) with EN/FR columns + merge_confidence
 
 **DQ Rules:**
 - `en_fr_divergence_rule`, `composite_part_number_normalization_rule`, `part_mapping_confidence_rule`

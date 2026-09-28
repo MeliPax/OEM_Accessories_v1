@@ -6,19 +6,23 @@ This script processes files from landing_zone and produces output files with mod
 Uses actual pipeline data flow - no test files created.
 
 Usage:
-    python run_pipeline.py mitsubishi
+    python run_pipeline.py mitsubishi                                                     (process single file)
+    python run_pipeline.py mitsubishi --batch                                            (process all files in batch mode)
     python run_pipeline.py mitsubishi "accy_v2/data/landing_zone/mitsubishi/2026_Outlander_ES_EN.xlsx"
     python run_pipeline.py mazda
     python run_pipeline.py hyundai
     python run_pipeline.py genesis (uses hyundai_genesis landing zone - shared with Hyundai)
-    python run_pipeline.py honda
+    python run_pipeline.py honda                                                          (process single file)
+    python run_pipeline.py honda --batch                                                 (process all files in batch)
 
 Note: Genesis shares the hyundai_genesis landing zone with Hyundai pipeline.
+      Batch mode adds source_file column to melted output for multi-file traceability.
 """
 
 import sys
 from pathlib import Path
 from datetime import datetime
+import pandas as pd
 
 # Add project root to path so imports work
 project_root = Path(__file__).parent
@@ -40,8 +44,17 @@ def get_landing_zone_dir(oem: str) -> str:
     return oem_lower
 
 
-def get_landing_zone_files(oem: str, file_path: str = None) -> list:
-    """Get files from landing_zone directory for specified OEM."""
+def get_landing_zone_files(oem: str, file_path: str = None, batch_mode: bool = False) -> list:
+    """Get files from landing_zone directory for specified OEM.
+
+    Args:
+        oem: OEM name (honda, mazda, etc.)
+        file_path: Specific file to process (overrides batch_mode)
+        batch_mode: If True, return ALL files; if False, return most recent
+
+    Returns:
+        List of file paths to process
+    """
     project_root = Path(__file__).parent
     landing_zone_dir = get_landing_zone_dir(oem)
 
@@ -81,8 +94,11 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
             f"No Excel/CSV files found in {landing_zone}"
         )
 
-    # Return most recent file
-    return [max(all_files, key=lambda f: f.stat().st_mtime)]
+    # Return ALL files if batch mode, otherwise return most recent
+    if batch_mode:
+        return all_files
+    else:
+        return [max(all_files, key=lambda f: f.stat().st_mtime)]
 
 
 def get_pipeline_class(oem: str):
@@ -149,16 +165,29 @@ def main():
         sys.exit(1)
 
     oem = sys.argv[1]
-    file_path = sys.argv[2] if len(sys.argv) > 2 else None
+
+    # Parse arguments: check for --batch flag or specific file
+    batch_mode = False
+    file_path = None
+
+    for arg in sys.argv[2:]:
+        if arg == "--batch":
+            batch_mode = True
+        elif not arg.startswith("-"):
+            file_path = arg
 
     print("\n" + "=" * 80)
-    print(f"PIPELINE TEST: {oem.upper()}")
+    print(f"PIPELINE: {oem.upper()}")
+    if batch_mode:
+        print("MODE: BATCH PROCESSING (multiple files)")
+    else:
+        print("MODE: SINGLE FILE")
     print("=" * 80)
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     try:
         # Get files to process
-        files = get_landing_zone_files(oem, file_path)
+        files = get_landing_zone_files(oem, file_path, batch_mode=batch_mode)
         print(f"Files to process: {len(files)}")
         for f in files:
             print(f"  - {f.relative_to(Path.cwd())}")
@@ -185,6 +214,12 @@ def main():
         print("=" * 80)
         print("[OK] PIPELINE EXECUTION COMPLETE")
         print("=" * 80)
+
+        if batch_mode:
+            print(f"\nBatch Summary:")
+            print(f"  - Files processed: {len(files)}")
+            print(f"  - Mode: Batch (all files with source_file tracking in FlatData sheets)")
+
         print("\nNext steps:")
         print(f"1. Check output files in: accy_v2/output/ready_to_upload/{oem.lower()}/")
         print(f"2. Review DQ report in: accy_v2/output/dq_reports/{oem.lower()}/")

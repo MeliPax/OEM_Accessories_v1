@@ -1,815 +1,358 @@
-"""Step 1: Validation & Metadata Extraction
+"""
+Step 1: Data Loading & Metadata Extraction
 
-Validates Honda Excel file structure, extracts metadata, and logs validation results.
-
-Part 1: Sheet Validation — Load workbook, verify EN/FR sheets exist
-Part 2: Metadata Extraction — Two-level fallback (top 5 rows → regex search)
-Part 3: Section Detection — Find all 6 sections, verify order
-Part 4: Column Validation — Check headers, extract trim columns
-Part 5: DQ Logging — Accumulate warnings with severity
-Part 6: Output & Returns — Build metadata dict, return three outputs
+Handles actual Honda file structure:
+- Master sheets: wide format with trims as columns
+- LoadFile sheets: raw load data
+- Template sheet: structure template + metadata
 """
 
-from pathlib import Path
-from typing import Tuple, Dict, Any, Optional, List
+from typing import Tuple, Dict, Any, List, Optional
+import pandas as pd
+import os
 import re
 
-import openpyxl
-import pandas as pd
-import yaml
+
+def extract_model_from_sheet_name(sheet_name: str) -> Optional[str]:
+    """Extract model name from sheet name."""
+    model = sheet_name.replace(" - Master", "").replace("LoadFile - ", "")
+    
+    trim_prefixes = [
+        "Si ", "Sport ", "Sport Hybrid ", "Sport Touring ", "Type R ",
+        "Ex-L ", "EX-L ", "Lx ", "LX ", "Touring ", "Hybrid ",
+        "Black Edition ", "TrailSport ", "Sport L "
+    ]
+    
+    for prefix in trim_prefixes:
+        if model.startswith(prefix):
+            model = model[len(prefix):]
+    
+    return model.strip() if model.strip() else None
 
 
-class ValidationError(Exception):
-    """Raised when FATAL validation errors occur."""
-    pass
-
-
-# ============================================================================
-# Configuration Loading & Validation
-# ============================================================================
-
-def _load_section_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Load section patterns from config.
-
-    Extracts column headers, canonical mappings, and trim extraction settings
-    from section_patterns.yaml configuration.
-
-    Args:
-        config: Pipeline configuration (may include inline config or file path)
-
-    Returns:
-        Dict with: column_headers, column_mappings, section_order, trim_extraction
-
-    Raises:
-        ValidationError: If required config is missing or malformed
+def identify_section_boundaries(df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
     """
-    # Get section config (either embedded or from file)
-    section_config = config.get("section_config", {})
-
-    # For now, expect column_headers to be in the main config
-    # (will be loaded from section_patterns.yaml by orchestrator)
-    column_headers = config.get("column_headers", {})
-
-    if not column_headers or "en" not in column_headers or "fr" not in column_headers:
-        raise ValidationError(
-            "Configuration error: column_headers with 'en' and 'fr' keys is required. "
-            "Check section_patterns.yaml is loaded in pipeline config."
-        )
-
-    # Build canonical mappings from column_headers
-    # Format: {original_name: canonical_name}
-    en_mappings = {}
-    fr_mappings = {}
-
-    for col_spec in column_headers.get("en", []):
-        if isinstance(col_spec, dict):
-            en_mappings[col_spec["name"]] = col_spec["canonical"]
-        else:
-            # Fallback for old format (just a string)
-            en_mappings[col_spec] = col_spec.lower()
-
-    for col_spec in column_headers.get("fr", []):
-        if isinstance(col_spec, dict):
-            fr_mappings[col_spec["name"]] = col_spec["canonical"]
-        else:
-            # Fallback for old format
-            fr_mappings[col_spec] = col_spec.lower()
-
-    # Get trim extraction settings
-    trim_extraction = config.get("trim_extraction", {})
-    if not trim_extraction:
-        trim_extraction = {
-            "price_column_en": "Installed Price",
-            "price_column_fr": "Prix installé",
-            "stop_markers": {
-                "en": ["application", "notes", "remarks", ""],
-                "fr": ["application", "notes", "remarques", ""]
-            },
-            "case_insensitive": True,
-            "strip_whitespace": True,
-        }
-
-    # Section order from config
-    section_order = config.get("section_order", [
-        "packages", "wheels", "exterior", "interior", "electrical", "paint_pens"
-    ])
-
-    return {
-        "column_headers": column_headers,
-        "en_mappings": en_mappings,
-        "fr_mappings": fr_mappings,
-        "trim_extraction": trim_extraction,
-        "section_order": section_order,
-    }
-
-
-def _get_column_list(column_headers_spec: List[Any]) -> List[str]:
-    """Extract just the column names from column_headers spec.
-
-    Args:
-        column_headers_spec: List of column specs (either strings or dicts with 'name' key)
-
-    Returns:
-        List of column name strings
+    Detect all 6 sections using regex pattern: ^\d+\.\d+\s+(.+)$
+    Returns: {"packages": {"marker_row": 9, "data_start": 10, "data_end": 55, ...}, ...}
     """
-    result = []
-    for col_spec in column_headers_spec:
-        if isinstance(col_spec, dict):
-            result.append(col_spec["name"])
-        else:
-            result.append(col_spec)
-    return result
-
-
-# ============================================================================
-# Part 1: Sheet Validation (1-2 hours)
-# ============================================================================
-
-def _load_sheets(
-    excel_file: str,
-    config: Dict[str, Any],
-) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, str]]:
-    """Load EN and FR sheets from Excel workbook.
-
-    Args:
-        excel_file: Path to Excel file
-        config: Pipeline configuration
-
-    Returns:
-        Tuple of (en_df, fr_df, sheet_names_dict)
-
-    Raises:
-        ValidationError: If sheets don't exist or can't be loaded
-    """
-    file_path = Path(excel_file)
-
-    # Load workbook to list sheet names
-    try:
-        wb = openpyxl.load_workbook(file_path, data_only=True)
-    except Exception as e:
-        raise ValidationError(f"Cannot read Excel file: {file_path}") from e
-
-    sheet_names = wb.sheetnames
-
-    # Find EN and FR sheets matching pattern *_APP_EN and *_APP_FR
-    en_sheet = None
-    fr_sheet = None
-
-    for name in sheet_names:
-        if name.endswith("_APP_EN") or name.endswith("APP_EN"):
-            en_sheet = name
-        elif name.endswith("_APP_FR") or name.endswith("APP_FR"):
-            fr_sheet = name
-
-    if not en_sheet or not fr_sheet:
-        missing = []
-        if not en_sheet:
-            missing.append("EN sheet (*_APP_EN)")
-        if not fr_sheet:
-            missing.append("FR sheet (*_APP_FR)")
-        raise ValidationError(
-            f"Missing required sheets: {', '.join(missing)}. "
-            f"Found sheets: {sheet_names}"
-        )
-
-    # Load sheets into DataFrames
-    try:
-        en_df = pd.read_excel(file_path, sheet_name=en_sheet, dtype=str)
-        fr_df = pd.read_excel(file_path, sheet_name=fr_sheet, dtype=str)
-    except Exception as e:
-        raise ValidationError(f"Cannot read EN or FR sheet: {e}") from e
-
-    return en_df, fr_df, {
-        "en_sheet_name": en_sheet,
-        "fr_sheet_name": fr_sheet,
-    }
-
-
-# ============================================================================
-# Part 2: Metadata Extraction (1-2 hours)
-# ============================================================================
-
-def _level_1_quick_scan(
-    df: pd.DataFrame,
-    config: Dict[str, Any],
-    language: str = "en",
-) -> Tuple[Optional[str], Optional[int]]:
-    """Scan top 5 rows for model name and year keywords.
-
-    Args:
-        df: DataFrame to scan
-        config: Pipeline configuration
-        language: "en" or "fr"
-
-    Returns:
-        Tuple of (model_name, model_year) or (None, None) if not found
-    """
-    l1_config = config["metadata_extraction"]["level_1_quick_scan"]
-    rows_to_scan = l1_config["rows_to_scan"]
-
-    keywords_config = l1_config["keywords"]
-    model_name_keywords = keywords_config["model_name"][language]
-    model_year_keywords = keywords_config["model_year"][language]
-
-    model_name = None
-    model_year = None
-
-    # Look for keywords in COLUMN NAMES; adjacent column name is the value
-    col_list = df.columns.tolist()
-    for idx, col_name in enumerate(col_list):
-        col_name_lower = str(col_name).strip().lower()
-
-        # Check if column name is a model_name keyword
-        if col_name_lower in [k.lower() for k in model_name_keywords] and not model_name:
-            # Get next column name as the value
-            if idx + 1 < len(col_list):
-                model_name = col_list[idx + 1]
-
-        # Check if column name is a model_year keyword
-        if col_name_lower in [k.lower() for k in model_year_keywords] and not model_year:
-            # Get next column name and try to parse as year
-            if idx + 1 < len(col_list):
-                try:
-                    year = int(col_list[idx + 1])
-                    if 2000 <= year <= 2050:
-                        model_year = year
-                except ValueError:
-                    pass
-
-    # Fallback: search data rows if year not found in column names
-    if not model_year:
-        search_df = df.iloc[:rows_to_scan].fillna("")
-        for idx, row in search_df.iterrows():
-            row_list = row.tolist()
-            for keyword in model_year_keywords:
-                # Check each cell in the row
-                for col_idx, cell_val in enumerate(row_list):
-                    if str(cell_val).strip().lower() == keyword.lower():
-                        # Found keyword, try next cell value in same row
-                        if col_idx + 1 < len(row_list):
-                            try:
-                                year = int(str(row_list[col_idx + 1]).strip())
-                                if 2000 <= year <= 2050:
-                                    model_year = year
-                                    break
-                            except ValueError:
-                                pass
-                if model_year:
-                    break
-            if model_year:
-                break
-
-    return model_name, model_year
-
-
-def _level_2_regex_search(
-    df: pd.DataFrame,
-    config: Dict[str, Any],
-    language: str = "en",
-) -> Tuple[Optional[str], Optional[int]]:
-    """Regex search entire sheet for model name and year.
-
-    Args:
-        df: DataFrame to search
-        config: Pipeline configuration
-        language: "en" or "fr"
-
-    Returns:
-        Tuple of (model_name, model_year) or (None, None) if not found
-    """
-    l2_config = config["metadata_extraction"]["level_2_regex_search"]
-    patterns = l2_config["patterns"]
-
-    model_name_pattern = patterns["model_name"][language]
-    model_year_pattern = patterns["model_year"][language]
-
-    model_name = None
-    model_year = None
-
-    # Search line-by-line to avoid DataFrame string representation issues
-    for col in df.columns:
-        for val in df[col].fillna("").astype(str):
-            # Search model name
-            if not model_name:
-                match = re.search(model_name_pattern, val)
-                if match:
-                    model_name = match.group(2).strip()
-            # Search model year
-            if not model_year:
-                match = re.search(model_year_pattern, val)
-                if match:
-                    try:
-                        model_year = int(match.group(2))
-                    except (ValueError, IndexError):
-                        pass
-
-    return model_name, model_year
-
-
-def _extract_metadata(
-    en_df: pd.DataFrame,
-    fr_df: pd.DataFrame,
-    config: Dict[str, Any],
-) -> Dict[str, Any]:
-    """Extract model name and year from sheets.
-
-    Args:
-        en_df: English sheet DataFrame
-        fr_df: French sheet DataFrame
-        config: Pipeline configuration
-
-    Returns:
-        Dictionary with extracted metadata
-
-    Raises:
-        ValidationError: If both levels fail
-    """
-    metadata = {}
-
-    # Try Level 1 (quick scan)
-    model_name, model_year = _level_1_quick_scan(en_df, config, "en")
-
-    # If Level 1 fails on specific fields, try Level 2 (regex) for those fields only
-    if not model_name or not model_year:
-        l2_name, l2_year = _level_2_regex_search(en_df, config, "en")
-        if not model_name:
-            model_name = l2_name
-        if not model_year:
-            model_year = l2_year
-
-    # Validate extraction
-    val_config = config["metadata_extraction"]["validation"]
-    year_min = val_config["year_range_min"]
-    year_max = val_config["year_range_max"]
-
-    if not model_name or not model_name.strip():
-        raise ValidationError("Model name extraction failed at both levels")
-
-    if not model_year or not (year_min <= model_year <= year_max):
-        raise ValidationError(
-            f"Model year extraction failed or out of range. "
-            f"Got: {model_year}, expected: [{year_min}, {year_max}]"
-        )
-
-    metadata["model_name"] = model_name.strip()
-    metadata["vehicle_year"] = model_year
-
-    return metadata
-
-
-# ============================================================================
-# Part 3: Section Detection (1-2 hours)
-# ============================================================================
-
-def _detect_sections(
-    en_df: pd.DataFrame,
-    fr_df: pd.DataFrame,
-    config: Dict[str, Any],
-) -> Tuple[Dict[str, Any], list]:
-    """Detect all 6 sections in EN and FR sheets.
-
-    Args:
-        en_df: English sheet DataFrame
-        fr_df: French sheet DataFrame
-        config: Pipeline configuration
-
-    Returns:
-        Tuple of (section_structure, warnings_list)
-    """
-    warnings = []
-    section_config = config.get("section_config", {})
-
-    # Load section patterns - use inline config if section_patterns.yaml not loaded
-    if "sections" in config:
-        sections_data = config["sections"]
-    else:
-        # Use default from section_patterns.yaml structure
-        sections_data = {
-            "packages": {"en": "1.0 Packages and Kits", "fr": "1.0 Groupes et ensembles"},
-            "wheels": {"en": "2.0 Wheels and Wheel Accessories", "fr": "2.0 Jantes et accessoires de jantes"},
-            "exterior": {"en": "3.0 Exterior", "fr": "3.0 Extérieur"},
-            "interior": {"en": "4.0 Interior", "fr": "4.0 Intérieur"},
-            "electrical": {"en": "5.0 Electrical", "fr": "5.0 Électrique"},
-            "paint_pens": {"en": "6.0 Paint Pens", "fr": "6.0 Stylos à peinture"},
-        }
-
-    section_order = ["packages", "wheels", "exterior", "interior", "electrical", "paint_pens"]
     section_structure = {}
-    en_section_rows = {}
-    fr_section_rows = {}
 
-    # Detect sections in EN sheet
-    for section_name in section_order:
-        section_data = sections_data.get(section_name, {})
-        en_text = section_data.get("en", "")
+    # Pattern for section markers: "1.0 Packages", "2.0 Wheels", etc.
+    pattern = r'^\d+\.\d+\s+(.+)$'
 
-        # Search for section header in EN sheet
-        found_row = None
-
-        # Check column names first (pandas uses first row with data as header)
-        for col_name in en_df.columns:
-            if str(col_name).strip() == en_text:
-                found_row = 0  # Section header is in first row (used as column name)
+    section_rows = []
+    for idx, row in df.iterrows():
+        for val in row.values:
+            val_str = str(val).strip() if pd.notna(val) else ""
+            if re.match(pattern, val_str):
+                section_name = val_str.split(maxsplit=1)[1].lower().replace(" and ", "_").replace(" ", "_")
+                section_rows.append((idx, section_name, val_str))
                 break
 
-        # If not found in columns, search data rows
-        if found_row is None:
-            for idx, row in en_df.iterrows():
-                for cell_val in row:
-                    if str(cell_val).strip() == en_text:
-                        found_row = idx
-                        break
-                if found_row is not None:
+    # For each section marker, determine data boundaries
+    # Section structure: marker_row, then header_row and data_rows follow
+    for i, (marker_row, section_name, section_text) in enumerate(section_rows):
+        data_start = marker_row + 1  # Data starts right after marker (includes header)
+
+        # Data ends at the next section marker (or end of df)
+        if i < len(section_rows) - 1:
+            data_end = section_rows[i + 1][0] - 1
+        else:
+            # Last section: find last non-empty row
+            data_end = len(df) - 1
+            for j in range(len(df) - 1, marker_row, -1):
+                if df.iloc[j].notna().any():
+                    data_end = j
                     break
 
-        if found_row is not None:
-            en_section_rows[section_name] = found_row
-        else:
-            # Section not found
-            warnings.append({
-                "rule": "missing_section_rule",
-                "severity": "FATAL",
-                "section": section_name,
-                "message": f"Section '{en_text}' not found in EN sheet",
-            })
+        total_rows = max(0, data_end - data_start + 1)
 
-    # Detect sections in FR sheet
-    for section_name in section_order:
-        section_data = sections_data.get(section_name, {})
-        fr_text = section_data.get("fr", "")
-
-        # Search for section header in FR sheet
-        found_row = None
-
-        # Check column names first (pandas uses first row with data as header)
-        for col_name in fr_df.columns:
-            if str(col_name).strip() == fr_text:
-                found_row = 0  # Section header is in first row (used as column name)
-                break
-
-        # If not found in columns, search data rows
-        if found_row is None:
-            for idx, row in fr_df.iterrows():
-                for cell_val in row:
-                    if str(cell_val).strip() == fr_text:
-                        found_row = idx
-                        break
-                if found_row is not None:
-                    break
-
-        if found_row is not None:
-            fr_section_rows[section_name] = found_row
-        else:
-            # Section not found in FR
-            warnings.append({
-                "rule": "missing_section_rule",
-                "severity": "WARNING",
-                "section": section_name,
-                "message": f"Section '{fr_text}' not found in FR sheet",
-            })
-
-    # Check all sections found in EN
-    if len(en_section_rows) < len(section_order):
-        missing_sections = [s for s in section_order if s not in en_section_rows]
-        if section_config.get("require_all_sections", True):
-            # FATAL if all sections required
-            pass  # Already logged above
-
-    # Verify section order in EN sheet
-    if section_config.get("enforce_section_order", True):
-        en_rows = [en_section_rows.get(s) for s in section_order if s in en_section_rows]
-        # Check if rows are in increasing order
-        for i in range(len(en_rows) - 1):
-            if en_rows[i] is not None and en_rows[i+1] is not None:
-                if en_rows[i] >= en_rows[i+1]:
-                    warnings.append({
-                        "rule": "section_order_rule",
-                        "severity": "WARNING",
-                        "section": f"{section_order[i]} vs {section_order[i+1]}",
-                        "message": f"Sections out of order: {section_order[i]} (row {en_rows[i]}) >= {section_order[i+1]} (row {en_rows[i+1]})",
-                    })
-
-    # Build section_structure dict with status
-    for section_name in section_order:
         section_structure[section_name] = {
-            "en_row": en_section_rows.get(section_name),
-            "fr_row": fr_section_rows.get(section_name),
-            "status": "found" if section_name in en_section_rows else "missing",
+            "marker_row": marker_row,
+            "data_start": data_start,
+            "data_end": data_end,
+            "total_rows": total_rows,
+            "marker_text": section_text
         }
 
-    return section_structure, warnings
+    return section_structure
 
 
-# ============================================================================
-# Part 4: Column Validation (1-2 hours)
-# ============================================================================
-
-def _validate_columns(
-    en_df: pd.DataFrame,
-    fr_df: pd.DataFrame,
-    config: Dict[str, Any],
-    section_structure: Dict[str, Any],
-) -> Tuple[Dict[str, Any], list]:
-    """Validate column headers and extract trim columns per section.
-
-    ALL configuration (column names, mappings, stop markers) is loaded from config.
-    No hardcoded values - enables flexibility across different OEMs.
-
-    Args:
-        en_df: English sheet DataFrame
-        fr_df: French sheet DataFrame
-        config: Pipeline configuration (includes column_headers, trim_extraction, section_order)
-        section_structure: Section boundaries from Part 3
-
-    Returns:
-        Tuple of (column_metadata, warnings_list)
-
-    Raises:
-        ValidationError: If required config is missing
+def extract_trim_columns(df: pd.DataFrame, section_structure: Dict[str, Dict[str, Any]]) -> Dict[str, List[str]]:
     """
-    warnings = []
-    column_metadata = {}
+    Extract trim columns per section.
+    For each section, find "Installed Price" column, all columns after it are trims.
+    """
+    trim_columns_per_section = {}
 
-    # Load all column config and mappings from configuration
-    try:
-        section_cfg = _load_section_config(config)
-    except ValidationError as e:
-        raise ValidationError(f"Column validation cannot proceed: {e}") from e
+    # Product columns that come before trim columns
+    product_col_markers = ["Description", "Part Number", "Dealer Net", "List Price", "FRT", "Installed Price"]
 
-    # Extract from loaded config (not hardcoded)
-    expected_en_cols = _get_column_list(section_cfg["column_headers"]["en"])
-    expected_fr_cols = _get_column_list(section_cfg["column_headers"]["fr"])
-    en_mappings = section_cfg["en_mappings"]
-    fr_mappings = section_cfg["fr_mappings"]
-    section_order = section_cfg["section_order"]
-    trim_extraction = section_cfg["trim_extraction"]
+    for section_name, boundaries in section_structure.items():
+        data_start = boundaries.get("data_start")
+        data_end = boundaries.get("data_end")
 
-    # Get trim extraction settings from config
-    price_col_en = trim_extraction.get("price_column_en", "Installed Price")
-    price_col_fr = trim_extraction.get("price_column_fr", "Prix installé")
-    stop_markers_en = trim_extraction.get("stop_markers", {}).get("en", ["application", "notes", "remarks", ""])
-    stop_markers_fr = trim_extraction.get("stop_markers", {}).get("fr", ["application", "notes", "remarques", ""])
-    case_insensitive = trim_extraction.get("case_insensitive", True)
-    strip_whitespace = trim_extraction.get("strip_whitespace", True)
+        if data_start is None or data_end is None:
+            trim_columns_per_section[section_name] = []
+            continue
 
-    trim_columns_dict = {}
-    en_trim_columns_by_section = {}
-    fr_trim_columns_by_section = {}
+        # Get header row (one row before data_start)
+        header_row_idx = data_start - 1
+        if header_row_idx >= 0 and header_row_idx < len(df):
+            header_row = df.iloc[header_row_idx]
 
-    # Validate columns and extract trim columns for each section
-    for section_name in section_order:
-        section_data = section_structure.get(section_name, {})
-        en_row = section_data.get("en_row")
-        fr_row = section_data.get("fr_row")
+            # Find "Installed Price" column (last product column)
+            installed_price_col = None
+            for col_idx, col_name in enumerate(header_row):
+                col_str = str(col_name).strip()
+                if "Installed" in col_str and "Price" in col_str:
+                    installed_price_col = col_idx
+                    break
 
-        if en_row is None:
-            continue  # Section not found, already logged as FATAL in Part 3
-
-        # Determine header row: if section_row == 0, section header IS in df.columns
-        # and the ACTUAL headers are at df.iloc[0] (first data row)
-        # Otherwise, headers are at section_row + 1
-        if en_row == 0:
-            # Section header is in column names, actual headers are in first data row
-            if len(en_df) == 0:
-                warnings.append({
-                    "rule": "invalid_header_row_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"EN section has no data rows (cannot read headers)",
-                })
-                en_trim_columns_by_section[section_name] = []
-                continue
-            en_header_row = en_df.iloc[0]
-            en_headers = [str(h).strip() for h in en_header_row]
-        else:
-            # Headers are in the row immediately after section header
-            header_row_idx = en_row + 1
-            if header_row_idx >= len(en_df):
-                warnings.append({
-                    "rule": "invalid_header_row_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"EN section header row {header_row_idx} out of bounds (sheet has {len(en_df)} rows)",
-                })
-                en_trim_columns_by_section[section_name] = []
-                continue
-
-            # Read header row from EN sheet
-            en_header_row = en_df.iloc[header_row_idx]
-            en_headers = [str(h).strip() for h in en_header_row]
-
-            # Check for missing expected columns
-            missing_en = [col for col in expected_en_cols if col not in en_headers]
-            if missing_en:
-                warnings.append({
-                    "rule": "missing_columns_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"EN section missing columns: {', '.join(missing_en)}",
-                })
-
-            # Extract trim columns (after price column until stop marker or end)
-            # Uses config-defined price column and stop markers - not hardcoded
-            trim_cols = []
-            if price_col_en in en_headers:
-                price_idx = en_headers.index(price_col_en)
-                for idx in range(price_idx + 1, len(en_headers)):
-                    col_name = en_headers[idx]
-                    col_check = str(col_name).strip() if strip_whitespace else str(col_name)
-                    col_lower = col_check.lower() if case_insensitive else col_check
-
-                    # Check against stop markers from config
-                    stop_markers_check = [m.lower() if case_insensitive else m for m in stop_markers_en]
-                    if col_lower in stop_markers_check or not col_lower or col_lower == "nan":
-                        break
-                    if col_lower != "nan":
+            # All columns after Installed Price are trim columns
+            if installed_price_col is not None:
+                trim_cols = []
+                for col_idx in range(installed_price_col + 1, len(header_row)):
+                    col_name = str(header_row.iloc[col_idx]).strip()
+                    # Skip empty columns, notes, application columns
+                    if col_name and col_name.lower() not in ["nan", "notes", "application", "comments"]:
                         trim_cols.append(col_name)
+
+                trim_columns_per_section[section_name] = trim_cols
             else:
-                warnings.append({
-                    "rule": "missing_price_column_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"EN section missing '{price_col_en}' column (cannot extract trim columns)",
-                })
-
-            en_trim_columns_by_section[section_name] = trim_cols
-
-        # Validate FR headers (if section exists in FR sheet)
-        if fr_row is not None:
-            if fr_row == 0:
-                # Section header is in column names, actual headers are in first data row
-                if len(fr_df) == 0:
-                    warnings.append({
-                        "rule": "invalid_header_row_rule",
-                        "severity": "WARNING",
-                        "section": section_name,
-                        "message": f"FR section has no data rows (cannot read headers)",
-                    })
-                    fr_trim_columns_by_section[section_name] = []
-                    continue
-                fr_header_row = fr_df.iloc[0]
-                fr_headers = [str(h).strip() for h in fr_header_row]
-            else:
-                # Headers are in the row immediately after section header
-                header_row_idx_fr = fr_row + 1
-                if header_row_idx_fr >= len(fr_df):
-                    warnings.append({
-                        "rule": "invalid_header_row_rule",
-                        "severity": "WARNING",
-                        "section": section_name,
-                        "message": f"FR section header row {header_row_idx_fr} out of bounds (sheet has {len(fr_df)} rows)",
-                    })
-                    fr_trim_columns_by_section[section_name] = []
-                    continue
-
-                # Read header row from FR sheet
-                fr_header_row = fr_df.iloc[header_row_idx_fr]
-                fr_headers = [str(h).strip() for h in fr_header_row]
-
-            # Check for missing expected columns
-            missing_fr = [col for col in expected_fr_cols if col not in fr_headers]
-            if missing_fr:
-                warnings.append({
-                    "rule": "missing_columns_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"FR section missing columns: {', '.join(missing_fr)}",
-                })
-
-            # Extract trim columns from FR sheet (uses config values, not hardcoded)
-            trim_cols_fr = []
-            if price_col_fr in fr_headers:
-                price_idx_fr = fr_headers.index(price_col_fr)
-                for idx in range(price_idx_fr + 1, len(fr_headers)):
-                    col_name = fr_headers[idx]
-                    col_check = str(col_name).strip() if strip_whitespace else str(col_name)
-                    col_lower = col_check.lower() if case_insensitive else col_check
-
-                    # Check against stop markers from config
-                    stop_markers_check = [m.lower() if case_insensitive else m for m in stop_markers_fr]
-                    if col_lower in stop_markers_check or not col_lower or col_lower == "nan":
-                        break
-                    if col_lower != "nan":
-                        trim_cols_fr.append(col_name)
-            else:
-                warnings.append({
-                    "rule": "missing_price_column_rule",
-                    "severity": "WARNING",
-                    "section": section_name,
-                    "message": f"FR section missing '{price_col_fr}' column",
-                })
-
-            fr_trim_columns_by_section[section_name] = trim_cols_fr
+                trim_columns_per_section[section_name] = []
         else:
-            fr_trim_columns_by_section[section_name] = []
+            trim_columns_per_section[section_name] = []
 
-    # Build final trim columns structure (EN trim columns are primary)
-    # Uses config-loaded mappings, not hardcoded values
-    trim_columns_dict = {
-        section_name: {
-            "en_trims": en_trim_columns_by_section.get(section_name, []),
-            "fr_trims": fr_trim_columns_by_section.get(section_name, []),
-        }
-        for section_name in section_order
+    return trim_columns_per_section
+
+
+def extract_metadata_from_data_sheet(df: pd.DataFrame) -> Dict[str, Any]:
+    """Extract metadata from header rows (before section marker) and footer rows."""
+    meta = {
+        "honda_accessories_found": False,
+        "model_name": None,
+        "section_marker_row": None,
+        "publication_date": None,
     }
 
-    # Store loaded mappings from config (not hardcoded)
-    column_metadata["column_mappings_en"] = en_mappings
-    column_metadata["column_mappings_fr"] = fr_mappings
-    column_metadata["trim_columns"] = trim_columns_dict
+    try:
+        # Convert to string for searching
+        df_str = df.astype(str)
 
-    return column_metadata, warnings
+        # Find section marker (Packages and Kits / Groupes et ensembles)
+        section_marker_row = None
+        for idx, row in df_str.iterrows():
+            row_text = " ".join(str(val) for val in row.values)
+            if "Packages and Kits" in row_text or "1.0 Packages" in row_text or \
+               "Groupes et ensembles" in row_text or "1.0 Groupes" in row_text:
+                section_marker_row = idx
+                break
+
+        meta["section_marker_row"] = section_marker_row
+
+        # Extract from header rows (before section marker)
+        if section_marker_row is not None:
+            header_rows = df.iloc[0:section_marker_row]
+            header_text = " ".join(header_rows.values.flatten().astype(str))
+
+            # Look for Honda Accessories signature
+            if "Honda Accessories" in header_text or "Honda" in header_text:
+                meta["honda_accessories_found"] = True
+
+        # Extract publication date from footer rows (last 3 rows)
+        footer_rows = df.tail(3)
+        footer_text = " ".join(footer_rows.values.flatten().astype(str))
+
+        if "Publication Date" in footer_text or "Date de publication" in footer_text:
+            # Look for date in format YYYY-MM-DD
+            date_pattern = r'(\d{4}-\d{2}-\d{2})'
+            date_match = re.search(date_pattern, footer_text)
+            if date_match:
+                meta["publication_date"] = date_match.group(1)
+
+        return meta
+
+    except Exception as e:
+        meta["error"] = str(e)
+        return meta
 
 
-# ============================================================================
-# Part 5: DQ Logging (30-60 min) — SCAFFOLD
-# ============================================================================
+def extract_metadata_from_file(file_path: str) -> Dict[str, Any]:
+    """Extract Honda file metadata: year, models, publication date."""
+    metadata = {
+        "file_path": file_path,
+        "file_name": os.path.basename(file_path),
+        "model_year": None,
+        "publication_date": None,
+        "found_publication_date_string": False,
+        "manufacture_validated": False,
+        "models_in_file": [],
+        "primary_sheet": None,
+        "sheet_summary": {},
+    }
 
-def _build_dq_warnings(warnings_list: list) -> list:
-    """Consolidate and format DQ warnings from all validation parts.
+    try:
+        excel_file = pd.ExcelFile(file_path)
+        sheet_names = excel_file.sheet_names
 
-    Args:
-        warnings_list: List of warning dicts from parts 3-4
-                      Expected format: {rule, severity, section, message}
+        # Extract year from filename
+        year_match = re.search(r'(202[5-9]|203[0-9])', os.path.basename(file_path))
+        if year_match:
+            metadata["model_year"] = year_match.group(1)
 
-    Returns:
-        List of consolidated DQ warning records, ordered by severity (FATAL → WARNING)
-    """
-    if not warnings_list:
-        return []
+        # Categorize sheets
+        template_sheets = [s for s in sheet_names if s.lower() == "template"]
+        loadfile_sheets = [s for s in sheet_names if "loadfile" in s.lower()]
+        master_sheets = [s for s in sheet_names if " - master" in s.lower() or "- Master" in s]
+        trim_sheets = [s for s in sheet_names if s not in template_sheets + loadfile_sheets + master_sheets]
 
-    # Define severity ordering (lower index = higher priority)
-    severity_order = {"FATAL": 0, "ERROR": 1, "WARNING": 2}
-
-    # Sort warnings by severity (FATAL first, then ERROR, then WARNING)
-    sorted_warnings = sorted(
-        warnings_list,
-        key=lambda w: (severity_order.get(w.get("severity"), 3), w.get("section", ""))
-    )
-
-    # Format each warning for output
-    formatted_warnings = []
-    for warning in sorted_warnings:
-        # Ensure all required fields are present
-        formatted_warning = {
-            "rule": warning.get("rule", "unknown_rule"),
-            "severity": warning.get("severity", "WARNING"),
-            "section": warning.get("section", "unknown"),
-            "message": warning.get("message", "No message provided"),
+        metadata["sheet_summary"] = {
+            "template_sheets": len(template_sheets),
+            "loadfile_sheets": len(loadfile_sheets),
+            "master_sheets": len(master_sheets),
+            "trim_sheets": len(trim_sheets),
+            "total_sheets": len(sheet_names)
         }
-        formatted_warnings.append(formatted_warning)
 
-    return formatted_warnings
+        # Extract models from sheet names
+        models_found = set()
+        for sheet in master_sheets:
+            model = extract_model_from_sheet_name(sheet)
+            if model:
+                models_found.add(model)
+
+        metadata["models_in_file"] = sorted(list(models_found))
+
+        # Select primary data sheet
+        if master_sheets:
+            metadata["primary_sheet"] = master_sheets[0]
+        elif loadfile_sheets:
+            metadata["primary_sheet"] = loadfile_sheets[0]
+        elif trim_sheets:
+            metadata["primary_sheet"] = trim_sheets[0]
+
+        # Extract metadata from primary sheet (header + footer)
+        if metadata["primary_sheet"]:
+            primary_df = pd.read_excel(file_path, sheet_name=metadata["primary_sheet"])
+            sheet_meta = extract_metadata_from_data_sheet(primary_df)
+
+            if sheet_meta.get("honda_accessories_found"):
+                metadata["manufacture_validated"] = True
+
+            if sheet_meta.get("publication_date"):
+                metadata["publication_date"] = sheet_meta["publication_date"]
+                metadata["found_publication_date_string"] = True
+
+        if metadata["model_year"]:
+            metadata["manufacture_validated"] = True
+
+        return metadata
+
+    except Exception as e:
+        metadata["error"] = str(e)
+        return metadata
 
 
-# ============================================================================
-# Part 6: Main Validate Function
-# ============================================================================
+def load_honda_file(file_path: str, metadata: Dict[str, Any]) -> Tuple[Optional[pd.DataFrame], Dict[str, Any]]:
+    """Load primary data sheet from Honda file."""
+    try:
+        primary_sheet = metadata.get("primary_sheet")
+        if not primary_sheet:
+            metadata["error"] = "No primary sheet identified"
+            return None, metadata
+        
+        df = pd.read_excel(file_path, sheet_name=primary_sheet)
+        
+        metadata["loaded_sheet"] = primary_sheet
+        metadata["data_shape"] = {
+            "rows": len(df),
+            "columns": len(df.columns),
+            "column_names": list(df.columns)
+        }
+        
+        trim_indicators = ["LX", "SPORT", "Si", "Type R", "Touring", "EX-L", "Sport", "Hybrid", "Sport L"]
+        trim_columns = [col for col in df.columns if any(trim in col for trim in trim_indicators)]
+        
+        metadata["wide_format_detected"] = len(trim_columns) > 0
+        metadata["trim_columns"] = trim_columns
+        
+        return df, metadata
+    
+    except Exception as e:
+        metadata["error"] = str(e)
+        return None, metadata
 
-def validate(
-    excel_file: str,
-    config: Dict[str, Any],
-) -> Tuple[Tuple[pd.DataFrame, pd.DataFrame], Dict[str, Any], list]:
-    """Validate Honda Excel file and extract metadata.
 
-    Args:
-        excel_file: Path to Honda Excel workbook (EN + FR sheets)
-        config: Pipeline configuration (from pipeline.yaml)
+def validate_and_extract(file_path: str, config: Optional[Dict[str, Any]] = None) -> Tuple[Optional[Dict[str, pd.DataFrame]], Dict[str, Any], List[Dict[str, Any]]]:
+    """Main entry point: Validate Honda file and extract data + metadata."""
+    dq_warnings = []
 
-    Returns:
-        Tuple of ((en_df, fr_df), metadata_dict, dq_warnings_list)
+    metadata = extract_metadata_from_file(file_path)
 
-    Raises:
-        ValidationError: If FATAL validation errors occur
-    """
-    # Part 1: Load sheets
-    en_df, fr_df, sheet_names = _load_sheets(excel_file, config)
+    if not metadata.get("manufacture_validated"):
+        dq_warnings.append({
+            "rule_type": "file_validation_rule",
+            "severity": "WARNING",
+            "message": "Could not validate Honda manufacturer signature"
+        })
 
-    # Part 2: Extract metadata
-    metadata = _extract_metadata(en_df, fr_df, config)
-    metadata.update(sheet_names)
+    if not metadata.get("model_year"):
+        dq_warnings.append({
+            "rule_type": "file_validation_rule",
+            "severity": "ERROR",
+            "message": "Could not extract model year from filename"
+        })
+        return None, metadata, dq_warnings
 
-    # Part 3: Detect sections
-    section_structure, section_warnings = _detect_sections(en_df, fr_df, config)
+    df, metadata = load_honda_file(file_path, metadata)
+
+    if df is None:
+        dq_warnings.append({
+            "rule_type": "data_load_rule",
+            "severity": "ERROR",
+            "message": f"Failed to load primary data sheet: {metadata.get('error', 'Unknown error')}"
+        })
+        return None, metadata, dq_warnings
+
+    if len(df) == 0:
+        dq_warnings.append({
+            "rule_type": "data_load_rule",
+            "severity": "ERROR",
+            "message": "Loaded data sheet is empty"
+        })
+        return None, metadata, dq_warnings
+
+    # STEP 1A: Detect section boundaries
+    section_structure = identify_section_boundaries(df)
+
+    if not section_structure:
+        dq_warnings.append({
+            "rule_type": "section_detection_rule",
+            "severity": "ERROR",
+            "message": "No sections detected in data sheet"
+        })
+        return None, metadata, dq_warnings
+
+    if len(section_structure) < 6:
+        dq_warnings.append({
+            "rule_type": "section_detection_rule",
+            "severity": "WARNING",
+            "message": f"Expected 6 sections, found {len(section_structure)}: {list(section_structure.keys())}"
+        })
+
+    # STEP 1B: Extract trim columns per section
+    trim_columns_per_section = extract_trim_columns(df, section_structure)
+
+    # Add section structure to metadata
     metadata["section_structure"] = section_structure
+    metadata["trim_columns_per_section"] = trim_columns_per_section
 
-    # Check for FATAL section errors
-    fatal_warnings = [w for w in section_warnings if w.get("severity") == "FATAL"]
-    if fatal_warnings:
-        fatal_msg = "; ".join([w.get("message", "Unknown error") for w in fatal_warnings])
-        raise ValidationError(f"Section detection failed: {fatal_msg}")
+    data_dict = {
+        "EN": df,
+        "FR": None
+    }
 
-    # Part 4: Validate columns
-    column_metadata, column_warnings = _validate_columns(
-        en_df, fr_df, config, section_structure
-    )
-    metadata.update(column_metadata)
+    metadata["status"] = "SUCCESS"
 
-    # Part 5: Consolidate DQ warnings
-    all_warnings = section_warnings + column_warnings
-    dq_warnings = _build_dq_warnings(all_warnings)
-
-    # Part 6: Return
-    metadata["validation_status"] = "PASS" if not dq_warnings else "PASS_WITH_WARNINGS"
-
-    return (en_df, fr_df), metadata, dq_warnings
+    return data_dict, metadata, dq_warnings

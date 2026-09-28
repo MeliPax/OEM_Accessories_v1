@@ -19,49 +19,79 @@ def transform(
     metadata: Dict[str, Any],
     config: Dict[str, Any],
 ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, Any], List[Dict[str, Any]]]:
-    """Transform wide-format data to long format with trim_level column.
+    """Transform wide-format data to long format with trim_level and section columns.
 
     Args:
         df: Standardized DataFrame from Step 3 (with proper column names)
-        metadata: Metadata from Steps 1-3
+        metadata: Metadata from Steps 1-3 (includes trim_columns_per_section)
         config: Pipeline configuration
 
     Returns:
         Tuple of (transformed_dict, updated_metadata, dq_warnings)
-        transformed_dict: {"EN": df_long, "FR": df_long} (for Phase 4 EN/FR split)
+        transformed_dict: {"EN": df_long, "FR": df_long}
     """
     if df is None or df.empty:
         return {"EN": df, "FR": df}, metadata, []
 
     dq_warnings = []
+    df = df.copy()
 
-    # Identify product columns (metadata/description columns)
-    # Include patterns for: part number, description, pricing, AND metadata columns (not trims)
+    # Rename _section_name to section if present
+    if "_section_name" in df.columns:
+        df = df.rename(columns={"_section_name": "section"})
+
+    # Try to use trim columns from metadata (Step 1), fallback to pattern matching
+    trim_columns_per_section = metadata.get("trim_columns_per_section", {})
+
+    # If we have section-based trim columns, use them
+    if trim_columns_per_section:
+        # Flatten all trim columns from all sections
+        trim_cols = []
+        for section_name, trims in trim_columns_per_section.items():
+            trim_cols.extend(trims)
+        trim_cols = list(set(trim_cols))  # Remove duplicates
+    else:
+        # Fallback: pattern-based detection
+        product_col_patterns = [
+            "part", "number", "description", "item", "name", "frt", "residual",
+            "price", "installed", "net", "dealer", "list", "comments", "_col_",
+            "sitecore", "overlay", "display", "order", "dependanc", "exclusion",
+            "publication", "application", "_section_name", "section"
+        ]
+        product_cols = []
+        trim_cols = []
+
+        for col in df.columns:
+            col_lower = str(col).lower()
+            is_product = any(pattern in col_lower for pattern in product_col_patterns)
+            if is_product:
+                product_cols.append(col)
+            else:
+                trim_cols.append(col)
+
+    # Define product columns (always include these)
     product_col_patterns = [
         "part", "number", "description", "item", "name", "frt", "residual",
         "price", "installed", "net", "dealer", "list", "comments", "_col_",
-        # Metadata columns that are NOT trims
         "sitecore", "overlay", "display", "order", "dependanc", "exclusion",
-        "publication", "application"
+        "publication", "application", "_section_name", "section"
     ]
     product_cols = []
-    trim_cols = []
-
     for col in df.columns:
         col_lower = str(col).lower()
-
-        # Check if this looks like a product column
-        is_product = any(pattern in col_lower for pattern in product_col_patterns)
-
-        if is_product:
+        if any(pattern in col_lower for pattern in product_col_patterns) or col not in trim_cols:
             product_cols.append(col)
-        else:
-            # Assume it's a trim column if it's not a product column
-            # (trim columns are typically model names like "Civic", "Accord", "CR-V", "SPORT", "Type R")
-            trim_cols.append(col)
+
+    # Filter product_cols to only those that exist in df
+    product_cols = [c for c in product_cols if c in df.columns]
+    trim_cols = [c for c in trim_cols if c in df.columns]
 
     # If we found trim columns, melt the data
     if trim_cols and product_cols:
+        # Ensure section is in product_cols if it exists
+        if "section" in df.columns and "section" not in product_cols:
+            product_cols.append("section")
+
         # Melt: convert trim columns from wide to long format
         df_melted = pd.melt(
             df,
@@ -72,23 +102,20 @@ def transform(
         )
 
         # Filter to only rows where applicability is not NaN/empty
-        # (applicability markers like "Yes", "•", etc.)
         df_melted = df_melted.dropna(subset=["applicability"])
         df_melted = df_melted[df_melted["applicability"].astype(str).str.strip() != ""]
 
         # Drop the applicability column (we only need trim_level)
         df_melted = df_melted.drop(columns=["applicability"])
 
-        # Filter out garbage rows (e.g., header rows that got melted)
-        # Keep only rows where part number looks like a real part number (length >= 2, not "Part Number")
+        # Filter out garbage rows
         if "Part Number" in df_melted.columns:
             part_nums = df_melted["Part Number"].astype(str)
-            # Valid part numbers: at least 2 chars, not "Part Number", not single digit like "2"
             is_valid = (
                 (part_nums.str.len() >= 2) &
                 (part_nums.str.lower() != "part number") &
                 (part_nums != "nan") &
-                ~part_nums.str.match(r"^\d+$")  # Exclude pure digits like "2", "26"
+                ~part_nums.str.match(r"^\d+$")
             )
             df_melted = df_melted[is_valid]
 
@@ -101,8 +128,33 @@ def transform(
         metadata["trim_columns"] = trim_cols
         metadata["melted_shape"] = df_melted.shape
 
-        # Return as language-keyed dict (both EN and FR get same data for now)
-        # In Phase 4, Step 4 will split this into actual EN/FR sheets
+        # Reorder columns for flat output: section, part number, description, Cost, Hours, MSRP, comments, trim_level
+        cols_ordered = []
+
+        # 1. section (always first)
+        if "section" in df_melted.columns:
+            cols_ordered.append("section")
+
+        # 2-7. Required product columns in order (case-insensitive match)
+        col_map = {col.lower(): col for col in df_melted.columns}
+        required_order = ["part number", "description", "cost", "hours", "msrp", "comments"]
+        for req_col in required_order:
+            if req_col in col_map:
+                cols_ordered.append(col_map[req_col])
+
+        # 8. trim_level (always last before remaining)
+        if "trim_level" in df_melted.columns:
+            cols_ordered.append("trim_level")
+
+        # Add any remaining columns (except those already ordered)
+        for col in df_melted.columns:
+            if col not in cols_ordered:
+                cols_ordered.append(col)
+
+        # Select only columns that exist
+        cols_ordered = [c for c in cols_ordered if c in df_melted.columns]
+        df_melted = df_melted[cols_ordered]
+
         return {"EN": df_melted, "FR": df_melted}, metadata, dq_warnings
     else:
         # No trim columns found, just add a placeholder trim_level

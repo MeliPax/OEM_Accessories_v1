@@ -74,7 +74,8 @@ class HondaPipeline(BasePipeline):
         """Load Excel file and return {sheet_name: raw_df} for each sheet.
 
         Honda files have complex header structures with metadata rows before actual headers.
-        For now, load everything with header=None and let Step 1 figure it out.
+        Only process LoadFile sheets (flat EN/FR data) and Master sheets (wide format).
+        Skip Template, SELL, and other non-data sheets.
 
         Args:
             file_path: Path to Honda Excel file
@@ -85,11 +86,30 @@ class HondaPipeline(BasePipeline):
         excel = pd.ExcelFile(file_path)
         dfs = {}
         for name in excel.sheet_names:
-            # Skip sheets that are clearly not data (SELL sheets are summary views)
-            if "SELL" in name.upper():
-                continue
-            df = excel.parse(sheet_name=name, header=None)
-            dfs[name] = df
+            name_upper = name.upper()
+
+            # EN data sheets to include:
+            # New format: _DATA (flat), _APP_EN (applicability)
+            # Legacy format: LoadFile sheets (flat), Master sheets (wide)
+            include = (
+                "_DATA" in name_upper or
+                "_APP_EN" in name_upper or
+                ("loadfile" in name_upper and "master" not in name_upper)
+            )
+
+            # Exclude FR, SELL, SELECT PROVINCE, and other non-data sheets
+            exclude = (
+                "_APP_FR" in name_upper or
+                "SELL" in name_upper or
+                "SELECT" in name_upper or
+                "PROVINCE" in name_upper or
+                "TEMPLATE" in name_upper
+            )
+
+            if include and not exclude:
+                df = excel.parse(sheet_name=name, header=None)
+                dfs[name] = df
+
         return dfs
 
     def run_step1_validation(
@@ -103,7 +123,7 @@ class HondaPipeline(BasePipeline):
         """Step 1: File validation and metadata extraction.
 
         Honda files have complex multi-level headers with metadata rows.
-        This step extracts model name, year, and identifies header row locations.
+        This step extracts model name, year, identifies sections, and finds trim columns.
         """
         sheet_name = meta_data.get("sheet_name", "unknown")
 
@@ -165,10 +185,22 @@ class HondaPipeline(BasePipeline):
                         break
 
             meta_data["header_row_index"] = header_row_idx
+
+            # For APP sheets: detect sections and trim columns
+            if "APP" in sheet_name.upper():
+                section_structure = step1_validation.identify_section_boundaries(df)
+                if section_structure:
+                    meta_data["section_structure"] = section_structure
+                    trim_columns_per_section = step1_validation.extract_trim_columns(df, section_structure)
+                    meta_data["trim_columns_per_section"] = trim_columns_per_section
+                    pipeline_logger.info(f"Step 1: {len(section_structure)} sections detected")
+
             pipeline_logger.info(f"Step 1: Metadata extracted - {meta_data.get('model_name')} {meta_data.get('vehicle_year')}")
 
         except Exception as e:
             pipeline_logger.debug(f"Step 1 detail: {e}")
+            import traceback
+            pipeline_logger.debug(traceback.format_exc())
 
         return df
 
@@ -334,15 +366,29 @@ class HondaPipeline(BasePipeline):
         config: Dict,
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, pd.DataFrame]:
-        """Step 5: Output generation with column filtering and formatting.
+        """Step 5: Output generation with flat data sheets for batch traceability.
 
-        Applies downstream schema column mapping, formats columns,
-        prepares frames for Excel output.
+        Saves melted standardized data (flat format) with source_file column for batch processing.
         ✅ IMPLEMENTED
         """
         try:
-            frames = step5_output.prepare_frames(transformed, meta_data, config)
-            pipeline_logger.info(f"Step 5: Output frames prepared")
+            from pathlib import Path
+
+            # Extract filename from source_file path for batch mode traceability
+            source_file_path = meta_data.get("source_file", "")
+            file_name = Path(source_file_path).name if source_file_path else "unknown"
+
+            frames = {}
+            for lang in ["EN", "FR"]:
+                df = transformed.get(lang)
+                if df is not None and not df.empty:
+                    df_output = df.copy()
+                    # Add source_file column at the beginning for batch traceability
+                    df_output.insert(0, "source_file", file_name)
+                    # Use Accessories_EN/FR names for flat data sheets
+                    frames[f"Accessories_{lang}"] = df_output
+
+            pipeline_logger.info(f"Step 5: Output frames prepared (flat data with source_file tracking for batch mode)")
             return frames
         except Exception as e:
             pipeline_logger.warning(f"Step 5 failed: {e}")

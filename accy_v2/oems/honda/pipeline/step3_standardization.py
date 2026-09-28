@@ -56,8 +56,9 @@ def standardize(
     # Clean string columns: strip whitespace
     for col in df.columns:
         try:
+            col_str = str(col)
             # Only process columns that aren't just placeholders and are object type
-            if not col.startswith("_unnamed_") and df[col].dtype == 'object':
+            if not col_str.startswith("_unnamed_") and df[col].dtype == 'object':
                 df[col] = df[col].apply(
                     lambda x: str(x).strip() if pd.notna(x) and isinstance(x, str) else x
                 )
@@ -67,10 +68,11 @@ def standardize(
     # Try to identify and convert numeric columns
     numeric_patterns = ["price", "frt", "residual", "cost", "installed", "dealer", "net"]
     for col in df.columns:
-        if col.startswith("_unnamed_"):
+        col_str = str(col)
+        if col_str.startswith("_unnamed_"):
             continue
 
-        col_lower = str(col).lower()
+        col_lower = col_str.lower()
         # If column name suggests it's numeric, try to convert
         if any(pattern in col_lower for pattern in numeric_patterns):
             try:

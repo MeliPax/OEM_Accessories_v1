@@ -1,95 +1,132 @@
-"""Step 2: Header Normalization
+"""Step 2: Header Normalization (Section-Aware)
 
-Extracts proper column names from the header row and applies them to the DataFrame.
-Handles Honda's complex multi-level header structure with metadata rows.
+Extracts proper column names from each section's header row and applies them.
+Processes each section independently, then concatenates all sections.
 
 Process:
-1. Identify the header row (stored in metadata from Step 1)
-2. Extract headers from that row
-3. Rename all columns to those headers
-4. Drop all rows before the header (metadata rows)
-5. Return cleaned DataFrame with proper column names
+1. For each section (from metadata.section_structure):
+   a. Extract header row at (data_start - 1)
+   b. Extract data rows from data_start to data_end
+   c. Rename columns using header
+   d. Keep only data rows (drop header row)
+2. Concatenate all normalized sections
+3. Return cleaned DataFrame with proper column names
 """
 
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, List
 import pandas as pd
+
+
+def _extract_headers_from_row(header_row: pd.Series) -> List[str]:
+    """Clean header values and convert to safe column names."""
+    headers = []
+    for col_val in header_row:
+        if pd.isna(col_val):
+            headers.append(None)
+        else:
+            header_str = str(col_val).strip().replace('\n', ' ').replace('\r', ' ')
+            header_str = ' '.join(header_str.split())
+            headers.append(header_str if header_str else None)
+
+    safe_headers = []
+    for i, h in enumerate(headers):
+        if h is None or h == "nan":
+            safe_headers.append(f"_col_{i}")
+        else:
+            safe_headers.append(h)
+
+    return safe_headers
 
 
 def normalize_headers(
     df: pd.DataFrame,
     metadata: Dict[str, Any],
-    config: Dict[str, Any],
+    config: Dict[str, Any] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-    """Extract and apply proper column headers.
+    """Extract headers for each section and build reconciliation dataframe.
+
+    For section-based sheets (_APP_EN): extract headers per section, collect all data.
+    For flat data sheets (_DATA): use row 0 as headers.
 
     Args:
-        df: Raw DataFrame from Step 1 with numeric column indices and metadata rows
-        metadata: Metadata from Step 1 (includes header_row_index)
-        config: Pipeline configuration
+        df: Raw DataFrame from Step 1
+        metadata: Metadata from Step 1 (includes section_structure)
+        config: Pipeline configuration (optional)
 
     Returns:
-        Tuple of (normalized_df, updated_metadata)
+        Tuple of (reconciliation_df, updated_metadata)
+        reconciliation_df: Combined dataframe with all sections, proper headers, _section_name column
     """
     if df is None or df.empty:
         return df, metadata
 
-    sheet_name = metadata.get("sheet_name", "unknown")
-    header_row_idx = metadata.get("header_row_index")
+    section_structure = metadata.get("section_structure", {})
 
-    # If no header row was identified, try to infer it
-    if header_row_idx is None:
-        if "DATA" in sheet_name.upper():
-            header_row_idx = 6  # Default for DATA sheets
-        elif "APP" in sheet_name.upper():
-            # For APP sheets, look for first row with many non-null values
-            for idx in range(8, min(15, len(df))):
-                row = df.iloc[idx]
-                non_null_count = sum(1 for v in row if pd.notna(v))
-                if non_null_count > 3:
-                    header_row_idx = idx
-                    break
-        else:
-            # Fallback: assume first row with data
-            header_row_idx = 0
+    # Case 1: Section-based sheet (_APP_EN/_APP_FR with "1.0 Packages" markers)
+    if section_structure:
+        # Process each section independently
+        normalized_sections = []
 
-    # Extract headers from the identified row
-    if header_row_idx is not None and header_row_idx < len(df):
-        header_row = df.iloc[header_row_idx]
+        for section_name, boundaries in section_structure.items():
+            data_start = boundaries.get("data_start")
+            data_end = boundaries.get("data_end")
 
-        # Convert headers to strings and clean them
-        headers = []
-        for col_val in header_row:
-            if pd.isna(col_val):
-                headers.append(None)
-            else:
-                # Clean header: strip whitespace, replace newlines
-                header_str = str(col_val).strip().replace('\n', ' ').replace('\r', ' ')
-                header_str = ' '.join(header_str.split())  # Normalize whitespace
-                headers.append(header_str if header_str else None)
+            if data_start is None or data_end is None:
+                continue
 
-        # Create safe column names (replace None/NaN with placeholders)
-        safe_headers = []
-        for i, h in enumerate(headers):
-            if h is None:
-                safe_headers.append(f"_col_{i}")
-            else:
-                safe_headers.append(h)
+            # Header row IS the first row of the data section (at data_start)
+            header_row_idx = data_start
 
-        # Assign headers to DataFrame
-        df.columns = safe_headers
+            if header_row_idx < 0 or header_row_idx >= len(df):
+                continue
 
-        # Drop all rows up to and including the header row (metadata rows)
-        df = df.iloc[header_row_idx + 1:].copy()
+            # Extract header from first row of section
+            header_row = df.iloc[header_row_idx]
+            safe_headers = _extract_headers_from_row(header_row)
 
-        # Reset index carefully to avoid duplicate column issues
-        df.index = range(len(df))
+            # Extract data rows for this section (skip header row at data_start)
+            section_df = df.iloc[data_start+1:data_end+1].copy()
+
+            # Apply headers
+            section_df.columns = safe_headers
+            section_df.index = range(len(section_df))
+
+            # Add section name for traceability (will be used in Step 4)
+            section_df["_section_name"] = section_name
+
+            normalized_sections.append(section_df)
+
+        # Concatenate all sections
+        if normalized_sections:
+            df_normalized = pd.concat(normalized_sections, ignore_index=True, sort=False)
+
+            # Update metadata
+            metadata["headers_extracted"] = True
+            metadata["sections_normalized"] = len(normalized_sections)
+            metadata["columns"] = list(df_normalized.columns)
+
+            return df_normalized, metadata
+
+    # Case 2: Flat data sheet (LoadFile sheets without section markers)
+    # Use row 0 as headers, skip it from data
+    if len(df) > 0:
+        header_row = df.iloc[0]
+        safe_headers = _extract_headers_from_row(header_row)
+
+        # Extract data rows (skip header row 0)
+        df_normalized = df.iloc[1:].copy()
+        df_normalized.columns = safe_headers
+        df_normalized.index = range(len(df_normalized))
+
+        # Add section name for flat data
+        df_normalized["_section_name"] = "flat_data"
 
         # Update metadata
         metadata["headers_extracted"] = True
-        metadata["header_row_original_index"] = header_row_idx
-        metadata["columns"] = safe_headers
+        metadata["sections_normalized"] = 1
+        metadata["columns"] = list(df_normalized.columns)
+        metadata["header_source"] = "row_0"
 
-        return df, metadata
+        return df_normalized, metadata
 
-    # If we couldn't find or extract headers, return as-is
     return df, metadata
