@@ -47,8 +47,13 @@ def build_reconciliation_dataframe(
     if section_structure and len(section_structure) > 0:
         reconciliation_rows = []
 
-        # Iterate through each section
-        for section_name, bounds in section_structure.items():
+        # Find the first section marker row to exclude pre-section metadata
+        first_section_marker_row = min(bounds.get("marker_row", float('inf'))
+                                       for bounds in section_structure.values())
+
+        # Iterate through each section (sorted by marker row)
+        for section_name, bounds in sorted(section_structure.items(),
+                                           key=lambda x: x[1].get("marker_row", 0)):
             data_start = bounds.get("data_start")
             data_end = bounds.get("data_end")
 
@@ -75,8 +80,9 @@ def build_reconciliation_dataframe(
                     else:
                         headers.append(f"_col_{i}")
 
-            # Extract data rows for this section (skip header row)
-            section_df = df.iloc[data_start + 1 : data_end + 1].copy()
+            # Extract data rows for this section
+            # Skip both header row (data_start) and trim sub-header row (data_start + 1)
+            section_df = df.iloc[data_start + 2 : data_end + 1].copy()
 
             if len(section_df) == 0:
                 # No data rows in this section

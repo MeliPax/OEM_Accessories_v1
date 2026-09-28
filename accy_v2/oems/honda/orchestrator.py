@@ -88,19 +88,18 @@ class HondaPipeline(BasePipeline):
         for name in excel.sheet_names:
             name_upper = name.upper()
 
-            # EN data sheets to include:
-            # Primary: _APP_EN (section-based applicability with product data)
-            # Secondary: LoadFile sheets (flat product data from legacy format)
-            # NOTE: _DATA sheet contains metadata only (Model Name, Year, etc.), NOT products
+            # Data sheets to include:
+            # EN sheets: _APP_EN (section-based), LoadFile (flat legacy)
+            # FR sheets: _APP_FR (section-based), LoadFile (flat legacy)
             include = (
                 "_APP_EN" in name_upper or
+                "_APP_FR" in name_upper or
                 ("loadfile" in name_upper and "master" not in name_upper)
             )
 
             # Explicitly exclude all non-product sheets
             exclude = (
                 "_DATA" in name_upper or  # Metadata only, not product data
-                "_APP_FR" in name_upper or  # FR data (process separately)
                 "SELL" in name_upper or  # Summary view
                 "SELECT" in name_upper or  # Province selector
                 "PROVINCE" in name_upper or  # Province names

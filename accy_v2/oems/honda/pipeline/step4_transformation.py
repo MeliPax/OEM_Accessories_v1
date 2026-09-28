@@ -19,22 +19,37 @@ def transform(
     metadata: Dict[str, Any],
     config: Dict[str, Any],
 ) -> Tuple[Dict[str, pd.DataFrame], Dict[str, Any], List[Dict[str, Any]]]:
-    """Transform wide-format data to long format with trim_level and section columns.
+    """Transform or preserve data based on reconciliation mode.
+
+    For flat data (reconciliation dataframes): Return as-is with section column
+    For wide-format data (legacy): Transform to long format with melt
 
     Args:
         df: Standardized DataFrame from Step 3 (with proper column names)
-        metadata: Metadata from Steps 1-3 (includes trim_columns_per_section)
+        metadata: Metadata from Steps 1-3 (includes reconciliation_type)
         config: Pipeline configuration
 
     Returns:
         Tuple of (transformed_dict, updated_metadata, dq_warnings)
-        transformed_dict: {"EN": df_long, "FR": df_long}
+        transformed_dict: {"EN": df_flat_or_long, "FR": df_flat_or_long}
     """
     if df is None or df.empty:
         return {"EN": df, "FR": df}, metadata, []
 
     dq_warnings = []
     df = df.copy()
+
+    # =========================================================================
+    # CASE 1: Flat data from reconciliation (section-based sheets)
+    # =========================================================================
+    reconciliation_type = metadata.get("reconciliation_type", None)
+    if reconciliation_type == "section_based":
+        # Already has proper structure from reconciliation DF
+        # No melt needed - output as-is for flat file
+        metadata["transformation_type"] = "flat_preserve"
+        metadata["flat_rows"] = len(df)
+
+        return {"EN": df, "FR": df}, metadata, dq_warnings
 
     # Rename _section_name to section if present
     if "_section_name" in df.columns:
