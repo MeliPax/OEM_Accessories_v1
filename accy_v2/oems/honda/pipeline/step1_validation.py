@@ -94,11 +94,12 @@ def run(
     # =========================================================================
     # PHASE 4: Validate headers per section
     # =========================================================================
-    trim_columns_per_section = _validate_section_headers(
+    trim_columns_per_section, row_metrics_per_section = _validate_section_headers(
         working_df, section_structure, config, sheet_name, dq_logger, pipeline_logger
     )
     updated_meta["trim_columns_per_section"] = trim_columns_per_section
-    pipeline_logger.info(f"Sheet '{sheet_name}': Trim columns identified for all sections")
+    updated_meta["row_metrics_per_section"] = row_metrics_per_section
+    pipeline_logger.info(f"Sheet '{sheet_name}': Trim columns and row metrics identified for all sections")
 
     # =========================================================================
     # PHASE 5: Return working_df with complete metadata
@@ -318,6 +319,56 @@ def _validate_required_sections(
 
 
 # ============================================================================
+# PHASE 3b: Row classification & counting helpers
+# ============================================================================
+
+
+def _is_empty_row(row: pd.Series) -> bool:
+    """Check if a row is completely empty (all NaN or all whitespace)."""
+    for val in row.values:
+        if pd.notna(val):
+            val_str = str(val).strip()
+            if val_str and val_str.lower() != "nan":
+                return False
+    return True
+
+
+def _is_publishing_row(row: pd.Series) -> bool:
+    """Detect footer rows containing publication metadata."""
+    for val in row.values:
+        if pd.notna(val):
+            val_str = str(val).lower()
+            # Check for common publication/metadata markers
+            if any(marker in val_str for marker in ["publication", "last updated", "data as of", "effective"]):
+                return True
+    return False
+
+
+def _is_valid_data_row(
+    row: pd.Series, product_cols: list, price_cols: list
+) -> bool:
+    """Row is valid if it has at least one product or price column with data."""
+    all_key_cols = product_cols + price_cols
+    for col_idx in all_key_cols:
+        if col_idx < len(row):
+            val = row.iloc[col_idx]
+            if pd.notna(val):
+                val_str = str(val).strip()
+                if val_str and val_str.lower() != "nan":
+                    return True
+    return False
+
+
+def _identify_empty_columns(df: pd.DataFrame) -> list:
+    """Return list of column indices that are entirely empty (all NaN)."""
+    empty_cols = []
+    for col_idx in range(len(df.columns)):
+        if df.iloc[:, col_idx].isna().all():
+            empty_cols.append(col_idx)
+    return empty_cols
+
+
+# ============================================================================
 # PHASE 4: Validate section headers
 # ============================================================================
 
@@ -329,7 +380,7 @@ def _validate_section_headers(
     sheet_name: str,
     dq_logger: DQLogger,
     logger: PipelineLogger,
-) -> Dict[str, list]:
+) -> tuple:
     """Validate headers for each section and identify trim columns.
 
     For each section:
@@ -337,9 +388,10 @@ def _validate_section_headers(
     - Trim sub-header is at data_start + 1
     - Data rows start at data_start + 2
 
-    Returns: {section_name: [list of trim column indices]}
+    Returns: (trim_columns_per_section, row_metrics_per_section)
     """
     trim_columns_per_section = {}
+    row_metrics_per_section = {}
 
     for section_name, bounds in section_structure.items():
         data_start = bounds["data_start"]
@@ -399,10 +451,74 @@ def _validate_section_headers(
                         trim_cols.append(i)
 
         trim_columns_per_section[section_name] = trim_cols
-        data_rows = data_end - (data_start + 2) + 1 if data_start + 2 <= data_end else 0
+
+        # =====================================================================
+        # Count data rows with detailed metrics
+        # =====================================================================
+
+        # Identify product and price column indices
+        product_col_indices = []
+        price_col_indices = []
+
+        for i, header in enumerate(headers):
+            header_lower = header.lower()
+            # Product columns
+            if any(kw in header_lower for kw in ["part", "number", "description", "item", "name",
+                                                   "pièce", "numero", "article", "nom"]):
+                product_col_indices.append(i)
+            # Price columns
+            elif any(kw in header_lower for kw in ["price", "cost", "hours", "msrp", "frt", "installed",
+                                                     "prix", "coût", "tarif", "t.f.f."]):
+                price_col_indices.append(i)
+
+        # Count rows in this section (excluding header and trim sub-header)
+        data_start_row = data_start + 2  # Row after trim sub-header
+        if data_start_row <= data_end:
+            total_rows = data_end - data_start_row + 1
+            valid_data_rows = 0
+            empty_rows = 0
+            publishing_rows = 0
+
+            # Count each row
+            for row_idx in range(data_start_row, data_end + 1):
+                row = df.iloc[row_idx]
+
+                if _is_publishing_row(row):
+                    publishing_rows += 1
+                elif _is_empty_row(row):
+                    empty_rows += 1
+                elif _is_valid_data_row(row, product_col_indices, price_col_indices):
+                    valid_data_rows += 1
+        else:
+            total_rows = 0
+            valid_data_rows = 0
+            empty_rows = 0
+            publishing_rows = 0
+
+        # Identify empty columns
+        empty_cols = _identify_empty_columns(df)
+
+        # Store row metrics
+        row_metrics_per_section[section_name] = {
+            "marker_row": section_structure[section_name]["marker_row"],
+            "header_row": data_start,
+            "trim_sub_header_row": data_start + 1,
+            "data_start_row": data_start + 2,
+            "data_end_row": data_end,
+            "total_rows": total_rows,
+            "valid_data_rows": valid_data_rows,
+            "empty_rows": empty_rows,
+            "publishing_rows": publishing_rows,
+            "empty_columns": empty_cols,
+        }
+
+        # Debug logging with detailed row breakdown
         logger.debug(
-            f"Sheet '{sheet_name}': Section '{section_name}' - "
-            f"{len(headers)} total columns, {len(trim_cols)} trim columns, {data_rows} data rows"
+            f"Sheet '{sheet_name}': Section '{section_name}'\n"
+            f"  - {len(headers)} total columns, {len(trim_cols)} trim columns\n"
+            f"  - Total rows: {total_rows} (including {empty_rows} empty, {publishing_rows} publishing)\n"
+            f"  - Valid data rows: {valid_data_rows}\n"
+            f"  - Empty columns: {empty_cols}"
         )
 
-    return trim_columns_per_section
+    return trim_columns_per_section, row_metrics_per_section
