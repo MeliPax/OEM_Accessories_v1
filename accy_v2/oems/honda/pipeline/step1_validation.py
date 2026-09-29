@@ -347,16 +347,40 @@ def _is_publishing_row(row: pd.Series) -> bool:
 def _is_valid_data_row(
     row: pd.Series, product_cols: list, price_cols: list
 ) -> bool:
-    """Row is valid if it has at least one product or price column with data."""
-    all_key_cols = product_cols + price_cols
-    for col_idx in all_key_cols:
+    """Row is valid if:
+    1. BOTH product columns (Part Number AND Description) have data, AND
+    2. At least one price column also has data (optional but preferred)
+
+    Returns True only if both product columns contain non-empty values.
+    """
+    # Check if ALL product columns have data
+    if not product_cols:
+        return False
+
+    product_cols_with_data = 0
+    for col_idx in product_cols:
+        if col_idx < len(row):
+            val = row.iloc[col_idx]
+            if pd.notna(val):
+                val_str = str(val).strip()
+                if val_str and val_str.lower() != "nan":
+                    product_cols_with_data += 1
+
+    # Must have data in ALL product columns
+    if product_cols_with_data < len(product_cols):
+        return False
+
+    # Also check if at least one price column has data (bonus)
+    for col_idx in price_cols:
         if col_idx < len(row):
             val = row.iloc[col_idx]
             if pd.notna(val):
                 val_str = str(val).strip()
                 if val_str and val_str.lower() != "nan":
                     return True
-    return False
+
+    # If no price columns have data but both product columns do, still valid
+    return True
 
 
 def _identify_empty_columns(df: pd.DataFrame) -> list:
