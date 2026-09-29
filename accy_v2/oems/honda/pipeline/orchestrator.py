@@ -24,6 +24,7 @@ from typing import Dict, Any, List, Set
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 # Import BasePipeline for inheritance
 try:
@@ -58,7 +59,20 @@ class HondaPipeline(BasePipeline):
     OEM_NAME = "honda"
 
     def run(self, file_path: str, config_root: str) -> Dict[str, Any]:
-        """Override run() to store file path for metadata extraction in Step 1."""
+        """Override run() to load Honda-specific detection config."""
+        # Load detection.yaml before parent run
+        detection_path = Path(config_root) / "schemas" / "detection.yaml"
+        self._detection_config = {}
+
+        if detection_path.exists():
+            try:
+                with open(detection_path, 'r', encoding='utf-8') as f:
+                    loaded = yaml.safe_load(f)
+                    self._detection_config = loaded if isinstance(loaded, dict) else {}
+            except Exception as e:
+                print(f"[WARNING] Failed to load detection config: {e}")
+                self._detection_config = {}
+
         self._current_file_path = file_path
         return super().run(file_path, config_root)
 
@@ -116,11 +130,22 @@ class HondaPipeline(BasePipeline):
         This step validates structure, identifies sections, and extracts metadata.
         """
         try:
+            print(f"[DEBUG] run_step1_validation called: config type={type(config)}, config keys={list(config.keys()) if isinstance(config, dict) else 'N/A'}")
+
             # Store the sheet name in metadata for reference
             if "sheet_name" not in meta_data:
                 meta_data["sheet_name"] = "unknown"
 
+            # Inject Honda-specific detection config into the config dict for Step 1
+            if hasattr(self, '_detection_config'):
+                if isinstance(config, dict):
+                    config["step1_detection"] = self._detection_config
+                    print(f"[DEBUG] Injected detection config into config dict")
+                else:
+                    print(f"[ERROR] Config is not a dict: type={type(config)}, cannot inject detection config")
+
             # Call Step 1 validation
+            print(f"[DEBUG] About to call step1_validation.run()...")
             working_df, meta_updated = step1_validation.run(df, config, meta_data, dq_logger, pipeline_logger)
             meta_data.update(meta_updated)
 
@@ -135,7 +160,9 @@ class HondaPipeline(BasePipeline):
         except Exception as e:
             pipeline_logger.warning(f"Step 1 failed: {e}")
             import traceback
-            pipeline_logger.debug(traceback.format_exc())
+            full_traceback = traceback.format_exc()
+            pipeline_logger.debug(full_traceback)
+            print(f"[DEBUG] Full traceback:\n{full_traceback}")  # Print to console too
             raise
 
     def run_step2_header_normalization(

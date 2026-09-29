@@ -47,64 +47,71 @@ def run(
     Returns:
         Tuple of (working_df, updated_metadata)
     """
-    if df_raw is None or df_raw.empty:
-        raise PipelineFatalError("Raw dataframe is empty")
+    try:
+        if df_raw is None or df_raw.empty:
+            raise PipelineFatalError("Raw dataframe is empty")
 
-    working_df = df_raw.copy()
-    updated_meta = {}
+        working_df = df_raw.copy()
+        updated_meta = {}
 
-    # =========================================================================
-    # PHASE 1: Sheet-level validation
-    # =========================================================================
-    sheet_name = meta_data.get("sheet_name", "unknown")
-    _validate_sheet_name(sheet_name, pipeline_logger)
+        # =========================================================================
+        # PHASE 1: Sheet-level validation
+        # =========================================================================
+        sheet_name = meta_data.get("sheet_name", "unknown")
+        _validate_sheet_name(sheet_name, pipeline_logger)
 
-    language = _detect_language(sheet_name, pipeline_logger)
-    updated_meta["language"] = language
-    pipeline_logger.info(f"Sheet '{sheet_name}': Language detected as {language}")
+        language = _detect_language(sheet_name, pipeline_logger)
+        updated_meta["language"] = language
+        pipeline_logger.info(f"Sheet '{sheet_name}': Language detected as {language}")
 
-    # =========================================================================
-    # PHASE 2: Extract metadata from file headers (rows 0-5)
-    # =========================================================================
-    model_name = _extract_model_name(working_df, dq_logger, pipeline_logger)
-    if not model_name:
-        raise PipelineFatalError(f"Sheet '{sheet_name}': Could not extract model name from file headers")
-    updated_meta["model_name"] = model_name
-    pipeline_logger.info(f"Sheet '{sheet_name}': Model name extracted: {model_name}")
+        # =========================================================================
+        # PHASE 2: Extract metadata from file headers (rows 0-5)
+        # =========================================================================
+        model_name = _extract_model_name(working_df, dq_logger, pipeline_logger)
+        if not model_name:
+            raise PipelineFatalError(f"Sheet '{sheet_name}': Could not extract model name from file headers")
+        updated_meta["model_name"] = model_name
+        pipeline_logger.info(f"Sheet '{sheet_name}': Model name extracted: {model_name}")
 
-    vehicle_year = _extract_vehicle_year(working_df, meta_data, dq_logger, pipeline_logger)
-    if vehicle_year:
-        updated_meta["vehicle_year"] = vehicle_year
-        pipeline_logger.info(f"Sheet '{sheet_name}': Vehicle year extracted: {vehicle_year}")
+        vehicle_year = _extract_vehicle_year(working_df, meta_data, dq_logger, pipeline_logger)
+        if vehicle_year:
+            updated_meta["vehicle_year"] = vehicle_year
+            pipeline_logger.info(f"Sheet '{sheet_name}': Vehicle year extracted: {vehicle_year}")
 
-    # =========================================================================
-    # PHASE 3: Identify section boundaries
-    # =========================================================================
-    section_structure = _identify_section_boundaries(working_df, config, dq_logger, pipeline_logger)
+        # =========================================================================
+        # PHASE 3: Identify section boundaries
+        # =========================================================================
+        section_structure = _identify_section_boundaries(working_df, config, dq_logger, pipeline_logger)
 
-    if not section_structure:
-        raise PipelineFatalError(f"Sheet '{sheet_name}': No sections detected")
+        if not section_structure:
+            raise PipelineFatalError(f"Sheet '{sheet_name}': No sections detected")
 
-    _validate_required_sections(section_structure, config, sheet_name, pipeline_logger)
+        _validate_required_sections(section_structure, config, sheet_name, pipeline_logger)
 
-    updated_meta["section_structure"] = section_structure
-    updated_meta["sections_detected"] = len(section_structure)
-    pipeline_logger.info(f"Sheet '{sheet_name}': {len(section_structure)} sections detected")
+        updated_meta["section_structure"] = section_structure
+        updated_meta["sections_detected"] = len(section_structure)
+        pipeline_logger.info(f"Sheet '{sheet_name}': {len(section_structure)} sections detected")
 
-    # =========================================================================
-    # PHASE 4: Validate headers per section
-    # =========================================================================
-    trim_columns_per_section, row_metrics_per_section = _validate_section_headers(
-        working_df, section_structure, config, sheet_name, dq_logger, pipeline_logger
-    )
-    updated_meta["trim_columns_per_section"] = trim_columns_per_section
-    updated_meta["row_metrics_per_section"] = row_metrics_per_section
-    pipeline_logger.info(f"Sheet '{sheet_name}': Trim columns and row metrics identified for all sections")
+        # =========================================================================
+        # PHASE 4: Validate headers per section
+        # =========================================================================
+        trim_columns_per_section, row_metrics_per_section = _validate_section_headers(
+            working_df, section_structure, config, sheet_name, dq_logger, pipeline_logger
+        )
+        updated_meta["trim_columns_per_section"] = trim_columns_per_section
+        updated_meta["row_metrics_per_section"] = row_metrics_per_section
+        pipeline_logger.info(f"Sheet '{sheet_name}': Trim columns and row metrics identified for all sections")
 
-    # =========================================================================
-    # PHASE 5: Return working_df with complete metadata
-    # =========================================================================
-    return working_df, updated_meta
+        # =========================================================================
+        # PHASE 5: Return working_df with complete metadata
+        # =========================================================================
+        return working_df, updated_meta
+
+    except Exception as e:
+        print(f"[DEBUG ERROR] Exception in run(): {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 # ============================================================================
@@ -135,81 +142,249 @@ def _detect_language(sheet_name: str, logger: PipelineLogger) -> str:
 # ============================================================================
 
 
-def _extract_model_name(df: pd.DataFrame, dq_logger: DQLogger, logger: PipelineLogger) -> str:
-    """Extract model name from file headers (rows 0-5).
+def _find_first_section_marker_row(df: pd.DataFrame) -> int or None:
+    r"""Find the row number of the first section marker.
 
-    Handles both EN ("Model Name") and FR ("Nom du modèle") labels.
-    The label and value are in the same row, typically columns 2-3.
+    Section markers follow pattern: ^\d+\.\d+\s+(.+)$
+    Used to limit metadata search (metadata must appear BEFORE first section).
     """
-    if len(df) < 6:
+    df_str = df.astype(str)
+    section_pattern = r"^\d+\.\d+\s+(.+)$"
+
+    for idx, row in df_str.iterrows():
+        for cell_value in row.values:
+            cell_str = str(cell_value).strip()
+            if re.match(section_pattern, cell_str):
+                return idx
+
+    return None
+
+
+def _find_metadata_value(
+    df: pd.DataFrame,
+    keywords: list,
+    search_limit_row: int or None,
+    logger: PipelineLogger
+) -> str or None:
+    """Find and extract metadata value by searching for keyword labels.
+
+    Args:
+        df: DataFrame to search
+        keywords: List of keywords to search for (case-insensitive, substring match)
+        search_limit_row: Stop searching at this row (e.g., first section marker row)
+        logger: Pipeline logger
+
+    Returns:
+        Extracted value (from column after label), or None if not found
+    """
+    if len(df) == 0:
         return None
 
-    # Keywords to search for (EN and FR)
-    model_name_keywords = ["model name", "nom du modèle", "nom du model"]
+    # Determine search range
+    max_row = search_limit_row if search_limit_row is not None else len(df)
 
-    # Try rows 0-5 for a row containing model name label
-    for idx in range(min(6, len(df))):
+    for idx in range(min(max_row, len(df))):
         row = df.iloc[idx]
 
-        # Find which column contains the label
-        label_col = None
+        # Scan all columns for keyword
         for col_idx, val in enumerate(row):
             if pd.notna(val):
                 val_str = str(val).lower()
-                if any(keyword in val_str for keyword in model_name_keywords):
-                    label_col = col_idx
-                    break
-
-        # If we found the label, extract the value from the NEXT column
-        if label_col is not None:
-            for col_idx in range(label_col + 1, len(row)):
-                val = row.iloc[col_idx]
-                if pd.notna(val):
-                    val_str = str(val).strip()
-                    if val_str and "nan" not in val_str.lower():
-                        return val_str
+                if any(keyword in val_str for keyword in keywords):
+                    # Found keyword label, extract value from next non-empty column
+                    for col_idx_next in range(col_idx + 1, len(row)):
+                        val_next = row.iloc[col_idx_next]
+                        if pd.notna(val_next):
+                            val_str_next = str(val_next).strip()
+                            if val_str_next and "nan" not in val_str_next.lower():
+                                return val_str_next
 
     return None
+
+
+def _extract_model_name(df: pd.DataFrame, dq_logger: DQLogger, logger: PipelineLogger) -> str:
+    """Extract model name from file headers using dynamic keyword detection.
+
+    Searches from row 0 up to the first section marker.
+    Handles both EN ("Model Name") and FR ("Nom du modèle") labels.
+    """
+    if len(df) == 0:
+        return None
+
+    # Find where metadata must end (at first section marker)
+    first_marker_row = _find_first_section_marker_row(df)
+
+    # Keywords from config
+    model_name_keywords = ["model name", "nom du modèle", "nom du model"]
+
+    return _find_metadata_value(df, model_name_keywords, first_marker_row, logger)
 
 
 def _extract_vehicle_year(
     df: pd.DataFrame, meta_data: Dict, dq_logger: DQLogger, logger: PipelineLogger
 ) -> int:
-    """Extract vehicle year from file headers or filename.
+    """Extract vehicle year from file headers using dynamic keyword detection.
 
+    Searches from row 0 up to the first section marker.
     Handles both EN ("Model Year") and FR ("Année modèle") labels.
-    The label and value are in the same row, typically columns 2-3.
+    Returns integer year in valid range (2000-2050), or None.
     """
-    if len(df) < 6:
+    if len(df) == 0:
         return None
 
-    # Keywords to search for (EN and FR)
+    # Find where metadata must end (at first section marker)
+    first_marker_row = _find_first_section_marker_row(df)
+
+    # Keywords from config
     year_keywords = ["model year", "année modèle", "année du modèle"]
 
-    # Try rows 0-5 for a row containing year label
-    for idx in range(min(6, len(df))):
-        row = df.iloc[idx]
+    # Find the value as string
+    year_str = _find_metadata_value(df, year_keywords, first_marker_row, logger)
 
-        # Find which column contains the label
-        label_col = None
-        for col_idx, val in enumerate(row):
-            if pd.notna(val):
-                val_str = str(val).lower()
-                if any(keyword in val_str for keyword in year_keywords):
-                    label_col = col_idx
-                    break
+    if year_str:
+        try:
+            year_val = int(year_str)
+            if 2000 <= year_val <= 2050:
+                return year_val
+        except (ValueError, TypeError):
+            pass
 
-        # If we found the label, extract the value from the NEXT column
-        if label_col is not None:
-            for col_idx in range(label_col + 1, len(row)):
-                val = row.iloc[col_idx]
-                if pd.notna(val):
-                    try:
-                        year_val = int(val)
-                        if 2000 <= year_val <= 2050:
-                            return year_val
-                    except (ValueError, TypeError):
-                        pass
+    return None
+
+
+# ============================================================================
+# Header and Trim Sub-Header Detection (Dynamic)
+# ============================================================================
+
+
+def _find_header_row(
+    df: pd.DataFrame,
+    marker_row: int,
+    header_keywords_en: list,
+    header_keywords_fr: list,
+    max_scan: int = 10,
+    logger: PipelineLogger = None
+) -> (int, list) or (None, None):
+    """Find header row by scanning for column name keywords.
+
+    Args:
+        df: DataFrame
+        marker_row: Row index of section marker
+        header_keywords_en: English column name keywords
+        header_keywords_fr: French column name keywords
+        max_scan: Max rows to scan after marker
+        logger: Optional logger for debug messages
+
+    Returns:
+        Tuple of (header_row_index, column_names_list) or (None, None)
+    """
+    # Scan from marker_row + 1 up to max_scan rows
+    for scan_offset in range(1, max_scan + 1):
+        candidate_row_idx = marker_row + scan_offset
+        if candidate_row_idx >= len(df):
+            break
+
+        row = df.iloc[candidate_row_idx]
+
+        # Extract column names from this row
+        headers = []
+        keyword_count = 0
+
+        for i, col_val in enumerate(row):
+            if pd.isna(col_val):
+                headers.append(f"_col_{i}")
+            else:
+                header_str = str(col_val).strip().replace("\n", " ").replace("\r", " ")
+                header_str = " ".join(header_str.split())
+                if header_str and header_str.lower() != "nan":
+                    headers.append(header_str)
+                    # Count if this is a known column keyword
+                    header_lower = header_str.lower()
+                    if any(kw in header_lower for kw in header_keywords_en + header_keywords_fr):
+                        keyword_count += 1
+                else:
+                    headers.append(f"_col_{i}")
+
+        # If we found enough keywords, this is the header row
+        if keyword_count >= 2:  # At least 2 product columns (description, part number)
+            if logger:
+                logger.debug(f"Found header row at index {candidate_row_idx}: {keyword_count} keywords matched")
+            return candidate_row_idx, headers
+
+    return None, None
+
+
+def _is_trim_value(val) -> bool:
+    """Check if value looks like a trim name (not numeric, not "0", has content).
+
+    Trim values in sub-header row are typically:
+    - Capitalized names: "SPORT", "Type R", "EX-L"
+    - Or applicability markers: "•", "T", "E", "X"
+    """
+    if pd.isna(val):
+        return False
+
+    val_str = str(val).strip()
+    if not val_str or val_str.lower() == "nan":
+        return False
+
+    # Exclude purely numeric values and placeholders
+    if val_str in ("0", "0.0"):
+        return False
+
+    # If it's all digits, it's not a trim value
+    if val_str.isdigit():
+        return False
+
+    # Otherwise, it's a valid trim value (has text content)
+    return True
+
+
+def _find_trim_subheader_row(
+    df: pd.DataFrame,
+    header_row_idx: int,
+    product_cols: list,
+    applicability_markers: list,
+    max_scan: int = 5,
+    logger: PipelineLogger = None
+) -> int or None:
+    """Find trim sub-header row by scanning for applicability markers and trim values.
+
+    Args:
+        df: DataFrame
+        header_row_idx: Index of header row (to start scanning after it)
+        product_cols: Indices of product columns (to exclude from trim detection)
+        applicability_markers: List of applicability markers to look for
+        max_scan: Max rows to scan after header
+        logger: Optional logger
+
+    Returns:
+        Index of trim sub-header row, or None if not found
+    """
+    # Scan from header_row_idx + 1
+    for scan_offset in range(1, max_scan + 1):
+        candidate_row_idx = header_row_idx + scan_offset
+        if candidate_row_idx >= len(df):
+            break
+
+        row = df.iloc[candidate_row_idx]
+
+        # Count trim columns with actual values
+        trim_count = 0
+        for col_idx in range(len(row)):
+            # Skip product columns
+            if col_idx in product_cols:
+                continue
+
+            val = row.iloc[col_idx]
+            if _is_trim_value(val):
+                trim_count += 1
+
+        # If we found enough trim values, this is the trim sub-header
+        if trim_count >= 2:  # At least 2 trim columns with values
+            if logger:
+                logger.debug(f"Found trim sub-header row at index {candidate_row_idx}: {trim_count} trim columns")
+            return candidate_row_idx
 
     return None
 
@@ -405,98 +580,150 @@ def _validate_section_headers(
     dq_logger: DQLogger,
     logger: PipelineLogger,
 ) -> tuple:
-    """Validate headers for each section and identify trim columns.
+    """Validate headers for each section and identify trim columns using DYNAMIC detection.
 
     For each section:
-    - Header row is at data_start
-    - Trim sub-header is at data_start + 1
-    - Data rows start at data_start + 2
+    1. Find header row by scanning for column name keywords (NOT fixed offset)
+    2. Find trim sub-header row by scanning for applicability markers (NOT fixed offset)
+    3. Data rows start immediately after trim sub-header
 
     Returns: (trim_columns_per_section, row_metrics_per_section)
     """
+    # Extract detection config (passed by orchestrator)
+    detection_config = config.get("step1_detection", {}) if isinstance(config, dict) else {}
+    if not isinstance(detection_config, dict):
+        detection_config = {}
+
+    logger.debug(f"detection_config type={type(detection_config)}, keys={list(detection_config.keys()) if isinstance(detection_config, dict) else 'N/A'}")
+
+    section_detect_config = detection_config.get("section_detection", {}) if isinstance(detection_config, dict) else {}
+    if not isinstance(section_detect_config, dict):
+        section_detect_config = {}
+
+    # Get keywords from config (with defensive type checking)
+    header_row_detect = section_detect_config.get("header_row_detection", {}) if isinstance(section_detect_config, dict) else {}
+    if not isinstance(header_row_detect, dict):
+        header_row_detect = {}
+    # Debug: show what we got from the config
+    logger.debug(f"section_detect_config type={type(section_detect_config)}, keys={list(section_detect_config.keys()) if isinstance(section_detect_config, dict) else 'N/A'}")
+    logger.debug(f"header_row_detect type={type(header_row_detect)}, keys={list(header_row_detect.keys()) if isinstance(header_row_detect, dict) else 'N/A'}")
+
+    header_keywords_en = header_row_detect.get("keywords_en", [])
+    header_keywords_fr = header_row_detect.get("keywords_fr", [])
+    max_scan_header = header_row_detect.get("max_scan_rows", 10)
+
+    # Debug: log what keywords we got
+    logger.debug(f"Header detection config: keywords_en={header_keywords_en}, keywords_fr={header_keywords_fr}, max_scan={max_scan_header}")
+
+    trim_subheader_detect = section_detect_config.get("trim_subheader_row_detection", {}) if isinstance(section_detect_config, dict) else {}
+    if not isinstance(trim_subheader_detect, dict):
+        trim_subheader_detect = {}
+    applicability_markers = trim_subheader_detect.get("applicability_markers", [])
+    max_scan_trim = trim_subheader_detect.get("max_scan_rows", 5)
+
+    # Product column keywords (for identifying trim columns)
+    col_detect_config = detection_config.get("column_detection", {}) if isinstance(detection_config, dict) else {}
+    if not isinstance(col_detect_config, dict):
+        col_detect_config = {}
+
+    product_col_keywords = []
+    product_col_kw = col_detect_config.get("product_column_keywords", {}) if isinstance(col_detect_config, dict) else {}
+    if isinstance(product_col_kw, dict):
+        product_col_keywords.extend(product_col_kw.get("en", []))
+        product_col_keywords.extend(product_col_kw.get("fr", []))
+
+    if not product_col_keywords:
+        # Fallback to hardcoded keywords if config not available
+        product_col_keywords = [
+            "part", "number", "description", "item", "name", "frt", "residual",
+            "price", "net", "dealer", "list", "comments", "application", "installed", "cost",
+            "pièce", "numero", "article", "nom", "t.f.f.", "tarif",
+            "concessionnaire", "liste", "remarques", "commentaire", "instalé", "coût", "numéro", "prix",
+        ]
+
     trim_columns_per_section = {}
     row_metrics_per_section = {}
 
     for section_name, bounds in section_structure.items():
-        data_start = bounds["data_start"]
-        data_end = bounds["data_end"]
+        try:
+            marker_row = bounds["marker_row"]
+            data_end = bounds["data_end"]
+        except TypeError as e:
+            print(f"[DEBUG] Error accessing bounds dict for section '{section_name}': bounds type={type(bounds)}, bounds={bounds}")
+            logger.warning(f"Section '{section_name}': Invalid bounds structure")
+            continue
 
-        if data_start >= len(df):
-            logger.warning(f"Sheet '{sheet_name}': Section '{section_name}' header row out of bounds")
+        # =====================================================================
+        # DYNAMICALLY FIND HEADER ROW (NOT fixed offset)
+        # =====================================================================
+        header_row_idx, headers = _find_header_row(
+            df, marker_row, header_keywords_en, header_keywords_fr, max_scan_header, logger
+        )
+
+        if header_row_idx is None:
+            logger.warning(f"Sheet '{sheet_name}': Section '{section_name}' - Could not find header row")
             trim_columns_per_section[section_name] = []
             continue
 
-        # Header row is at data_start
-        header_row = df.iloc[data_start]
+        # =====================================================================
+        # Identify product and trim column indices based on header names
+        # =====================================================================
+        product_col_indices = []
+        trim_col_indices_candidate = []
 
-        # Trim sub-header is at data_start + 1
-        trim_sub_header_row = df.iloc[data_start + 1] if data_start + 1 < len(df) else None
-
-        # Extract header column names
-        headers = []
-        for i, col_val in enumerate(header_row):
-            if pd.isna(col_val):
-                headers.append(f"_col_{i}")
-            else:
-                header_str = str(col_val).strip().replace("\n", " ").replace("\r", " ")
-                header_str = " ".join(header_str.split())
-                if header_str and header_str.lower() != "nan":
-                    headers.append(header_str)
-                else:
-                    headers.append(f"_col_{i}")
-
-        # Define product columns (should NOT be trim columns)
-        # Include both English and French keywords
-        product_col_keywords = [
-            # English
-            "part", "number", "description", "item", "name", "frt", "residual",
-            "price", "net", "dealer", "list", "comments", "application", "installed", "cost",
-            # French
-            "pièce", "numero", "description", "article", "nom", "t.f.f.", "tarif", "net",
-            "concessionnaire", "liste", "remarques", "commentaire", "application", "instalé",
-            "coût", "numéro", "prix",
-        ]
-
-        # Identify trim columns: NOT product columns AND have actual values in trim sub-header row
-        trim_cols = []
         for i, header in enumerate(headers):
             header_lower = header.lower()
             is_product = any(keyword in header_lower for keyword in product_col_keywords)
 
-            if not is_product and not header.startswith("_col_"):
-                trim_cols.append(i)
-            elif header.startswith("_col_") and trim_sub_header_row is not None:
-                # For unnamed columns, check if they have a value in the trim sub-header row
-                trim_val = trim_sub_header_row.iloc[i]
-                if pd.notna(trim_val):
-                    trim_str = str(trim_val).strip()
-                    # Accept as trim if it has content and looks like a trim name (not just a number like "0.0")
-                    if trim_str and trim_str.lower() not in ("nan", "0", "0.0"):
-                        trim_cols.append(i)
+            if is_product:
+                product_col_indices.append(i)
+            else:
+                trim_col_indices_candidate.append(i)
 
-        trim_columns_per_section[section_name] = trim_cols
+        # =====================================================================
+        # DYNAMICALLY FIND TRIM SUB-HEADER ROW (NOT fixed offset)
+        # =====================================================================
+        trim_subheader_row_idx = _find_trim_subheader_row(
+            df, header_row_idx, product_col_indices, applicability_markers, max_scan_trim, logger
+        )
+
+        # Determine actual trim columns based on whether trim sub-header was found
+        trim_cols = []
+        if trim_subheader_row_idx is not None:
+            # We found a trim sub-header, so identify which candidate columns actually have trim values
+            trim_row = df.iloc[trim_subheader_row_idx]
+            for col_idx in trim_col_indices_candidate:
+                if col_idx < len(trim_row) and _is_trim_value(trim_row.iloc[col_idx]):
+                    trim_cols.append(col_idx)
+
+            # Also check unnamed columns (starting with "_col_") for trim values
+            for col_idx in range(len(headers)):
+                if headers[col_idx].startswith("_col_") and col_idx not in product_col_indices:
+                    if col_idx < len(trim_row) and _is_trim_value(trim_row.iloc[col_idx]):
+                        trim_cols.append(col_idx)
+
+            data_start_row = trim_subheader_row_idx + 1  # Data starts after trim sub-header
+        else:
+            # No trim sub-header found, data might start right after header
+            data_start_row = header_row_idx + 2
+            logger.debug(f"Sheet '{sheet_name}': Section '{section_name}' - No trim sub-header found, using fallback offset")
+
+        trim_columns_per_section[section_name] = sorted(set(trim_cols))  # Remove duplicates, sort
 
         # =====================================================================
         # Count data rows with detailed metrics
         # =====================================================================
 
-        # Identify product and price column indices
-        product_col_indices = []
+        # Identify price column indices
         price_col_indices = []
-
         for i, header in enumerate(headers):
             header_lower = header.lower()
-            # Product columns
-            if any(kw in header_lower for kw in ["part", "number", "description", "item", "name",
-                                                   "pièce", "numero", "article", "nom"]):
-                product_col_indices.append(i)
             # Price columns
-            elif any(kw in header_lower for kw in ["price", "cost", "hours", "msrp", "frt", "installed",
-                                                     "prix", "coût", "tarif", "t.f.f."]):
+            if any(kw in header_lower for kw in ["price", "cost", "hours", "msrp", "frt", "installed",
+                                                   "prix", "coût", "tarif", "t.f.f."]):
                 price_col_indices.append(i)
 
-        # Count rows in this section (excluding header and trim sub-header)
-        data_start_row = data_start + 2  # Row after trim sub-header
+        # Count rows in this section (using dynamically detected data_start_row)
         if data_start_row <= data_end:
             total_rows = data_end - data_start_row + 1
             valid_data_rows = 0
@@ -527,12 +754,12 @@ def _validate_section_headers(
         # Identify empty columns
         empty_cols = _identify_empty_columns(df)
 
-        # Store row metrics
+        # Store row metrics (using dynamically detected row indices)
         row_metrics_per_section[section_name] = {
-            "marker_row": section_structure[section_name]["marker_row"],
-            "header_row": data_start,
-            "trim_sub_header_row": data_start + 1,
-            "data_start_row": data_start + 2,
+            "marker_row": marker_row,
+            "header_row": header_row_idx,
+            "trim_sub_header_row": trim_subheader_row_idx,
+            "data_start_row": data_start_row,
             "data_end_row": data_end,
             "total_rows": total_rows,
             "valid_data_rows": valid_data_rows,

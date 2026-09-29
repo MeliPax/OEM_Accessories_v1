@@ -80,87 +80,90 @@ sections:
     - "5.0 Electrical"
     - "6.0 Paint Pens"
 
-  # For each section:
+  # Section structure (conceptual, actual row positions detected dynamically)
   header_structure:
-    - offset: 1
-      name: "header_row"
-      content: "Column names (Description, Part Number, Cost, etc.)"
+    - name: "section_marker"
+      content: "Section identifier (pattern: \\d+\\.\\d+\\s+NameOfSection)"
+      detection: "See detection.yaml for regex pattern and scanning logic"
+
+    - name: "header_row"
+      content: "Column names (Description, Part Number, Cost, Trim Applicability, etc.)"
+      detection: "First row after marker containing column name keywords (see detection.yaml)"
       example: "Unnamed: 0 = NaN, Unnamed: 1 = Description, Unnamed: 2 = Part Number, ..."
 
-    - offset: 2
-      name: "trim_sub_header"
-      content: "Trim level names (e.g., 'SPORT', 'SPORT \\nHybrid', 'Type R', etc.)"
-      example: "Row with trim names, often split across columns Unnamed: 10+, Unnamed: 11+, ..."
+    - name: "trim_sub_header_row"
+      content: "Trim level names and applicability markers (e.g., 'SPORT', 'Type R', or '•', 'T', 'E')"
+      detection: "Row after header containing applicability markers in trim columns (see detection.yaml)"
+      characteristics:
+        - "row immediately after product column headers"
+        - "contains actual trim values (not keywords, not empty)"
+        - "text format, not numeric"
+      example: "Row with trim names like 'SPORT', 'Type R', or applicability markers '•', 'T', 'E'"
 
-    - offset: 3+
-      name: "data_rows"
-      content: "Actual product data (one row per product)"
-      example: "First column has part number, subsequent columns have prices/applicability"
+    - name: "data_rows"
+      content: "Actual product data (one row per product/accessory)"
+      detection: "Rows after trim sub-header, until next section marker or end of sheet"
+      structure:
+        - "First columns contain product identification (part number, description)"
+        - "Middle columns contain pricing/cost information"
+        - "Remaining columns contain applicability markers for each trim"
 
 # ============================================================================
-# Column Structure (Generic)
+# Column Structure (Generic) — Dict keyed by column name
 # ============================================================================
 
 columns:
   # Product columns (mandatory in every section)
-  product_columns:
-    - name: "Description"
-      type: "string"
-      required: true
-      examples: ["Racing Package - Type R", "Platinum White Pearl (NH-883P)"]
+  Description:
+    type: "string"
+    required: true
+    examples: ["Racing Package - Type R", "Platinum White Pearl (NH-883P)"]
+    detect_by_keyword: {en: ["description"], fr: ["description"]}
 
-    - name: "Part Number"
-      type: "string"
-      required: true
-      examples: ["26TYPER-RACE", "TUCH-NH883P-A1"]
+  Part Number:
+    type: "string"
+    required: true
+    examples: ["26TYPER-RACE", "TUCH-NH883P-A1"]
+    detect_by_keyword: {en: ["part", "number"], fr: ["pièce", "numéro"]}
 
   # Price columns (common but optional)
-  price_columns:
-    - name: "Cost"
-      type: "float"
-      required: false
-      alt_names: ["Dealer Net", "DNP"]
-      examples: [3928, 13.25]
+  Cost:
+    type: "float"
+    required: false
+    alt_names: ["Dealer Net", "DNP"]
+    examples: [3928, 13.25]
+    detect_by_keyword: {en: ["cost"], fr: ["coût"]}
 
-    - name: "Hours"
-      type: "float"
-      required: false
-      examples: [6431, 0]
+  Hours:
+    type: "float"
+    required: false
+    examples: [6431, 0]
+    detect_by_keyword: {en: ["hours"], fr: ["heures"]}
 
-    - name: "MSRP"
-      type: "float"
-      required: false
-      alt_names: ["List Price", "Retail Price"]
-      examples: [6612, 22]
+  MSRP:
+    type: "float"
+    required: false
+    alt_names: ["List Price", "Retail Price"]
+    examples: [6612, 22]
+    detect_by_keyword: {en: ["msrp", "list", "price"], fr: ["prix", "tarif"]}
 
-    - name: "FRT"
-      type: "float"
-      required: false
-      examples: [0.9999999999999999, 0]
+  FRT:
+    type: "float"
+    required: false
+    examples: [0.9999999999999999, 0]
+    detect_by_keyword: {en: ["frt"], fr: ["t.f.f."]}
 
-    - name: "Installed Price"
-      type: "float"
-      required: false
-      examples: [6612, 22]
+  Installed Price:
+    type: "float"
+    required: false
+    examples: [6612, 22]
+    detect_by_keyword: {en: ["installed"], fr: ["instalé"]}
 
-  # Other common columns
-  other_columns:
-    - name: "Comments"
-      type: "string"
-      required: false
-      examples: ["Quantity of 5", "Quantity of 25"]
-
-  # Trim applicability columns (variable per section)
-  trim_columns:
-    description: "Columns indicating if a product applies to a specific trim"
-    marker_values: ["•", "T", "E"]
-    empty_values: ["NaN", "", "N/A"]
-    examples:
-      - "Column header: 'SPORT'"
-      - "Column header: 'SPORT \\nHybrid' (newline in middle)"
-      - "Column header: 'Type R'"
-      - "Data value: '•' (bullet) = applies to this trim"
-      - "Data value: '0.0' or 'NaN' = does not apply"
+  Comments:
+    type: "string"
+    required: false
+    examples: ["Quantity of 5", "Quantity of 25"]
+    detect_by_keyword: {en: ["comments"], fr: ["remarques"]}
 
 # ============================================================================
 # Data Quality Expectations

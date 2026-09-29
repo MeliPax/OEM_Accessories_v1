@@ -1,0 +1,214 @@
+# Honda Step 1: Dynamic Structure Detection Rules
+#
+# Defines HOW to detect the structural elements specified in upstream.yaml.
+# These are implementation details for identifying metadata, section headers, and trim sub-headers.
+# This file is Honda-specific and loaded only by step1_validation.py
+
+# ============================================================================
+# Metadata Detection (Model Name, Model Year)
+# ============================================================================
+
+metadata_detection:
+  # Search for metadata keywords up to the first section marker
+  # This enforces structure: metadata must appear BEFORE first section
+  search_limit: "up_to_first_section_marker"
+
+  # Keywords to find metadata rows (case-insensitive, substring match)
+  keywords:
+    model_name:
+      - "model name"
+      - "nom du modèle"
+      - "nom du model"
+    model_year:
+      - "model year"
+      - "année modèle"
+      - "année du modèle"
+
+# ============================================================================
+# Section Marker Detection
+# ============================================================================
+
+section_detection:
+  # Regex pattern to identify section markers
+  # Matches: "1.0 Packages and Kits", "2.0 Wheels and Wheel Accessories", etc.
+  marker_pattern: "^\\d+\\.\\d+\\s+(.+)$"
+
+  # ========================================================================
+  # Header Row Detection (after section marker)
+  # ========================================================================
+
+  header_row_detection:
+    method: "keyword_scan"
+
+    # English keywords to identify header row (case-insensitive, substring match)
+    keywords_en:
+      - "description"
+      - "part"
+      - "number"
+      - "part number"
+      - "cost"
+      - "price"
+      - "list"
+      - "hours"
+      - "frt"
+      - "installed"
+      - "comments"
+
+    # French keywords to identify header row (case-insensitive, substring match)
+    keywords_fr:
+      - "description"
+      - "pièce"
+      - "numéro"
+      - "coût"
+      - "prix"
+      - "tarif"
+      - "heures"
+      - "t.f.f."
+      - "instalé"
+      - "remarques"
+
+    # Scanning limits (to avoid scanning entire sheet)
+    max_scan_rows: 10  # Scan at most 10 rows from marker to find header
+
+  # ========================================================================
+  # Trim Sub-Header Row Detection (after header row)
+  # ========================================================================
+
+  trim_subheader_row_detection:
+    method: "applicability_marker_scan"
+
+    # Applicability markers that indicate trim applicability columns
+    # These are the VALUES found in trim sub-header row
+    applicability_markers:
+      - "•"    # Bullet point (most common in Honda files)
+      - "T"    # Letter T
+      - "E"    # Letter E
+      - "X"    # Letter X
+
+    # Characteristics of a trim sub-header row
+    characteristics:
+      - "row immediately after header row"
+      - "contains actual trim values (not keywords, not empty)"
+      - "text format (not numbers like 0 or 0.0)"
+
+    # Minimum number of trim columns for a valid trim sub-header
+    min_trim_columns: 2
+
+    # Scanning limits
+    max_scan_rows: 5  # Scan at most 5 rows after header to find trim sub-header
+
+    # Trim value validation: values should NOT be purely numeric
+    exclude_patterns:
+      - "^0$"      # Just "0"
+      - "^0\\.0$"  # Just "0.0"
+      - "^\\d+$"   # All digits
+
+  # ========================================================================
+  # Data Row Detection
+  # ========================================================================
+
+  data_row_detection:
+    start: "row immediately after trim sub-header"
+    end: "row before next section marker (or end of sheet)"
+
+    # If no trim sub-header found, data starts at header + 2
+    fallback_offset: 2
+
+# ============================================================================
+# Column Detection (Product vs. Trim Columns)
+# ============================================================================
+
+column_detection:
+  # Product columns are identified by these keywords
+  # They are NEVER trim columns
+  product_column_keywords:
+    en:
+      - "part"
+      - "number"
+      - "description"
+      - "item"
+      - "name"
+      - "frt"
+      - "residual"
+      - "price"
+      - "net"
+      - "dealer"
+      - "list"
+      - "comments"
+      - "application"
+      - "installed"
+      - "cost"
+      - "hours"
+      - "msrp"
+    fr:
+      - "pièce"
+      - "numero"
+      - "description"
+      - "article"
+      - "nom"
+      - "t.f.f."
+      - "tarif"
+      - "net"
+      - "concessionnaire"
+      - "liste"
+      - "remarques"
+      - "commentaire"
+      - "application"
+      - "instalé"
+      - "coût"
+      - "numéro"
+      - "prix"
+      - "heures"
+
+  # Trim columns are identified by:
+  # 1. NOT being a product column (by keyword)
+  # 2. Having actual trim values in the trim sub-header row
+  # 3. Not starting with "Unnamed:" placeholder (i.e., have actual header names)
+
+  # Unnamed columns can still be trim columns if they have values in trim sub-header
+  # Example: Column with no header name but "SPORT" in trim sub-header row → trim column
+
+# ============================================================================
+# Row Classification (for counting metrics)
+# ============================================================================
+
+row_classification:
+  # Empty row: all values are NaN or whitespace
+  empty_row_detection:
+    method: "all_cells_empty"
+    definition: "row with all NaN or all whitespace values"
+
+  # Publishing row: contains publication/date keywords
+  publishing_row_detection:
+    method: "keyword_scan"
+    keywords:
+      - "publication"
+      - "last updated"
+      - "data as of"
+      - "effective"
+      - "date"
+    description: "footer/metadata row at end of section"
+
+  # Valid data row: has BOTH part columns + at least one price column
+  valid_data_row_detection:
+    method: "product_column_check"
+    requirement: "BOTH part columns (Part Number AND Description) must have data"
+    optional: "at least one price column should have data"
+
+# ============================================================================
+# Notes & Future Extensions
+# ============================================================================
+
+notes: |
+  - Metadata search stops at first section marker: enforces file structure
+  - Header/trim detection uses max_scan_rows: prevents scanning entire sheet if structure broken
+  - Applicability markers config makes trim column detection flexible (can add more markers)
+  - All keywords are case-insensitive, substring-matched (robust to formatting variations)
+  - Column position is NOT hard-coded: scans all columns in each row
+
+  If Honda file structure changes in future:
+  - Update marker_pattern (if section markers change format)
+  - Update keywords (if column names/translations change)
+  - Update applicability_markers (if trim indicators change)
+  - No code changes needed, only this config file
+
