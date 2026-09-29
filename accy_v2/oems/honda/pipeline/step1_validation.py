@@ -502,12 +502,17 @@ def _validate_section_headers(
             valid_data_rows = 0
             empty_rows = 0
             publishing_rows = 0
+            found_publishing_row = False
 
             # Count each row
             for row_idx in range(data_start_row, data_end + 1):
                 row = df.iloc[row_idx]
 
                 if _is_publishing_row(row):
+                    publishing_rows += 1
+                    found_publishing_row = True  # Mark that we've found publishing footer
+                elif found_publishing_row:
+                    # All rows after a publishing row are part of the footer
                     publishing_rows += 1
                 elif _is_empty_row(row):
                     empty_rows += 1
