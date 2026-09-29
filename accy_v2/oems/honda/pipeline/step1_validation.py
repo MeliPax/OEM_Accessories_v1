@@ -536,13 +536,22 @@ def _validate_section_headers(
             "empty_columns": empty_cols,
         }
 
-        # Debug logging with detailed row breakdown
+        # Debug logging with detailed row breakdown (only show non-zero counts)
+        row_details = []
+        if empty_rows > 0:
+            row_details.append(f"{empty_rows} empty")
+        if publishing_rows > 0:
+            row_details.append(f"{publishing_rows} publishing")
+
+        row_details_str = f" (including {', '.join(row_details)})" if row_details else ""
+
+        empty_cols_str = f"\n  - Empty columns: {empty_cols}" if empty_cols else ""
+
         logger.debug(
             f"Sheet '{sheet_name}': Section '{section_name}'\n"
             f"  - {len(headers)} total columns, {len(trim_cols)} trim columns\n"
-            f"  - Total rows: {total_rows} (including {empty_rows} empty, {publishing_rows} publishing)\n"
-            f"  - Valid data rows: {valid_data_rows}\n"
-            f"  - Empty columns: {empty_cols}"
+            f"  - Total rows: {total_rows}{row_details_str}\n"
+            f"  - Valid data rows: {valid_data_rows}{empty_cols_str}"
         )
 
     return trim_columns_per_section, row_metrics_per_section
