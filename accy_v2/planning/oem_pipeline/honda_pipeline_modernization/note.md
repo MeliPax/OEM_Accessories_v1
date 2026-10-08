@@ -1,4 +1,17 @@
-I want to clarify somethings:
+# Honda Pipeline Modernization - Project Notes
+
+**Last Updated**: 2026-10-08
+
+## Completed Phases
+
+✅ **Phase 1A**: Step 1 Validation Scaffold (Initial implementation)
+✅ **Phase 1B**: Dynamic Structure Detection (Pattern-based metadata & section detection) — 2026-09-29
+✅ **Phase 1C**: Row Classification Refinement (Option A+C combined logic) — 2026-10-08
+   - EN sheet coverage improved: 21.7% → 88.1% (+95 rows)
+   - FR sheet coverage improved: 20.5% → 87.7% (+98 rows)
+   - All rows now accounted for (no "invisible" rows)
+
+## Project Overview
 
 Data loading:
 
