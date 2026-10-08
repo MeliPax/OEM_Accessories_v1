@@ -522,16 +522,17 @@ def _is_publishing_row(row: pd.Series) -> bool:
 def _is_valid_data_row(
     row: pd.Series, product_cols: list, price_cols: list
 ) -> bool:
-    """Row is valid if:
-    1. BOTH product columns (Part Number AND Description) have data, AND
-    2. At least one price column also has data (optional but preferred)
+    """Row is valid if it has EITHER:
+    1. COMPLETE RECORD (Option A - STRICT): BOTH product columns (Part Number AND Description)
+    2. PARTIAL RECORD (Option C - INCLUSIVE): ANY product/price column with data
 
-    Returns True only if both product columns contain non-empty values.
+    Combines strict validation for complete records with inclusive counting for partial records.
+    Returns True if either condition is met.
     """
-    # Check if ALL product columns have data
-    if not product_cols:
+    if not product_cols and not price_cols:
         return False
 
+    # Count product columns with data
     product_cols_with_data = 0
     for col_idx in product_cols:
         if col_idx < len(row):
@@ -541,12 +542,13 @@ def _is_valid_data_row(
                 if val_str and val_str.lower() != "nan":
                     product_cols_with_data += 1
 
-    # Must have data in ALL product columns
-    if product_cols_with_data < len(product_cols):
-        return False
+    # OPTION A (STRICT): Complete record with BOTH product columns
+    if product_cols and product_cols_with_data >= len(product_cols):
+        return True
 
-    # Also check if at least one price column has data (bonus)
-    for col_idx in price_cols:
+    # OPTION C (INCLUSIVE): Accept row if it has ANY product or price column data
+    all_key_cols = product_cols + price_cols
+    for col_idx in all_key_cols:
         if col_idx < len(row):
             val = row.iloc[col_idx]
             if pd.notna(val):
@@ -554,8 +556,8 @@ def _is_valid_data_row(
                 if val_str and val_str.lower() != "nan":
                     return True
 
-    # If no price columns have data but both product columns do, still valid
-    return True
+    # No data in any key column
+    return False
 
 
 def _identify_empty_columns(df: pd.DataFrame) -> list:

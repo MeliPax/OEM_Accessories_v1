@@ -1,0 +1,333 @@
+[INFO] Sheet '26MY_CIV5D_APP_EN': Language detected as EN
+[INFO] Sheet '26MY_CIV5D_APP_EN': Model name extracted: Civic Hatch & Type R
+[INFO] Sheet '26MY_CIV5D_APP_EN': Vehicle year extracted: 2026
+[INFO] Sheet '26MY_CIV5D_APP_EN': 6 sections detected
+[DEBUG] detection_config type=<class 'dict'>, keys=['metadata_detection', 'section_detection', 'column_detection', 'row_classification', 'notes']
+[DEBUG] section_detect_config type=<class 'dict'>, keys=['marker_pattern', 'header_row_detection', 'trim_subheader_row_detection', 'data_row_detection']
+[DEBUG] header_row_detect type=<class 'dict'>, keys=['method', 'keywords_en', 'keywords_fr', 'max_scan_rows']
+[DEBUG] Header detection config: keywords_en=['description', 'part', 'number', 'part number', 'cost', 'price', 'list', 'hours', 'frt', 'installed', 'comments'], keywords_fr=['description', 'piÃ¨ce', 'numÃ©ro', 'coÃ»t', 'prix', 'tarif', 'heures', 't.f.f.', 'instalÃ©', 'remarques'], max_scan=10
+[DEBUG] Found header row at index 11: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 12: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Packages and Kits'
+  - 17 total columns, 8 trim columns
+  - Total rows: 44 (including 9 empty)
+  - Valid data rows: 35
+  - Empty columns: [0]
+[DEBUG] Found header row at index 58: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 59: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Wheels and Wheel Accessories'
+  - 17 total columns, 8 trim columns
+  - Total rows: 13 (including 1 empty)
+  - Valid data rows: 12
+  - Empty columns: [0]
+[DEBUG] Found header row at index 74: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 75: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Exterior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 48 (including 1 empty)
+  - Valid data rows: 47
+  - Empty columns: [0]
+[DEBUG] Found header row at index 125: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 126: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Interior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 17 (including 1 empty)
+  - Valid data rows: 16
+  - Empty columns: [0]
+[DEBUG] Found header row at index 145: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 146: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Electrical'
+  - 17 total columns, 8 trim columns
+  - Total rows: 7 (including 1 empty)
+  - Valid data rows: 6
+  - Empty columns: [0]
+[DEBUG] Found header row at index 155: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 156: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Paint Pens'
+  - 17 total columns, 8 trim columns
+  - Total rows: 14 (including 2 empty, 2 publishing)
+  - Valid data rows: 10
+  - Empty columns: [0]
+[INFO] Sheet '26MY_CIV5D_APP_EN': Trim columns and row metrics identified for all sections
+[INFO] Sheet '26MY_CIV5D_APP_FR': Language detected as FR
+[INFO] Sheet '26MY_CIV5D_APP_FR': Model name extracted: Civic à Hayon & Type R
+[INFO] Sheet '26MY_CIV5D_APP_FR': Vehicle year extracted: 2026
+[INFO] Sheet '26MY_CIV5D_APP_FR': 6 sections detected
+[DEBUG] detection_config type=<class 'dict'>, keys=['metadata_detection', 'section_detection', 'column_detection', 'row_classification', 'notes']
+[DEBUG] section_detect_config type=<class 'dict'>, keys=['marker_pattern', 'header_row_detection', 'trim_subheader_row_detection', 'data_row_detection']
+[DEBUG] header_row_detect type=<class 'dict'>, keys=['method', 'keywords_en', 'keywords_fr', 'max_scan_rows']
+[DEBUG] Header detection config: keywords_en=['description', 'part', 'number', 'part number', 'cost', 'price', 'list', 'hours', 'frt', 'installed', 'comments'], keywords_fr=['description', 'piÃ¨ce', 'numÃ©ro', 'coÃ»t', 'prix', 'tarif', 'heures', 't.f.f.', 'instalÃ©', 'remarques'], max_scan=10
+[DEBUG] Found header row at index 11: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 12: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Groupes et ensembles'
+  - 17 total columns, 8 trim columns
+  - Total rows: 48 (including 10 empty)
+  - Valid data rows: 38
+  - Empty columns: [0]
+[DEBUG] Found header row at index 62: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 63: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Jantes et accessoires de jantes'
+  - 17 total columns, 8 trim columns
+  - Total rows: 13 (including 1 empty)
+  - Valid data rows: 12
+  - Empty columns: [0]
+[DEBUG] Found header row at index 78: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 79: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Extérieur'
+  - 17 total columns, 8 trim columns
+  - Total rows: 47 (including 1 empty)
+  - Valid data rows: 46
+  - Empty columns: [0]
+[DEBUG] Found header row at index 128: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 129: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Intérieur'
+  - 17 total columns, 8 trim columns
+  - Total rows: 17 (including 1 empty)
+  - Valid data rows: 16
+  - Empty columns: [0]
+[DEBUG] Found header row at index 148: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 149: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Électrique'
+  - 17 total columns, 8 trim columns
+  - Total rows: 7 (including 1 empty)
+  - Valid data rows: 6
+  - Empty columns: [0]
+[DEBUG] Found header row at index 158: 5 keywords matched
+[DEBUG] Found trim sub-header row at index 159: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Crayon de retouche de peinture'
+  - 17 total columns, 8 trim columns
+  - Total rows: 14 (including 2 empty, 2 publishing)
+  - Valid data rows: 10
+  - Empty columns: [0]
+[INFO] Sheet '26MY_CIV5D_APP_FR': Trim columns and row metrics identified for all sections
+====================================================================================================
+HONDA EN/FR METADATA EXTRACTION TEST
+====================================================================================================
+
+File: accy_v2\data\landing_zone\honda\may_2026\CVIC5D.xlsx
+Config Root: accy_v2\oems\honda\config
+
+Loading configurations...
+[OK] Configurations loaded
+
+Loading Excel file...
+[OK] Loaded 2 sheets: ['26MY_CIV5D_APP_EN', '26MY_CIV5D_APP_FR']
+
+====================================================================================================
+PROCESSING: 26MY_CIV5D_APP_EN
+====================================================================================================
+
+[OK] Metadata Extraction Successful
+  Model: Civic Hatch & Type R
+  Year: 2026
+  Language: EN
+  Sections: 6
+  Total Rows: 171
+====================================================================================================
+PROCESSING: 26MY_CIV5D_APP_FR
+====================================================================================================
+
+[OK] Metadata Extraction Successful
+  Model: Civic à Hayon & Type R
+  Year: 2026
+  Language: FR
+  Sections: 6
+  Total Rows: 174
+
+
+====================================================================================================
+DATA EXTRACTION OVERVIEW - DETAILED METADATA
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+Sheet: 26MY_CIV5D_APP_EN
+----------------------------------------------------------------------------------------------------
+
+BASIC METADATA:
+  Model Name:       Civic Hatch & Type R
+  Vehicle Year:     2026
+  Language:         EN
+  Sections Detected: 6
+
+SECTION STRUCTURE:
+  1. Packages and Kits
+     Marker Row: 10
+     Header Row: None
+     Data Range: rows None-None
+  2. Wheels and Wheel Accessories
+     Marker Row: 57
+     Header Row: None
+     Data Range: rows None-None
+  3. Exterior
+     Marker Row: 73
+     Header Row: None
+     Data Range: rows None-None
+  4. Interior
+     Marker Row: 124
+     Header Row: None
+     Data Range: rows None-None
+  5. Electrical
+     Marker Row: 144
+     Header Row: None
+     Data Range: rows None-None
+  6. Paint Pens
+     Marker Row: 154
+     Header Row: None
+     Data Range: rows None-None
+
+ROW METRICS BY SECTION:
+
+  Packages and Kits:
+    Total rows:        44
+    Valid data rows:   35
+    Empty rows:        9
+    Publishing rows:   0
+
+  Wheels and Wheel Accessories:
+    Total rows:        13
+    Valid data rows:   12
+    Empty rows:        1
+    Publishing rows:   0
+
+  Exterior:
+    Total rows:        48
+    Valid data rows:   47
+    Empty rows:        1
+    Publishing rows:   0
+
+  Interior:
+    Total rows:        17
+    Valid data rows:   16
+    Empty rows:        1
+    Publishing rows:   0
+
+  Electrical:
+    Total rows:        7
+    Valid data rows:   6
+    Empty rows:        1
+    Publishing rows:   0
+
+  Paint Pens:
+    Total rows:        14
+    Valid data rows:   10
+    Empty rows:        2
+    Publishing rows:   2
+
+TOTAL COUNTS ACROSS ALL SECTIONS:
+  Total rows:          143
+  Valid data rows:     126
+  Empty rows:          15
+  Publishing rows:     2
+
+TRIM COLUMNS:
+  Packages and Kits: 4 trim columns
+  Wheels and Wheel Accessories: 4 trim columns
+  Exterior: 4 trim columns
+  Interior: 4 trim columns
+  Electrical: 4 trim columns
+  Paint Pens: 4 trim columns
+
+----------------------------------------------------------------------------------------------------
+Sheet: 26MY_CIV5D_APP_FR
+----------------------------------------------------------------------------------------------------
+
+BASIC METADATA:
+  Model Name:       Civic à Hayon & Type R
+  Vehicle Year:     2026
+  Language:         FR
+  Sections Detected: 6
+
+SECTION STRUCTURE:
+  1. Groupes et ensembles
+     Marker Row: 10
+     Header Row: None
+     Data Range: rows None-None
+  2. Jantes et accessoires de jantes
+     Marker Row: 61
+     Header Row: None
+     Data Range: rows None-None
+  3. Extérieur
+     Marker Row: 77
+     Header Row: None
+     Data Range: rows None-None
+  4. Intérieur
+     Marker Row: 127
+     Header Row: None
+     Data Range: rows None-None
+  5. Électrique
+     Marker Row: 147
+     Header Row: None
+     Data Range: rows None-None
+  6. Crayon de retouche de peinture
+     Marker Row: 157
+     Header Row: None
+     Data Range: rows None-None
+
+ROW METRICS BY SECTION:
+
+  Groupes et ensembles:
+    Total rows:        48
+    Valid data rows:   38
+    Empty rows:        10
+    Publishing rows:   0
+
+  Jantes et accessoires de jantes:
+    Total rows:        13
+    Valid data rows:   12
+    Empty rows:        1
+    Publishing rows:   0
+
+  Extérieur:
+    Total rows:        47
+    Valid data rows:   46
+    Empty rows:        1
+    Publishing rows:   0
+
+  Intérieur:
+    Total rows:        17
+    Valid data rows:   16
+    Empty rows:        1
+    Publishing rows:   0
+
+  Électrique:
+    Total rows:        7
+    Valid data rows:   6
+    Empty rows:        1
+    Publishing rows:   0
+
+  Crayon de retouche de peinture:
+    Total rows:        14
+    Valid data rows:   10
+    Empty rows:        2
+    Publishing rows:   2
+
+TOTAL COUNTS ACROSS ALL SECTIONS:
+  Total rows:          146
+  Valid data rows:     128
+  Empty rows:          16
+  Publishing rows:     2
+
+TRIM COLUMNS:
+  Groupes et ensembles: 4 trim columns
+  Jantes et accessoires de jantes: 4 trim columns
+  Extérieur: 4 trim columns
+  Intérieur: 4 trim columns
+  Électrique: 4 trim columns
+  Crayon de retouche de peinture: 4 trim columns
+
+
+====================================================================================================
+COMPARISON: EN vs FR
+====================================================================================================
+
+Metric                         EN                   FR                   Match
+---------------------------------------------------------------------------
+Sections Detected              6                    6                    [OK]
+Valid Data Rows                126                  128                  [WARN]
+Total Data Rows                143                  146                 
+Total Trim Columns             24                   24                   [OK]
+
+====================================================================================================
+[OK] METADATA EXTRACTION COMPLETE
+====================================================================================================
+
