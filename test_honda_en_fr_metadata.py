@@ -157,43 +157,123 @@ for sheet_name, meta in results.items():
     for section_name, cols in trim_cols.items():
         print(f"  {section_name}: {len(cols)} trim columns")
 
-# Final summary comparing EN vs FR
-print("\n\n" + "=" * 100)
-print("COMPARISON: EN vs FR")
-print("=" * 100)
+# Final summary comparing EN vs FR - Side-by-side with sections
+print("\n\n" + "=" * 120)
+print("COMPARISON: EN vs FR - SECTION-BY-SECTION WITH METRICS")
+print("=" * 120)
 
 if len(results) == 2:
     en_data = results.get('26MY_CIV5D_APP_EN')
     fr_data = results.get('26MY_CIV5D_APP_FR')
 
     if en_data and fr_data:
-        print(f"\n{'Metric':<30} {'EN':<20} {'FR':<20} {'Match'}")
-        print("-" * 75)
-
-        # Compare basic metrics
-        en_sections = en_data.get('sections_detected', 0)
-        fr_sections = fr_data.get('sections_detected', 0)
-        match = "[OK]" if en_sections == fr_sections else "[FAIL]"
-        print(f"{'Sections Detected':<30} {en_sections:<20} {fr_sections:<20} {match}")
-
-        # Compare row metrics
         en_metrics = en_data.get('row_metrics_per_section', {})
         fr_metrics = fr_data.get('row_metrics_per_section', {})
+        en_trim_cols = en_data.get('trim_columns_per_section', {})
+        fr_trim_cols = fr_data.get('trim_columns_per_section', {})
 
-        en_valid = sum(m['valid_data_rows'] for m in en_metrics.values())
-        fr_valid = sum(m['valid_data_rows'] for m in fr_metrics.values())
-        match = "[OK]" if en_valid == fr_valid else "[WARN]" if abs(en_valid - fr_valid) <= 5 else "[FAIL]"
-        print(f"{'Valid Data Rows':<30} {en_valid:<20} {fr_valid:<20} {match}")
+        # Helper function to calculate variance
+        def get_variance_str(en_val, fr_val):
+            if en_val == fr_val:
+                return "[OK]"
+            else:
+                diff = en_val - fr_val
+                if diff > 0:
+                    return f"+{diff}"
+                else:
+                    return str(diff)
 
-        en_total = sum(m['total_rows'] for m in en_metrics.values())
-        fr_total = sum(m['total_rows'] for m in fr_metrics.values())
-        print(f"{'Total Data Rows':<30} {en_total:<20} {fr_total:<20}")
+        # Get all section names - EN and FR have different names for same sections
+        en_section_names = list(en_metrics.keys())
+        fr_section_names = list(fr_metrics.keys())
 
-        en_trim = sum(len(cols) for cols in en_data.get('trim_columns_per_section', {}).values())
-        fr_trim = sum(len(cols) for cols in fr_data.get('trim_columns_per_section', {}).values())
-        match = "[OK]" if en_trim == fr_trim else "[FAIL]"
-        print(f"{'Total Trim Columns':<30} {en_trim:<20} {fr_trim:<20} {match}")
+        # Match sections by order (they should be in same order even with different names)
+        # Print each section with metrics side-by-side
+        for idx, (en_section_name, fr_section_name) in enumerate(zip(en_section_names, fr_section_names)):
+            en_section = en_metrics.get(en_section_name, {})
+            fr_section = fr_metrics.get(fr_section_name, {})
+            en_trim = len(en_trim_cols.get(en_section_name, []))
+            fr_trim = len(fr_trim_cols.get(fr_section_name, []))
 
-print("\n" + "=" * 100)
+            # Display both EN and FR section names
+            section_display = f"{en_section_name} / {fr_section_name}"
+
+            en_total = en_section.get('total_rows', 0)
+            fr_total = fr_section.get('total_rows', 0)
+            en_valid = en_section.get('valid_data_rows', 0)
+            fr_valid = fr_section.get('valid_data_rows', 0)
+            en_empty = en_section.get('empty_rows', 0)
+            fr_empty = fr_section.get('empty_rows', 0)
+            en_pub = en_section.get('publishing_rows', 0)
+            fr_pub = fr_section.get('publishing_rows', 0)
+
+            # Calculate coverage percentages
+            en_coverage = (en_valid / en_total * 100) if en_total > 0 else 0
+            fr_coverage = (fr_valid / fr_total * 100) if fr_total > 0 else 0
+
+            print(f"\n{'-' * 120}")
+            print(f"SECTION: {section_display}")
+            print(f"{'-' * 120}")
+            print(f"{'Metric':<35} {'EN':<25} {'FR':<25} {'Variance':<20}")
+            print(f"{'-' * 120}")
+
+            # Total Rows
+            print(f"{'Total Rows':<35} {en_total:<25} {fr_total:<25} {get_variance_str(en_total, fr_total):<20}")
+
+            # Valid Data Rows
+            print(f"{'Valid Data Rows':<35} {en_valid:<25} {fr_valid:<25} {get_variance_str(en_valid, fr_valid):<20}")
+
+            # Empty Rows
+            print(f"{'Empty Rows':<35} {en_empty:<25} {fr_empty:<25} {get_variance_str(en_empty, fr_empty):<20}")
+
+            # Publishing Rows
+            print(f"{'Publishing Rows':<35} {en_pub:<25} {fr_pub:<25} {get_variance_str(en_pub, fr_pub):<20}")
+
+            # Trim Columns
+            print(f"{'Trim Columns':<35} {en_trim:<25} {fr_trim:<25} {get_variance_str(en_trim, fr_trim):<20}")
+
+            # Coverage Percentage
+            en_cov_str = f"{en_coverage:.1f}%"
+            fr_cov_str = f"{fr_coverage:.1f}%"
+            cov_diff = round(en_coverage - fr_coverage, 1)
+            coverage_var = "[OK]" if cov_diff == 0 else f"+{cov_diff}%" if cov_diff > 0 else f"{cov_diff}%"
+            print(f"{'Coverage %':<35} {en_cov_str:<25} {fr_cov_str:<25} {coverage_var:<20}")
+
+        # Print TOTAL summary
+        print(f"\n{'=' * 120}")
+        print(f"TOTAL SUMMARY")
+        print(f"{'=' * 120}")
+        print(f"{'Metric':<35} {'EN':<25} {'FR':<25} {'Variance':<20}")
+        print(f"{'-' * 120}")
+
+        en_total_rows = sum(m.get('total_rows', 0) for m in en_metrics.values())
+        fr_total_rows = sum(m.get('total_rows', 0) for m in fr_metrics.values())
+        print(f"{'Total Rows':<35} {en_total_rows:<25} {fr_total_rows:<25} {get_variance_str(en_total_rows, fr_total_rows):<20}")
+
+        en_valid_rows = sum(m.get('valid_data_rows', 0) for m in en_metrics.values())
+        fr_valid_rows = sum(m.get('valid_data_rows', 0) for m in fr_metrics.values())
+        print(f"{'Valid Data Rows':<35} {en_valid_rows:<25} {fr_valid_rows:<25} {get_variance_str(en_valid_rows, fr_valid_rows):<20}")
+
+        en_empty_rows = sum(m.get('empty_rows', 0) for m in en_metrics.values())
+        fr_empty_rows = sum(m.get('empty_rows', 0) for m in fr_metrics.values())
+        print(f"{'Empty Rows':<35} {en_empty_rows:<25} {fr_empty_rows:<25} {get_variance_str(en_empty_rows, fr_empty_rows):<20}")
+
+        en_pub_rows = sum(m.get('publishing_rows', 0) for m in en_metrics.values())
+        fr_pub_rows = sum(m.get('publishing_rows', 0) for m in fr_metrics.values())
+        print(f"{'Publishing Rows':<35} {en_pub_rows:<25} {fr_pub_rows:<25} {get_variance_str(en_pub_rows, fr_pub_rows):<20}")
+
+        en_total_trim = sum(len(cols) for cols in en_trim_cols.values())
+        fr_total_trim = sum(len(cols) for cols in fr_trim_cols.values())
+        print(f"{'Trim Columns':<35} {en_total_trim:<25} {fr_total_trim:<25} {get_variance_str(en_total_trim, fr_total_trim):<20}")
+
+        en_total_coverage = (en_valid_rows / en_total_rows * 100) if en_total_rows > 0 else 0
+        fr_total_coverage = (fr_valid_rows / fr_total_rows * 100) if fr_total_rows > 0 else 0
+        en_cov_str = f"{en_total_coverage:.1f}%"
+        fr_cov_str = f"{fr_total_coverage:.1f}%"
+        cov_diff = round(en_total_coverage - fr_total_coverage, 1)
+        coverage_var = "[OK]" if cov_diff == 0 else f"+{cov_diff}%" if cov_diff > 0 else f"{cov_diff}%"
+        print(f"{'Coverage %':<35} {en_cov_str:<25} {fr_cov_str:<25} {coverage_var:<20}")
+
+print("\n" + "=" * 120)
 print("[OK] METADATA EXTRACTION COMPLETE")
-print("=" * 100 + "\n")
+print("=" * 120 + "\n")
