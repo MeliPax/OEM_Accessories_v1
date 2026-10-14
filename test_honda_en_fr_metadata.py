@@ -10,12 +10,12 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "accy_v2"))
 
 import pandas as pd
-import yaml
 import uuid
 
 from accy_v2.oems.honda.pipeline import step1_validation
 from accy_v2.core.helpers.dq_logger import DQLogger
 from accy_v2.core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.config_loader_v2 import ModularConfigLoader
 
 # File and config paths
 file_path = Path("accy_v2/data/landing_zone/honda/may_2026/CVIC5D.xlsx")
@@ -31,14 +31,10 @@ if not file_path.exists():
     print(f"[ERROR] File not found: {file_path}")
     sys.exit(1)
 
-# Load configs
+# Load configs using ModularConfigLoader (structure.yaml via load_all)
 print("Loading configurations...")
-with open(config_root / "pipeline.yaml") as f:
-    config = yaml.safe_load(f)
-
-with open(config_root / "schemas" / "detection.yaml") as f:
-    detection_config = yaml.safe_load(f)
-    config["step1_detection"] = detection_config
+config_loader = ModularConfigLoader("honda", config_root)
+config = config_loader.load_all()
 
 print("[OK] Configurations loaded\n")
 
@@ -76,6 +72,7 @@ for sheet_name, df in sheets.items():
         print(f"\n[OK] Metadata Extraction Successful")
         print(f"  Model: {updated_meta.get('model_name', 'N/A')}")
         print(f"  Year: {updated_meta.get('vehicle_year', 'N/A')}")
+        print(f"  Publication Date: {updated_meta.get('publication_date', 'NOT FOUND')}")
         print(f"  Language: {updated_meta.get('language', 'N/A')}")
         print(f"  Sections: {updated_meta.get('sections_detected', 0)}")
         print(f"  Total Rows: {len(df)}")
@@ -104,6 +101,7 @@ for sheet_name, meta in results.items():
     print(f"\nBASIC METADATA:")
     print(f"  Model Name:       {meta.get('model_name', 'N/A')}")
     print(f"  Vehicle Year:     {meta.get('vehicle_year', 'N/A')}")
+    print(f"  Publication Date: {meta.get('publication_date', 'NOT FOUND')}")
     print(f"  Language:         {meta.get('language', 'N/A')}")
     print(f"  Sections Detected: {meta.get('sections_detected', 0)}")
 
@@ -273,6 +271,27 @@ if len(results) == 2:
         cov_diff = round(en_total_coverage - fr_total_coverage, 1)
         coverage_var = "[OK]" if cov_diff == 0 else f"+{cov_diff}%" if cov_diff > 0 else f"{cov_diff}%"
         print(f"{'Coverage %':<35} {en_cov_str:<25} {fr_cov_str:<25} {coverage_var:<20}")
+
+# ========================================================================================================================
+# PUBLICATION DATE VALIDATION
+# ========================================================================================================================
+
+print("\n" + "=" * 120)
+print("PUBLICATION DATE VALIDATION")
+print("=" * 120)
+
+en_pub_date = en_data.get('publication_date', 'NOT FOUND') if en_data else 'NOT FOUND'
+fr_pub_date = fr_data.get('publication_date', 'NOT FOUND') if fr_data else 'NOT FOUND'
+
+print(f"\nEN Publication Date: {en_pub_date}")
+print(f"FR Publication Date: {fr_pub_date}")
+
+if en_pub_date == fr_pub_date:
+    print(f"\n[OK] Publication dates MATCH: {en_pub_date}")
+else:
+    print(f"\n[WARNING] Publication dates DIFFER!")
+    print(f"   EN: {en_pub_date}")
+    print(f"   FR: {fr_pub_date}")
 
 print("\n" + "=" * 120)
 print("[OK] METADATA EXTRACTION COMPLETE")

@@ -39,6 +39,7 @@ except ImportError:
 from accy_v2.core.helpers.dq_logger import DQLogger
 from accy_v2.core.helpers.output_writer import write_combined_output
 from accy_v2.core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.config_loader_v2 import ModularConfigLoader
 
 # Import Honda-specific step modules
 from accy_v2.oems.honda.pipeline import (
@@ -59,19 +60,20 @@ class HondaPipeline(BasePipeline):
     OEM_NAME = "honda"
 
     def run(self, file_path: str, config_root: str) -> Dict[str, Any]:
-        """Override run() to load Honda-specific detection config."""
-        # Load detection.yaml before parent run
-        detection_path = Path(config_root) / "schemas" / "detection.yaml"
-        self._detection_config = {}
+        """Override run() to load Honda config via ModularConfigLoader.
 
-        if detection_path.exists():
-            try:
-                with open(detection_path, 'r', encoding='utf-8') as f:
-                    loaded = yaml.safe_load(f)
-                    self._detection_config = loaded if isinstance(loaded, dict) else {}
-            except Exception as e:
-                print(f"[WARNING] Failed to load detection config: {e}")
-                self._detection_config = {}
+        Loads complete config from schemas/ including structure.yaml for
+        structural parsing rules and upstream.yaml for column definitions.
+        """
+        # Load full config via ModularConfigLoader (includes structure.yaml)
+        try:
+            config_loader = ModularConfigLoader(self.OEM_NAME, Path(config_root))
+            full_config = config_loader.load_all()
+            # Store structure config for steps that need it
+            self._detection_config = full_config.get("schemas", {}).get("structure", {})
+        except Exception as e:
+            print(f"[WARNING] Failed to load Honda config: {e}")
+            self._detection_config = {}
 
         self._current_file_path = file_path
         return super().run(file_path, config_root)
