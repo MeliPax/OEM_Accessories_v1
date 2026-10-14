@@ -210,6 +210,25 @@ class ModularConfigLoader:
         path = self.config_root / "schemas" / "upstream.yaml"
         return self._load_yaml(path)
 
+    def load_structure_schema(self) -> Dict[str, Any]:
+        """
+        Load schemas/structure.yaml (structural parsing rules for Step 1).
+
+        Contains: metadata_detection, section_detection, row_classification,
+        section_classification, parent_child_detection, dq_rules
+
+        Returns:
+            Dict containing structural detection and classification rules
+        """
+        path = self.config_root / "schemas" / "structure.yaml"
+        if not path.exists():
+            # Fallback: try detection.yaml for backward compatibility
+            detection_path = self.config_root / "schemas" / "detection.yaml"
+            if detection_path.exists():
+                return self._load_yaml(detection_path)
+            return {}  # Return empty dict if neither file exists
+        return self._load_yaml(path)
+
     def load_intermediate_schema(self) -> Dict[str, Any]:
         """
         Load schemas/intermediate.yaml (post-transform quality gate).
@@ -291,6 +310,7 @@ class ModularConfigLoader:
                     "pipeline": {...},
                     "schemas": {
                         "upstream": {...},
+                        "structure": {...},
                         "intermediate": {...},
                         "downstream": {...}
                     },
@@ -302,6 +322,7 @@ class ModularConfigLoader:
             "pipeline": self.load_pipeline_config(),
             "schemas": {
                 "upstream": self.load_upstream_schema(),
+                "structure": self.load_structure_schema(),
                 "intermediate": self.load_intermediate_schema(),
                 "downstream": self.load_downstream_schema(),
             },

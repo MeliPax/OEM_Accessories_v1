@@ -78,6 +78,11 @@ def run(
             updated_meta["vehicle_year"] = vehicle_year
             pipeline_logger.info(f"Sheet '{sheet_name}': Vehicle year extracted: {vehicle_year}")
 
+        publication_date = _extract_publication_date(working_df, dq_logger, pipeline_logger)
+        if publication_date:
+            updated_meta["publication_date"] = publication_date
+            pipeline_logger.info(f"Sheet '{sheet_name}': Publication date extracted: {publication_date}")
+
         # =========================================================================
         # PHASE 3: Identify section boundaries
         # =========================================================================
@@ -249,6 +254,83 @@ def _extract_vehicle_year(
         except (ValueError, TypeError):
             pass
 
+    return None
+
+
+def _extract_publication_date(
+    df: pd.DataFrame,
+    dq_logger: DQLogger,
+    logger: PipelineLogger
+) -> str or None:
+    """Extract publication date from file footer.
+
+    Expected format: Last few rows contain:
+    - Row with "Publication Date" / "Date de publication" keyword
+    - Row immediately after (or same row) with date in column 2
+
+    Returns: Date string (YYYY-MM-DD) or None if not found
+    """
+    if len(df) == 0:
+        return None
+
+    # Scan last 5 rows for publication keyword + date
+    start_scan = max(0, len(df) - 5)
+
+    for idx in range(start_scan, len(df)):
+        row = df.iloc[idx]
+
+        # Check if this row contains publication keyword in column 2
+        if len(row) > 2:
+            col2_val = row.iloc[2]
+            if pd.notna(col2_val):
+                col2_str = str(col2_val).lower()
+                if any(kw in col2_str for kw in ["publication", "date de publication"]):
+                    # Found publication row, get date from same or next row
+                    date_str = _extract_date_from_row(row, idx, df)
+                    if date_str:
+                        logger.debug(f"Publication date extracted: {date_str}")
+                        return date_str
+
+    return None
+
+
+def _extract_date_from_row(row, row_idx, df):
+    """Extract date (YYYY-MM-DD) from row or next row's column 2."""
+    # Try current row first
+    if len(row) > 2:
+        date_val = row.iloc[2]
+        if pd.notna(date_val):
+            date_str = str(date_val).strip()
+            extracted = _parse_date_string(date_str)
+            if extracted:
+                return extracted
+
+    # Try next row if exists
+    if row_idx + 1 < len(df):
+        next_row = df.iloc[row_idx + 1]
+        if len(next_row) > 2:
+            date_val = next_row.iloc[2]
+            if pd.notna(date_val):
+                date_str = str(date_val).strip()
+                extracted = _parse_date_string(date_str)
+                if extracted:
+                    return extracted
+
+    return None
+
+
+def _parse_date_string(date_str: str) -> str or None:
+    """Extract YYYY-MM-DD from various date formats.
+
+    Handles:
+    - 2026-04-30 (YYYY-MM-DD)
+    - 2026-04-30 00:00:00 (YYYY-MM-DD HH:MM:SS)
+    """
+    import re
+    # Match YYYY-MM-DD at the start of the string
+    match = re.match(r"(\d{4}-\d{2}-\d{2})", date_str)
+    if match:
+        return match.group(1)
     return None
 
 
@@ -449,8 +531,11 @@ def _identify_section_boundaries(
 
         sections[section_name] = {
             "marker_row": marker_row,
-            "data_start": data_start,
-            "data_end": data_end,
+            "header_row": data_start,  # Phase 2 expects this
+            "data_start_row": data_start + 2,  # Phase 2 expects this (after header and trim rows)
+            "data_end_row": data_end,  # Phase 2 expects this (renamed from data_end)
+            "data_start": data_start,  # Kept for backward compatibility
+            "data_end": data_end,  # Kept for backward compatibility
             "total_rows": total_rows,
             "empty_rows": empty_rows,
             "non_empty_rows": non_empty_rows,
@@ -592,7 +677,12 @@ def _validate_section_headers(
     Returns: (trim_columns_per_section, row_metrics_per_section)
     """
     # Extract detection config (passed by orchestrator)
-    detection_config = config.get("step1_detection", {}) if isinstance(config, dict) else {}
+    # Load structure config (contains metadata_detection, section_detection, etc.)
+    # First try new modular config path (schemas/structure), then fallback to old path for compatibility
+    detection_config = (
+        config.get("schemas", {}).get("structure", {})
+        or config.get("step1_detection", {})
+    )
     if not isinstance(detection_config, dict):
         detection_config = {}
 
