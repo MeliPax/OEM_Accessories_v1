@@ -1,5 +1,6 @@
-# Honda Upstream Schema
-# Defines the raw data structure expected from Honda Excel files
+# Honda Upstream Schema - Column Specifications & Language-Specific Detection
+# Defines the raw data structure and how to identify columns in Honda Excel files
+# This is the PRIMARY schema file for column definitions and detection rules
 
 # ============================================================================
 # File Structure
@@ -84,16 +85,16 @@ sections:
   header_structure:
     - name: "section_marker"
       content: "Section identifier (pattern: \\d+\\.\\d+\\s+NameOfSection)"
-      detection: "See detection.yaml for regex pattern and scanning logic"
+      detection: "See structure.yaml for regex pattern and scanning logic"
 
     - name: "header_row"
       content: "Column names (Description, Part Number, Cost, Trim Applicability, etc.)"
-      detection: "First row after marker containing column name keywords (see detection.yaml)"
+      detection: "First row after marker containing column name keywords (see structure.yaml)"
       example: "Unnamed: 0 = NaN, Unnamed: 1 = Description, Unnamed: 2 = Part Number, ..."
 
     - name: "trim_sub_header_row"
       content: "Trim level names and applicability markers (e.g., 'SPORT', 'Type R', or '•', 'T', 'E')"
-      detection: "Row after header containing applicability markers in trim columns (see detection.yaml)"
+      detection: "Row after header containing applicability markers in trim columns (see structure.yaml)"
       characteristics:
         - "row immediately after product column headers"
         - "contains actual trim values (not keywords, not empty)"
@@ -109,61 +110,165 @@ sections:
         - "Remaining columns contain applicability markers for each trim"
 
 # ============================================================================
-# Column Structure (Generic) — Dict keyed by column name
+# COLUMN DEFINITIONS with LANGUAGE-SPECIFIC DETECTION
 # ============================================================================
+# Each column has EN and FR keyword rules for robust, position-independent matching
+# Keywords: must_have (ALL must be present), must_have_one_of (at least ONE), not_have (NONE)
+# Matching: case-insensitive, accent-normalized, substring-based
 
 columns:
-  # Product columns (mandatory in every section)
-  Description:
+  description:
     type: "string"
     required: true
+    standardized_name: "description"
     examples: ["Racing Package - Type R", "Platinum White Pearl (NH-883P)"]
-    detect_by_keyword: {en: ["description"], fr: ["description"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [description]
+          must_have_one_of: []
+          not_have: []
+      FR:
+        key_words:
+          must_have: [description]
+          must_have_one_of: [la]
+          not_have: []
 
-  Part Number:
+  part_number:
     type: "string"
     required: true
+    standardized_name: "part_number"
     examples: ["26TYPER-RACE", "TUCH-NH883P-A1"]
-    detect_by_keyword: {en: ["part", "number"], fr: ["pièce", "numéro"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [part]
+          must_have_one_of: [number, '#']
+          not_have: [description]
+      FR:
+        key_words:
+          must_have: []
+          must_have_one_of: [numéro, numero, pièce, piece]
+          not_have: [description]
 
-  # Price columns (common but optional)
-  Cost:
+  dealer_net:
     type: "float"
     required: false
+    standardized_name: "dealer_net"
     alt_names: ["Dealer Net", "DNP"]
     examples: [3928, 13.25]
-    detect_by_keyword: {en: ["cost"], fr: ["coût"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [net]
+          must_have_one_of: [dealer]
+          not_have: []
+      FR:
+        key_words:
+          must_have: [net]
+          must_have_one_of: [prix]
+          not_have: []
 
-  Hours:
+  list_price:
     type: "float"
     required: false
-    examples: [6431, 0]
-    detect_by_keyword: {en: ["hours"], fr: ["heures"]}
-
-  MSRP:
-    type: "float"
-    required: false
-    alt_names: ["List Price", "Retail Price"]
+    standardized_name: "list_price"
+    alt_names: ["List Price", "MSRP", "Retail Price"]
     examples: [6612, 22]
-    detect_by_keyword: {en: ["msrp", "list", "price"], fr: ["prix", "tarif"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [list]
+          must_have_one_of: [price]
+          not_have: []
+      FR:
+        key_words:
+          must_have: [liste]
+          must_have_one_of: [prix, tarif]
+          not_have: []
 
-  FRT:
+  frt:
     type: "float"
     required: false
+    standardized_name: "frt"
     examples: [0.9999999999999999, 0]
-    detect_by_keyword: {en: ["frt"], fr: ["t.f.f."]}
+    detection:
+      EN:
+        key_words:
+          must_have: [frt]
+          must_have_one_of: []
+          not_have: []
+      FR:
+        key_words:
+          must_have: []
+          must_have_one_of: [tff, t.f.f., freight]
+          not_have: []
 
-  Installed Price:
+  installed_price:
     type: "float"
     required: false
+    standardized_name: "installed_price"
     examples: [6612, 22]
-    detect_by_keyword: {en: ["installed"], fr: ["instalé"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [install]
+          must_have_one_of: [price]
+          not_have: []
+      FR:
+        key_words:
+          must_have: [install]
+          must_have_one_of: [prix]
+          not_have: []
 
-  Comments:
+  application:
     type: "string"
     required: false
+    standardized_name: "application"
+    examples: ["All Trims"]
+    detection:
+      EN:
+        key_words:
+          must_have: [application]
+          must_have_one_of: []
+          not_have: []
+      FR:
+        key_words:
+          must_have: [application]
+          must_have_one_of: []
+          not_have: []
+
+  comments:
+    type: "string"
+    required: false
+    standardized_name: "comments"
     examples: ["Quantity of 5", "Quantity of 25"]
-    detect_by_keyword: {en: ["comments"], fr: ["remarques"]}
+    detection:
+      EN:
+        key_words:
+          must_have: [comment]
+          must_have_one_of: [remark, note]
+          not_have: []
+      FR:
+        key_words:
+          must_have: [comment]
+          must_have_one_of: [remarque, remarques, note]
+          not_have: []
+
+# ============================================================================
+# Column Categories
+# ============================================================================
+
+column_categories:
+  product_columns:
+    - "part_number"
+    - "description"
+  price_columns:
+    - "dealer_net"
+    - "list_price"
+    - "frt"
+    - "installed_price"
+  trim_columns: []  # Auto-detected
 
 # ============================================================================
 # Data Quality Expectations

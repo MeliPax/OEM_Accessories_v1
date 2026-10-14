@@ -1,0 +1,341 @@
+# Honda Structure Detection Rules
+# Defines HOW to detect structural elements (metadata, sections, rows, boundaries)
+# Loaded by step1_validation.py for file parsing and structure validation
+
+# ============================================================================
+# Metadata Detection (Model Name, Model Year)
+# ============================================================================
+
+metadata_detection:
+  # Search for metadata keywords up to the first section marker
+  # This enforces structure: metadata must appear BEFORE first section
+  search_limit: "up_to_first_section_marker"
+
+  # Keywords to find metadata rows (case-insensitive, substring match)
+  keywords:
+    model_name:
+      - "model name"
+      - "nom du modèle"
+      - "nom du model"
+    model_year:
+      - "model year"
+      - "année modèle"
+      - "année du modèle"
+
+# ============================================================================
+# Section Marker Detection
+# ============================================================================
+
+section_detection:
+  # Regex pattern to identify section markers
+  # Matches: "1.0 Packages and Kits", "2.0 Wheels and Wheel Accessories", etc.
+  marker_pattern: "^\\d+\\.\\d+\\s+(.+)$"
+
+  # ========================================================================
+  # Header Row Detection (after section marker)
+  # ========================================================================
+
+  header_row_detection:
+    method: "keyword_scan"
+
+    # English keywords to identify header row (case-insensitive, substring match)
+    keywords_en:
+      - "description"
+      - "part"
+      - "number"
+      - "part number"
+      - "cost"
+      - "price"
+      - "list"
+      - "hours"
+      - "frt"
+      - "installed"
+      - "comments"
+
+    # French keywords to identify header row (case-insensitive, substring match)
+    keywords_fr:
+      - "description"
+      - "pièce"
+      - "numéro"
+      - "coût"
+      - "prix"
+      - "tarif"
+      - "heures"
+      - "t.f.f."
+      - "instalé"
+      - "remarques"
+
+    # Scanning limits (to avoid scanning entire sheet)
+    max_scan_rows: 10  # Scan at most 10 rows from marker to find header
+
+  # ========================================================================
+  # Trim Sub-Header Row Detection (after header row)
+  # ========================================================================
+
+  trim_subheader_row_detection:
+    method: "applicability_marker_scan"
+
+    # Applicability markers that indicate trim applicability columns
+    # These are the VALUES found in trim sub-header row
+    applicability_markers:
+      - "•"    # Bullet point (most common in Honda files)
+      - "T"    # Letter T
+      - "E"    # Letter E
+      - "X"    # Letter X
+
+    # Characteristics of a trim sub-header row
+    characteristics:
+      - "row immediately after header row"
+      - "contains actual trim values (not keywords, not empty)"
+      - "text format (not numbers like 0 or 0.0)"
+
+    # Minimum number of trim columns for a valid trim sub-header
+    min_trim_columns: 2
+
+    # Scanning limits
+    max_scan_rows: 5  # Scan at most 5 rows after header to find trim sub-header
+
+    # Trim value validation: values should NOT be purely numeric
+    exclude_patterns:
+      - "^0$"      # Just "0"
+      - "^0\\.0$"  # Just "0.0"
+      - "^\\d+$"   # All digits
+
+  # ========================================================================
+  # Data Row Detection
+  # ========================================================================
+
+  data_row_detection:
+    start: "row immediately after trim sub-header"
+    end: "row before next section marker (or end of sheet)"
+
+    # If no trim sub-header found, data starts at header + 2
+    fallback_offset: 2
+
+# ============================================================================
+# Column Detection (Product vs. Trim Columns)
+# ============================================================================
+
+column_detection:
+  # Product columns are identified by these keywords
+  # They are NEVER trim columns
+  product_column_keywords:
+    en:
+      - "part"
+      - "number"
+      - "description"
+      - "item"
+      - "name"
+      - "frt"
+      - "residual"
+      - "price"
+      - "net"
+      - "dealer"
+      - "list"
+      - "comments"
+      - "application"
+      - "installed"
+      - "cost"
+      - "hours"
+      - "msrp"
+    fr:
+      - "pièce"
+      - "numero"
+      - "description"
+      - "article"
+      - "nom"
+      - "t.f.f."
+      - "tarif"
+      - "net"
+      - "concessionnaire"
+      - "liste"
+      - "remarques"
+      - "commentaire"
+      - "application"
+      - "instalé"
+      - "coût"
+      - "numéro"
+      - "prix"
+      - "heures"
+
+  # Trim columns are identified by:
+  # 1. NOT being a product column (by keyword)
+  # 2. Having actual trim values in the trim sub-header row
+  # 3. Not starting with "Unnamed:" placeholder (i.e., have actual header names)
+
+  # Unnamed columns can still be trim columns if they have values in trim sub-header
+  # Example: Column with no header name but "SPORT" in trim sub-header row → trim column
+
+# ============================================================================
+# Row Classification (for counting metrics)
+# ============================================================================
+
+row_classification:
+  # Empty row: all values are NaN or whitespace
+  empty_row_detection:
+    method: "all_cells_empty"
+    definition: "row with all NaN or all whitespace values"
+
+  # Publishing row: contains publication/date keywords
+  publishing_row_detection:
+    method: "keyword_scan"
+    keywords:
+      - "publication"
+      - "last updated"
+      - "data as of"
+      - "effective"
+      - "date"
+    description: "footer/metadata row at end of section"
+
+  # Valid data row: has BOTH part columns + at least one price column
+  valid_data_row_detection:
+    method: "product_column_check"
+    requirement: "BOTH part columns (Part Number AND Description) must have data"
+    optional: "at least one price column should have data"
+
+# ============================================================================
+# Section Classification (Package vs Non-Package)
+# ============================================================================
+
+section_classification:
+  # Define which sections are package vs regular
+  # Package sections have special parent/child logic
+
+  sections:
+    - name: "Packages and Kits"
+      is_package: true
+      markers_en:
+        - "packages and kits"
+        - "packages & kits"
+      markers_fr:
+        - "groupes et ensembles"
+        - "ensembles et accessoires"
+
+    - name: "Wheels and Wheel Accessories"
+      is_package: false
+      markers_en:
+        - "wheels"
+        - "wheel accessories"
+      markers_fr:
+        - "jantes"
+        - "roues"
+
+    - name: "Exterior"
+      is_package: false
+      markers_en:
+        - "exterior"
+      markers_fr:
+        - "extérieur"
+
+    - name: "Interior"
+      is_package: false
+      markers_en:
+        - "interior"
+      markers_fr:
+        - "intérieur"
+
+    - name: "Electrical"
+      is_package: false
+      markers_en:
+        - "electrical"
+      markers_fr:
+        - "électrique"
+
+    - name: "Paint Pens"
+      is_package: false
+      markers_en:
+        - "paint pens"
+        - "paint pen"
+      markers_fr:
+        - "crayon"
+        - "crayon de retouche"
+
+# ============================================================================
+# Parent/Child Detection Rules
+# ============================================================================
+
+parent_child_detection:
+  # Package section: parent must have ALL prices + product data
+  package_parent_requirement:
+    product_columns: "ANY"  # part_number OR description (at least one)
+    price_columns: "ALL"    # all 4 prices must be filled
+
+  # Package section: child must have product data, no prices
+  package_child_requirement:
+    product_columns: "ANY"  # part_number OR description (at least one)
+    price_columns: "NONE"   # all 4 prices must be EMPTY
+
+  # Non-package section: parent must have BOTH product + ALL prices
+  non_package_parent_requirement:
+    product_columns: "BOTH"  # part_number AND description both required
+    price_columns: "ALL"     # all 4 prices must be filled
+
+  # Non-package section: child must have BOTH product, no prices
+  non_package_child_requirement:
+    product_columns: "BOTH"  # part_number AND description both required
+    price_columns: "NONE"    # all 4 prices must be EMPTY
+
+  # First-parent rule: child inherits from most recent parent
+  first_parent_rule:
+    inherit_from: "most_recent_parent"
+    allow_inheritance_chains: false  # No grandparents; direct parent-child only
+
+  # Defect detection: flag these conditions as data quality issues
+  defects_to_flag:
+    no_product_data: true        # Missing product columns
+    partial_prices: true         # Some prices filled, some empty
+    missing_trim_applicability: true  # No trim columns have data
+
+# ============================================================================
+# DQ Rules Configuration
+# ============================================================================
+
+dq_rules:
+  header_not_found_rule:
+    severity: "WARNING"
+    condition: "Section has no recognizable header row"
+    action: "Log warning, use default column order, continue"
+
+  column_name_mismatch_rule:
+    severity: "INFO"
+    condition: "Raw column name doesn't match any expected header"
+    action: "Keep raw name, flag for manual review"
+
+  orphaned_child_rule:
+    severity: "WARNING"
+    condition: "Child record appears before any parent in section"
+    action: "Log warning, mark in metadata"
+
+  record_type_defect_partial_prices:
+    severity: "WARNING"
+    condition: "Row has some prices filled and some empty (not all/none)"
+    action: "Do NOT classify; flag as data quality issue for manual review"
+
+  record_type_defect_no_product:
+    severity: "INFO"
+    condition: "Row has no product data (missing both part_number AND description)"
+    action: "Do NOT classify; flag as data quality issue for manual review"
+
+  record_type_defect_missing_trim:
+    severity: "INFO"
+    condition: "Row has product data but missing trim applicability (all trim columns empty)"
+    action: "Do NOT classify; flag as data quality issue for manual review"
+
+# ============================================================================
+# Notes & Future Extensions
+# ============================================================================
+
+notes: |
+  - Phase 1: Detects sections, headers, trim columns using these rules
+  - Phase 2: Uses upstream.yaml column definitions for header normalization
+  - Metadata threading: Phase 1 outputs section_structure, trim_columns_per_section
+  - All keywords are case-insensitive, substring-matched (robust to formatting variations)
+  - Column position is NOT hard-coded: scans all columns in each row
+
+  If Honda file structure changes in future:
+  - Update marker_pattern (if section markers change format)
+  - Update metadata_detection keywords (if metadata labels change)
+  - Update header_row_detection keywords (if column names/translations change)
+  - Update applicability_markers (if trim indicators change)
+  - Update section_classification (if sections change)
+  - No code changes needed, only this config file
