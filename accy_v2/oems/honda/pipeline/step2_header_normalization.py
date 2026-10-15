@@ -39,11 +39,13 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
     # Config structure: upstream.yaml has 'columns' with language-specific detection
     column_defs = config.get("columns", {})
     column_categories = config.get("column_categories", {})
-    product_columns = column_categories.get("product_columns", ["part_number", "description"])
-    price_columns = column_categories.get("price_columns", ["dealer_net", "list_price", "frt", "installed_price"])
+    # Use spaces in column names to match the normalized headers from structure.yaml
+    product_columns = column_categories.get("product_columns", ["description", "part number"])
+    price_columns = column_categories.get("price_columns", ["dealer net", "list price", "frt", "installed price"])
 
-    # For backward compatibility with step1_detection section if it exists
-    detection_config = config.get("step1_detection", {})
+    # Get section classification from ModularConfigLoader structure
+    # Config path: config > schemas > structure > section_classification
+    detection_config = config.get("schemas", {}).get("structure", {})
 
     logger.info(f"Phase 2: Using column definitions from config")
     logger.debug(f"  Product columns: {product_columns}")
@@ -87,10 +89,11 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
         is_package = False
         section_classification = detection_config.get("section_classification", {})
         for section_def in section_classification.get("sections", []):
-            # Check both English and French markers
+            # Match against both name and markers (for EN and FR support)
+            config_name = section_def.get("name", "").lower()
             markers_en = [m.lower() for m in section_def.get("markers_en", [])]
             markers_fr = [m.lower() for m in section_def.get("markers_fr", [])]
-            all_markers = markers_en + markers_fr
+            all_markers = [config_name] + markers_en + markers_fr
 
             if section_name.lower() in all_markers:
                 is_package = section_def.get("is_package", False)
@@ -221,18 +224,20 @@ def _normalize_header_names(
             norm_mapping[col_idx] = best_match
             matched_columns.add(best_match)
         else:
-            # No match found; keep raw name
+            # No match found; keep raw name (don't warn - this is normal for trim columns)
             norm_mapping[col_idx] = raw_name
-            dq_logger.log_warning(
-                sheet_name=meta_data.get("sheet_name", "unknown") if meta_data else "unknown",
-                model_name=meta_data.get("model_name", "unknown") if meta_data else "unknown",
-                record_index=col_idx,
-                record_snapshot={"column_index": col_idx, "raw_name": raw_name},
-                rule_violated="column_name_unmapped_rule",
-                issue_description=f"Column not recognized ({language}): {raw_name}"
-            )
 
     return norm_mapping
+
+
+def _is_row_completely_empty(row: pd.Series) -> bool:
+    """Check if a row is completely empty (all values are NULL or empty strings)."""
+    for val in row.values:
+        if pd.notna(val):
+            val_str = str(val).strip()
+            if val_str and val_str.lower() not in ["nan", "none"]:
+                return False
+    return True
 
 
 def _matches_keywords(col_name: str, keywords: Dict[str, List[str]]) -> bool:
@@ -305,38 +310,44 @@ def _classify_record_type(
     if price_columns is None:
         price_columns = ["dealer_net", "list_price", "frt", "installed_price"]
 
-    # Check which columns have data
-    has_part_number = _check_column("part_number", row, norm_names)
-    has_description = _check_column("description", row, norm_names)
+    # Check if row is completely empty first - log as cleaning activity, not a warning
+    if _is_row_completely_empty(row):
+        return None
+
+    # Check which columns have data (use config column names)
+    has_product_data = _check_any_columns(product_columns, row, norm_names)
+    has_all_products = _check_all_columns(product_columns, row, norm_names)
     has_all_prices = _check_all_columns(price_columns, row, norm_names)
     has_any_price = _check_any_columns(price_columns, row, norm_names)
 
-    has_complete_product_np = has_part_number and has_description
-    has_product_pkg = has_part_number or has_description
+    # For non-package sections, need ALL product columns filled
+    # For package sections, need ANY product column filled
+    has_complete_product_np = has_all_products  # Non-packages: ALL product columns
+    has_product_pkg = has_product_data  # Packages: ANY product column
 
     if is_package:
         # Package section logic
         if not has_product_pkg:
-            if meta_data:
+            if meta_data and dq_logger:
                 dq_logger.log_warning(
                     sheet_name=meta_data.get("sheet_name", "unknown"),
                     model_name=meta_data.get("model_name", "unknown"),
                     record_index=row_idx,
                     record_snapshot=row.to_dict(),
-                    rule_violated="record_type_defect_no_product",
-                    issue_description=f"Missing product data in {section_name}"
+                    rule_violated="record_type_defect_partial_data",
+                    issue_description=f"Missing required product data (description or part number) in {section_name}"
                 )
             return None
 
         if has_any_price and not has_all_prices:
-            if meta_data:
+            if meta_data and dq_logger:
                 dq_logger.log_warning(
                     sheet_name=meta_data.get("sheet_name", "unknown"),
                     model_name=meta_data.get("model_name", "unknown"),
                     record_index=row_idx,
                     record_snapshot=row.to_dict(),
                     rule_violated="record_type_defect_partial_prices",
-                    issue_description=f"Partial prices in {section_name}"
+                    issue_description=f"Partial pricing data in {section_name} - missing one or more price columns"
                 )
             return None
 
@@ -348,26 +359,26 @@ def _classify_record_type(
     else:
         # Non-package section logic
         if not has_complete_product_np:
-            if meta_data:
+            if meta_data and dq_logger:
                 dq_logger.log_warning(
                     sheet_name=meta_data.get("sheet_name", "unknown"),
                     model_name=meta_data.get("model_name", "unknown"),
                     record_index=row_idx,
                     record_snapshot=row.to_dict(),
-                    rule_violated="record_type_defect_no_product",
-                    issue_description=f"Missing product data in {section_name}"
+                    rule_violated="record_type_defect_partial_data",
+                    issue_description=f"Missing required product data (description and part number) in {section_name}"
                 )
             return None
 
         if has_any_price and not has_all_prices:
-            if meta_data:
+            if meta_data and dq_logger:
                 dq_logger.log_warning(
                     sheet_name=meta_data.get("sheet_name", "unknown"),
                     model_name=meta_data.get("model_name", "unknown"),
                     record_index=row_idx,
                     record_snapshot=row.to_dict(),
                     rule_violated="record_type_defect_partial_prices",
-                    issue_description=f"Partial prices in {section_name}"
+                    issue_description=f"Partial pricing data in {section_name} - missing one or more price columns"
                 )
             return None
 
@@ -380,11 +391,31 @@ def _classify_record_type(
 
 
 def _check_column(col_name: str, row: pd.Series, norm_names: Dict[int, str]) -> bool:
-    """Check if a specific normalized column has data in this row."""
+    """Check if a specific normalized column has data in this row.
+
+    Supports both English and French column names.
+    """
+    # EN/FR column name mappings
+    col_aliases = {
+        "description": ["description", "la description"],
+        "part number": ["part number", "numéro de pièce"],
+        "dealer net": ["dealer net", "prix net"],
+        "list price": ["list price", "prix de liste"],
+        "frt": ["frt", "t.f.f."],
+        "installed price": ["installed price", "prix installé"]
+    }
+
+    col_name_lower = col_name.lower()
+    aliases = col_aliases.get(col_name_lower, [col_name_lower])
+
     for col_idx, norm_name in norm_names.items():
-        if norm_name == col_name:
+        norm_lower = norm_name.lower()
+        # Check if norm_name matches any of the aliases
+        if any(alias in norm_lower for alias in aliases):
             val = row.iloc[col_idx]
-            return pd.notna(val) and str(val).strip() != ""
+            has_data = pd.notna(val) and str(val).strip() != ""
+            if has_data:
+                return True
     return False
 
 
