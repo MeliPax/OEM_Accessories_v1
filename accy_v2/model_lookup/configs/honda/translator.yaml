@@ -1,0 +1,35 @@
+make: Honda
+version: '1.0'
+description: Honda-specific keyword translation rules for trim levels, fuel/drivetrain, and accessories. Applied before classification in the model lookup enrichment step.
+
+categories:
+  trim_levels:
+    lx: luxury
+    ex: executive
+    ex-l: executive
+    sport: sport
+    touring: touring
+    si: si
+    type-r: type-r
+    pkg: package
+    prem: premium
+    std: standard
+    cust: custom
+    
+  fuel_drivetrain:
+    hybrid: hybrid
+    hev: hybrid
+    phev: plug-in
+    ev: electric
+    awd: all-wheel drive
+    fwd: front-wheel drive
+    
+  accessories:
+    pkg: package
+    interior: interior
+    exterior: exterior
+    tech: technology
+    camera: camera
+    sunroof: sunroof
+    
+  data_artifacts: {}
