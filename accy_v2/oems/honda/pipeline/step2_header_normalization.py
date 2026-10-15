@@ -56,6 +56,7 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
     column_mapping = {}
     record_types = {}
     parent_index = {}
+    part_number_fallbacks = {}  # Track rows that use column 1 fallback for part number
 
     # Process each section
     for section_name, section_bounds in section_structure.items():
@@ -107,7 +108,7 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
             row = df.iloc[row_idx]
             rtype = _classify_record_type(
                 row, section_name, is_package, norm_names, dq_logger, row_idx, updated_meta,
-                product_columns, price_columns
+                product_columns, price_columns, part_number_fallbacks
             )
             record_types[row_idx] = rtype
 
@@ -117,14 +118,20 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
         )
         parent_index.update(section_parent_index)
 
-    # 4. Enrich metadata with all Phase 2 outputs
+    # 4. Post-process: Fill part numbers from column 1 fallback for parent records
+    df_filled, filled_count = _fill_part_numbers_from_fallback(
+        df, record_types, section_structure, dq_logger, logger, updated_meta
+    )
+    df = df_filled
+
+    # 5. Enrich metadata with all Phase 2 outputs
     updated_meta["normalized_headers"] = normalized_headers
     updated_meta["column_mapping"] = column_mapping
     updated_meta["price_columns"] = price_columns  # From config, not hard-coded
     updated_meta["record_type_per_row"] = record_types
     updated_meta["parent_row_index"] = parent_index
 
-    # 5. Compute record type counts for summary
+    # 6. Compute record type counts for summary
     record_type_counts = {}
     for rtype in record_types.values():
         rtype_key = "defect" if rtype is None else rtype
@@ -132,6 +139,8 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
     updated_meta["record_type_counts"] = record_type_counts
 
     logger.info(f"Phase 2: Complete. Record types: {record_type_counts}")
+    if filled_count > 0:
+        logger.info(f"Phase 2: Recovered {filled_count} part numbers from column 1 fallback")
 
     return df, updated_meta
 
@@ -347,7 +356,8 @@ def _classify_record_type(
     row_idx: int = -1,
     meta_data: Dict = None,
     product_columns: List[str] = None,
-    price_columns: List[str] = None
+    price_columns: List[str] = None,
+    part_number_fallbacks: Dict[int, str] = None
 ) -> Optional[str]:
     """
     Determine record type for a single row.
@@ -380,10 +390,18 @@ def _classify_record_type(
         return "subsection_label"
 
     # Check which columns have data (use config column names)
-    has_product_data = _check_any_columns(product_columns, row, norm_names)
-    has_all_products = _check_all_columns(product_columns, row, norm_names)
+    # For part number, use fallback to column 1 if official part number column is empty
+    has_description = _check_column("description", row, norm_names)
+    has_part_number, part_number_fallback_value = _check_part_number_with_fallback(row, norm_names)
+
+    has_product_data = has_description or has_part_number
+    has_all_products = has_description and has_part_number  # Both required for parent
     has_all_prices = _check_all_columns(price_columns, row, norm_names)
     has_any_price = _check_any_columns(price_columns, row, norm_names)
+
+    # Track rows that used fallback part number (for later data hydration)
+    if part_number_fallback_value and part_number_fallbacks is not None:
+        part_number_fallbacks[row_idx] = part_number_fallback_value
 
     # For non-package sections, need ALL product columns filled
     # For package sections, need ANY product column filled
@@ -455,6 +473,32 @@ def _classify_record_type(
     return None
 
 
+def _check_part_number_with_fallback(row: pd.Series, norm_names: Dict[int, str]) -> Tuple[bool, Optional[str]]:
+    """
+    Check if row has a part number, with fallback to column 1.
+
+    Returns:
+        (has_part_number: bool, fallback_value: str or None)
+        - If column 3 (part number) has data: return (True, None)
+        - If column 3 is empty but column 1 has data: return (True, column_1_value)
+        - Otherwise: return (False, None)
+    """
+    # First check official part number column (column 3)
+    has_official = _check_column("part number", row, norm_names)
+    if has_official:
+        return (True, None)
+
+    # Fallback: check column 1 (unnamed_1, contains placeholder codes)
+    if len(row) > 1:
+        fallback_val = row.iloc[1]
+        if pd.notna(fallback_val):
+            fallback_str = str(fallback_val).strip()
+            if fallback_str and fallback_str.lower() not in ["nan", "none"]:
+                return (True, fallback_str)
+
+    return (False, None)
+
+
 def _check_column(col_name: str, row: pd.Series, norm_names: Dict[int, str]) -> bool:
     """Check if a specific normalized column has data in this row.
 
@@ -498,6 +542,80 @@ def _check_any_columns(col_names: List[str], row: pd.Series, norm_names: Dict[in
         if _check_column(col_name, row, norm_names):
             return True
     return False
+
+
+def _fill_part_numbers_from_fallback(
+    df: pd.DataFrame,
+    record_types: Dict[int, Optional[str]],
+    section_structure: Dict[str, Dict],
+    dq_logger,
+    logger,
+    meta_data: Dict = None
+) -> Tuple[pd.DataFrame, int]:
+    """
+    Fill in missing part numbers from column 1 fallback for parent records.
+
+    For parent/package_parent records that used the column 1 fallback,
+    populate the actual part number column with the fallback value.
+
+    Args:
+        df: Dataframe
+        record_types: Dict of row_idx -> record type
+        section_structure: Section boundaries from metadata
+        dq_logger: DQ logger
+        logger: Pipeline logger
+        meta_data: Metadata dict
+
+    Returns:
+        (modified_df, filled_count)
+    """
+    df_copy = df.copy()
+    filled_count = 0
+    sheet_name = meta_data.get("sheet_name", "unknown") if meta_data else "unknown"
+    model_name = meta_data.get("model_name", "unknown") if meta_data else "unknown"
+
+    # Find part number column index across all sections
+    column_mapping = meta_data.get("column_mapping", {}) if meta_data else {}
+
+    for row_idx, record_type in record_types.items():
+        # Only process parent records
+        if record_type not in ("parent", "package_parent"):
+            continue
+
+        row = df_copy.iloc[row_idx]
+
+        # Check if this row used fallback (column 1 has data, column 3 doesn't)
+        col_1_val = None
+        if len(row) > 1:
+            col_1_raw = row.iloc[1]
+            if pd.notna(col_1_raw):
+                col_1_str = str(col_1_raw).strip()
+                if col_1_str and col_1_str.lower() not in ["nan", "none"]:
+                    col_1_val = col_1_str
+
+        if not col_1_val:
+            continue  # No fallback data to fill
+
+        # Check if part number column (column 3) is actually empty
+        part_num_empty = False
+        if len(row) > 3:
+            part_num_raw = row.iloc[3]
+            if pd.isna(part_num_raw) or str(part_num_raw).strip() == "":
+                part_num_empty = True
+
+        if not part_num_empty:
+            continue  # Part number already filled
+
+        # Fill part number column with fallback value
+        df_copy.iloc[row_idx, 3] = col_1_val
+        filled_count += 1
+
+        # Log as cleaning activity (not a warning)
+        logger.debug(
+            f"Row {row_idx}: Filled missing part number from column 1: '{col_1_val}' ({record_type})"
+        )
+
+    return df_copy, filled_count
 
 
 def _build_parent_index(

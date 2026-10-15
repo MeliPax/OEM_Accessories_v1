@@ -1,0 +1,59 @@
+Saving the raw format data in a flat file. 
+
+
+Types of records in the Honda files. These apply to both sheets (EN and FR) of course with their appropriate language specifics as defined in the config files. 
+
+- Vehicle signature records (meta): these are records that identify which vehicle model name, year, and it also has a manufacture signature data. These are situated a the top of the file, before the marker of the firs data record section as defined in the config. these are to be extracted and stored to identify which batch file is being processed.
+-  Price publication date: these are records that specify the date at which these prices will be in effect. they are two rows situated are usually situated at the end of the file, after the last section of the file. The first one contains string EN: "Publication Date", FR: "Date de publication", and the following one contains a date format value, usually on the same column as where description data is in on the file.
+
+
+
+Types of data rows
+
+
+legitimate data records: 
+
+- In the package section:
+	- parent data records:
+	- Children data records
+
+- other sections:
+	- parent record: these are records in other section (non-package) section that have compete data in all the price columns (dealer net, List Price, FRT, Installed Price). Usually due to the file structure, this records has the price data that need to be filled down into it's child records. Each complete records can have one or more depended child data record, and they have to come directly after it on the list until another parent or single record.
+	- child records: these are records that are missing some or all price data and need to fill these data using data in their parent data records. Child records must have only one parent record, determined by the fact it is the first parent record that comes before it. 
+	- Single record: These are records that have complete data in all the column including numeric/price columns, and they don't have nay child row as per definition. They will not need any extract operation with any other record. 
+
+
+Header data rows (all section have these): Headers row: are rows that are identified as headers. They contain column keywords, and they have their specific transformation instruction.
+
+Section indicator rows: they contain section markers, and they indicate where a section starts and ends, based on the already discussed 
+
+Task: based on the definitions you have, I want you to give me names that you think would fit better to define each data point in  way that is good for future use and any one who picks up the project in the future.
+
+
+Food for thought:
+- Need to avoid data processing redundance (data extract once and for all, avoiding doing this in different steps of the pipeline)
+- Need to find a good way to store the data (do we fill down at extract or leave the child record as they are from raw? - I am thinking fill them for non-package records that way we have the raw view without doing lot's of transform), that way we'll keep raw data complete for non-package rows, meaning each row will have it's data complete for all the data records, while keep package data in their original form (parent and child rows in original format). 
+
+
+Now that we have the data extract logic done, and the meta data is captured properly, I want us to move to:
+
+Requirements:
+When I run the pipeline, I want the extracted data from this stage to be passed into the pipeline as extracted raw data into the output file as a sheet, having the EN_raw_data and FR raw data.  
+The output will be based on whether the pipeline was run for all the files or single file. for all the file, each raw data file (EN/FR) will contain data extracted from all the files. If it's a single file, the same, it will contain the data only from that model in EN and FR in separate sheets. the goal is to have an auditable file to check the data in raw format as possible.
+
+The raw sheets will have the following columns:
+
+source_file - the file that this raw was extracted from
+source_sheet - the source sheet
+Section: indicates which section the record was extracted from
+Description: part description
+Part Number: part number value
+Dealer Net: part Dealer net
+List Price: part price value
+FRT: FRT extracted value
+Installed Price: extracted value from installed price
+Comments: extracted comment if any	
+model: extracted vehicle model
+records_type: indicates the type of row it is
+
+Note: the above columns will all contain data as they are extracted from processed files. At the end, we will have a complete raw data dump that has data from all the processed files with proper meta data. Every time we run honda pipeline we produce this raw data dump both for FR and EN data sheets.

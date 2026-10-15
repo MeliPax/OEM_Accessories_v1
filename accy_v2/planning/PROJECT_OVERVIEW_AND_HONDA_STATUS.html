@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OEM Accessory Pipeline & Honda Status</title>
+<style>
+:root {
+  --bg: #fafaf8;
+  --fg: #1a1918;
+  --accent: #0066cc;
+  --accent-light: #e6f0ff;
+  --border: #e0ddd8;
+  --success: #0d7c3d;
+  --success-light: #e6f5ed;
+  --warning: #cc7700;
+  --warning-light: #fff4e6;
+  --text-muted: #6b6763;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1918;
+    --fg: #fafaf8;
+    --border: #3a3632;
+    --text-muted: #b0aca6;
+    --accent-light: #1a3a5c;
+    --success-light: #0d3d20;
+    --warning-light: #663d00;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1a1918;
+  --fg: #fafaf8;
+  --border: #3a3632;
+  --text-muted: #b0aca6;
+  --accent-light: #1a3a5c;
+  --success-light: #0d3d20;
+  --warning-light: #663d00;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  margin: 0;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 { font-size: 2em; margin: 1em 0 0.5em; font-weight: 700; }
+h2 { font-size: 1.5em; margin: 1.5em 0 0.75em; font-weight: 600; border-bottom: 2px solid var(--accent); padding-bottom: 0.5em; }
+h3 { font-size: 1.2em; margin: 1.2em 0 0.6em; font-weight: 600; color: var(--accent); }
+h4 { font-size: 1em; margin: 1em 0 0.5em; font-weight: 600; }
+
+p { margin: 0.8em 0; }
+ul, ol { margin: 0.8em 0; padding-left: 1.5em; }
+li { margin: 0.4em 0; }
+
+.section {
+  background: var(--fg);
+  color: var(--bg);
+  padding: 1.5em;
+  margin: 1.5em 0;
+  border-radius: 6px;
+  border-left: 4px solid var(--accent);
+}
+
+.section.success { border-left-color: var(--success); background-color: var(--success-light); color: var(--fg); }
+.section.warning { border-left-color: var(--warning); background-color: var(--warning-light); color: var(--fg); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+
+th {
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 0.8em;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+td {
+  padding: 0.8em;
+  border: 1px solid var(--border);
+}
+
+tr:nth-child(even) td { background: var(--accent-light); }
+
+.status-complete { color: var(--success); font-weight: 600; }
+.status-pending { color: var(--warning); font-weight: 600; }
+.status-in-progress { color: var(--accent); font-weight: 600; }
+
+.architecture {
+  background: var(--accent-light);
+  padding: 1.5em;
+  border-radius: 6px;
+  margin: 1em 0;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.metric {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 0.5em 1em;
+  border-radius: 4px;
+  margin: 0.3em 0.5em 0.3em 0;
+  font-weight: 600;
+}
+
+.phase-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px;
+  gap: 1em;
+  padding: 0.8em;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+
+.phase-row:last-child { border-bottom: none; }
+
+.phase-name { font-weight: 600; }
+.phase-status { text-align: right; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5em;
+  margin: 1.5em 0;
+}
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  h1 { font-size: 1.5em; }
+  h2 { font-size: 1.2em; }
+}
+</style>
+</head>
+<body>
+
+<h1>🏗️ OEM Accessory Pipeline Project Overview</h1>
+
+<p><strong>Current Version:</strong> 2.5.1 | <strong>Last Updated:</strong> 2026-10-09 | <strong>Status:</strong> Phase 1 Complete (Honda), Active Development</p>
+
+---
+
+<h2>System Architecture Overview</h2>
+
+<p>The OEM Accessory Pipeline is a modular, multi-stage data processing system that transforms raw OEM Excel files into standardized, vehicle-enriched accessory catalogs. Currently processes <strong>57 sheets</strong> per run with <strong>100% success rate</strong>.</p>
+
+<div class="architecture">5-LAYER ARCHITECTURE
+├─ LAYER 1: DATA INGESTION (Steps 1-2)
+│  ├─ Source: OEM Excel files (landing_zone/)
+│  ├─ Validation & header normalization
+│  └─ Metadata extraction
+│
+├─ LAYER 2: DATA TRANSFORMATION (Steps 3-4)
+│  ├─ Grouping by (Year, Model)
+│  ├─ Trim column melting
+│  └─ Cartesian product (Accessories × Trims)
+│
+├─ LAYER 3: MODEL LOOKUP ENRICHMENT ⭐ CRITICAL (Step 4.5)
+│  ├─ Keyword extraction & translation
+│  ├─ Semantic classification
+│  ├─ Vehicle database search
+│  └─ Confidence scoring
+│
+├─ LAYER 4: OUTPUT FILTERING & GENERATION (Step 5)
+│  ├─ Filter by model_number_status
+│  ├─ Generate Excel output
+│  └─ Create DQ reports
+│
+└─ LAYER 5: SUPPORT SYSTEMS
+   ├─ Vehicle database (db_vehicle_models.csv)
+   ├─ OEM configuration (YAML-driven)
+   ├─ Translator & classifier
+   └─ Logging (Pipeline + DQ)
+</div>
+
+<div class="section success">
+<h4>✅ System Status: Production Ready</h4>
+<p><strong>4 OEM Pipelines Active:</strong> Hyundai/Genesis, Mazda, Mitsubishi, Honda (scaffold)</p>
+<p><strong>Data Quality:</strong> 14 NOT_FOUND cases (40% reduction from v2.4), comprehensive DQ rules</p>
+<p><strong>Architecture:</strong> Config-driven, cross-OEM patterns, zero hardcoded logic</p>
+</div>
+
+---
+
+<h2>Honda Pipeline Modernization Status</h2>
+
+<div class="grid-2">
+
+<div>
+<h3>✅ Phase 1: Step 1 Validation (COMPLETE)</h3>
+<p><strong>Completion Date:</strong> 2026-10-08</p>
+<p><strong>Branch:</strong> <code>feature/honda-pipeline-clean-rebuild</code></p>
+
+<h4>1A: Scaffold</h4>
+<ul>
+  <li>✅ Basic structure & section detection</li>
+  <li>✅ Metadata extraction</li>
+  <li>✅ Trim column detection</li>
+</ul>
+
+<h4>1B: Dynamic Structure</h4>
+<ul>
+  <li>✅ Eliminated hard-coded offsets</li>
+  <li>✅ Keyword-based detection</li>
+  <li>✅ 100% success on 4 models</li>
+</ul>
+
+<h4>1C: Row Classification</h4>
+<ul>
+  <li>✅ Option A+C combined logic</li>
+  <li>✅ <span class="metric">+95 EN rows</span></li>
+  <li>✅ <span class="metric">+98 FR rows</span></li>
+  <li>✅ 88.1% coverage (was 21.7%)</li>
+</ul>
+</div>
+
+<div>
+<h3>📊 Phase 1 Key Metrics</h3>
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Files Tested</td>
+    <td>4 Honda models</td>
+  </tr>
+  <tr>
+    <td>EN Coverage Before</td>
+    <td>21.7% (31/143 rows)</td>
+  </tr>
+  <tr>
+    <td>EN Coverage After</td>
+    <td><span class="status-complete">88.1% (126/143 rows)</span></td>
+  </tr>
+  <tr>
+    <td>FR Coverage Before</td>
+    <td>20.5% (30/146 rows)</td>
+  </tr>
+  <tr>
+    <td>FR Coverage After</td>
+    <td><span class="status-complete">87.7% (128/146 rows)</span></td>
+  </tr>
+  <tr>
+    <td>Invisible Rows Fixed (EN)</td>
+    <td><span class="status-complete">81 rows</span></td>
+  </tr>
+  <tr>
+    <td>Invisible Rows Fixed (FR)</td>
+    <td><span class="status-complete">84 rows</span></td>
+  </tr>
+  <tr>
+    <td>EN/FR Alignment</td>
+    <td><span class="status-complete">126 vs 128 ✓</span></td>
+  </tr>
+</table>
+
+</div>
+
+</div>
+
+<h3>Key Findings from Phase 1</h3>
+
+<ul>
+  <li><strong>Honda file structure is highly standardized:</strong> First section always at row 10, headers at marker+1, trim sub-headers at marker+2</li>
+  <li><strong>Dynamic detection eliminated need for hard-coded offsets</strong> — now fully config-driven</li>
+  <li><strong>Row classification improved from 66-67% invisible rows to near-zero</strong> — Option A+C logic balances quality with inclusivity</li>
+  <li><strong>EN/FR sheets properly aligned</strong> — 126 vs 128 rows show excellent consistency</li>
+</ul>
+
+---
+
+<h2>Planned Work: Phases 2-7</h2>
+
+<div class="section warning">
+<h4>⚠️ These phases are NOT yet started. Timeline: ~10-12 weeks total effort</h4>
+</div>
+
+<table>
+  <tr>
+    <th>Phase</th>
+    <th>Description</th>
+    <th>Est. Effort</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td><strong>2</strong></td>
+    <td>Header Normalization — Section-aware column standardization</td>
+    <td>~20 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td><strong>3</strong></td>
+    <td>Data Standardization & Rollup — Packages/Kits parent-child logic</td>
+    <td>~24 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td><strong>4</strong></td>
+    <td>EN/FR Reconciliation & Transformation — Composite part matching</td>
+    <td>~32 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td><strong>5</strong></td>
+    <td>Model Lookup & Enrichment — VehicleSearchEngine integration</td>
+    <td>~16 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td><strong>6</strong></td>
+    <td>Output & DQ Reporting — Raw data sheets, batch aggregation</td>
+    <td>~20 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td><strong>7</strong></td>
+    <td>Testing & Documentation — Unit/integration/regression tests</td>
+    <td>~32 hrs</td>
+    <td><span class="status-pending">Not Started</span></td>
+  </tr>
+  <tr>
+    <td colspan="3"><strong>TOTAL</strong></td>
+    <td><strong>~144 hours</strong></td>
+  </tr>
+</table>
+
+---
+
+<h2>Honda-Specific Requirements (from raw_note.txt)</h2>
+
+<h3>Record Types</h3>
+
+<ul>
+  <li><strong>Vehicle Signature Records (Metadata):</strong> Model name, year, manufacturer signature. Located at file top before first section marker.</li>
+  <li><strong>Publication Date Records:</strong> Two rows at file end (after last section). First has "Publication Date"/"Date de publication", second has date in YYYY-MM-DD format.</li>
+</ul>
+
+<h3>Data Row Classification</h3>
+
+<ul>
+  <li><strong>Packages & Kits Section:</strong>
+    <ul>
+      <li>Parent records: Complete package definitions</li>
+      <li>Child records: Dependent records inheriting parent data</li>
+    </ul>
+  </li>
+  <li><strong>Other Sections:</strong>
+    <ul>
+      <li>Parent records: Complete price data in all columns (Dealer Net, List Price, FRT, Installed Price)</li>
+      <li>Child records: Missing price data, must inherit from parent</li>
+      <li>Single records: Complete data, no child rows</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Critical Requirement: Raw Data Output</h3>
+
+<p><strong>Auditable raw data sheets must be generated:</strong></p>
+
+<table>
+  <tr>
+    <th>Column</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>source_file</td>
+    <td>Excel file this data came from</td>
+  </tr>
+  <tr>
+    <td>source_sheet</td>
+    <td>Sheet (EN/FR) within the file</td>
+  </tr>
+  <tr>
+    <td>section</td>
+    <td>Section name (Packages, Wheels, Exterior, etc.)</td>
+  </tr>
+  <tr>
+    <td>description</td>
+    <td>Part description</td>
+  </tr>
+  <tr>
+    <td>part_number</td>
+    <td>Part number value</td>
+  </tr>
+  <tr>
+    <td>dealer_net</td>
+    <td>Dealer net price</td>
+  </tr>
+  <tr>
+    <td>list_price</td>
+    <td>List price</td>
+  </tr>
+  <tr>
+    <td>frt</td>
+    <td>FRT value</td>
+  </tr>
+  <tr>
+    <td>installed_price</td>
+    <td>Installed price</td>
+  </tr>
+  <tr>
+    <td>comments</td>
+    <td>Additional comments</td>
+  </tr>
+  <tr>
+    <td>model</td>
+    <td>Vehicle model name</td>
+  </tr>
+  <tr>
+    <td>records_type</td>
+    <td>Type indicator (parent/child/single)</td>
+  </tr>
+</table>
+
+<p><strong>Output Structure:</strong> Separate EN_raw_data and FR_raw_data sheets, updated each pipeline run. Enables complete audit trail of source data.</p>
+
+---
+
+<h2>Key Design Principles (Phase 1 Validated)</h2>
+
+<ul>
+  <li>✅ <strong>No hard-coded offsets:</strong> All detection via keywords and patterns in config</li>
+  <li>✅ <strong>Language-agnostic:</strong> Same detection logic for EN and FR sheets</li>
+  <li>✅ <strong>Scalable structure:</strong> Works across all Honda models and years without code changes</li>
+  <li>✅ <strong>Data completeness:</strong> Option A+C logic captures both complete and partial records</li>
+  <li>✅ <strong>Configuration-driven:</strong> All variations handled in YAML, not Python</li>
+</ul>
+
+---
+
+<h2>Next Steps</h2>
+
+<div class="section">
+<h4>Immediate (This Session)</h4>
+<ul>
+  <li>Review Phase 1C implementation for edge cases</li>
+  <li>Prepare PR from <code>feature/honda-pipeline-clean-rebuild</code> to <code>dev</code></li>
+  <li>Regression test against other OEM pipelines</li>
+</ul>
+
+<h4>Short Term (Next Week)</h4>
+<ul>
+  <li>Code review approval</li>
+  <li>Merge Phase 1 to dev branch</li>
+  <li>Begin Phase 2 planning (Header Normalization)</li>
+</ul>
+
+<h4>Medium Term (Weeks 2-8)</h4>
+<ul>
+  <li>Implement Phases 2-6 sequentially</li>
+  <li>Test each phase with real Honda data</li>
+  <li>Regular regression checks on other OEMs</li>
+</ul>
+
+<h4>Long Term (Weeks 8-12)</h4>
+<ul>
+  <li>Phase 7 comprehensive testing</li>
+  <li>Performance optimization</li>
+  <li>Full documentation suite</li>
+  <li>Release as v2.6.0 (MINOR: new OEM port)</li>
+</ul>
+</div>
+
+---
+
+<h2>Documentation References</h2>
+
+<ul>
+  <li><strong>Architecture:</strong> <code>accy_v2/docs/SYSTEM_ARCHITECTURE.md</code></li>
+  <li><strong>Honda Status:</strong> <code>accy_v2/planning/oem_pipeline/honda_pipeline_modernization/STATUS.md</code></li>
+  <li><strong>Phase 1C Details:</strong> <code>accy_v2/planning/oem_pipeline/honda_pipeline_modernization/PHASES/PHASE_1C_ROW_CLASSIFICATION.md</code></li>
+  <li><strong>Versioning & Release:</strong> <code>accy_v2/planning/VERSIONING.md</code></li>
+  <li><strong>Development Standards:</strong> <code>accy_v2/planning/CLAUDE.md</code></li>
+</ul>
+
+</body>
+</html>

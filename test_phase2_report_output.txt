@@ -1,0 +1,455 @@
+﻿python : [INFO] Sheet '26MY_CIV5D_APP_EN': Language detected as EN
+At line:1 char:410
++ ... sories_v1"; python test_phase2_detailed_report.py > test_phase2_repor ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([INFO] Sheet '2... detected as EN:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[INFO] Sheet '26MY_CIV5D_APP_EN': Model name extracted: Civic Hatch & Type R
+[INFO] Sheet '26MY_CIV5D_APP_EN': Vehicle year extracted: 2026
+[DEBUG] Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_EN': Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_EN': 6 sections detected
+[DEBUG] detection_config type=<class 'dict'>, keys=['metadata_detection', 'section_detection', 'column_detection', 
+'row_classification', 'section_classification', 'parent_child_detection', 'dq_rules', 'notes']
+[DEBUG] section_detect_config type=<class 'dict'>, keys=['marker_pattern', 'header_row_detection', 
+'trim_subheader_row_detection', 'data_row_detection']
+[DEBUG] header_row_detect type=<class 'dict'>, keys=['method', 'keywords_en', 'keywords_fr', 'max_scan_rows']
+[DEBUG] Header detection config: keywords_en=['description', 'part', 'number', 'part number', 'cost', 'price', 'list', 
+'hours', 'frt', 'installed', 'comments'], keywords_fr=['description', 'pièce', 'numéro', 'coût', 'prix', 'tarif', 
+'heures', 't.f.f.', 'instalé', 'remarques'], max_scan=10
+[DEBUG] Found header row at index 11: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 12: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Packages and Kits'
+  - 17 total columns, 8 trim columns
+  - Total rows: 44 (including 9 empty)
+  - Valid data rows: 35
+  - Empty columns: [0]
+[DEBUG] Found header row at index 58: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 59: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Wheels and Wheel Accessories'
+  - 17 total columns, 8 trim columns
+  - Total rows: 13 (including 1 empty)
+  - Valid data rows: 12
+  - Empty columns: [0]
+[DEBUG] Found header row at index 74: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 75: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Exterior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 48 (including 1 empty)
+  - Valid data rows: 47
+  - Empty columns: [0]
+[DEBUG] Found header row at index 125: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 126: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Interior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 17 (including 1 empty)
+  - Valid data rows: 16
+  - Empty columns: [0]
+[DEBUG] Found header row at index 145: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 146: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Electrical'
+  - 17 total columns, 8 trim columns
+  - Total rows: 7 (including 1 empty)
+  - Valid data rows: 6
+  - Empty columns: [0]
+[DEBUG] Found header row at index 155: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 156: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Paint Pens'
+  - 17 total columns, 8 trim columns
+  - Total rows: 14 (including 2 empty, 2 publishing)
+  - Valid data rows: 10
+  - Empty columns: [0]
+[INFO] Sheet '26MY_CIV5D_APP_EN': Trim columns and row metrics identified for all sections
+[INFO] Phase 2: Starting header normalization and parent/child detection
+[INFO] Phase 2: Using column definitions from config
+[DEBUG]   Product columns: ['part_number', 'description']
+[DEBUG]   Price columns: ['dealer_net', 'list_price', 'frt', 'installed_price']
+[DEBUG] Processing section: Packages and Kits
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 13-56 (is_package=False)
+[DEBUG] Processing section: Wheels and Wheel Accessories
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 60-72 (is_package=False)
+[DEBUG] Processing section: Exterior
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 76-123 (is_package=False)
+[DEBUG] Processing section: Interior
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 127-143 (is_package=False)
+[DEBUG] Processing section: Electrical
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 147-153 (is_package=False)
+[DEBUG] Processing section: Paint Pens
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 157-170 (is_package=False)
+[INFO] Phase 2: Complete. Record types: {'defect': 143}
+[INFO] Sheet '26MY_CIV5D_APP_FR': Language detected as FR
+[INFO] Sheet '26MY_CIV5D_APP_FR': Model name extracted: Civic à Hayon & Type R
+[INFO] Sheet '26MY_CIV5D_APP_FR': Vehicle year extracted: 2026
+[DEBUG] Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_FR': Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_FR': 6 sections detected
+[DEBUG] detection_config type=<class 'dict'>, keys=['metadata_detection', 'section_detection', 'column_detection', 
+'row_classification', 'section_classification', 'parent_child_detection', 'dq_rules', 'notes']
+[DEBUG] section_detect_config type=<class 'dict'>, keys=['marker_pattern', 'header_row_detection', 
+'trim_subheader_row_detection', 'data_row_detection']
+[DEBUG] header_row_detect type=<class 'dict'>, keys=['method', 'keywords_en', 'keywords_fr', 'max_scan_rows']
+[DEBUG] Header detection config: keywords_en=['description', 'part', 'number', 'part number', 'cost', 'price', 'list', 
+'hours', 'frt', 'installed', 'comments'], keywords_fr=['description', 'pièce', 'numéro', 'coût', 'prix', 'tarif', 
+'heures', 't.f.f.', 'instalé', 'remarques'], max_scan=10
+[DEBUG] Found header row at index 11: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 12: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Groupes et ensembles'
+  - 17 total columns, 8 trim columns
+  - Total rows: 48 (including 10 empty)
+  - Valid data rows: 38
+  - Empty columns: [0]
+[DEBUG] Found header row at index 62: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 63: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Jantes et accessoires de jantes'
+  - 17 total columns, 8 trim columns
+  - Total rows: 13 (including 1 empty)
+  - Valid data rows: 12
+  - Empty columns: [0]
+[DEBUG] Found header row at index 78: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 79: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Extérieur'
+  - 17 total columns, 8 trim columns
+  - Total rows: 47 (including 1 empty)
+  - Valid data rows: 46
+  - Empty columns: [0]
+[DEBUG] Found header row at index 128: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 129: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Intérieur'
+  - 17 total columns, 8 trim columns
+  - Total rows: 17 (including 1 empty)
+  - Valid data rows: 16
+  - Empty columns: [0]
+[DEBUG] Found header row at index 148: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 149: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Électrique'
+  - 17 total columns, 8 trim columns
+  - Total rows: 7 (including 1 empty)
+  - Valid data rows: 6
+  - Empty columns: [0]
+[DEBUG] Found header row at index 158: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 159: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_FR': Section 'Crayon de retouche de peinture'
+  - 17 total columns, 8 trim columns
+  - Total rows: 14 (including 2 empty, 2 publishing)
+  - Valid data rows: 10
+  - Empty columns: [0]
+[INFO] Sheet '26MY_CIV5D_APP_FR': Trim columns and row metrics identified for all sections
+[INFO] Phase 2: Starting header normalization and parent/child detection
+[INFO] Phase 2: Using column definitions from config
+[DEBUG]   Product columns: ['part_number', 'description']
+[DEBUG]   Price columns: ['dealer_net', 'list_price', 'frt', 'installed_price']
+[DEBUG] Processing section: Groupes et ensembles
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 13-60 (is_package=False)
+[DEBUG] Processing section: Jantes et accessoires de jantes
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 64-76 (is_package=False)
+[DEBUG] Processing section: Extérieur
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 80-126 (is_package=False)
+[DEBUG] Processing section: Intérieur
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 130-146 (is_package=False)
+[DEBUG] Processing section: Électrique
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 150-156 (is_package=False)
+[DEBUG] Processing section: Crayon de retouche de peinture
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'la description', 'numéro de pièce', 'prix net', 'prix de 
+liste', 't.f.f.', 'prix installé', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'commentaires']
+[DEBUG]   Classifying rows 160-173 (is_package=False)
+[INFO] Phase 2: Complete. Record types: {'defect': 146}
+========================================================================================================================
+PHASE 2 DETAILED COMPARATIVE REPORT - EN vs FR
+========================================================================================================================
+
+========================================================================================================================
+SECTION 1: GLOBAL RECORD TYPE COMPARISON (EN vs FR)
+========================================================================================================================
+
+Record Type          EN              FR              Difference      Status    
+---------------------------------------------------------------------------
+defect               143             146             3++++++++++++++ [DIFF]    
+---------------------------------------------------------------------------
+TOTAL                143             146             3++++++++++++++
+
+========================================================================================================================
+SECTION 2: RECORD TYPE COUNTS BY SECTION (EN vs FR)
+========================================================================================================================
+
+Electrical:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               7          0          [DIFF]    
+
+Exterior:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               48         0          [DIFF]    
+
+Interior:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               17         0          [DIFF]    
+
+Packages and Kits:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               44         0          [DIFF]    
+
+Paint Pens:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               14         0          [DIFF]    
+
+Wheels and Wheel Accessories:
+  Type                 EN         FR         Status    
+  --------------------------------------------------
+  defect               13         0          [DIFF]    
+
+========================================================================================================================
+SECTION 3: DEFECT ANALYSIS - ENGLISH SHEET
+========================================================================================================================
+
+Electrical: 7 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  147      [EMPTY]                   Illuminated Door Sill Trim         
+  148      [EMPTY]                   Illuminated Door Sill Trim - T     
+  149      [EMPTY]                   Engine Block Heater - 2.0L         
+  150      [EMPTY]                   Engine Block Heater - Type R       
+  151      [EMPTY]                   Optimate 12V Auto Battery Char     
+  152      [EMPTY]                   Battery Lead                       
+  153      [EMPTY]                   [EMPTY]                            
+
+Exterior: 48 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  76       [EMPTY]                   Black Emblem H-Mark                
+  77       [EMPTY]                   Hood Protector                     
+  78       [EMPTY]                   Door Visors - Black                
+  79       [EMPTY]                   Splash Guards - Rear               
+  80       [EMPTY]                   Moonroof Visor                     
+  81       [EMPTY]                   Rear Bumper Protector              
+  82       [EMPTY]                   Door Edge Film                     
+  83       [EMPTY]                   Film Protection Kit - Type R       
+  84       [EMPTY]                   Carbon Fiber Wing Spoiler - Ty     
+  85       [EMPTY]                   Car Cover - Type R                 
+  ... and 38 more
+
+Interior: 17 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  127      [EMPTY]                   Floor Mats - All-Season            
+  128      [EMPTY]                   Floor Mats Hybrid - All-Season     
+  129      [EMPTY]                   Carpet Floor Mats - Contoured      
+  130      [EMPTY]                   Cargo Tray                         
+  131      [EMPTY]                   Cargo Tray                         
+  132      [EMPTY]                   Cargo Tray - Type R                
+  133      [EMPTY]                   Floor Mats - Carpet, Contoured     
+  134      [EMPTY]                   Illuminated Door Sill Trim - T     
+  135      [EMPTY]                   Steering Wheel, Alcantara - Ty     
+  136      [EMPTY]                   Shift Knob - Type R                
+  ... and 7 more
+
+Packages and Kits: 44 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  13       [EMPTY]                   Racing Package - Type R            
+  14       [EMPTY]                   Carbon Fiber Wing Spoiler - Ty     
+  15       [EMPTY]                   Steering Wheel, Alcantara - Ty     
+  16       [EMPTY]                   Shift Knob - Type R                
+  17       [EMPTY]                   [EMPTY]                            
+  18       [EMPTY]                   16” Enkei M52 Wheels & Micheli     
+  19       [EMPTY]                   16" Enkei M52 Wheels - Silver      
+  20       [EMPTY]                   Michelin X-ICE Snow Tires - 21     
+  21       [EMPTY]                   [EMPTY]                            
+  22       [EMPTY]                   16” Winter Steel Wheels & Mich     
+  ... and 34 more
+
+Paint Pens: 14 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  157      [EMPTY]                   Platinum White Pearl (NH-883P)     
+  158      [EMPTY]                   Championship White (NH-0)          
+  159      [EMPTY]                   Solar Reflection Silver (NH-93     
+  160      [EMPTY]                   Meteoroid Gray Pearl (NH-904M)     
+  161      [EMPTY]                   Crystal Black Pearl (NH-731P)      
+  162      [EMPTY]                   Rallye Red (R-513)                 
+  163      [EMPTY]                   Boost Blue Pearl (B-637P)          
+  164      [EMPTY]                   [EMPTY]                            
+  165      [EMPTY]                   Fine Sanding Needles               
+  166      [EMPTY]                   Fine Sanding Sticks                
+  ... and 4 more
+
+Wheels and Wheel Accessories: 13 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  60       [EMPTY]                   16” Winter Steel Wheels            
+  61       [EMPTY]                   16" Enkei M52 Wheel - Gloss Bl     
+  62       [EMPTY]                   16" Enkei M52 Wheel - Silver       
+  63       [EMPTY]                   17" Enkei Draco Wheel, Gloss B     
+  64       [EMPTY]                   17" Enkei Draco Wheel, Silver      
+  65       [EMPTY]                   18" Alloy Wheel  - Black           
+  66       [EMPTY]                   19" Light Weight Alloy Wheel       
+  67       [EMPTY]                   Wheel Locks - Black                
+  68       [EMPTY]                   Wheel Locks - Chrome               
+  69       [EMPTY]                   Wheel Locks - Black (Type R)       
+  ... and 3 more
+
+========================================================================================================================
+SECTION 4: DEFECT ANALYSIS - FRENCH SHEET
+========================================================================================================================
+
+Crayon de retouche de peinture: 14 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  160      [EMPTY]                   [EMPTY]                            
+  161      [EMPTY]                   [EMPTY]                            
+  162      [EMPTY]                   [EMPTY]                            
+  163      [EMPTY]                   [EMPTY]                            
+  164      [EMPTY]                   [EMPTY]                            
+  165      [EMPTY]                   [EMPTY]                            
+  166      [EMPTY]                   [EMPTY]                            
+  167      [EMPTY]                   [EMPTY]                            
+  168      [EMPTY]                   [EMPTY]                            
+  169      [EMPTY]                   [EMPTY]                            
+  ... and 4 more
+
+Extérieur: 47 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  80       [EMPTY]                   [EMPTY]                            
+  81       [EMPTY]                   [EMPTY]                            
+  82       [EMPTY]                   [EMPTY]                            
+  83       [EMPTY]                   [EMPTY]                            
+  84       [EMPTY]                   [EMPTY]                            
+  85       [EMPTY]                   [EMPTY]                            
+  86       [EMPTY]                   [EMPTY]                            
+  87       [EMPTY]                   [EMPTY]                            
+  88       [EMPTY]                   [EMPTY]                            
+  89       [EMPTY]                   [EMPTY]                            
+  ... and 37 more
+
+Groupes et ensembles: 48 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  13       [EMPTY]                   [EMPTY]                            
+  14       [EMPTY]                   [EMPTY]                            
+  15       [EMPTY]                   [EMPTY]                            
+  16       [EMPTY]                   [EMPTY]                            
+  17       [EMPTY]                   [EMPTY]                            
+  18       [EMPTY]                   [EMPTY]                            
+  19       [EMPTY]                   [EMPTY]                            
+  20       [EMPTY]                   [EMPTY]                            
+  21       [EMPTY]                   [EMPTY]                            
+  22       [EMPTY]                   [EMPTY]                            
+  ... and 38 more
+
+Intérieur: 17 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  130      [EMPTY]                   [EMPTY]                            
+  131      [EMPTY]                   [EMPTY]                            
+  132      [EMPTY]                   [EMPTY]                            
+  133      [EMPTY]                   [EMPTY]                            
+  134      [EMPTY]                   [EMPTY]                            
+  135      [EMPTY]                   [EMPTY]                            
+  136      [EMPTY]                   [EMPTY]                            
+  137      [EMPTY]                   [EMPTY]                            
+  138      [EMPTY]                   [EMPTY]                            
+  139      [EMPTY]                   [EMPTY]                            
+  ... and 7 more
+
+Jantes et accessoires de jantes: 13 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  64       [EMPTY]                   [EMPTY]                            
+  65       [EMPTY]                   [EMPTY]                            
+  66       [EMPTY]                   [EMPTY]                            
+  67       [EMPTY]                   [EMPTY]                            
+  68       [EMPTY]                   [EMPTY]                            
+  69       [EMPTY]                   [EMPTY]                            
+  70       [EMPTY]                   [EMPTY]                            
+  71       [EMPTY]                   [EMPTY]                            
+  72       [EMPTY]                   [EMPTY]                            
+  73       [EMPTY]                   [EMPTY]                            
+  ... and 3 more
+
+Électrique: 7 defects
+  Row      Part Number               Description                        
+  --------------------------------------------------------------------
+  150      [EMPTY]                   [EMPTY]                            
+  151      [EMPTY]                   [EMPTY]                            
+  152      [EMPTY]                   [EMPTY]                            
+  153      [EMPTY]                   [EMPTY]                            
+  154      [EMPTY]                   [EMPTY]                            
+  155      [EMPTY]                   [EMPTY]                            
+  156      [EMPTY]                   [EMPTY]                            
+
+========================================================================================================================
+SECTION 5: DEFECT COUNT SUMMARY
+========================================================================================================================
+
+Section                                  EN Defects      FR Defects     
+----------------------------------------------------------------------
+Crayon de retouche de peinture           0               14             
+Electrical                               7               0              
+Exterior                                 48              0              
+Extérieur                                0               47             
+Groupes et ensembles                     0               48             
+Interior                                 17              0              
+Intérieur                                0               17             
+Jantes et accessoires de jantes          0               13             
+Packages and Kits                        44              0              
+Paint Pens                               14              0              
+Wheels and Wheel Accessories             13              0              
+Électrique                               0               7              
+
+========================================================================================================================
+SUMMARY & NEXT STEPS
+========================================================================================================================
+
+EN and FR record counts match: False
+[WARN] Differences detected between EN and FR sheets
+
+Key differences:
+  - defect: EN=143, FR=146 (diff: +3)
+
+Debug steps:
+  1. Check 'Defect Analysis' sections for rows causing issues
+  2. Verify column name normalization for FR sheet
+  3. Check if section boundaries differ between sheets
+
+========================================================================================================================
+[OK] DETAILED REPORT COMPLETE
+========================================================================================================================

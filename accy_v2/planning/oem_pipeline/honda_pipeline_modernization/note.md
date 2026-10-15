@@ -1,64 +1,155 @@
-# Honda Pipeline Modernization - Project Notes
+# Honda Pipeline Modernization - Project Status
 
-**Last Updated**: 2026-10-08
+**Last Updated**: 2026-10-13  
+**Current Branch**: `feature/honda-pipeline-clean-rebuild`  
+**Status**: ✅ Phase 1 Complete → Phase 2 Design Approved → Ready for Implementation
 
-## Completed Phases
+---
 
-✅ **Phase 1A**: Step 1 Validation Scaffold (Initial implementation)
-✅ **Phase 1B**: Dynamic Structure Detection (Pattern-based metadata & section detection) — 2026-09-29
-✅ **Phase 1C**: Row Classification Refinement (Option A+C combined logic) — 2026-10-08
-   - EN sheet coverage improved: 21.7% → 88.1% (+95 rows)
-   - FR sheet coverage improved: 20.5% → 87.7% (+98 rows)
-   - All rows now accounted for (no "invisible" rows)
+## ✅ COMPLETED PHASES
 
-## Project Overview
+### Phase 1: Metadata Extraction & Validation
+**Status**: ✅ COMPLETE (2026-10-08)
 
-Data loading:
+**Phase 1A**: Step 1 Validation Scaffold (Initial implementation)
+- Sheet validation (_APP_EN, _APP_FR patterns)
+- Language detection (EN/FR from sheet name)
+- Row counting logic (total, valid, empty, publishing rows)
 
-- Honda will have two types of data loading options
+**Phase 1B**: Dynamic Structure Detection (2026-09-29)
+- Pattern-based section detection (regex: `^\d+\.\d+\s+`)
+- Header row identification (keyword-based)
+- Trim column detection per section
+- Section boundary mapping
 
-  - This step aims to define how the project is run and data loaded
-  - single file/single model: running the script for only one models/file. this way the pipeline will pick and run the file that was passed in the script.
-  - Multi-file/model: running the the pipeline on all the files that are present in the most recent honda raw data directory.
+**Phase 1C**: Row Classification Refinement (2026-10-08)
+- Option A+C combined logic: accept complete records OR any partial records
+- Row classification: valid_data_rows, empty_rows, publishing_rows
+- Coverage metrics: 88.1% EN, 87.7% FR (recovered from 21.7% / 20.5%)
 
-  Note: I am think the process will be
-  - validate :
-  - check if it has English and French sheets as per the given instructions in the requirements document. To find legitimate parts data sheets, they have format : `*_APP_EN` and `*_APP_FR`
-  - check sheets are non-nulls / not empty - First check  if it fails, we skip the file but the pipeline continues to other files
+**Phase 1D**: Publication Date Extraction (Approved, pending implementation)
+- Extract publication date from file footer
+- Validate YYYY-MM-DD format
+- Store in metadata as `meta_data["publication_date"]`
 
-  - file load - load the sheets EN/FR into data frames
+**Phase 1 Achievements**:
+- ✅ All 6 sections detected correctly (Packages, Wheels, Exterior, Interior, Electrical, Paint Pens)
+- ✅ Metadata captured: model_name, vehicle_year, section_structure, trim_columns_per_section, row_metrics_per_section
+- ✅ Test script `test_honda_en_fr_metadata.py` verified on CVIC5D.xlsx
+- ✅ EN/FR side-by-side comparison tables with variance indicators
+- ✅ All rows accounted for (no "invisible" rows)
 
-  - data extract and validation
-  - grab the entire EN and FR sheets file from the extracted dfs
-  - use an extract metadata helper to
-  - validate that this is a legit Honda data sheets based on standard signature:
-  - find Manufacture data signature, model name, model year and published data:
-  - column counting starts from 1.
-  - first: extract find the row that has the package sections keyword "1.0 Packages and Kits", and grab teh row top of it. in those rows there's a row that contains the following- file signature text: "Honda Accessories"
-  - Model Name
-  - Model Year
-  - At the end this will return :
-  Manufacture validated: true
-  Model Name: value
-  Model Year : value
-  - Second:
-  - Extract the last two non-empty rows in the main df.
-  - check if they have a string that says "publication Date" in the 3rd column and save save a variable in the meta data that says found publication_date_string = True
-  - and get the value in the second row and 3rd column, it's a date that has structure of 2026-04-15 (YYYY-MM-DD). I want you to validate it and save it as part of the meta data as publication year.
+---
 
-  - at the end of this, we will be having all the meta data and the extracted data in stored in a df ready for processing.
-- Data extract process:
+## 📋 ARCHITECTURE DECISIONS CONFIRMED (2026-10-13)
 
-  - This section defines how data gets extracted step by step
-  - 
-- 
+### Decision 1: Publication Date Extraction → Phase 1 ✅
+- **Timing**: Extract in Phase 1 (metadata extraction)
+- **Rationale**: File-level metadata, belongs with model_name/year
+- **Implementation**: `_extract_publication_date()` function in step1_validation.py
 
-    At the end of load, all the data will be have been loaded into the
+### Decision 2: Parent/Child Detection → Phase 2 ✅
+- **Timing**: Detect in Phase 2 (Header Normalization)
+- **Rationale**: Data pattern recognition (not structure validation), use normalized columns
+- **Metadata Added**:
+  - `record_type`: "parent" | "child" | "single" | "package_parent" | "package_child"
+  - `parent_row_index`: For child records, index of parent row
 
-- When the excel file is loaded, as part of the meta data, I would like us to add a step to add the following:
+### Decision 3: Price Fill-Down → Split (Phase 2 detect, Phase 3 fill) ✅
+- **Phase 2**: Detect parent/child relationships
+- **Phase 3**: Fill prices for non-package child records
+- **Rationale**: Early detection (DQ logging), late fill (after standardization), preserves audit trail
+- **Flag Added**: `price_fill_status`: "original" | "filled"
 
-  - For each legitimate data sheets EN/FR, grab the number grab the number of non null rows, overall, accounting for number of data rows that were loaded for logging purposes
-- When it comes to reading the files, identifying sections:
+### Decision 4: Raw Data Output Architecture → Metadata-Threaded ✅
+- **Approach**: Track source_file/source_sheet in metadata (not as dataframe columns)
+- **Threading**: Metadata passed through all steps (1 → 2 → 3 → 4 → 5)
+- **Audit Goal**: If pipeline fails mid-phase, raw data + source info is preserved
+- **Step 5 Output**: raw_data sheet with columns:
+  - source_file, source_sheet, source_row_index, section, description, part_number
+  - dealer_net, list_price, frt, installed_price, comments, model, record_type
 
-  - load the files, loading data sheets for EN/FR based on defined instructions. We are not reading any other sheets on the file.
-  -
+### Decision 5: Record Type Naming ✅
+- `parent` — non-package sections, complete prices
+- `child` — non-package sections, inherits prices from parent
+- `single` — standalone complete record, no dependencies
+- `package_parent` — packages section, parent package
+- `package_child` — packages section, package variant
+
+### Decision 6: Source Tracking → Metadata (NOT dataframe columns) ✅
+- **Why**: Source is audit/tracking data, not processing data
+- **Keeps**: Transformation logic clean, no dataframe bloat
+- **Threading**: Metadata["source_file", "source_sheet", "source_row_index"] through all steps
+
+---
+
+## 🚀 NEXT PHASE: PHASE 2 DESIGN & IMPLEMENTATION
+
+### Phase 2: Header Normalization + Parent/Child Detection
+**Timeline**: Weeks 3–4 (estimated 24 hours)
+**Components**:
+1. Header normalization per section (standardize column names)
+2. Trim column detection (case-insensitive, non-null check)
+3. Parent/child relationship detection (new requirement)
+4. Metadata enrichment (record_type, parent_row_index)
+
+**Deliverables**:
+- [ ] Phase 2 detailed design document (in progress)
+- [ ] `step2_header_normalization.py` implementation
+- [ ] Parent/child detection logic
+- [ ] Unit tests for header validation + parent/child detection
+- [ ] QA verification on CVIC5D.xlsx
+
+### Subsequent Phases (Ready to Start After Phase 2):
+- **Phase 3**: Standardization & Price Fill-Down
+- **Phase 4**: EN/FR Reconciliation  
+- **Phase 5**: Model Enrichment (Step 4.5)
+- **Phase 6**: Output & DQ Reporting (Step 5)
+
+---
+
+## 📁 PROJECT STRUCTURE
+
+```
+accy_v2/oems/honda/
+├── config/
+│   ├── pipeline.yaml           (error handling, batch settings)
+│   ├── schemas/
+│   │   ├── detection.yaml      (section patterns, header keywords)
+│   │   └── upstream.yaml       (sheet structure expectations)
+│   ├── section_patterns.yaml   (6 Honda sections)
+│   ├── reconciliation.yaml     (EN/FR matching rules)
+│   └── trim_config.yaml        (applicability markers, tokenization)
+├── pipeline/
+│   ├── __init__.py
+│   ├── step1_validation.py     (✅ Complete)
+│   ├── step2_header_normalization.py    (🔄 Next)
+│   ├── step3_standardization.py         (TODO)
+│   ├── step4_transformation.py          (TODO)
+│   ├── step4_5_model_enrichment.py      (TODO)
+│   └── step5_output.py                  (TODO)
+└── orchestrator.py             (Honda pipeline orchestrator)
+
+accy_v2/planning/oem_pipeline/honda_pipeline_modernization/
+├── note.md                     (This file - project status)
+├── raw_note.txt                (Original requirements)
+├── PHASE_2_DESIGN.md           (📝 In progress)
+└── PHASE_2_IMPLEMENTATION.md   (TODO)
+
+accy_v2/tests/oems/honda/
+├── test_step1_validation.py    (✅ Passing)
+├── test_step2_header_normalization.py  (🔄 Next)
+└── test_metadata_structure.py  (✅ Passing)
+```
+
+---
+
+## ✅ READY FOR IMPLEMENTATION
+
+**Blockers**: None  
+**Waiting For**: Phase 2 detailed design document  
+**Next Action**: Create Phase 2 design doc with:
+- Parent/child detection algorithm
+- Header normalization patterns
+- Metadata enrichment schema
+- Test cases for edge cases

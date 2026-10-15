@@ -1,0 +1,230 @@
+﻿python : [INFO] Sheet '26MY_CIV5D_APP_EN': Language detected as EN
+At line:1 char:410
++ ... sories_v1"; python test_phase2_integration.py > test_p2_int_output.tx ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([INFO] Sheet '2... detected as EN:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[INFO] Sheet '26MY_CIV5D_APP_EN': Model name extracted: Civic Hatch & Type R
+[INFO] Sheet '26MY_CIV5D_APP_EN': Vehicle year extracted: 2026
+[DEBUG] Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_EN': Publication date extracted: 2026-04-30
+[INFO] Sheet '26MY_CIV5D_APP_EN': 6 sections detected
+[DEBUG] detection_config type=<class 'dict'>, keys=['metadata_detection', 'section_detection', 'column_detection', 
+'row_classification', 'section_classification', 'parent_child_detection', 'dq_rules', 'notes']
+[DEBUG] section_detect_config type=<class 'dict'>, keys=['marker_pattern', 'header_row_detection', 
+'trim_subheader_row_detection', 'data_row_detection']
+[DEBUG] header_row_detect type=<class 'dict'>, keys=['method', 'keywords_en', 'keywords_fr', 'max_scan_rows']
+[DEBUG] Header detection config: keywords_en=['description', 'part', 'number', 'part number', 'cost', 'price', 'list', 
+'hours', 'frt', 'installed', 'comments'], keywords_fr=['description', 'pièce', 'numéro', 'coût', 'prix', 'tarif', 
+'heures', 't.f.f.', 'instalé', 'remarques'], max_scan=10
+[DEBUG] Found header row at index 11: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 12: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Packages and Kits'
+  - 17 total columns, 8 trim columns
+  - Total rows: 44 (including 9 empty)
+  - Valid data rows: 35
+  - Empty columns: [0]
+[DEBUG] Found header row at index 58: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 59: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Wheels and Wheel Accessories'
+  - 17 total columns, 8 trim columns
+  - Total rows: 13 (including 1 empty)
+  - Valid data rows: 12
+  - Empty columns: [0]
+[DEBUG] Found header row at index 74: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 75: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Exterior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 48 (including 1 empty)
+  - Valid data rows: 47
+  - Empty columns: [0]
+[DEBUG] Found header row at index 125: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 126: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Interior'
+  - 17 total columns, 8 trim columns
+  - Total rows: 17 (including 1 empty)
+  - Valid data rows: 16
+  - Empty columns: [0]
+[DEBUG] Found header row at index 145: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 146: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Electrical'
+  - 17 total columns, 8 trim columns
+  - Total rows: 7 (including 1 empty)
+  - Valid data rows: 6
+  - Empty columns: [0]
+[DEBUG] Found header row at index 155: 6 keywords matched
+[DEBUG] Found trim sub-header row at index 156: 4 trim columns
+[DEBUG] Sheet '26MY_CIV5D_APP_EN': Section 'Paint Pens'
+  - 17 total columns, 8 trim columns
+  - Total rows: 14 (including 2 empty, 2 publishing)
+  - Valid data rows: 10
+  - Empty columns: [0]
+[INFO] Sheet '26MY_CIV5D_APP_EN': Trim columns and row metrics identified for all sections
+[INFO] Phase 2: Starting header normalization and parent/child detection
+[INFO] Phase 2: Using column definitions from config
+[DEBUG]   Product columns: ['part_number', 'description']
+[DEBUG]   Price columns: ['dealer_net', 'list_price', 'frt', 'installed_price']
+[DEBUG] Processing section: Packages and Kits
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 13-56 (is_package=False)
+[DEBUG] Processing section: Wheels and Wheel Accessories
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 60-72 (is_package=False)
+[DEBUG] Processing section: Exterior
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 76-123 (is_package=False)
+[DEBUG] Processing section: Interior
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 127-143 (is_package=False)
+[DEBUG] Processing section: Electrical
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 147-153 (is_package=False)
+[DEBUG] Processing section: Paint Pens
+[DEBUG]   Headers normalized: ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 
+'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 
+'unnamed_14', 'unnamed_15', 'comments']
+[DEBUG]   Classifying rows 157-170 (is_package=False)
+[INFO] Phase 2: Complete. Record types: {'defect': 143}
+====================================================================================================
+PHASE 2 INTEGRATION TEST - Complete Data Transformation
+====================================================================================================
+
+[STEP 1] Loading configurations...
+[OK] Configurations loaded
+
+[STEP 2] Loading Excel file...
+[OK] Loaded 26MY_CIV5D_APP_EN: 171 rows x 17 columns
+
+====================================================================================================
+PHASE 1: VALIDATION & METADATA EXTRACTION
+====================================================================================================
+
+[PHASE 1 OUTPUT]
+  Model:           Civic Hatch & Type R
+  Year:            2026
+  Language:        EN
+  Sections:        6
+  Publication Dt:  2026-04-30
+
+[SECTION STRUCTURE]
+  Packages and Kits:
+    - Marker row: 10
+    - Header row: 11
+    - Data rows: 13-56
+  Wheels and Wheel Accessories:
+    - Marker row: 57
+    - Header row: 58
+    - Data rows: 60-72
+  Exterior:
+    - Marker row: 73
+    - Header row: 74
+    - Data rows: 76-123
+  Interior:
+    - Marker row: 124
+    - Header row: 125
+    - Data rows: 127-143
+  Electrical:
+    - Marker row: 144
+    - Header row: 145
+    - Data rows: 147-153
+  Paint Pens:
+    - Marker row: 154
+    - Header row: 155
+    - Data rows: 157-170
+
+[ROW METRICS]
+  Packages and Kits: 35/44 valid (79.5%)
+  Wheels and Wheel Accessories: 12/13 valid (92.3%)
+  Exterior: 47/48 valid (97.9%)
+  Interior: 16/17 valid (94.1%)
+  Electrical: 6/7 valid (85.7%)
+  Paint Pens: 10/14 valid (71.4%)
+
+[OK] Phase 1 complete
+
+====================================================================================================
+PHASE 2: HEADER NORMALIZATION + PARENT/CHILD DETECTION
+====================================================================================================
+
+[NORMALIZED HEADERS]
+  Packages and Kits:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+  Wheels and Wheel Accessories:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+  Exterior:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+  Interior:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+  Electrical:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+  Paint Pens:
+    ['unnamed_0', 'unnamed_1', 'description', 'part number', 'dealer net', 'list price', 'frt', 'installed price', 'application', 'unnamed_9', 'unnamed_10', 'unnamed_11', 'unnamed_12', 'unnamed_13', 'unnamed_14', 'unnamed_15', 'comments']
+
+[RECORD TYPE COUNTS]
+  defect: 143
+
+[PRICE COLUMNS (for Phase 3)]
+  ['dealer_net', 'list_price', 'frt', 'installed_price']
+
+[SAMPLE CLASSIFICATIONS]
+
+[PARENT INDEX SAMPLE]
+  Row 13: parent=None
+  Row 14: parent=None
+  Row 15: parent=None
+  Row 16: parent=None
+  Row 17: parent=None
+  Row 18: parent=None
+  Row 19: parent=None
+  Row 20: parent=None
+  Row 21: parent=None
+  Row 22: parent=None
+  Row 23: parent=None
+  Row 24: parent=None
+  Row 25: parent=None
+  Row 26: parent=None
+  Row 27: parent=None
+
+[OK] Phase 2 complete
+
+====================================================================================================
+DATA TRANSFORMATION SUMMARY
+====================================================================================================
+
+[PHASE 1 -> PHASE 2 TRANSFORMATION]
+  Input:  171 rows x 17 columns (raw)
+  Output: 171 rows x 17 columns (unchanged)
+  Metadata Added:
+    - normalized_headers: 6 sections
+    - column_mapping: 6 sections
+    - record_type_per_row: 143 classifications
+    - parent_row_index: 143 mappings
+    - record_type_counts: 1 types
+    - price_columns: 4 price fields
+
+[READY FOR PHASE 3]
+  Phase 3 will use:
+    1. price_columns to identify price columns
+    2. parent_row_index to fill prices for children
+    3. record_type_per_row to track which rows are parents/children
+    4. normalized_headers to reference columns by name
+
+[DQ LOGGING]
+  Warnings logged: 245
+
+====================================================================================================
+[OK] PHASE 2 INTEGRATION TEST PASSED
+====================================================================================================
+
+Phase 2 is working correctly and ready for Phase 3 development!
