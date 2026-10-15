@@ -382,19 +382,24 @@ def _classify_record_type(
     if price_columns is None:
         price_columns = ["dealer_net", "list_price", "frt", "installed_price"]
 
-    # Check if row is completely empty first - log as cleaning activity, not a warning
+    # Check if row is completely empty first - skip as data cleanup, not a defect
     if _is_row_completely_empty(row):
+        return None
+
+    # Check which columns have data (use config column names)
+    # For part number, use fallback to column 1 if official part number column is empty
+    has_description = _check_column("description", row, norm_names)
+    has_part_number, part_number_fallback_value = _check_part_number_with_fallback(row, norm_names)
+
+    # If row has NO product identification (no description AND no part number),
+    # skip it as data cleanup - not a defect. These are empty/padding rows in Excel.
+    if not has_description and not has_part_number:
         return None
 
     # Check if row is a subsection label (marks start of subsection)
     # These are dropped from processing but logged for audit trail
     if _is_subsection_label(row, norm_names):
         return "subsection_label"
-
-    # Check which columns have data (use config column names)
-    # For part number, use fallback to column 1 if official part number column is empty
-    has_description = _check_column("description", row, norm_names)
-    has_part_number, part_number_fallback_value = _check_part_number_with_fallback(row, norm_names)
 
     has_product_data = has_description or has_part_number
     has_all_products = has_description and has_part_number  # Both required for parent
