@@ -65,10 +65,13 @@ def get_section_record_counts(meta_phase2, section_structure):
         start = bounds.get('data_start_row')
         end = bounds.get('data_end_row')
 
+        # Only count rows that are IN record_types dict
+        # Rows not in the dict were skipped during classification (e.g., empty rows)
         section_records = {k: v for k, v in record_types.items() if start <= k <= end}
 
         section_counts = {}
         for rtype in section_records.values():
+            # rtype can be a string ('parent', 'child', 'subsection_label', etc.) or None for defects
             rtype_key = "defect" if rtype is None else rtype
             section_counts[rtype_key] = section_counts.get(rtype_key, 0) + 1
 
@@ -87,7 +90,9 @@ def get_defect_rows(meta_phase2, section_structure, df, meta_phase1):
         start = bounds.get('data_start_row')
         end = bounds.get('data_end_row')
 
-        defect_rows = [r for r in range(start, end + 1) if record_types.get(r) is None]
+        # Only get rows that ARE in record_types AND are classified as 'defect' (None value)
+        # Rows that have no entry in record_types were skipped as data cleanup (e.g., empty rows)
+        defect_rows = [r for r in range(start, end + 1) if r in record_types and record_types.get(r) is None]
 
         if defect_rows:
             col_map = column_mapping.get(section_name, {})

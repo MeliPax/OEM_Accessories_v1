@@ -111,7 +111,10 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
                 row, section_name, is_package, norm_names, dq_logger, row_idx, updated_meta,
                 product_columns, price_columns, part_number_fallbacks
             )
-            record_types[row_idx] = rtype
+            # Only add to record_types if classified (rtype is not None)
+            # Rows with rtype=None are skipped as data cleanup, not defects
+            if rtype is not None:
+                record_types[row_idx] = rtype
 
         # 3. Build parent index for this section
         section_parent_index = _build_parent_index(
