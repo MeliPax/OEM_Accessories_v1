@@ -240,6 +240,65 @@ def _is_row_completely_empty(row: pd.Series) -> bool:
     return True
 
 
+def _is_subsection_label(row: pd.Series, norm_names: Dict[int, str]) -> bool:
+    """
+    Check if row is a subsection label (marks start of a subsection).
+
+    Subsection labels have:
+    - Description column: HAS DATA
+    - Part Number column: EMPTY (key differentiator from products)
+    - All price columns: EMPTY (dealer net, list price, frt, installed price)
+    - All application/trim columns: EMPTY
+    - May have placeholder code in column before description
+
+    Examples: "Sedan Models", "Roof Attachments", "Interior Controls"
+    """
+    # Check if description has data
+    has_description = _check_column("description", row, norm_names)
+    if not has_description:
+        return False
+
+    # Part number MUST be empty (key differentiator from real products)
+    has_part_number = _check_column("part number", row, norm_names)
+    if has_part_number:
+        # Has part number - it's a real product, not a subsection label
+        return False
+
+    # All price/application columns must be empty
+    columns_to_check = [
+        "dealer net", "list price", "frt", "installed price", "application"
+    ]
+
+    for col_name in columns_to_check:
+        if _check_column(col_name, row, norm_names):
+            # Found data in a required column - not a subsection label
+            return False
+
+    # Check that all trim columns are empty (typically columns 9-16 and beyond)
+    # Only check trim columns that come AFTER the main product/price columns
+    for col_idx, norm_name in norm_names.items():
+        norm_lower = norm_name.lower()
+
+        # Skip the main product/price/application columns we already checked
+        if any(keyword in norm_lower for keyword in
+               ["description", "part", "dealer", "list", "frt", "installed", "application"]):
+            continue
+
+        # Skip unnamed columns that come before the main data area (cols 0-1)
+        if col_idx < 2:
+            continue
+
+        # Check if this trim column has data
+        val = row.iloc[col_idx] if col_idx < len(row) else None
+        if pd.notna(val):
+            val_str = str(val).strip()
+            if val_str and val_str.lower() not in ["nan", "none"]:
+                # Found data in a trim column - not a subsection label
+                return False
+
+    return True
+
+
 def _matches_keywords(col_name: str, keywords: Dict[str, List[str]]) -> bool:
     """
     Check if column name matches keyword rules.
@@ -298,8 +357,9 @@ def _classify_record_type(
         price_columns: List of price column names (from config)
 
     Returns:
-        "package_parent" | "package_child" | "parent" | "child" | None (defect)
+        "subsection_label" | "package_parent" | "package_child" | "parent" | "child" | None (defect)
 
+    Subsection labels: Rows with description only, all other columns empty (marks start of subsection)
     Parent (complete): ALL product columns filled + ALL price columns filled
     Child (incomplete): ALL product columns filled + ALL price columns EMPTY
     Defects: Missing product data, partial prices
@@ -313,6 +373,11 @@ def _classify_record_type(
     # Check if row is completely empty first - log as cleaning activity, not a warning
     if _is_row_completely_empty(row):
         return None
+
+    # Check if row is a subsection label (marks start of subsection)
+    # These are dropped from processing but logged for audit trail
+    if _is_subsection_label(row, norm_names):
+        return "subsection_label"
 
     # Check which columns have data (use config column names)
     has_product_data = _check_any_columns(product_columns, row, norm_names)
