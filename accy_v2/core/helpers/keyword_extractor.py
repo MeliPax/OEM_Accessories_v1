@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 import re
 
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 
 
 class KeywordExtractor:

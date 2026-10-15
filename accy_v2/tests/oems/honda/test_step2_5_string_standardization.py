@@ -40,15 +40,15 @@ class TestRunner:
         try:
             test_func()
             self.passed += 1
-            print(f"✓ {test_name}")
+            print(f"[PASS] {test_name}")
         except AssertionError as e:
             self.failed += 1
-            self.errors.append(f"✗ {test_name}: {e}")
-            print(f"✗ {test_name}")
+            self.errors.append(f"[FAIL] {test_name}: {e}")
+            print(f"[FAIL] {test_name}")
         except Exception as e:
             self.failed += 1
-            self.errors.append(f"✗ {test_name}: ERROR: {e}")
-            print(f"✗ {test_name} (ERROR)")
+            self.errors.append(f"[ERROR] {test_name}: {e}")
+            print(f"[ERROR] {test_name}")
 
     def summary(self):
         """Print summary"""

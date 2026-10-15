@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 
 
 def run(

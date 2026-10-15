@@ -2,11 +2,11 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from core.base_pipeline import PipelineFatalError
-from core.helpers.column_mapper import map_all_columns
-from core.helpers.dq_logger import DQLogger
-from core.helpers.header_helpers import strip_df_string_values
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.base_pipeline import PipelineFatalError
+from accy_v2.core.helpers.column_mapper import map_all_columns
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.core.helpers.header_helpers import strip_df_string_values
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 
 
 def run(

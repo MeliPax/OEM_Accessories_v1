@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from core.helpers.output_column_mapper import apply_downstream_column_mapping
+from accy_v2.core.helpers.output_column_mapper import apply_downstream_column_mapping
 
 
 def prepare_frames(

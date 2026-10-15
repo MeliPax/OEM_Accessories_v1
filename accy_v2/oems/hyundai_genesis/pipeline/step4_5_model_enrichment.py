@@ -4,9 +4,9 @@ import yaml
 
 import pandas as pd
 
-from core.helpers.dq_logger import DQLogger
-from core.helpers.keyword_extractor import KeywordExtractor
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.core.helpers.keyword_extractor import KeywordExtractor
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 from accy_v2.model_lookup.search_engine import VehicleSearchEngine
 from accy_v2.model_lookup.models.manufacture_module import find_model_line, load_existing_csv, save_vehicle_models_to_csv
 from accy_v2.model_lookup.chrome_api.service import ADSService

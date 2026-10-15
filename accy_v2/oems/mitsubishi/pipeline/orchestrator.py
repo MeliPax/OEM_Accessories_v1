@@ -2,10 +2,10 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-from core.base_pipeline import BasePipeline
-from core.helpers.dq_logger import DQLogger
-from core.helpers.output_writer import write_combined_output
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.base_pipeline import BasePipeline
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.core.helpers.output_writer import write_combined_output
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 
 from oems.mitsubishi.pipeline import (
     step1_validation,

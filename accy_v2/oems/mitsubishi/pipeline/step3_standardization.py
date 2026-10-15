@@ -2,8 +2,8 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
-from core.base_pipeline import PipelineFatalError
-from core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.base_pipeline import PipelineFatalError
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
 
 
 def run(

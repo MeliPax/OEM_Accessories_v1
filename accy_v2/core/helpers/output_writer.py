@@ -4,9 +4,9 @@ from typing import Dict, List
 
 import pandas as pd
 
-from core.helpers.dq_logger import DQLogger
-from core.helpers.pipeline_logger import PipelineLogger
-from core.helpers.path_utils import to_relative_path
+from accy_v2.core.helpers.dq_logger import DQLogger
+from accy_v2.core.helpers.pipeline_logger import PipelineLogger
+from accy_v2.core.helpers.path_utils import to_relative_path
 
 
 def write_combined_output(
