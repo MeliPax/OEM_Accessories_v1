@@ -4,7 +4,7 @@ Applies unicode normalization, newline removal, composite part splitting,
 and trim marker mapping before Step 3 type validation.
 
 Runs AFTER Step 2 Header Normalization, BEFORE Step 3 Standardization.
-Implements Honda-specific operations defined in standardization.yaml.
+Implements Honda-specific operations defined in transformations.yaml.
 """
 
 from typing import Any, Dict, List, Optional
@@ -35,7 +35,7 @@ def run(
 
     Args:
         working_df: DataFrame after header normalization
-        config: Honda config dict (contains standardization.yaml settings)
+        config: Honda config dict (from ModularConfigLoader.load_all())
         meta_data: Pipeline metadata
         dq_logger: DQ logging interface
         pipeline_logger: Pipeline logging interface
@@ -48,20 +48,22 @@ def run(
 
     df = working_df.copy()
 
-    # Get standardization config
-    std_config = config.get("standardization", {})
+    # Get transformations config (from transformations.yaml)
+    trans_config = config.get("transformations", {})
 
     # 1. Normalize unicode in all string columns
-    df = _normalize_unicode(df, std_config.get("unicode_mappings", {}), pipeline_logger)
+    unicode_mapping = _extract_operation_params(trans_config, "normalize_unicode")
+    df = _normalize_unicode(df, unicode_mapping, pipeline_logger)
 
     # 2. Remove newlines from description and comments
-    df = _remove_newlines(df, std_config.get("columns", {}), pipeline_logger)
+    df = _remove_newlines(df, trans_config.get("columns", {}), pipeline_logger)
 
     # 3. Split composite part numbers
     df = _split_composite_part_numbers(df, dq_logger, sheet_name, model_name)
 
     # 4. Normalize trim markers
-    df = _normalize_trim_markers(df, std_config.get("trim_marker_mapping", {}), pipeline_logger)
+    trim_mapping = _extract_operation_params(trans_config, "normalize_trim_markers", "mapping")
+    df = _normalize_trim_markers(df, trim_mapping, pipeline_logger)
 
     return df
 
@@ -69,6 +71,45 @@ def run(
 # ============================================================================
 # Private Helper Functions
 # ============================================================================
+
+
+def _extract_operation_params(trans_config: dict, operation_name: str, param_key: str = None) -> dict:
+    """
+    Extract operation parameters from transformations config.
+
+    Searches through all columns for an operation with the given name.
+    For normalize_unicode, converts from_chars/to_chars lists into a mapping dict.
+    For normalize_trim_markers, extracts the mapping directly.
+
+    Args:
+        trans_config: Transformations config dict
+        operation_name: Name of the operation to find (e.g., "normalize_unicode")
+        param_key: Optional specific parameter key to extract (e.g., "mapping")
+
+    Returns:
+        Dict of operation parameters
+    """
+    columns = trans_config.get("columns", {})
+
+    for col_name, col_config in columns.items():
+        operations = col_config.get("operations", [])
+        for op in operations:
+            if op.get("name") == operation_name:
+                # Special handling for normalize_unicode: convert from_chars/to_chars to mapping
+                if operation_name == "normalize_unicode":
+                    from_chars = op.get("from_chars", [])
+                    to_chars = op.get("to_chars", [])
+                    if from_chars and to_chars and len(from_chars) == len(to_chars):
+                        return dict(zip(from_chars, to_chars))
+                    return {}
+
+                # For other operations, extract the specified key or all parameters
+                if param_key:
+                    return op.get(param_key, {})
+                else:
+                    return {k: v for k, v in op.items() if k not in ["name", "description"]}
+
+    return {}
 
 
 def _normalize_unicode(
