@@ -200,6 +200,84 @@ dq_logger.log_warning(
 
 ---
 
+## Rule 5: Part Number Fallback with Column 1
+
+**Principle**: When the official part number column is empty, column 1 (placeholder product codes) may be used as a fallback ONLY during classification. Data is hydrated after classification with full audit logging.
+
+**Why**:
+- Recovers parent records that would otherwise be classified as defects
+- Improves data quality by using available product identifiers
+- Maintains strict separation between classification (logical) and data mutation (physical)
+- Preserves audit trail for all fills
+
+### Classification Phase (Logic Only)
+
+During `_classify_record_type()`, check for part numbers:
+
+```python
+# Check official part number column first
+has_official_part_number = _check_column("part number", row, norm_names)
+
+# If empty, check column 1 as fallback (for classification only)
+if not has_official_part_number:
+    has_part_number, fallback_value = _check_part_number_with_fallback(row, norm_names)
+else:
+    has_part_number = has_official_part_number
+    fallback_value = None
+
+# Use this for classification logic
+has_all_products = has_description and has_part_number
+```
+
+**Key Point**: Classification decision uses fallback, but dataframe is NOT modified yet.
+
+### Data Hydration Phase (Physical Change)
+
+After classification, populate the actual part number column:
+
+```python
+def _fill_part_numbers_from_fallback(df, record_types, ...):
+    """Fill part number column from column 1 for parent records"""
+    for row_idx, record_type in record_types.items():
+        if record_type in ("parent", "package_parent"):
+            if col_3_is_empty and col_1_has_data:
+                df.iloc[row_idx, 3] = col_1_value  # Populate column 3
+                logger.debug(f"Row {row_idx}: Filled from column 1: '{col_1_value}'")
+```
+
+**Why Separate Phases?**
+- Classification must be accurate for parent index building
+- Data hydration is a separate, logged transformation
+- Allows downstream steps to use accurate classification results
+
+### Safeguards
+
+✅ **Subsection Label Protection**
+- Subsection labels identified BEFORE fallback logic runs
+- Never processed as parents
+- Definition: description only, NO part number (col 3 AND col 1 both empty)
+
+✅ **No Conflicts**
+- Additive: only affects rows that would be defects otherwise
+- Non-destructive: never overwrites existing values
+- Fully reversible: all fills logged
+
+✅ **Audit Trail**
+- Debug logs: `Row N: Filled missing part number from column 1: 'value'`
+- Info summary: `Phase 2: Recovered X part numbers from column 1 fallback`
+- Metadata: Part number fills tracked for optional downstream use
+
+### Current Implementation Status
+
+✅ **Phase 2 (Complete 2026-10-15)**
+- Function `_check_part_number_with_fallback()` implemented
+- Classification uses fallback logic
+- Function `_fill_part_numbers_from_fallback()` post-processes
+- Test: test_part_number_fallback.py passes 4/4 scenarios
+- Documentation: PART_NUMBER_FALLBACK_FEATURE.md
+
+---
+
 ## Implementation Roadmap
 
 ### Phase 2 (Complete ✅)
@@ -255,6 +333,6 @@ def test_column_categories_from_config():
 
 ---
 
-**Last Updated**: 2026-10-13  
-**Status**: Active Design Rule  
+**Last Updated**: 2026-10-15  
+**Status**: Active Design Rules (5 total)  
 **Owner**: Phase 2 Implementation
