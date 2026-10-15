@@ -37,8 +37,9 @@ def run(df: pd.DataFrame, config: Dict, meta_data: Dict, dq_logger, logger) -> T
 
     # Extract column definitions and categories from upstream.yaml (via config)
     # Config structure: upstream.yaml has 'columns' with language-specific detection
-    column_defs = config.get("columns", {})
-    column_categories = config.get("column_categories", {})
+    upstream_schema = config.get("schemas", {}).get("upstream", {})
+    column_defs = upstream_schema.get("columns", {})
+    column_categories = upstream_schema.get("column_categories", {})
     # Use spaces in column names to match the normalized headers from structure.yaml
     product_columns = column_categories.get("product_columns", ["description", "part number"])
     price_columns = column_categories.get("price_columns", ["dealer net", "list price", "frt", "installed price"])
@@ -185,7 +186,7 @@ def _extract_column_names(header_row: pd.Series, language: str = "EN") -> List[s
 
 def _normalize_header_names(
     raw_names: List[str],
-    detection_config: Dict,
+    config: Dict,
     language: str,
     dq_logger,
     meta_data: Dict = None
@@ -195,7 +196,7 @@ def _normalize_header_names(
 
     Args:
         raw_names: List of raw column names
-        detection_config: Config with columns section (language-separated detection)
+        config: Full configuration dict from ModularConfigLoader
         language: Language (EN or FR)
         dq_logger: DQ logger
         meta_data: Metadata dict (for logging)
@@ -203,7 +204,8 @@ def _normalize_header_names(
     Returns:
         Dict {column_index: normalized_name}
     """
-    column_defs = detection_config.get("columns", {})
+    upstream_schema = config.get("schemas", {}).get("upstream", {})
+    column_defs = upstream_schema.get("columns", {})
     norm_mapping = {}
     matched_columns = set()
 

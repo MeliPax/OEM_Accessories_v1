@@ -1,0 +1,36 @@
+﻿========================================================================================================================
+PHASE 2 DETAILED COMPARATIVE REPORT - EN vs FR
+========================================================================================================================
+python : Traceback (most recent call last):
+At line:1 char:410
++ ... sories_v1"; python test_phase2_detailed_report.py > test_phase2_outpu ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory 
+project\OEM_Accessories_v1\test_phase2_detailed_report.py", line 128, in <module>
+    "EN": run_phase2("26MY_CIV5D_APP_EN", "EN"),
+          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\paxm\OneDrive - PBS SYSTEMS\Desktop\Office\Projects\OEM Accessory 
+project\OEM_Accessories_v1\test_phase2_detailed_report.py", line 35, in run_phase2
+    excel = pd.ExcelFile(file_path)
+  File "C:\Users\paxm\AppData\Local\Programs\Python\Python314\Lib\site-packages\pandas\io\excel\_base.py", line 1604, 
+in __init__
+    ext = inspect_excel_format(
+        content_or_path=path_or_buffer, storage_options=storage_options
+    )
+  File "C:\Users\paxm\AppData\Local\Programs\Python\Python314\Lib\site-packages\pandas\io\excel\_base.py", line 1452, 
+in inspect_excel_format
+    with get_handle(
+         ~~~~~~~~~~^
+        content_or_path, "rb", storage_options=storage_options, is_text=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as handle:
+    ^
+  File "C:\Users\paxm\AppData\Local\Programs\Python\Python314\Lib\site-packages\pandas\io\common.py", line 939, in 
+get_handle
+    handle = open(handle, ioargs.mode)
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\paxm\\OneDrive - PBS 
+SYSTEMS\\Desktop\\Office\\Projects\\OEM Accessory 
+project\\OEM_Accessories_v1\\accy_v2\\data\\landing_zone\\honda\\may_2026\\CVIC5D.xlsx'
