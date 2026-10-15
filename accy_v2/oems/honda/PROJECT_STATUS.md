@@ -5,6 +5,59 @@
 
 ---
 
+## Current Phase: Phase 2.5 - String Standardization (✅ COMPLETE - CONFIG & CODE)
+
+### Completion Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| **Phase 1: Foundation & Setup** | ✅ Complete | Directory structure, configs, step1_validation.py implemented |
+| **Phase 2: Header Normalization** | ✅ Complete | EN & FR both working; 0 data quality defects after empty row cleanup |
+| **Phase 2.5: String Standardization** | ✅ Complete | Config & code designed; ready for integration testing |
+| **Config Structure** | ✅ Complete | detection.yaml with all sections, column_normalizations, standardization.yaml |
+| **Design Rules** | ✅ Complete | DESIGN_RULES.md documents 4 core rules |
+| **Part Number Fallback** | ✅ Complete | Column 1 fallback for empty part numbers (PART_NUMBER_FALLBACK_FEATURE.md) |
+| **Test Infrastructure** | ✅ Complete | test_phase2_detailed_report.py provides comprehensive EN/FR comparison |
+| **String Cleaning Ops** | ✅ Complete | 4 new operations: unicode normalization, newline removal, composite split, marker mapping |
+
+---
+
+## Recent Work (2026-10-15): Phase 2.5 Data Cleaning
+
+**Deliverables:**
+- ✅ `accy_v2/oems/honda/config/standardization.yaml` — Per-column transformation pipeline (config-based)
+- ✅ `accy_v2/oems/honda/pipeline/step2_string_standardization.py` — Implementation (200 lines)
+- ✅ Analysis documents (4 markdown files in scratchpad) — Design rationale and OEM patterns
+
+**What Was Done:**
+1. Analyzed cleaning patterns across all OEMs (Hyundai, Genesis, Mitsubishi, Mazda)
+2. Identified Honda-specific data issues from actual CVIC5D.xlsx file
+3. Designed config-based cleaning strategy (extends Hyundai pattern with 4 new operations)
+4. Implemented Step 2.5 (new intermediate pipeline step)
+
+**Four New Operations:**
+1. **normalize_unicode** — Smart quotes (U+201C/D) → ASCII; unicode spaces → space
+2. **remove_newlines** — Literal \n in cells → space (handles Excel multi-line cells)
+3. **split_composite** — "part1 or part2" → keep part1, note in comments
+4. **normalize_trim_markers** — •, ✓, S, T, E, 0, 0.0 → canonical states
+
+**Integration Point:**
+```
+Step 2: Header Normalization ✅
+  ↓ (extracts headers, detects sections)
+Step 2.5: STRING STANDARDIZATION ✅ NEW
+  ↓ (normalizes unicode, removes newlines, splits composite, maps markers)
+Step 3: Standardization (existing)
+  ↓ (applies type coercion, validation, trim applicability checks)
+```
+
+**Next Steps:**
+- Create unit tests (5 test files)
+- Run integration test with real Honda data
+- Verify output (no smart quotes, no newlines, composite parts split, markers normalized)
+
+---
+
 ## Current Phase: Phase 2 - Header Normalization & Parent/Child Detection (✅ COMPLETE)
 
 ### Completion Summary

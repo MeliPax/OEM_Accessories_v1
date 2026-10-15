@@ -221,22 +221,22 @@ columns:
           must_have_one_of: [prix]
           not_have: []
 
-  application:
-    type: "string"
-    required: false
-    standardized_name: "application"
-    examples: ["All Trims"]
-    detection:
-      EN:
-        key_words:
-          must_have: [application]
-          must_have_one_of: []
-          not_have: []
-      FR:
-        key_words:
-          must_have: [application]
-          must_have_one_of: []
-          not_have: []
+  # application:
+  #   type: "string"
+  #   required: false
+  #   standardized_name: "application"
+  #   examples: ["All Trims"]
+  #   detection:
+  #     EN:
+  #       key_words:
+  #         must_have: [application]
+  #         must_have_one_of: []
+  #         not_have: []
+  #     FR:
+  #       key_words:
+  #         must_have: [application]
+  #         must_have_one_of: []
+  #         not_have: []
 
   comments:
     type: "string"
@@ -277,7 +277,7 @@ column_categories:
 data_quality:
   # Expected data ranges
   row_counts:
-    total_rows_per_sheet: "~150-170"
+    total_rows_per_sheet: "~150-200"
     rows_per_section: "~10-50"
     min_non_empty_rows: 1
 
