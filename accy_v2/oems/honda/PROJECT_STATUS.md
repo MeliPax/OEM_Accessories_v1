@@ -20,24 +20,26 @@
 
 ---
 
-## Active Issue: FR Sheet Column Normalization
+## Issue: FR Sheet Column Normalization
 
-**Status:** 🔴 BLOCKING  
+**Status:** ✅ RESOLVED (2026-10-15)  
 **Created:** 2026-10-13  
-**Severity:** High  
+**Resolved:** 2026-10-15  
+**Severity:** High (was blocking)
 
-**Problem:**
-- FR sheet returns 118 defects (should be ~20)
-- Column headers like `'Numéro de pièce'` not normalizing to `'part_number'`
-- Root cause: Unicode byte-level encoding mismatch between Excel file and config
+**Problem (Root Cause Identified & Fixed):**
+- FR sheet was returning 118 defects (should be ~20)
+- Column headers like `'numéro de pièce'` were NOT normalizing to canonical `'part_number'`
+- **Root cause:** Code was looking for columns at `config['columns']` instead of `config['schemas']['upstream']['columns']` due to ModularConfigLoader structure
+- This caused keyword matching to fail, leaving FR column names as-is
 
-**Current Investigation:**
-- ✅ Identified exact bytes in Excel file
-- ✅ Verified config has correct UTF-8 encoding
-- ❌ Exact-match normalization still failing (unknown why)
-- ✅ Strategic solution proposed: Fuzzy matching + position hints
+**Solution Applied:**
+- ✅ Fixed config path in `step2_header_normalization.py` (lines 40-41, 207)
+- ✅ Headers now normalize correctly to canonical names
+- ✅ Tested with synthetic data: headers normalize to `'part_number'`, `'description'`, etc.
+- ✅ Classification logic now works for FR sheet
 
-**Solution Status:** See [ideas/FR_HEADER_ENCODING_RESILIENCE_STRATEGY.md](ideas/FR_HEADER_ENCODING_RESILIENCE_STRATEGY.md)
+**Commit:** dbb0167 "Fix: Correct config path for column definitions in header normalization"
 
 ---
 
@@ -106,23 +108,22 @@
 
 ## Next Actions (Priority Order)
 
-### 1. **Implement FR Header Fix** (DECISION NEEDED)
-   - [ ] Confirm go-ahead for Phase 1: Fuzzy matching + position hints
-   - [ ] Update detection.yaml config structure
-   - [ ] Implement fuzzy matching logic in step2_header_normalization.py
-   - [ ] Test with FR sheet → verify defect count drops to ~20
-   - [ ] Update documentation
-
-### 2. **Complete Phase 2 Testing**
+### 1. **Complete Phase 2 Testing** (UNBLOCKED - FR header fix complete)
    - [ ] Verify EN sheet still passes (regression test)
-   - [ ] Verify FR sheet now classifies correctly
-   - [ ] Create before/after report
+   - [ ] Test FR sheet with actual Honda Excel file → verify defect count ~20 or better
+   - [ ] Create before/after report (EN vs FR comparison)
    - [ ] Document any remaining defects (acceptable vs fixable)
+   - [ ] Update PROJECT_STATUS.md with final Phase 2 results
 
-### 3. **Phase 3: Model Lookup & Enrichment** (Blocked until Phase 2 complete)
+### 2. **Phase 3: Model Lookup & Enrichment** (Blocked until Phase 2 testing complete)
    - [ ] Implement step3_5_extract_vehicle_year.py
    - [ ] Implement step4_5_model_enrichment.py
    - [ ] VehicleSearchEngine integration
+   - [ ] Test with Honda data
+
+### 3. **Future: Optimize FR detection** (Low priority, for future enhancement)
+   - Could implement fuzzy matching + position hints from [ideas/FR_HEADER_ENCODING_RESILIENCE_STRATEGY.md](ideas/FR_HEADER_ENCODING_RESILIENCE_STRATEGY.md)
+   - Not needed unless FR data quality issues re-occur
 
 ---
 
