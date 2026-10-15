@@ -30,7 +30,8 @@
 - ✅ `accy_v2/oems/honda/config/transformations.yaml` — Per-column transformation pipeline (consolidated from standardization.yaml)
 - ✅ `accy_v2/model_lookup/configs/honda/translator.yaml` — Abbreviation mappings (HEV→Hybrid, etc.)
 - ✅ `accy_v2/oems/honda/pipeline/step2_string_standardization.py` — Updated to read from transformations config
-- ✅ `accy_v2/oems/honda/TRANSFORMATION_CONFIG.md` — Comprehensive transformation configuration guide
+- ✅ `accy_v2/planning/oem_pipeline/honda_pipeline_modernization/DESIGN_DOCS/TRANSFORMATION_CONFIG.md` — Comprehensive guide
+- ✅ `accy_v2/planning/oem_pipeline/honda_pipeline_modernization/DELIVERABLES/TRANSFORMATION_CONFIG_CONSOLIDATION_20261015.md` — Summary
 - ✅ Planning documents in proper directory — `accy_v2/planning/oem_pipeline/honda_pipeline_modernization/phases/phase_2_5/`
 
 **What Was Done:**
@@ -194,8 +195,7 @@ Step 3: Standardization (existing)
 ```
 accy_v2/oems/honda/
 ├── DESIGN_RULES.md                          # Core architectural rules
-├── TRANSFORMATION_CONFIG.md                 # ✅ NEW: Transformation config guide
-├── PROJECT_STATUS.md                        # This file
+├── PROJECT_STATUS.md                        # This file (in source code directory)
 ├── config/
 │   ├── transformations.yaml                 # ✅ Per-column operation pipelines
 │   ├── pipeline.yaml                        # Pipeline settings
@@ -220,10 +220,17 @@ accy_v2/model_lookup/configs/honda/
 ├── classification.yaml
 └── keywords.yaml
 
-accy_v2/planning/oem_pipeline/honda_pipeline_modernization/phases/phase_2_5/
-├── CLEANING_PLAN.md                         # Phase planning
-├── OEM_COMPARISON.md                        # OEM pattern analysis
-└── CLEANING_PIPELINE.md                     # Visual pipeline
+accy_v2/planning/oem_pipeline/honda_pipeline_modernization/
+├── DESIGN_DOCS/
+│   └── TRANSFORMATION_CONFIG.md              # ✅ Comprehensive transformation guide
+├── DELIVERABLES/
+│   └── TRANSFORMATION_CONFIG_CONSOLIDATION_20261015.md  # ✅ Consolidation summary
+├── phases/phase_2_5/
+│   ├── CLEANING_PLAN.md                     # Phase planning
+│   ├── OEM_COMPARISON.md                    # OEM pattern analysis
+│   └── CLEANING_PIPELINE.md                 # Visual pipeline
+├── ARCHITECTURE_DECISIONS.md
+└── README.md
 ```
 
 ---
