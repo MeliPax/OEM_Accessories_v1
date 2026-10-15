@@ -173,61 +173,61 @@
 
 ### description (Most Cleaning Operations)
 
-| Operation | Input | Output | Status |
-|-----------|-------|--------|--------|
-| Normalize Unicode | `"Platinum White Pearl (NH-883P)"` (curly quotes) | `"Platinum White Pearl (NH-883P)"` (ASCII) | ✅ NEW |
-| Remove Newlines | `"SPORT \nHybrid"` | `"Sport Hybrid"` | ✅ NEW |
-| Trim Whitespace | `"  Racing Package  "` | `"Racing Package"` | ✅ Existing |
-| Standardize Case | `"RACING PACKAGE"` | `"Racing Package"` | ✅ Existing |
-| Abbreviations | `"HEV Sport"` | `"Hybrid Sport"` | ✅ Existing |
-| Deduplicate | `"Hybrid Hybrid"` | `"Hybrid"` | ✅ Existing |
-| Remove Markup | `"Racing Package (EN)"` | `"Racing Package"` | ✅ Existing |
+| Operation         | Input                                               | Output                                       | Status      |
+| ----------------- | --------------------------------------------------- | -------------------------------------------- | ----------- |
+| Normalize Unicode | `"Platinum White Pearl (NH-883P)"` (curly quotes) | `"Platinum White Pearl (NH-883P)"` (ASCII) | ✅ NEW      |
+| Remove Newlines   | `"SPORT \nHybrid"`                                | `"Sport Hybrid"`                           | ✅ NEW      |
+| Trim Whitespace   | `"  Racing Package  "`                            | `"Racing Package"`                         | ✅ Existing |
+| Standardize Case  | `"RACING PACKAGE"`                                | `"Racing Package"`                         | ✅ Existing |
+| Abbreviations     | `"HEV Sport"`                                     | `"Hybrid Sport"`                           | ✅ Existing |
+| Deduplicate       | `"Hybrid Hybrid"`                                 | `"Hybrid"`                                 | ✅ Existing |
+| Remove Markup     | `"Racing Package (EN)"`                           | `"Racing Package"`                         | ✅ Existing |
 
 ---
 
 ### part_number (Part/Combo Handling)
 
-| Operation | Input | Output | Status |
-|-----------|-------|--------|--------|
-| Normalize Unicode | `"480-670-6545-SP"` (if smart quotes) | `"480-670-6545-SP"` | ✅ NEW |
-| Split Composite | `"480-670-6545-SP or 480-670-6545-GB"` | Primary: `"480-670-6545-SP"` | ✅ NEW |
-| Uppercase | `"abc123"` | `"ABC123"` | ✅ Existing |
-| Trim Whitespace | `"  ABC123  "` | `"ABC123"` | ✅ Existing |
-| Pattern Validation | `"ABC-123"` | `"ABC-123"` (matches `^[A-Z0-9-]+$`) | ✅ Existing |
+| Operation          | Input                                    | Output                                   | Status      |
+| ------------------ | ---------------------------------------- | ---------------------------------------- | ----------- |
+| Normalize Unicode  | `"480-670-6545-SP"` (if smart quotes)  | `"480-670-6545-SP"`                    | ✅ NEW      |
+| Split Composite    | `"480-670-6545-SP or 480-670-6545-GB"` | Primary: `"480-670-6545-SP"`           | ✅ NEW      |
+| Uppercase          | `"abc123"`                             | `"ABC123"`                             | ✅ Existing |
+| Trim Whitespace    | `"  ABC123  "`                         | `"ABC123"`                             | ✅ Existing |
+| Pattern Validation | `"ABC-123"`                            | `"ABC-123"` (matches `^[A-Z0-9-]+$`) | ✅ Existing |
 
 ---
 
 ### list_price (Numeric Cleaning)
 
-| Operation | Input | Output | Status |
-|-----------|-------|--------|--------|
-| Remove Currency | `"$6,612.00"` | `"6612.00"` | ✅ Existing |
-| Convert Float | `"6612.00"` | `6612.0` | ✅ Existing |
-| Range Validation | `6612.0` | ✓ (within 0-50000) | ✅ Existing |
+| Operation        | Input           | Output              | Status      |
+| ---------------- | --------------- | ------------------- | ----------- |
+| Remove Currency  | `"$6,612.00"` | `"6612.00"`       | ✅ Existing |
+| Convert Float    | `"6612.00"`   | `6612.0`          | ✅ Existing |
+| Range Validation | `6612.0`      | ✓ (within 0-50000) | ✅ Existing |
 
 ---
 
 ### Trim Columns (applicability markers)
 
-| Operation | Input | Output | Status |
-|-----------|-------|--------|--------|
-| Normalize Markers | `"•"` | `"applicable"` | ✅ NEW |
-| Normalize Markers | `"✓"` | `"applicable"` | ✅ NEW |
-| Normalize Markers | `"S"` | `"standard"` | ✅ NEW |
-| Normalize Markers | `"T"` | `"tire_change"` | ✅ NEW |
-| Normalize Markers | `"E"` | `"exchange"` | ✅ NEW |
-| Normalize Markers | `"0"` or `"0.0"` | `null` | ✅ NEW |
-| Normalize Markers | `""` or `"N/A"` | `null` | ✅ NEW |
+| Operation         | Input                | Output            | Status |
+| ----------------- | -------------------- | ----------------- | ------ |
+| Normalize Markers | `"•"`             | `"applicable"`  | ✅ NEW |
+| Normalize Markers | `"✓"`             | `"applicable"`  | ✅ NEW |
+| Normalize Markers | `"S"`              | `"standard"`    | ✅ NEW |
+| Normalize Markers | `"T"`              | `"tire_change"` | ✅ NEW |
+| Normalize Markers | `"E"`              | `"exchange"`    | ✅ NEW |
+| Normalize Markers | `"0"` or `"0.0"` | `null`          | ✅ NEW |
+| Normalize Markers | `""` or `"N/A"`  | `null`          | ✅ NEW |
 
 ---
 
 ### comments (Minimal Cleaning)
 
-| Operation | Input | Output | Status |
-|-----------|-------|--------|--------|
-| Normalize Unicode | `"10% Discount..."` (curly quotes) | ASCII quotes | ✅ NEW |
-| Remove Newlines | `"Priced as a set\n\nIncludes..."` | `"Priced as a set Includes..."` | ✅ NEW |
-| Trim Whitespace | `"  Note  "` | `"Note"` | ✅ Existing |
+| Operation         | Input                                | Output                            | Status      |
+| ----------------- | ------------------------------------ | --------------------------------- | ----------- |
+| Normalize Unicode | `"10% Discount..."` (curly quotes) | ASCII quotes                      | ✅ NEW      |
+| Remove Newlines   | `"Priced as a set\n\nIncludes..."` | `"Priced as a set Includes..."` | ✅ NEW      |
+| Trim Whitespace   | `"  Note  "`                       | `"Note"`                        | ✅ Existing |
 
 ---
 
@@ -310,10 +310,11 @@ trim_columns operations:
 ### NEW FILES
 
 1. **`accy_v2/oems/honda/config/standardization.yaml`** (90 lines)
+
    - Per-column transformation pipeline definitions
    - Extends Hyundai pattern with 4 Honda-specific operations
-
 2. **`accy_v2/oems/honda/pipeline/step2_string_standardization.py`** (200 lines)
+
    - Implements config-based transformations from standardization.yaml
    - Functions: normalize_unicode, remove_newlines, split_composite, map_trim_markers
    - Integrates with DQ logger for audit trail
@@ -321,10 +322,11 @@ trim_columns operations:
 ### UPDATED FILES
 
 1. **`accy_v2/oems/honda/config/schemas/upstream.yaml`**
+
    - Add `data_quality` section (detection rules, not fixes)
    - Document known issues (unicode, newlines, composite parts)
-
 2. **`accy_v2/oems/honda/pipeline/step3_standardization.py`**
+
    - No changes (Phase 2 validation already complete)
 
 ---
@@ -375,22 +377,21 @@ test_phase2_with_real_data.py
 
 ## Effort Breakdown
 
-| Task | Hours | Notes |
-|------|-------|-------|
-| Create standardization.yaml | 2 | Config-based, mirrors Hyundai |
-| Implement step2_string_standardization.py | 6 | 4 operations, DQ logging |
-| Unit tests (5 test files) | 3 | Coverage for all 4 operations |
-| Integration test | 2 | End-to-end with real data |
-| Documentation | 1 | Update README, config docs |
-| **TOTAL** | **~14 hours** | Phase 2.5 (between normalization & standardization) |
+| Task                                      | Hours               | Notes                                               |
+| ----------------------------------------- | ------------------- | --------------------------------------------------- |
+| Create standardization.yaml               | 2                   | Config-based, mirrors Hyundai                       |
+| Implement step2_string_standardization.py | 6                   | 4 operations, DQ logging                            |
+| Unit tests (5 test files)                 | 3                   | Coverage for all 4 operations                       |
+| Integration test                          | 2                   | End-to-end with real data                           |
+| Documentation                             | 1                   | Update README, config docs                          |
+| **TOTAL**                           | **~14 hours** | Phase 2.5 (between normalization & standardization) |
 
 ---
 
 ## Key Decisions
 
-✅ **Extend Hyundai pattern** — Don't reinvent wheel; use proven architecture  
-✅ **Config-driven operations** — New operations defined in standardization.yaml  
-✅ **Insert at Step 2.5** — After header extraction, before step 3 validation  
-✅ **Audit trail** — All transformations logged to DQ logger  
-✅ **Non-destructive** — Original data preserved in comments (composite parts)  
-
+✅ **Extend Hyundai pattern** — Don't reinvent wheel; use proven architecture
+✅ **Config-driven operations** — New operations defined in standardization.yaml
+✅ **Insert at Step 2.5** — After header extraction, before step 3 validation
+✅ **Audit trail** — All transformations logged to DQ logger
+✅ **Non-destructive** — Original data preserved in comments (composite parts)

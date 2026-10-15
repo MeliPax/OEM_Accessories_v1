@@ -44,7 +44,7 @@ columns:
     operations:
       - name: normalize_unicode
         description: "Convert smart quotes and unicode chars to ASCII"
-        from_chars: ["'", "'", """, """, "…"]
+        from_chars: [''', ''', '"', '"', '…']
         to_chars: ["'", "'", '"', '"', "..."]
       - name: split_composite
         description: "Handle 'part1 or part2' syntax (keep first, note in comments)"
@@ -69,7 +69,7 @@ columns:
     operations:
       - name: normalize_unicode
         description: "Convert smart quotes and unicode to ASCII equivalents"
-        from_chars: ["'", "'", """, """, "…", "–", "—"]
+        from_chars: [''', ''', '"', '"', '…', '–', '—']
         to_chars: ["'", "'", '"', '"', "...", "-", "-"]
       - name: remove_newlines
         description: "Strip literal \\n from descriptions (Excel multi-line cells)"
@@ -95,7 +95,7 @@ columns:
   description_fr:
     operations:
       - name: normalize_unicode
-        from_chars: ["'", "'", """, """, "…", "–", "—"]
+        from_chars: [''', ''', '"', '"', '…', '–', '—']
         to_chars: ["'", "'", '"', '"', "...", "-", "-"]
       - name: remove_newlines
         replace_with: " "
@@ -195,7 +195,7 @@ columns:
   comments:
     operations:
       - name: normalize_unicode
-        from_chars: ["'", "'", """, """, "…"]
+        from_chars: [''', ''', '"', '"', '…']
         to_chars: ["'", "'", '"', '"', "..."]
       - name: remove_newlines
         replace_with: " "
@@ -211,7 +211,7 @@ columns:
   comments_fr:
     operations:
       - name: normalize_unicode
-        from_chars: ["'", "'", """, """, "…"]
+        from_chars: [''', ''', '"', '"', '…']
         to_chars: ["'", "'", '"', '"', "..."]
       - name: remove_newlines
         replace_with: " "
