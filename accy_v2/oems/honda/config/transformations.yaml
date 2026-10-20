@@ -3,7 +3,7 @@
 # Description: Data cleaning and standardization rules for Honda
 # OEM: Honda
 # Purpose: Defines all transformations applied to each column post-ingestion
-# Based on: Hyundai pattern (transformations.yaml) + Honda-specific operations
+# Based on: Honda-specific operations
 # ============================================================================
 
 # Per-column transformation pipelines
