@@ -1,0 +1,14 @@
+# Option sets for the Volkswagen ID. Buzz: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: ID. Buzz
+
+option_sets:
+  # --- ID. Buzz (base)
+  - years: [2025, 2025]
+    special_edition: [1st Edition]
+    drivetrain: [AWD]

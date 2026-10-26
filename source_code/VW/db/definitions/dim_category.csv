@@ -1,0 +1,16 @@
+category,source,multi_value,use_for_matching,description
+make,config,False,True,Manufacturer
+model,models,False,True,"Primary vehicle nameplate (Golf, Atlas, ID.4)"
+series,models,False,True,"Optional family above submodel (Performance, Adventure); null for most vehicles"
+submodel,models,False,True,"Distinct derivative of a model (GTI, R, Alltrack, Cross Sport, GLI); not a trim"
+trim,keywords,False,True,"Feature/content level (Trendline, Comfortline, Highline, Execline, Autobahn, PRO)"
+special_edition,keywords,False,True,"Limited or commemorative version (Peak Edition, Black Edition, 40th Anniversary)"
+appearance_package,keywords,True,True,"Visual styling package (R-Line, Black)"
+technology_package,keywords,True,True,Technology branding / driver assistance (IQ.DRIVE)
+performance_package,keywords,False,True,Performance equipment on top of a trim (Performance)
+engine,keywords,False,True,"Engine / powertrain (2.0L TSI, 3.6L FSI, Turbo)"
+transmission,keywords,False,True,"Transmission type (Automatic, Manual, DSG Dual-Clutch)"
+drivetrain,keywords,False,True,"Wheel-drive configuration (AWD, FWD, RWD)"
+body_style,keywords,True,True,"Physical configuration (5-Door, Hatchback, Coupe, Convertible)"
+battery_supplier,keywords,False,True,"EV battery supplier (SK On, LG Energy Solution)"
+inventory_status,keywords,False,False,Inventory metadata (Limited Availability); never a vehicle characteristic

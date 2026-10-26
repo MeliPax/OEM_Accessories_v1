@@ -1,0 +1,37 @@
+# Option sets for the Volkswagen Tiguan: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Tiguan
+
+option_sets:
+  # --- Tiguan (base)
+  - years: [2020, 2020]
+    trim: [Comfortline, Highline, Trendline]
+    technology_package: [IQ.DRIVE]
+    drivetrain: [AWD, FWD]
+
+  - years: [2021, 2021]
+    trim: [Comfortline, Highline, Trendline]
+    special_edition: [United Edition]
+    drivetrain: [AWD, FWD]
+
+  - years: [2022, 2023]
+    trim: [Comfortline, Highline, Trendline]
+    special_edition: [Black Edition]
+    appearance_package: [R-Line]
+    drivetrain: [AWD]
+
+  - years: [2024, 2026]
+    trim: [Comfortline, Highline, Trendline]
+    special_edition: [Black Edition]    # 2026-10-26: VW writes a lone "Black" here; it is the Black Edition
+    appearance_package: [R-Line]        # (BJ2VVJ is Black Edition in 2023, RM1VPJ in 2027)
+
+  - years: [2027, 2027]
+    trim: [Comfortline, Highline, Trendline]
+    special_edition: [Black Edition]
+    appearance_package: [R-Line]
+    engine: [Turbo]

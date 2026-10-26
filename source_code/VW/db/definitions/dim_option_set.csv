@@ -1,0 +1,86 @@
+model,submodel,year_start,year_end,category,allowed_values,file
+Arteon,,2020,2021,transmission,Automatic,arteon.yaml
+Arteon,,2020,2021,trim,Execline,arteon.yaml
+Atlas,,2021,2023,drivetrain,AWD,atlas.yaml
+Atlas,,2021,2023,engine,2.0L TSI|3.6L FSI,atlas.yaml
+Atlas,,2021,2023,trim,Comfortline|Execline|Highline|Trendline,atlas.yaml
+Atlas,,2024,2026,special_edition,Peak Edition,atlas.yaml
+Atlas,,2024,2026,trim,Comfortline|Execline|Highline,atlas.yaml
+Atlas,,2027,2027,trim,Comfortline|Execline|Highline,atlas.yaml
+Atlas,Cross Sport,2020,2020,drivetrain,AWD,atlas.yaml
+Atlas,Cross Sport,2020,2020,engine,2.0L TSI|3.6L FSI,atlas.yaml
+Atlas,Cross Sport,2020,2020,trim,Comfortline|Execline|Trendline,atlas.yaml
+Atlas,Cross Sport,2021,2023,drivetrain,AWD,atlas.yaml
+Atlas,Cross Sport,2021,2023,engine,2.0L TSI|3.6L FSI,atlas.yaml
+Atlas,Cross Sport,2021,2023,trim,Comfortline|Execline|Highline|Trendline,atlas.yaml
+Atlas,Cross Sport,2024,2024,trim,Comfortline|Execline|Highline,atlas.yaml
+Atlas,Cross Sport,2025,2025,appearance_package,Black|R-Line,atlas.yaml
+Atlas,Cross Sport,2025,2025,trim,Comfortline|Execline|Highline,atlas.yaml
+Atlas,Cross Sport,2026,2026,trim,Comfortline|Execline|Highline,atlas.yaml
+e-Golf,,2020,2020,body_style,5-Door|Hatchback,e_golf.yaml
+e-Golf,,2020,2020,trim,Comfortline,e_golf.yaml
+Golf,,2020,2021,body_style,5-Door,golf.yaml
+Golf,,2020,2021,transmission,Automatic|Manual,golf.yaml
+Golf,,2020,2021,trim,Comfortline|Highline,golf.yaml
+Golf,GTI,2020,2021,transmission,Automatic|Manual,golf.yaml
+Golf,GTI,2020,2021,trim,Autobahn,golf.yaml
+Golf,GTI,2022,2022,performance_package,Performance,golf.yaml
+Golf,GTI,2022,2022,transmission,Automatic|Manual,golf.yaml
+Golf,GTI,2022,2022,trim,Autobahn,golf.yaml
+Golf,GTI,2023,2023,performance_package,Performance,golf.yaml
+Golf,GTI,2023,2023,special_edition,40th Anniversary,golf.yaml
+Golf,GTI,2023,2023,transmission,Automatic|Manual,golf.yaml
+Golf,GTI,2023,2023,trim,Autobahn,golf.yaml
+Golf,GTI,2024,2024,performance_package,Performance,golf.yaml
+Golf,GTI,2024,2024,trim,Autobahn,golf.yaml
+Golf,GTI,2025,2026,trim,Autobahn,golf.yaml
+Golf,R,2022,2022,transmission,DSG Dual-Clutch|Manual,golf.yaml
+Golf,R,2023,2023,special_edition,20th Anniversary,golf.yaml
+Golf,R,2023,2023,transmission,DSG Dual-Clutch|Manual,golf.yaml
+Golf,R,2025,2026,appearance_package,Black,golf.yaml
+ID.4,,2021,2022,drivetrain,AWD|RWD,id4.yaml
+ID.4,,2021,2022,trim,PRO,id4.yaml
+ID.4,,2023,2023,battery_supplier,LG Energy Solution|SK On,id4.yaml
+ID.4,,2023,2023,drivetrain,AWD|RWD,id4.yaml
+ID.4,,2023,2023,trim,PRO,id4.yaml
+ID.4,,2024,2024,drivetrain,AWD,id4.yaml
+ID.4,,2024,2024,trim,PRO|PRO S|S,id4.yaml
+ID.4,,2025,2025,drivetrain,AWD,id4.yaml
+ID.4,,2025,2025,trim,PRO|PRO S,id4.yaml
+ID. Buzz,,2025,2025,drivetrain,AWD,id_buzz.yaml
+ID. Buzz,,2025,2025,special_edition,1st Edition,id_buzz.yaml
+Jetta,,2020,2021,transmission,Automatic|Manual,jetta.yaml
+Jetta,,2020,2021,trim,Comfortline|Execline|Highline,jetta.yaml
+Jetta,,2022,2023,transmission,Automatic|Manual,jetta.yaml
+Jetta,,2022,2023,trim,Comfortline|Highline|Trendline,jetta.yaml
+Jetta,,2024,2026,trim,Comfortline|Highline|Trendline,jetta.yaml
+Jetta,,2027,2027,trim,Comfortline,jetta.yaml
+Jetta,GLI,2020,2023,transmission,DSG Dual-Clutch|Manual,jetta.yaml
+Jetta,GLI,2024,2024,special_edition,40th Anniversary,jetta.yaml
+Passat,,2020,2020,transmission,Automatic,passat.yaml
+Passat,,2020,2020,trim,Comfortline|Execline|Highline,passat.yaml
+Passat,,2021,2021,transmission,Automatic,passat.yaml
+Passat,,2021,2021,trim,Execline|Highline,passat.yaml
+Taos,,2022,2023,drivetrain,AWD|FWD,taos.yaml
+Taos,,2022,2023,trim,Comfortline|Highline|Trendline,taos.yaml
+Taos,,2024,2024,special_edition,Black Edition,taos.yaml
+Taos,,2024,2024,trim,Comfortline|Highline|Trendline,taos.yaml
+Taos,,2025,2027,special_edition,Black Edition,taos.yaml
+Taos,,2025,2027,trim,Comfortline|Highline|Trendline,taos.yaml
+Tiguan,,2020,2020,drivetrain,AWD|FWD,tiguan.yaml
+Tiguan,,2020,2020,technology_package,IQ.DRIVE,tiguan.yaml
+Tiguan,,2020,2020,trim,Comfortline|Highline|Trendline,tiguan.yaml
+Tiguan,,2021,2021,drivetrain,AWD|FWD,tiguan.yaml
+Tiguan,,2021,2021,special_edition,United Edition,tiguan.yaml
+Tiguan,,2021,2021,trim,Comfortline|Highline|Trendline,tiguan.yaml
+Tiguan,,2022,2023,appearance_package,R-Line,tiguan.yaml
+Tiguan,,2022,2023,drivetrain,AWD,tiguan.yaml
+Tiguan,,2022,2023,special_edition,Black Edition,tiguan.yaml
+Tiguan,,2022,2023,trim,Comfortline|Highline|Trendline,tiguan.yaml
+Tiguan,,2024,2026,appearance_package,R-Line,tiguan.yaml
+Tiguan,,2024,2026,special_edition,Black Edition,tiguan.yaml
+Tiguan,,2024,2026,trim,Comfortline|Highline|Trendline,tiguan.yaml
+Tiguan,,2027,2027,appearance_package,R-Line,tiguan.yaml
+Tiguan,,2027,2027,engine,Turbo,tiguan.yaml
+Tiguan,,2027,2027,special_edition,Black Edition,tiguan.yaml
+Tiguan,,2027,2027,trim,Comfortline|Highline|Trendline,tiguan.yaml

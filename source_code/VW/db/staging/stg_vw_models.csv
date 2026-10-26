@@ -1,0 +1,324 @@
+source_row,description,manufacturer,model_number,model_year,source_file,ingested_at
+16,Arteon Auto,VOLKSWAGEN,3H72Q8,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+25,Beetle Coupe Dune Auto,VOLKSWAGEN,5C2CP6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+26,Beetle Coupe Wolfsburg Edition,VOLKSWAGEN,5C2WP6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+23,Beetle Convertible Dune Auto,VOLKSWAGEN,5C8CP6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+24,Beetle Convertible Wolfsburg Edition,VOLKSWAGEN,5C8WP6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+55,Passat Wolfsburg Edition,VOLKSWAGEN,A333P6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+28,Golf Comfortline 5-door Manual,VOLKSWAGEN,AU22M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+29,Golf Comfortline 5-door Auto,VOLKSWAGEN,AU22MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+30,Golf Highline 5-door Manual,VOLKSWAGEN,AU23M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+31,Golf Highline 5-door Auto,VOLKSWAGEN,AU23MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+32,Golf Execline 5-door Manual,VOLKSWAGEN,AU24M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+33,Golf Execline 5-door Auto,VOLKSWAGEN,AU24MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+38,Golf GTI Manual,VOLKSWAGEN,AU29V2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+39,Golf GTI Auto,VOLKSWAGEN,AU29VZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+40,Golf GTI Autobahn Manual,VOLKSWAGEN,AU2AV2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+41,Golf GTI Autobahn Auto,VOLKSWAGEN,AU2AVZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+42,Golf GTI Rabbit Manual,VOLKSWAGEN,AU2RV2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+43,Golf GTI Rabbit Auto,VOLKSWAGEN,AU2RVZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+27,e-Golf 5dr HB Comfortline,VOLKSWAGEN,BE23D1,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+44,Golf R Manual,VOLKSWAGEN,BQ1RS6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+45,Golf R DSG,VOLKSWAGEN,BQ1RST,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+3,Jetta Comfortline Manual,VOLKSWAGEN,BU32M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+4,Jetta Comfortline Auto,VOLKSWAGEN,BU32MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+5,Jetta Highline Manual,VOLKSWAGEN,BU33M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+2,Jetta Highline Auto,VOLKSWAGEN,BU33MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+6,Jetta Execline Manual,VOLKSWAGEN,BU34M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+7,Jetta Execline Auto,VOLKSWAGEN,BU34MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+10,Jetta GLI 35th Edition Manual,VOLKSWAGEN,BU35V2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+11,Jetta GLI 35th Edition DSG,VOLKSWAGEN,BU35VZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+8,Jetta GLI Manual,VOLKSWAGEN,BU39V2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+9,Jetta GLI DSG,VOLKSWAGEN,BU39VZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+13,Tiguan Trendline 4MOTION,VOLKSWAGEN,BW22VJ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+12,Tiguan Trendline FWD,VOLKSWAGEN,BW22VS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+15,Tiguan Comfortline 4MOTION,VOLKSWAGEN,BW23VJ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+14,Tiguan Highline 4MOTION,VOLKSWAGEN,BW24VJ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+46,Golf SportWagen Comfortline Manual,VOLKSWAGEN,BX62M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+47,Golf SportWagen Comfortline Auto,VOLKSWAGEN,BX62MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+48,Golf SportWagen Comfortline Manual 4MOTION,VOLKSWAGEN,BX62N6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+49,Golf SportWagen Comfortline DSG 4MOTION,VOLKSWAGEN,BX62N7,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+52,Golf SportWagen Highline Manual,VOLKSWAGEN,BX63M2,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+53,Golf SportWagen Highline Auto,VOLKSWAGEN,BX63MS,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+50,Golf SportWagen Highline Manual 4MOTION,VOLKSWAGEN,BX63N6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+51,Golf SportWagen Highline DSG 4MOTION,VOLKSWAGEN,BX63N7,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+54,Golf SportWagen Execline DSG 4MOTION,VOLKSWAGEN,BX64N7,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+34,Golf Alltrack Highline Manual,VOLKSWAGEN,BX6CN6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+35,Golf Alltrack Highline DSG,VOLKSWAGEN,BX6CN7,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+36,Golf Alltrack Execline Manual,VOLKSWAGEN,BX6DN6,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+37,Golf Alltrack Execline DSG,VOLKSWAGEN,BX6DN7,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+17,Atlas Trendline 2.0 TSI,VOLKSWAGEN,CA12NZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+19,Atlas Trendline 3.6 FSI 4MOTION,VOLKSWAGEN,CA12UR,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+18,Atlas Comfortline 2.0 TSI,VOLKSWAGEN,CA13NZ,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+20,Atlas Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CA13UR,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+21,Atlas Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CA14UR,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+22,Atlas Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CA15UR,2019,datasets/vw_models_data.csv,2026-10-26 11:19:27
+68,Arteon Execline Auto,VOLKSWAGEN,3H72Q8,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+84,Passat Comfortline Auto,VOLKSWAGEN,A342P6,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+85,Passat Highline Auto,VOLKSWAGEN,A343P6,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+86,Passat Execline Auto,VOLKSWAGEN,A344P6,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+76,Golf Comfortline 5-door Manual,VOLKSWAGEN,AU22M2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+77,Golf Comfortline 5-door Auto,VOLKSWAGEN,AU22MS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+78,Golf Highline 5-door Manual,VOLKSWAGEN,AU23M2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+79,Golf Highline 5-door Auto,VOLKSWAGEN,AU23MS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+80,Golf GTI Manual,VOLKSWAGEN,AU29V2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+81,Golf GTI Auto,VOLKSWAGEN,AU29VZ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+82,Golf GTI Autobahn Manual,VOLKSWAGEN,AU2AV2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+83,Golf GTI Autobahn Auto,VOLKSWAGEN,AU2AVZ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+75,e-Golf 5dr HB Comfortline,VOLKSWAGEN,BE23D1,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+58,Jetta Comfortline Manual,VOLKSWAGEN,BU32M2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+59,Jetta Comfortline Auto,VOLKSWAGEN,BU32MS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+60,Jetta Highline Manual,VOLKSWAGEN,BU33M2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+61,Jetta Highline Auto,VOLKSWAGEN,BU33MS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+62,Jetta Execline Auto,VOLKSWAGEN,BU34MS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+56,Jetta GLI Manual,VOLKSWAGEN,BU39V2,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+57,Jetta GLI DSG,VOLKSWAGEN,BU39VZ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+64,Tiguan Trendline 4MOTION,VOLKSWAGEN,BW22VJ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+63,Tiguan Trendline FWD,VOLKSWAGEN,BW22VS,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+66,Tiguan Comfortline 4MOTION,VOLKSWAGEN,BW23VJ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+65,Tiguan Highline 4MOTION,VOLKSWAGEN,BW24VJ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+67,Tiguan IQ Drive 4MOTION,VOLKSWAGEN,BW2IVJ,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+69,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC2NR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+70,Atlas Sport Cross Trendline 3.6 FSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CMC2UR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+71,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC4NR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+72,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC4UR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+74,Atlas Sport Cross Execline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC5NR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+73,Atlas Sport Cross Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC5UR,2020,datasets/vw_models_data.csv,2026-10-26 11:19:27
+99,Arteon Execline Auto,VOLKSWAGEN,3H82Q8,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+126,Passat Highline Auto,VOLKSWAGEN,A343P6,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+127,Passat Execline Auto,VOLKSWAGEN,A344P6,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+120,Golf Comfortline 5-door Manual,VOLKSWAGEN,AU22M2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+121,Golf Comfortline 5-door Auto,VOLKSWAGEN,AU22MS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+122,Golf Highline 5-door Manual,VOLKSWAGEN,AU23M2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+123,Golf Highline 5-door Auto,VOLKSWAGEN,AU23MS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+124,Golf GTI Autobahn Manual,VOLKSWAGEN,AU2AV2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+125,Golf GTI Autobahn Auto,VOLKSWAGEN,AU2AVZ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+87,Jetta Comfortline Manual,VOLKSWAGEN,BU32M2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+88,Jetta Comfortline Auto,VOLKSWAGEN,BU32MS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+89,Jetta Highline Manual,VOLKSWAGEN,BU33M2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+90,Jetta Highline Auto,VOLKSWAGEN,BU33MS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+91,Jetta Execline Auto,VOLKSWAGEN,BU34MS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+92,Jetta GLI Manual,VOLKSWAGEN,BU39V2,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+93,Jetta GLI DSG,VOLKSWAGEN,BU39VZ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+95,Tiguan Trendline 4MOTION,VOLKSWAGEN,BW22VJ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+94,Tiguan Trendline FWD,VOLKSWAGEN,BW22VS,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+97,Tiguan Comfortline 4MOTION,VOLKSWAGEN,BW23VJ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+96,Tiguan Highline 4MOTION,VOLKSWAGEN,BW24VJ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+98,Tiguan United 4MOTION,VOLKSWAGEN,BW2UVJ,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+100,Atlas Trendline 2.0 TSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA22NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+102,Atlas Trendline 3.6 FSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA22UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+101,Atlas Comfortline 2.0 TSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA23NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+103,Atlas Comfortline 3.6 FSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA23UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+106,Atlas Highline 2.0 TSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA24NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+104,Atlas Highline 3.6 FSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA24UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+105,Atlas Execline 3.6 FSI 4MOTION *Ltd Avail*,VOLKSWAGEN,CA25UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+107,Atlas Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CA2BNR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+108,Atlas Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CA2CNR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+109,Atlas Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CA2CUR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+110,Atlas Highline 2.0 TSI 4MOTION,VOLKSWAGEN,CA2DNR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+111,Atlas Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CA2DUR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+112,Atlas Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CA2EUR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+113,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC2NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+114,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC3NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+115,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC3UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+118,Atlas Sport Cross Highline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC4NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+119,Atlas Sport Cross Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC4UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+117,Atlas Sport Cross Execline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC5NR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+116,Atlas Sport Cross Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC5UR,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+128,ID.4 Pro RWD,VOLKSWAGEN,E213MN,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+129,ID.4 Pro AWD,VOLKSWAGEN,E213TN,2021,datasets/vw_models_data.csv,2026-10-26 11:19:27
+137,Tiguan Trendline 4MOTION,VOLKSWAGEN,BJ22VJ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+138,Tiguan Comfortline 4MOTION,VOLKSWAGEN,BJ23VJ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+140,Tiguan Highline R-Line 4MOTION,VOLKSWAGEN,BJ24VJ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+139,Tiguan Comfortline R-Line Black Edition 4MOTION,VOLKSWAGEN,BJ26VJ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+133,Jetta Trendline Manual,VOLKSWAGEN,BU42R2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+134,Jetta Trendline Auto,VOLKSWAGEN,BU42RS,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+130,Jetta Comfortline Manual,VOLKSWAGEN,BU43R2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+131,Jetta Comfortline Auto,VOLKSWAGEN,BU43RS,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+132,Jetta Highline Auto,VOLKSWAGEN,BU44RS,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+135,Jetta GLI Manual,VOLKSWAGEN,BU49V2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+136,Jetta GLI DSG,VOLKSWAGEN,BU49VZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+141,Atlas Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CA22NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+142,Atlas Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CA23NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+143,Atlas Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CA23UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+144,Atlas Highline 2.0 TSI 4MOTION,VOLKSWAGEN,CA24NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+145,Atlas Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CA24UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+146,Atlas Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CA25UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+156,Golf GTI Manual,VOLKSWAGEN,CD19U2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+157,Golf GTI Auto,VOLKSWAGEN,CD19UZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+154,Golf GTI Autobahn Manual,VOLKSWAGEN,CD1AU2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+155,Golf GTI Autobahn Auto,VOLKSWAGEN,CD1AUZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+158,Golf GTI Performance Manual,VOLKSWAGEN,CD1PU2,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+159,Golf GTI Performance Auto,VOLKSWAGEN,CD1PUZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+160,Golf R Manual,VOLKSWAGEN,CD1RM4,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+161,Golf R DSG,VOLKSWAGEN,CD1RMT,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+166,Taos Trendline 4MOTION,VOLKSWAGEN,CL12RT,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+164,Taos Trendline FWD,VOLKSWAGEN,CL12RZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+167,Taos Comfortline 4MOTION,VOLKSWAGEN,CL13RT,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+165,Taos Comfortline FWD,VOLKSWAGEN,CL13RZ,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+168,Taos Highline 4MOTION,VOLKSWAGEN,CL14RT,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+147,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC2NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+148,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC3NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+149,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC3UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+152,Atlas Sport Cross Highline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC4NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+153,Atlas Sport Cross Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC4UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+151,Atlas Sport Cross Execline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC5NR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+150,Atlas Sport Cross Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC5UR,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+162,ID.4 Pro RWD,VOLKSWAGEN,E213MN,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+163,ID.4 Pro AWD,VOLKSWAGEN,E213TN,2022,datasets/vw_models_data.csv,2026-10-26 11:19:27
+176,Tiguan Trendline 4MOTION,VOLKSWAGEN,BJ22VJ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+177,Tiguan Comfortline 4MOTION,VOLKSWAGEN,BJ23VJ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+179,Tiguan Highline R-Line 4MOTION,VOLKSWAGEN,BJ24VJ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+178,Tiguan Comfortline R-Line Black Edition 4MOTION,VOLKSWAGEN,BJ2VVJ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+172,Jetta Trendline Manual,VOLKSWAGEN,BU42R2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+173,Jetta Trendline Auto,VOLKSWAGEN,BU42RS,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+169,Jetta Comfortline Manual,VOLKSWAGEN,BU43R2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+170,Jetta Comfortline Auto,VOLKSWAGEN,BU43RS,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+171,Jetta Highline Auto,VOLKSWAGEN,BU44RS,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+174,Jetta GLI Manual,VOLKSWAGEN,BU49V2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+175,Jetta GLI DSG,VOLKSWAGEN,BU49VZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+180,Atlas Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CA22NR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+181,Atlas Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CA23NR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+182,Atlas Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CA23UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+183,Atlas Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CA24UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+184,Atlas Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CA25UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+200,Golf R 20th Anniversary Manual,VOLKSWAGEN,CD12M4,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+201,Golf R 20th Anniversary DSG,VOLKSWAGEN,CD12MT,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+196,Golf GTI 40th Anniversary Manual,VOLKSWAGEN,CD14U2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+197,Golf GTI 40th Anniversary Auto,VOLKSWAGEN,CD14UZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+190,Golf GTI Manual,VOLKSWAGEN,CD19U2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+191,Golf GTI Auto,VOLKSWAGEN,CD19UZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+192,Golf GTI Autobahn Manual,VOLKSWAGEN,CD1AU2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+193,Golf GTI Autobahn Auto,VOLKSWAGEN,CD1AUZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+194,Golf GTI Performance Manual,VOLKSWAGEN,CD1PU2,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+195,Golf GTI Performance Auto,VOLKSWAGEN,CD1PUZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+198,Golf R Manual,VOLKSWAGEN,CD1RM4,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+199,Golf R DSG,VOLKSWAGEN,CD1RMT,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+207,Taos Trendline 4MOTION *Ltd Avail*,VOLKSWAGEN,CL12RT,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+210,Taos Trendline 4MOTION,VOLKSWAGEN,CL12RV,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+206,Taos Trendline FWD,VOLKSWAGEN,CL12RZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+208,Taos Comfortline 4MOTION *Ltd Avail*,VOLKSWAGEN,CL13RT,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+211,Taos Comfortline 4MOTION,VOLKSWAGEN,CL13RV,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+213,Taos Comfortline FWD,VOLKSWAGEN,CL13RZ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+209,Taos Highline 4MOTION *Ltd Avail*,VOLKSWAGEN,CL14RT,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+212,Taos Highline 4MOTION,VOLKSWAGEN,CL14RV,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+185,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC2NR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+186,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,VOLKSWAGEN,CMC3NR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+187,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC3UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+189,Atlas Sport Cross Highline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC4UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+188,Atlas Sport Cross Execline 3.6 FSI 4MOTION,VOLKSWAGEN,CMC5UR,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+204,ID.4 RWD,VOLKSWAGEN,E812MJ,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+205,ID.4 Pro RWD w/LG Battery,VOLKSWAGEN,E813LG,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+202,ID.4 Pro RWD w/SK On Battery,VOLKSWAGEN,E813MN,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+203,ID.4 Pro AWD w/SK On Battery,VOLKSWAGEN,E813SN,2023,datasets/vw_models_data.csv,2026-10-26 11:19:27
+214,Tiguan Trendline,VOLKSWAGEN,BJ22VJ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+215,Tiguan Comfortline,VOLKSWAGEN,BJ23VJ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+217,Tiguan Highline,VOLKSWAGEN,BJ24VJ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+216,Tiguan Comfortline R-Line Black,VOLKSWAGEN,BJ2VVJ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+249,Jetta GLI 40th,VOLKSWAGEN,BU40V2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+250,Jetta GLI 40th,VOLKSWAGEN,BU40VZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+244,Jetta Trendline,VOLKSWAGEN,BU42R2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+245,Jetta Trendline,VOLKSWAGEN,BU42RS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+246,Jetta Comfortline,VOLKSWAGEN,BU43R2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+247,Jetta Comfortline,VOLKSWAGEN,BU43RS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+248,Jetta Highline,VOLKSWAGEN,BU44RS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+251,Jetta GLI GLI,VOLKSWAGEN,BU49V2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+252,Jetta GLI GLI,VOLKSWAGEN,BU49VZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+224,Atlas Comfortline,VOLKSWAGEN,CA33PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+226,Atlas Highline,VOLKSWAGEN,CA34PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+227,Atlas Execline,VOLKSWAGEN,CA35PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+225,Atlas Peak Edition,VOLKSWAGEN,CA37PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+239,Golf GTI GTI,VOLKSWAGEN,CD19UZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+240,Golf GTI Autobahn,VOLKSWAGEN,CD1AU2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+241,Golf GTI Autobahn,VOLKSWAGEN,CD1AUZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+242,Golf GTI Performance,VOLKSWAGEN,CD1PU2,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+243,Golf GTI Performance,VOLKSWAGEN,CD1PUZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+237,Golf R Golf R,VOLKSWAGEN,CD1RM4,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+238,Golf R Golf R,VOLKSWAGEN,CD1RMT,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+232,Taos Trendline,VOLKSWAGEN,CL12RV,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+231,Taos Trendline,VOLKSWAGEN,CL12RZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+235,Taos Comfortline Black Edition,VOLKSWAGEN,CL13BE,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+234,Taos Comfortline,VOLKSWAGEN,CL13RV,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+233,Taos Comfortline,VOLKSWAGEN,CL13RZ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+236,Taos Highline,VOLKSWAGEN,CL14RV,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+228,Atlas Cross Sport Comfortline,VOLKSWAGEN,CMD3PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+229,Atlas Cross Sport Highline,VOLKSWAGEN,CMD4PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+230,Atlas Cross Sport Execline,VOLKSWAGEN,CMD5PR,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+218,ID.4 ID.4,VOLKSWAGEN,E812MJ,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+219,ID.4 ID.4 S,VOLKSWAGEN,E812MS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+220,ID.4 ID.4 PRO,VOLKSWAGEN,E813RN,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+221,ID.4 ID.4 PRO S,VOLKSWAGEN,E813RS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+222,ID.4 ID.4 PRO AWD,VOLKSWAGEN,E813VN,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+223,ID.4 ID.4 PRO S AWD,VOLKSWAGEN,E813VS,2024,datasets/vw_models_data.csv,2026-10-26 11:19:27
+276,Jetta Trendline,VOLKSWAGEN,BU52RS,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+277,Jetta Comfortline,VOLKSWAGEN,BU53RS,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+278,Jetta Highline,VOLKSWAGEN,BU54RS,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+281,Jetta GLI GLI,VOLKSWAGEN,BU59V2,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+282,Jetta GLI GLI,VOLKSWAGEN,BU59VZ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+283,Atlas Comfortline,VOLKSWAGEN,CA33PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+285,Atlas Highline,VOLKSWAGEN,CA34PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+286,Atlas Execline,VOLKSWAGEN,CA35PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+284,Atlas Peak Edition,VOLKSWAGEN,CA37PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+288,Taos Trendline,VOLKSWAGEN,CL22SR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+287,Taos Trendline,VOLKSWAGEN,CL22SZ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+289,Taos Comfortline,VOLKSWAGEN,CL23SR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+291,Taos Highline,VOLKSWAGEN,CL24SR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+290,Taos Comfortline Black,VOLKSWAGEN,CL26SR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+301,Atlas Cross Sport Comfortline,VOLKSWAGEN,CMD3PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+303,Atlas Cross Sport Highline,VOLKSWAGEN,CMD4PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+304,Atlas Cross Sport Execline,VOLKSWAGEN,CMD5PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+302,Atlas Cross Sport Comfortline R-Line Black,VOLKSWAGEN,CMD7PR,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+305,Golf GTI GTI,VOLKSWAGEN,DA19UZ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+306,Golf GTI GTI Autobahn,VOLKSWAGEN,DA1AUZ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+308,Golf R Golf R Black,VOLKSWAGEN,DA1BPT,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+307,Golf R Golf R,VOLKSWAGEN,DA1RPT,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+296,ID.4 ID.4,VOLKSWAGEN,E812MJ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+297,ID.4 ID.4 PRO,VOLKSWAGEN,E813RN,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+298,ID.4 ID.4 PRO S,VOLKSWAGEN,E813RS,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+299,ID.4 ID.4 PRO AWD,VOLKSWAGEN,E813VN,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+300,ID.4 ID.4 PRO S AWD,VOLKSWAGEN,E813VS,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+280,ID. Buzz ID. Buzz 1st Edition 4MOTION,VOLKSWAGEN,EBJR5S,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+279,ID. Buzz ID. Buzz 1st Edition,VOLKSWAGEN,EBJR7S,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+292,Tiguan Trendline,VOLKSWAGEN,RM12PJ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+293,Tiguan Comfortline,VOLKSWAGEN,RM13PJ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+295,Tiguan Highline R-Line,VOLKSWAGEN,RM14PJ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+294,Tiguan Comfortline R-Line Black,VOLKSWAGEN,RM1VPJ,2025,datasets/vw_models_data.csv,2026-10-26 11:19:27
+253,Jetta Trendline,VOLKSWAGEN,BU52RS,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+254,Jetta Comfortline,VOLKSWAGEN,BU53RS,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+255,Jetta Highline,VOLKSWAGEN,BU54RS,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+256,Jetta GLI GLI,VOLKSWAGEN,BU59V2,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+257,Jetta GLI GLI,VOLKSWAGEN,BU59VZ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+309,Atlas Comfortline,VOLKSWAGEN,CA33PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+258,Atlas Highline,VOLKSWAGEN,CA34PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+259,Atlas Execline,VOLKSWAGEN,CA35PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+275,Atlas Peak,VOLKSWAGEN,CA37PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+263,Taos Trendline,VOLKSWAGEN,CL22SR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+262,Taos Trendline,VOLKSWAGEN,CL22SZ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+264,Taos Comfortline,VOLKSWAGEN,CL23SR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+266,Taos Highline,VOLKSWAGEN,CL24SR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+265,Taos Comfortline Black,VOLKSWAGEN,CL26SR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+310,Atlas Cross Sport Comfortline,VOLKSWAGEN,CMD3PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+260,Atlas Cross Sport Highline,VOLKSWAGEN,CMD4PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+261,Atlas Cross Sport Execline,VOLKSWAGEN,CMD5PR,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+267,Golf GTI GTI,VOLKSWAGEN,DA19UZ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+268,Golf GTI GTI Autobahn,VOLKSWAGEN,DA1AUZ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+270,Golf R Golf R Black,VOLKSWAGEN,DA1BPT,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+269,Golf R Golf R,VOLKSWAGEN,DA1RPT,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+271,Tiguan Trendline,VOLKSWAGEN,RM12PJ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+272,Tiguan Comfortline,VOLKSWAGEN,RM13PJ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+274,Tiguan Highline R-Line,VOLKSWAGEN,RM14QJ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+273,Tiguan Comfortline R-Line Black,VOLKSWAGEN,RM1VPJ,2026,datasets/vw_models_data.csv,2026-10-26 11:19:27
+311,Jetta Comfortline,VOLKSWAGEN,BU53RS,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+312,Jetta GLI GLI,VOLKSWAGEN,BU59VZ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+314,Taos Trendline,VOLKSWAGEN,CL22SR,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+313,Taos Trendline,VOLKSWAGEN,CL22SZ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+315,Taos Comfortline,VOLKSWAGEN,CL23SR,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+317,Taos Highline,VOLKSWAGEN,CL24SR,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+316,Taos Comfortline Black,VOLKSWAGEN,CL26SR,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+318,Atlas Comfortline,VOLKSWAGEN,DJ13WJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+319,Atlas Highline,VOLKSWAGEN,DJ14WJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+320,Atlas Execline,VOLKSWAGEN,DJ15WJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+321,Tiguan Trendline,VOLKSWAGEN,RM12PJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+322,Tiguan Comfortline,VOLKSWAGEN,RM13PJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+324,Tiguan Highline Turbo R-Line,VOLKSWAGEN,RM14QJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27
+323,Tiguan Comfortline R-Line Black Edition,VOLKSWAGEN,RM1VPJ,2027,datasets/vw_models_data.csv,2026-10-26 11:19:27

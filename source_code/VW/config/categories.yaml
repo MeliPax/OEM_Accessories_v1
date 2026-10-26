@@ -1,0 +1,82 @@
+# The taxonomy levels, in hierarchy order. Each one becomes a column in db/final/vehicles.csv.
+#
+#   source:           where the value comes from: config (make), models (models.yaml) or keywords (keywords.yaml)
+#   multi_value:      true if a vehicle can have several values (stored sorted, joined with "|")
+#   use_for_matching: false for metadata that must never be used to match accessories
+
+categories:
+  make:
+    description: Manufacturer
+    source: config
+    multi_value: false
+    use_for_matching: true
+  model:
+    description: Primary vehicle nameplate (Golf, Atlas, ID.4)
+    source: models
+    multi_value: false
+    use_for_matching: true
+  series:
+    description: Optional family above submodel (Performance, Adventure); null for most vehicles
+    source: models
+    multi_value: false
+    use_for_matching: true
+  submodel:
+    description: Distinct derivative of a model (GTI, R, Alltrack, Cross Sport, GLI); not a trim
+    source: models
+    multi_value: false
+    use_for_matching: true
+  trim:
+    description: Feature/content level (Trendline, Comfortline, Highline, Execline, Autobahn, PRO)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  special_edition:
+    description: Limited or commemorative version (Peak Edition, Black Edition, 40th Anniversary)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  appearance_package:
+    description: Visual styling package (R-Line, Black)
+    source: keywords
+    multi_value: true
+    use_for_matching: true
+  technology_package:
+    description: Technology branding / driver assistance (IQ.DRIVE)
+    source: keywords
+    multi_value: true
+    use_for_matching: true
+  performance_package:
+    description: Performance equipment on top of a trim (Performance)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  engine:
+    description: Engine / powertrain (2.0L TSI, 3.6L FSI, Turbo)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  transmission:
+    description: Transmission type (Automatic, Manual, DSG Dual-Clutch)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  drivetrain:
+    description: Wheel-drive configuration (AWD, FWD, RWD)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  body_style:
+    description: Physical configuration (5-Door, Hatchback, Coupe, Convertible)
+    source: keywords
+    multi_value: true
+    use_for_matching: true
+  battery_supplier:
+    description: EV battery supplier (SK On, LG Energy Solution)
+    source: keywords
+    multi_value: false
+    use_for_matching: true
+  inventory_status:
+    description: Inventory metadata (Limited Availability); never a vehicle characteristic
+    source: keywords
+    multi_value: false
+    use_for_matching: false

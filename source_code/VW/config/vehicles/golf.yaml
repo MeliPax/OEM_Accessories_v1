@@ -1,0 +1,61 @@
+# Option sets for the Volkswagen Golf: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Golf
+
+option_sets:
+  # --- Golf (base)
+  - years: [2020, 2021]
+    trim: [Comfortline, Highline]
+    transmission: [Automatic, Manual]
+    body_style: [5-Door]
+
+  # --- Golf GTI
+  - submodel: GTI
+    years: [2020, 2021]
+    trim: [Autobahn]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2022, 2022]
+    trim: [Autobahn]
+    performance_package: [Performance]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2023, 2023]
+    trim: [Autobahn]
+    special_edition: [40th Anniversary]
+    performance_package: [Performance]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2024, 2024]
+    trim: [Autobahn]
+    performance_package: [Performance]
+
+  - submodel: GTI
+    years: [2025, 2026]
+    trim: [Autobahn]
+
+  # --- Golf R
+  - submodel: R
+    years: [2022, 2022]
+    transmission: [DSG Dual-Clutch, Manual]
+
+  - submodel: R
+    years: [2023, 2023]
+    special_edition: [20th Anniversary]
+    transmission: [DSG Dual-Clutch, Manual]
+
+  - submodel: R
+    years: [2024, 2024]
+    # description carries no options for these years
+
+  - submodel: R
+    years: [2025, 2026]
+    appearance_package: [Black]

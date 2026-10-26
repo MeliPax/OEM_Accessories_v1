@@ -33,6 +33,7 @@ Make
 ├── Special Edition
 ├── Appearance Package
 ├── Technology Package
+├── Performance Package
 ├── Engine / Powertrain
 ├── Transmission
 ├── Drivetrain
@@ -289,7 +290,6 @@ Limited-production or commemorative vehicles.
 
 | Keyword     | Normalized Value    |
 | ----------- | ------------------- |
-| Edition     | Edition             |
 | Wolfsburg   | Wolfsburg Edition   |
 | Rabbit      | Rabbit Edition      |
 | Peak        | Peak Edition        |
@@ -299,6 +299,16 @@ Limited-production or commemorative vehicles.
 | 20th        | 20th Anniversary    |
 | 35th        | 35th Anniversary    |
 | 40th        | 40th Anniversary    |
+| Dune        | Dune                |
+
+"Edition" is never stored on its own: it is always the last word of an edition phrase, after the edition name (`Peak Edition`, `Wolfsburg Edition`, `Black Edition`, `1st Edition`). A bare "Edition" is an unknown word.
+
+Phrases are matched before single words, so `Black Edition` is a special edition, while `Black` on its own is an appearance package (see 7).
+
+| Phrase        | Normalized Value |
+| ------------- | ---------------- |
+| Black Edition | Black Edition    |
+| 35th Edition  | 35th Anniversary |
 
 ---
 
@@ -308,6 +318,8 @@ Limited-production or commemorative vehicles.
 GTI 40th Anniversary
 GTI Rabbit Edition
 Atlas Peak Edition
+Taos Comfortline Black Edition
+Beetle Coupe Dune Auto
 ```
 
 ---
@@ -329,8 +341,12 @@ Visual styling packages.
 
 ```text
 Tiguan Highline R-Line
-Taos Black Edition
+Taos Comfortline Black
 ```
+
+`Black` is an appearance package only when it is NOT followed by "Edition". `Black Edition` is a special edition (see 6).
+
+Exception: a lone `Black` on a vehicle whose option set offers `Black Edition` (Tiguan 2024–2026, Taos 2025–2027) is read as `special_edition = Black Edition`. VW sometimes drops the word "Edition" in its descriptions. This rule is in `config/keywords.yaml` under `resolutions:`.
 
 ---
 
@@ -376,6 +392,40 @@ Taos Highline IQ Drive
 ```json
 {
   "technology_package": "IQ.DRIVE"
+}
+```
+
+---
+
+# 8.1 Performance Packages
+
+Performance equipment that sits on top of a trim (larger brakes, limited-slip differential, extra power). Not a trim and not a submodel.
+
+## Keywords
+
+| Keyword     | Normalized  |
+| ----------- | ----------- |
+| Performance | Performance |
+
+Future values: Competition, Clubsport, Track Package.
+
+## Example
+
+### Input
+
+```text
+Golf GTI Autobahn Performance DSG
+```
+
+### Output
+
+```json
+{
+  "model": "Golf",
+  "submodel": "GTI",
+  "trim": "Autobahn",
+  "performance_package": "Performance",
+  "transmission": "DSG Dual-Clutch"
 }
 ```
 
@@ -470,6 +520,10 @@ Physical vehicle configuration.
 | 5-door  | 5-Door     |
 | 5dr     | 5-Door     |
 | HB      | Hatchback  |
+| Coupe       | Coupe       |
+| Convertible | Convertible |
+
+`Coupe` and `Convertible` appear in the 2019 Beetle (`Beetle Coupe Dune Auto`, `Beetle Convertible Wolfsburg Edition`).
 
 ---
 
@@ -700,13 +754,14 @@ Limited Availability
 | ------------------- | ------------------------------------------------------------ |
 | Trim                | Trendline, Comfortline, Highline, Execline, Autobahn, S, PRO |
 | Submodel            | Alltrack, SportWagen, GTI, R, Cross Sport, GLI               |
-| Special Edition     | Edition, Wolfsburg, Rabbit, Peak, United, Anniversary        |
+| Special Edition     | Wolfsburg, Rabbit, Peak, United, Anniversary, Dune, Black Edition ("Edition" only inside a phrase) |
 | Appearance Package  | R-Line, Black                                                |
 | Technology Package  | IQ.DRIVE                                                     |
+| Performance Package | Performance                                                  |
 | Engine / Powertrain | 2.0, 3.6, TSI, FSI, Turbo, Battery                           |
 | Transmission        | Auto, Manual, DSG                                            |
 | Drivetrain          | 4MOTION, AWD, FWD, RWD                                       |
-| Body Style          | 5-door, 5dr, HB                                              |
+| Body Style          | 5-door, 5dr, HB, Coupe, Convertible                          |
 | EV Battery Supplier | LG Energy Solution, SK On                                    |
 | Inventory Metadata  | Ltd Avail                                                    |
 
@@ -724,6 +779,7 @@ Limited Availability
   "special_edition": null,
   "appearance_package": null,
   "technology_package": null,
+  "performance_package": null,
   "engine": null,
   "transmission": null,
   "drivetrain": null,

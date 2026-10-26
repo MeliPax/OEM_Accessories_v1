@@ -1,0 +1,48 @@
+# Option sets for the Volkswagen Atlas: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Atlas
+
+option_sets:
+  # --- Atlas (base)
+  - years: [2021, 2023]
+    trim: [Comfortline, Execline, Highline, Trendline]
+    engine: [2.0L TSI, 3.6L FSI]
+    drivetrain: [AWD]
+
+  - years: [2024, 2026]
+    trim: [Comfortline, Execline, Highline]
+    special_edition: [Peak Edition]
+
+  - years: [2027, 2027]
+    trim: [Comfortline, Execline, Highline]
+
+  # --- Atlas Cross Sport
+  - submodel: Cross Sport
+    years: [2020, 2020]
+    trim: [Comfortline, Execline, Trendline]
+    engine: [2.0L TSI, 3.6L FSI]
+    drivetrain: [AWD]
+
+  - submodel: Cross Sport
+    years: [2021, 2023]
+    trim: [Comfortline, Execline, Highline, Trendline]
+    engine: [2.0L TSI, 3.6L FSI]
+    drivetrain: [AWD]
+
+  - submodel: Cross Sport
+    years: [2024, 2024]
+    trim: [Comfortline, Execline, Highline]
+
+  - submodel: Cross Sport
+    years: [2025, 2025]
+    trim: [Comfortline, Execline, Highline]
+    appearance_package: [Black, R-Line]
+
+  - submodel: Cross Sport
+    years: [2026, 2026]
+    trim: [Comfortline, Execline, Highline]

@@ -1,0 +1,6 @@
+# Run output: logs are rebuilt every run (plan 002, L5)
+db/logs/
+
+__pycache__/
+.pytest_cache/
+.venv/

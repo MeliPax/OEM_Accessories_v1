@@ -1,0 +1,27 @@
+# Option sets for the Volkswagen ID.4: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: ID.4
+
+option_sets:
+  # --- ID.4 (base)
+  - years: [2021, 2022]
+    trim: [PRO]
+    drivetrain: [AWD, RWD]
+
+  - years: [2023, 2023]
+    trim: [PRO]
+    drivetrain: [AWD, RWD]
+    battery_supplier: [LG Energy Solution, SK On]
+
+  - years: [2024, 2024]
+    trim: [PRO, PRO S, S]
+    drivetrain: [AWD]
+
+  - years: [2025, 2025]
+    trim: [PRO, PRO S]
+    drivetrain: [AWD]

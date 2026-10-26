@@ -1,0 +1,142 @@
+# VOCABULARY: what each word or phrase in a VW description means, grouped by category.
+#
+# HOW MATCHING WORKS
+#   1. Phrases (several words) are matched before single words, longest first, across ALL categories.
+#   2. A matched phrase consumes its words, so they can't match again as single words.
+#   3. Matching is whole-word and case-insensitive ("Pro" matches PRO). * ( ) , around words are ignored.
+#   4. models: limits an entry to those models; without it, the entry applies to every model.
+#
+# ENTRY FORMAT
+#   - match: the text to look for
+#     value: what to store (defaults to match)
+#     models: [optional model scope]
+#
+# Every match (with its scope) may appear only once in this file.
+
+trim:
+  phrases:
+    - match: PRO S
+      models: [ID.4]
+  words:
+    - match: Trendline
+    - match: Comfortline
+    - match: Highline
+    - match: Execline
+    - match: Autobahn
+    - match: PRO
+      models: [ID.4]
+    - match: S
+      models: [ID.4]           # "S" is only a trim on ID.4
+
+special_edition:
+  # "Edition" is never stored alone: it is always the last word of an edition phrase.
+  phrases:
+    - match: Black Edition     # "Black" followed by "Edition" -> special edition (a lone "Black" is appearance)
+    - match: Peak Edition
+    - match: Wolfsburg Edition
+    - match: United Edition
+    - match: Rabbit Edition
+    - match: 1st Edition
+    - match: 35th Edition
+      value: 35th Anniversary
+    - match: 20th Anniversary
+    - match: 35th Anniversary
+    - match: 40th Anniversary
+  words:
+    - match: Peak
+      value: Peak Edition      # "Atlas Peak" (2026)
+    - match: Wolfsburg
+      value: Wolfsburg Edition
+    - match: United
+      value: United Edition
+    - match: Rabbit
+      value: Rabbit Edition
+    - match: Dune              # Beetle Dune (2019)
+    - match: 20th
+      value: 20th Anniversary
+    - match: 35th
+      value: 35th Anniversary
+    - match: 40th
+      value: 40th Anniversary  # "Jetta GLI 40th" (2024)
+
+appearance_package:
+  words:
+    - match: R-Line
+    - match: Black             # a lone "Black" -> appearance. "Black Edition" never reaches here:
+                               # the special_edition phrase has already consumed it.
+
+technology_package:
+  phrases:
+    - match: IQ Drive
+      value: IQ.DRIVE
+
+performance_package:
+  words:
+    - match: Performance       # GTI Performance: equipment on top of a trim, not a trim
+
+engine:
+  phrases:
+    - match: 2.0 TSI
+      value: 2.0L TSI
+    - match: 3.6 FSI
+      value: 3.6L FSI
+  words:
+    - match: Turbo
+
+transmission:
+  words:
+    - match: Auto
+      value: Automatic
+    - match: Manual
+    - match: DSG
+      value: DSG Dual-Clutch
+
+drivetrain:
+  words:
+    - match: 4MOTION
+      value: AWD
+    - match: AWD
+    - match: FWD
+    - match: RWD
+
+body_style:
+  # SportWagen is a submodel (models.yaml), not a body style.
+  words:
+    - match: 5-door
+      value: 5-Door
+    - match: 5dr
+      value: 5-Door
+    - match: HB
+      value: Hatchback
+    - match: Coupe             # Beetle (2019)
+    - match: Convertible       # Beetle (2019)
+
+battery_supplier:
+  phrases:
+    - match: w/SK On Battery
+      value: SK On
+      models: [ID.4]
+    - match: w/LG Battery
+      value: LG Energy Solution
+      models: [ID.4]
+
+inventory_status:
+  # Inventory metadata: stored, but never used for matching.
+  phrases:
+    - match: Ltd Avail
+      value: Limited Availability
+
+# RESOLUTIONS: re-read a parsed value as something else for specific vehicles.
+# Applied after parsing and before validation (pipeline step "resolve"). The description itself is never changed.
+#
+#   match: the word in the description that produced the "from" value
+#   from:  the category + value the parser gave it
+#   to:    the category + value it should become
+#   when:  option_set_offers = only when the vehicle's option set (config/vehicles/<model>.yaml) lists the "to" value.
+#          If the option set doesn't offer it but the same model number has the "to" value in another year,
+#          the vehicle is not changed; it is flagged resolution_suggested for review.
+resolutions:
+  - match: Black               # a lone "Black" on a vehicle whose option set offers Black Edition is the Black Edition
+    from: { category: appearance_package, value: Black }
+    to: { category: special_edition, value: Black Edition }
+    when: option_set_offers

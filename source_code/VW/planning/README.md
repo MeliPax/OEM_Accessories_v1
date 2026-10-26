@@ -25,5 +25,9 @@ planning/
 
 | # | Title | Stage |
 |---|---|---|
-| 001 | [VW model ingest — design ideas](ideas/001_vw_model_ingest_design.md) | Idea (decisions pending) |
-| 001 | [VW model ingest — MVP plan](plans/001_vw_model_ingest_mvp.md) | Plan (draft, pending idea decisions) |
+| 001 | [VW model ingest — design ideas](ideas/001_vw_model_ingest_design.md) | Idea (all decisions made) |
+| 001 | [VW model ingest — MVP plan](plans/001_vw_model_ingest_mvp.md) | Plan (built 2026-10-26; in user testing) |
+| 002 | [Pipeline logging — design](ideas/002_pipeline_logging_design.md) | Idea (all decisions made) |
+| 002 | [Pipeline logging — plan](plans/002_pipeline_logging.md) | Plan (built 2026-10-26; in user testing) |
+| 003 | [Accessory ingest + model number matching — design](ideas/003_accessory_model_matching_design.md) | Idea (all decisions made) |
+| 003 | [Accessory ingest + model number matching — plan](plans/003_accessory_model_matching.md) | Plan (waiting for approval) |

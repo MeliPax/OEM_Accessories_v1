@@ -1,0 +1,37 @@
+# Option sets for the Volkswagen Jetta: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Jetta
+
+option_sets:
+  # --- Jetta (base)
+  - years: [2020, 2021]
+    trim: [Comfortline, Execline, Highline]
+    transmission: [Automatic, Manual]
+
+  - years: [2022, 2023]
+    trim: [Comfortline, Highline, Trendline]
+    transmission: [Automatic, Manual]
+
+  - years: [2024, 2026]
+    trim: [Comfortline, Highline, Trendline]
+
+  - years: [2027, 2027]
+    trim: [Comfortline]
+
+  # --- Jetta GLI
+  - submodel: GLI
+    years: [2020, 2023]
+    transmission: [DSG Dual-Clutch, Manual]
+
+  - submodel: GLI
+    years: [2024, 2024]
+    special_edition: [40th Anniversary]
+
+  - submodel: GLI
+    years: [2025, 2027]
+    # description carries no options for these years

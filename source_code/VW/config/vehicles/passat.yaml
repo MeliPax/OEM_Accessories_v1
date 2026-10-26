@@ -1,0 +1,18 @@
+# Option sets for the Volkswagen Passat: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Passat
+
+option_sets:
+  # --- Passat (base)
+  - years: [2020, 2020]
+    trim: [Comfortline, Execline, Highline]
+    transmission: [Automatic]
+
+  - years: [2021, 2021]
+    trim: [Execline, Highline]
+    transmission: [Automatic]

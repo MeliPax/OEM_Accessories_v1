@@ -1,0 +1,36 @@
+# VOCABULARY: the make, its models and their submodels.
+#
+# A description must start with a model name; a submodel name may follow it directly
+# ("Golf GTI ...", "Atlas Cross Sport ..."). Names are matched whole-word, case-insensitive,
+# longest first, so "Golf R" never matches "Golf R-Line".
+#
+# series is optional and future-facing: filled only where a consistent strategy exists today
+# (Golf GTI / R = Performance, Alltrack = Adventure); everything else stays null.
+
+make: Volkswagen
+
+models:
+  Arteon: {}
+  Atlas:
+    submodels:
+      Cross Sport: {}
+  Beetle: {}
+  e-Golf: {}
+  Golf:
+    submodels:
+      GTI: { series: Performance }
+      R: { series: Performance }
+      Alltrack: { series: Adventure }
+      SportWagen: {}
+  ID. Buzz: {}
+  ID.4: {}
+  Jetta:
+    submodels:
+      GLI: {}
+  Passat: {}
+  Taos: {}
+  Tiguan: {}
+
+# Alternate spellings in the VW data -> the standard name. Applied while cleaning, before parsing.
+aliases:
+  Atlas Sport Cross: Atlas Cross Sport   # 2020-2023 Atlas Cross Sport records
