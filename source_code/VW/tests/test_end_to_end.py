@@ -22,7 +22,7 @@ def first_run(tmp_path_factory):
 
 def test_row_counts_reconcile(first_run):
     db, status, summary = first_run
-    assert status == 'ok'                                            # no flags on today's data
+    assert status == 'ok'                                            # no warnings / errors on today's data
     assert summary['rows_staged'] == 323
     assert summary['rows_excluded_by_year'] == 54
     assert summary['rows_final'] == 269
@@ -74,7 +74,9 @@ def test_no_flags_on_todays_data(first_run):
     db, _, _ = first_run
     flags = read(db / 'logs' / 'flags' / 'run1.csv')
     queue = read(db / 'review' / 'review_queue.csv')
-    assert flags.empty and queue.empty     # Tiguan Black resolved; Atlas trim change on a reused code is allowed
+    # Tiguan Black resolved; Atlas trim change on a reused code is allowed; only the info note on 2019 rows
+    assert flags['code'].tolist() == ['VEH_YEAR_OUT_OF_WINDOW'] and flags.iloc[0]['severity'] == 'info'
+    assert flags.iloc[0]['message'].startswith('54 rows were left out') and queue.empty
 
 
 def test_reused_model_number_with_trim_change_is_noted_not_flagged(first_run):
@@ -88,6 +90,7 @@ def test_model_number_compare_list_is_configurable(config_copy, tmp_path):
     replace_in(config_copy / 'pipeline.yaml', 'compare: [model, submodel]', 'compare: [model, submodel, trim]')
     run_ingest.run(config_dir=config_copy, db_dir=tmp_path / 'db', run_id='strict')
     flags = read(tmp_path / 'db' / 'logs' / 'flags' / 'strict.csv')
+    flags = flags[flags['code'] == 'VEH_VALID_MODEL_NUMBER_REUSED']
     assert set(flags['value']) == {'CMC4NR', 'CMC4UR'} and len(flags) == 7
 
 
@@ -147,7 +150,7 @@ def test_made_up_word_is_partial_with_one_unknown_token(tmp_path):
     flags = read(tmp_path / 'db' / 'logs' / 'flags' / 'madeup.csv')
     row = vehicles[vehicles['model_number'] == 'ZZ9TST'].iloc[0]
     assert row['parse_status'] == 'partial' and row['unparsed_tokens'] == 'Sparkle'
-    unknown = flags[flags['rule'] == 'unknown_token']
+    unknown = flags[flags['code'] == 'VEH_PARSE_UNKNOWN_WORD']
     assert len(unknown) == 1 and unknown.iloc[0]['value'] == 'Sparkle'
     assert summary['rows_final'] == 270
 
@@ -158,4 +161,25 @@ def test_broken_config_stops_the_run_and_is_logged(config_copy, tmp_path):
         run_ingest.run(config_dir=config_copy, db_dir=tmp_path / 'db', run_id='broken')
     steps = read(tmp_path / 'db' / 'logs' / 'steps.csv')
     assert steps.iloc[-1]['step'] == 'config' and steps.iloc[-1]['status'] == 'failed'
+    flags = read(tmp_path / 'db' / 'logs' / 'flags' / 'broken.csv')
+    assert flags['code'].tolist() == ['CONFG_DUPLICATE_ENTRY'] and flags.iloc[0]['severity'] == 'fatal'
+    assert 'Highline' in flags.iloc[0]['checked']
     assert 'FATAL' in (tmp_path / 'db' / 'logs' / 'runs' / 'broken.log').read_text(encoding='utf-8')
+
+
+def test_default_run_id_ends_with_the_run_date_time(tmp_path):
+    run_ingest.run(db_dir=tmp_path / 'db')
+    steps = read(tmp_path / 'db' / 'logs' / 'steps.csv')
+    assert steps['run_id'].str.fullmatch(r'vw_ingest_\d{8}_\d{6}').all()
+
+
+def test_removed_vehicle_is_flagged(tmp_path):
+    db = tmp_path / 'db'
+    run_ingest.run(db_dir=db, run_id='full')
+    source = tmp_path / 'source.csv'
+    df = read(SOURCE)
+    df[~((df['ModelNumber'] == 'AU22M2') & (df['ModelYear'] == '2021'))].to_csv(source, index=False)
+    run_ingest.run(db_dir=db, source=source, run_id='less')
+    flags = read(db / 'logs' / 'flags' / 'less.csv')
+    removed = flags[flags['code'] == 'VEH_WRITE_VEHICLE_REMOVED']
+    assert removed['vehicle_id'].tolist() == ['VW-2021-AU22M2'] and removed.iloc[0]['severity'] == 'warning'

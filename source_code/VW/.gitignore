@@ -4,3 +4,6 @@ db/logs/
 __pycache__/
 .pytest_cache/
 .venv/
+
+# Accessory exports: rebuilt every run (plan 003, A15)
+output/

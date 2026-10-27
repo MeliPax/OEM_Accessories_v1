@@ -44,8 +44,18 @@ def read_table(db_dir, layer, name):
 
 
 def append_row(row, db_dir, layer, name):
-    """Append one row to a table (header written the first time)."""
+    """Append one row to a table (header written the first time). When the row brings new columns, the
+    table is rewritten with them (older rows get them empty), so columns never shift."""
     path = table_path(db_dir, layer, name)
     path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame([row]).to_csv(path, mode='a', header=not path.exists(), index=False)
+    new = pd.DataFrame([row])
+    if path.exists():
+        header = list(pd.read_csv(path, nrows=0).columns)
+        if header != list(new.columns):
+            old = pd.read_csv(path, dtype=str, keep_default_na=False)
+            columns = header + [c for c in new.columns if c not in header]
+            pd.concat([old, new.astype(str)], ignore_index=True).reindex(columns=columns) \
+              .to_csv(path, index=False)
+            return path
+    new.to_csv(path, mode='a', header=not path.exists(), index=False)
     return path

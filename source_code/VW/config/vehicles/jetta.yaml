@@ -7,6 +7,11 @@
 make: Volkswagen
 model: Jetta
 
+# drafted = built from the VW export, not yet checked by a person; set reviewed (with who / when) once checked
+status: drafted
+reviewed_by:
+reviewed_on:
+
 option_sets:
   # --- Jetta (base)
   - years: [2020, 2021]

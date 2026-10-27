@@ -1,7 +1,11 @@
+import re
+
+import pandas as pd
 import pytest
 
-from conftest import replace_in
+from conftest import CONFIG_DIR, SOURCE, replace_in
 from pipeline import config_helpers as cfg
+from pipeline.clean_helpers import clean_value
 from pipeline.config_helpers import ConfigError
 
 
@@ -67,3 +71,65 @@ def test_taxonomy_version_changes_with_config(config_copy):
     before = cfg.taxonomy_version(config_copy)
     replace_in(config_copy / 'keywords.yaml', '    - match: Turbo', '    - match: Turbo\n    - match: Biturbo')
     assert cfg.taxonomy_version(config_copy) != before
+
+
+# ---------------------------------------------------------------- codes, review status, accessories.yaml
+
+def test_config_problems_carry_their_codes(config_copy):
+    replace_in(config_copy / 'pipeline.yaml', 'min_model_year: 2020', 'min_model_year: twenty')
+    with pytest.raises(ConfigError) as error:
+        cfg.load_settings(config_copy)
+    assert error.value.problems[0][0] == 'CONFG_VALUE_INVALID'
+    assert 'CONFG_VALUE_INVALID: min_model_year must be a 4-digit year' in str(error.value)
+
+
+def test_vehicle_file_status_is_checked(config_copy):
+    replace_in(config_copy / 'vehicles' / 'golf.yaml', 'status: drafted', 'status: approved')
+    with pytest.raises(ConfigError, match='status must be one of drafted, reviewed'):
+        load_all(config_copy)
+
+
+def test_vehicle_years_per_model_and_submodel(option_sets):
+    years = cfg.vehicle_years(option_sets)
+    assert years[('Golf', None)] == {'years': {2020, 2021}, 'files': 'golf.yaml', 'status': 'drafted'}
+    assert min(years[('Golf', 'R')]['years']) == 2022 and max(years[('Arteon', None)]['years']) == 2021
+
+
+def test_accessory_config_is_valid(settings):
+    spec = cfg.load_accessory_config(CONFIG_DIR, settings)
+    assert spec['renames']['stockCode'] == 'part_number' and spec['types']['msrp'] == 'number'
+    assert list(spec['export']['columns'].values())[-3:] == ['Variant', 'Year', 'Model Number']
+    assert spec['variant']['fields'][0] == 'trim' and spec['variant']['base_label'] == 'Base'
+    pn = spec['part_number']
+    assert spec['renames']['make&model'] == 'make_model' and pn['source_column'] == 'stockCode'
+    assert pn['pattern'].fullmatch('000071200') and not pn['pattern'].fullmatch('000 071200')
+    assert spec['types']['part_number'] == 'text'               # idea 008: never typed as a number
+
+
+@pytest.mark.parametrize('old, new, message', [
+    ('    variant: Variant ', '    variants: Variant ', "export column 'variants' is not in the dict"),
+    ('    - special_edition\n', '    - special_editon\n', "variant field 'special_editon' is not a category"),
+    ('base_label: Base ', 'base_label: "" ', 'variant.base_label is empty'),
+    ('base_when: all_fields_empty', 'base_when: sometimes', 'variant.base_when must be one of all_fields_empty'),
+    ('greater_than: [[msrp, cost]]', 'greater_than: [[msrp, costs]]', "unknown column 'costs'"),
+    ('header_row: 2 ', 'header_row: 0 ', 'header_row must be a row number'),
+    ('{ name: msrp, type: number }', '{ name: msrp, type: money }', 'type must be one of text, number'),
+    ('file_name: "{run_id}.xlsx"', 'file_name: "accessories.xlsx"', 'must contain {run_id}'),
+    ('restore: leading_zeros_only ', 'restore: pad ', 'part_number.restore must be one of leading_zeros_only, never'),
+    ('max_unproven_share: 0.01 ', 'max_unproven_share: 5 ', 'part_number.max_unproven_share must be a share'),
+    ('suffix_column: model_name ', 'suffix_column: model ', "part_number.suffix_column 'model' is not a pipeline"),
+    ('allowed_characters: A-Z0-9 ', 'allowed_characters: Z-A ', 'allowed_characters'),
+    ('  dealerNotes:', '  make&model:         { name: mm, type: text }\n  dealerNotes:',
+     "check_column 'make&model' is already read as 'mm'"),
+])
+def test_broken_accessory_config_is_rejected(config_copy, settings, old, new, message):
+    replace_in(config_copy / 'accessories.yaml', old, new)
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        cfg.load_accessory_config(config_copy, settings)
+
+
+def test_shared_gti_alias_leaves_vw_descriptions_unchanged(taxonomy):
+    descriptions = pd.read_csv(SOURCE, dtype=str, keep_default_na=False)['Description'].unique()
+    without = {k: v for k, v in taxonomy['aliases'].items() if k != 'GTI'}
+    assert 'GTI' in taxonomy['aliases']
+    assert all(clean_value(d, taxonomy['aliases'])[0] == clean_value(d, without)[0] for d in descriptions)

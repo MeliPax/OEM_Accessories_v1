@@ -1,0 +1,779 @@
+# MESSAGES: the wording of every flag and fatal (planning/ideas/004_error_message_catalogue_design.md).
+#
+# Code format: <PIPELINE>_<STAGE>_<WHAT>
+#   pipelines: CONFG (config files), VEH (vehicle ingest), ACCESS (accessories)
+#   stages:    SRC, DB, STGNG, YEAR, CLEAN, PARSE, RESOLVE, VALID, LOOKUP, COVER, DQ, EXPORT, WRITE
+#
+# Each entry:
+#   severity  fatal (run stops) | error (row/key can't be used) | warning (used, needs a look) | info (log only)
+#   message   one plain sentence; {name} placeholders are filled from the facts the code passes
+#   facts     the placeholder names the code must pass
+#   causes    likely causes, most likely first
+#   fix       numbered steps, naming the file or command
+# The code also attaches "checked" (what was looked at) and "found" (the result) to every flag.
+# tests/test_messages.py keeps this file and the codes used in pipeline/ in sync.
+
+# ---------------------------------------------------------------- config (all fatal; collected and shown together)
+
+CONFG_FILE_NOT_FOUND:
+  severity: fatal
+  message: A config file is missing
+  causes:
+    - The file was moved, renamed or not copied with the project
+  fix:
+    - Restore the file at the path shown (see git history for config/)
+    - Rerun the pipeline
+
+CONFG_YAML_INVALID:
+  severity: fatal
+  message: A config file is not valid YAML
+  causes:
+    - A typo in the file (indentation, a missing colon, an unclosed quote or bracket)
+  fix:
+    - Open the file at the line and column shown and fix the syntax
+    - Rerun the pipeline
+
+CONFG_VALUE_INVALID:
+  severity: fatal
+  message: A config setting has a wrong value or shape
+  causes:
+    - A typo, or a value outside what the setting allows
+  fix:
+    - Correct the setting named in the problem (the allowed values are shown with it)
+    - Rerun the pipeline
+
+CONFG_UNKNOWN_REFERENCE:
+  severity: fatal
+  message: A config entry refers to something that is not defined
+  causes:
+    - A spelling difference between two config files
+    - The referenced model, category, keyword value or column was renamed or removed
+  fix:
+    - Correct the name, or define the missing item where the problem says (models.yaml, categories.yaml, keywords.yaml)
+    - Rerun the pipeline
+
+CONFG_DUPLICATE_ENTRY:
+  severity: fatal
+  message: The same config entry is defined twice
+  causes:
+    - A keyword, alias or option set was added again instead of edited
+  fix:
+    - Keep one of the two entries named in the problem and delete the other
+    - Rerun the pipeline
+
+CONFG_NO_VEHICLE_FILES:
+  severity: fatal
+  message: config/vehicles/ has no option-set files
+  causes:
+    - The folder was emptied or not copied with the project
+  fix:
+    - Restore config/vehicles/*.yaml (one file per model)
+    - Rerun the pipeline
+
+# ---------------------------------------------------------------- vehicle ingest: source and staging
+
+VEH_SRC_FILE_NOT_FOUND:
+  severity: fatal
+  message: 'The VW model export was not found: {path}'
+  facts: [path]
+  causes:
+    - The file was moved or renamed
+    - sources.vw_models in pipeline.yaml (or --source) points at the wrong path
+  fix:
+    - Put the export at {path}, or correct sources.vw_models in config/pipeline.yaml
+    - Rerun run_ingest.py
+
+VEH_SRC_COLUMN_MISSING:
+  severity: fatal
+  message: 'The VW model export is missing required column(s): {columns}'
+  facts: [columns]
+  causes:
+    - The export layout changed (column renamed or removed)
+    - The wrong file was used as the source
+  fix:
+    - Check the file is the VW model export
+    - If the layout changed, ask for the expected columns back or update the staging rename in ingest_helpers.py
+    - Rerun run_ingest.py
+
+VEH_STGNG_DUPLICATE_KEY:
+  severity: fatal
+  message: '{count} rows share a (model_number, model_year) key, so vehicles cannot be told apart'
+  facts: [count]
+  causes:
+    - The export lists the same vehicle twice
+    - Two different vehicles were given the same model number in the same year
+  fix:
+    - Look up the keys shown in the source file
+    - Ask the data source for a corrected export, or remove the duplicate row
+    - Rerun run_ingest.py
+
+VEH_STGNG_INVALID_MODEL_YEAR:
+  severity: error
+  message: 'Source row {source_row}: model year "{value}" is not a 4-digit year'
+  facts: [source_row, value]
+  causes:
+    - A typo or an empty cell in the export
+  fix:
+    - Correct the model year in the source file, or ask the data source
+    - Rerun run_ingest.py
+
+VEH_STGNG_MISSING_MODEL_NUMBER:
+  severity: error
+  message: 'Source row {source_row}: the model number is empty'
+  facts: [source_row]
+  causes:
+    - An incomplete row in the export
+  fix:
+    - Ask the data source for the model number, or remove the row
+    - Rerun run_ingest.py
+
+VEH_STGNG_UNEXPECTED_MAKE:
+  severity: warning
+  message: 'Source row {source_row}: manufacturer "{value}" is not {make}'
+  facts: [source_row, value, make]
+  causes:
+    - A row from another make in the export
+    - A spelling difference in the manufacturer column
+  fix:
+    - If the row is another make, remove it from the source
+    - If it is a spelling difference, no action (the make is set from models.yaml)
+
+VEH_YEAR_OUT_OF_WINDOW:
+  severity: info
+  message: '{count} rows were left out because their model year is outside the window {window}'
+  facts: [count, window]
+  causes:
+    - The export includes older (or newer) model years than the pipeline processes
+  fix:
+    - No action, unless the window should change (min_model_year / max_model_year in config/pipeline.yaml)
+
+VEH_YEAR_WINDOW_EMPTY:
+  severity: warning
+  message: 'The year window {window} removed every {dataset} row'
+  facts: [window, dataset]
+  causes:
+    - min_model_year / max_model_year exclude every year in the file
+    - The wrong source file was used
+  fix:
+    - Check min_model_year / max_model_year in config/pipeline.yaml against the years in the file
+    - Rerun the pipeline
+
+# ---------------------------------------------------------------- vehicle ingest: parse and resolve
+
+VEH_PARSE_NO_MODEL_MATCH:
+  severity: error
+  message: '"{description}" does not start with a model from models.yaml'
+  facts: [description]
+  causes:
+    - A new model the config does not know yet
+    - A spelling difference in the model name
+  fix:
+    - New model -> add it to config/models.yaml and add config/vehicles/<model>.yaml
+    - Spelling difference -> add an alias to config/models.yaml
+    - Rerun run_ingest.py
+
+VEH_PARSE_UNKNOWN_WORD:
+  severity: warning
+  message: 'Word "{token}" in "{description}" matches no keyword'
+  facts: [token, description]
+  causes:
+    - A new trim, package or option word
+    - A spelling variant of a known keyword
+  fix:
+    - Add the word (or a phrase containing it) to config/keywords.yaml under the right category
+    - Rerun run_ingest.py
+
+VEH_PARSE_CONFLICTING_VALUES:
+  severity: warning
+  message: '{category} allows one value, but the description gives several: {values}'
+  facts: [category, values]
+  causes:
+    - Two keywords of the same category in one description
+    - A keyword filed under the wrong category in keywords.yaml
+  fix:
+    - Check the description; if one keyword belongs to another category, move it in config/keywords.yaml
+    - If the category can really hold several values, set multi_value true in config/categories.yaml
+    - Rerun run_ingest.py
+
+VEH_RESOLVE_SUGGESTED:
+  severity: warning
+  message: '"{word}" could be {to_category} = {to_value}, but {where} does not offer it'
+  facts: [word, to_category, to_value, where]
+  causes:
+    - The vehicle has the option but its option set does not list it yet
+    - The word really means its original value here
+  fix:
+    - 'If the vehicle offers it, add {to_category}: [{to_value}] to its option set in config/vehicles/'
+    - Otherwise no action
+    - Rerun run_ingest.py
+
+VEH_RESOLVE_CONFLICT:
+  severity: warning
+  message: '"{word}" would become {to_category} = {to_value}, but it already has {current}; not changed'
+  facts: [word, to_category, to_value, current]
+  causes:
+    - The description holds both values
+  fix:
+    - Check the description against the source; correct keywords.yaml or the resolution if needed
+
+# ---------------------------------------------------------------- vehicle ingest: validate and write
+
+VEH_VALID_MISSING_REQUIRED:
+  severity: error
+  message: 'Required field {column} is empty'
+  facts: [column]
+  causes:
+    - The description has no value for it and no keyword filled it
+  fix:
+    - Check the source description; add the missing keyword to config/keywords.yaml if needed
+    - Rerun run_ingest.py
+
+VEH_VALID_NOT_IN_CONFIG:
+  severity: warning
+  message: '{vehicle} is in the VW export, but no option set in config/vehicles/ covers it'
+  facts: [vehicle]
+  causes:
+    - A new model year or submodel the config does not know yet
+    - The option set's years end too early
+  fix:
+    - Add or extend the option set in config/vehicles/<model>.yaml to cover this year
+    - Rerun run_ingest.py
+
+VEH_VALID_OPTION_NOT_OFFERED:
+  severity: warning
+  message: '{vehicle} has {category} = {value}, which its option set does not offer'
+  facts: [vehicle, category, value]
+  causes:
+    - The option set in config/vehicles/ is incomplete
+    - The keyword was read into the wrong category
+  fix:
+    - If the vehicle offers it, add the value to the option set (file shown under checked)
+    - If the keyword is wrong, correct config/keywords.yaml
+    - Rerun run_ingest.py
+
+VEH_VALID_MODEL_NUMBER_REUSED:
+  severity: warning
+  message: 'Model number {model_number} is used across years for a different vehicle'
+  facts: [model_number]
+  causes:
+    - VW reused the code for a different model or submodel
+    - A data entry error in one of the years
+  fix:
+    - Compare the years shown under found with the source
+    - If it is an error, ask the data source to correct it; otherwise no action
+
+VEH_WRITE_VEHICLE_REMOVED:
+  severity: warning
+  message: '{vehicle_id} was in the previous vehicles.csv but is not in this run'
+  facts: [vehicle_id]
+  causes:
+    - The new export no longer lists the vehicle
+    - The year window or config changed and now excludes it
+  fix:
+    - Check the vehicle in the new export
+    - If it should still exist, ask the data source; if the window or config changed on purpose, no action
+
+VEH_WRITE_FILE_LOCKED:
+  severity: fatal
+  message: 'Cannot write {path}: the file is open in another program'
+  facts: [path]
+  causes:
+    - The file is open in Excel or another program
+  fix:
+    - Close the file
+    - Rerun run_ingest.py
+
+# ---------------------------------------------------------------- accessories: year range and window
+
+ACCESS_YEAR_OUT_OF_WINDOW:
+  severity: info
+  message: '{count} accessory rows were left out because their year range is outside the window {window}'
+  facts: [count, window]
+  causes:
+    - The accessory file still lists parts for older vehicles
+  fix:
+    - No action, unless the window should change (min_model_year / max_model_year in config/pipeline.yaml)
+
+ACCESS_YEAR_WINDOW_EMPTY:
+  severity: warning
+  message: 'The year window {window} removed every {dataset} row'
+  facts: [window, dataset]
+  causes:
+    - min_model_year / max_model_year exclude every year range in the file
+    - The wrong accessory file was used
+  fix:
+    - Check min_model_year / max_model_year in config/pipeline.yaml against the year ranges in the file
+    - Rerun run_accessories.py
+
+ACCESS_YEAR_RANGE_INVALID:
+  severity: error
+  message: 'Source row {source_row}: year range "{value}" cannot be read'
+  facts: [source_row, value]
+  causes:
+    - A typo or an empty cell in the accessory file (expected 2019-2021 or 2021)
+  fix:
+    - Correct the year range in the accessory file, or ask the data source
+    - Rerun run_accessories.py
+
+ACCESS_YEAR_RANGE_REVERSED:
+  severity: error
+  message: 'Source row {source_row}: year range "{value}" ends before it starts'
+  facts: [source_row, value]
+  causes:
+    - The start and end years were swapped in the accessory file
+  fix:
+    - Correct the year range in the accessory file, or ask the data source
+    - Rerun run_accessories.py
+
+ACCESS_YEAR_CLIPPED:
+  severity: info
+  message: '{count} accessory rows start before {min_year}; their earlier years were dropped'
+  facts: [count, min_year]
+  causes:
+    - The parts also fit older vehicles than the pipeline processes
+  fix:
+    - No action (years before min_model_year are never processed)
+
+# ---------------------------------------------------------------- accessories: vehicle DB
+
+ACCESS_DB_NOT_FOUND:
+  severity: fatal
+  message: 'The vehicle DB was not found: {path}'
+  facts: [path]
+  causes:
+    - The vehicle ingest has not been run in this folder yet
+  fix:
+    - Run run_ingest.py first
+    - Rerun run_accessories.py
+
+ACCESS_DB_COLUMN_MISSING:
+  severity: fatal
+  message: 'The vehicle DB is missing column(s) the lookup needs: {columns}'
+  facts: [columns]
+  causes:
+    - vehicles.csv was built by an older version of the vehicle ingest, or edited by hand
+  fix:
+    - Rerun run_ingest.py to rebuild db/final/vehicles.csv
+    - Rerun run_accessories.py
+
+ACCESS_DB_STALE:
+  severity: warning
+  message: 'The vehicle DB was built with config version {db_version}, but the config is now {config_version}'
+  facts: [db_version, config_version]
+  causes:
+    - models.yaml, keywords.yaml, categories.yaml or vehicles/*.yaml changed after the last vehicle ingest
+  fix:
+    - Rerun run_ingest.py so vehicles.csv matches the current config
+    - Rerun run_accessories.py
+
+ACCESS_DB_LAST_INGEST_NOT_OK:
+  severity: warning
+  message: 'The last vehicle ingest ({run_id}) ended {status}'
+  facts: [run_id, status]
+  causes:
+    - The vehicle ingest flagged errors or failed, so vehicles.csv may be incomplete
+  fix:
+    - Check that run's review queue (db/review/review_queue.csv) and run log
+    - Fix the problems, rerun run_ingest.py, then rerun run_accessories.py
+
+# ---------------------------------------------------------------- accessories: source file
+
+ACCESS_SRC_FILE_NOT_FOUND:
+  severity: fatal
+  message: 'The accessory file was not found: {path}'
+  facts: [path]
+  causes:
+    - The file was moved or renamed
+    - sources.accessories in pipeline.yaml (or --source) points at the wrong path
+  fix:
+    - Put the file at {path}, or correct sources.accessories in config/pipeline.yaml
+    - Rerun run_accessories.py
+
+ACCESS_SRC_SHEET_NOT_FOUND:
+  severity: fatal
+  message: 'The accessory file has no sheet {sheet}; it has: {sheets}'
+  facts: [sheet, sheets]
+  causes:
+    - The sheet was renamed, or sheet in accessories.yaml is wrong
+  fix:
+    - Set sheet in config/accessories.yaml to one of the sheets shown
+    - Rerun run_accessories.py
+
+ACCESS_SRC_HEADER_NOT_FOUND:
+  severity: fatal
+  message: 'Row {row} of the accessory file does not hold the expected column names'
+  facts: [row]
+  causes:
+    - The file layout changed (rows added or removed above the header)
+    - header_row in accessories.yaml is wrong
+  fix:
+    - Open the file and find the row with the column names (stockCode, model, ...)
+    - Set header_row in config/accessories.yaml to that row number
+    - Rerun run_accessories.py
+
+ACCESS_SRC_COLUMN_MISSING:
+  severity: fatal
+  message: 'The accessory file is missing configured column(s): {columns}'
+  facts: [columns]
+  causes:
+    - A column was renamed or removed in the file
+  fix:
+    - If renamed, update the source name under columns in config/accessories.yaml
+    - If removed, ask the data source to restore it
+    - Rerun run_accessories.py
+
+ACCESS_SRC_EMPTY:
+  severity: fatal
+  message: 'The accessory file has no data rows: {path}'
+  facts: [path]
+  causes:
+    - An empty or truncated export
+  fix:
+    - Ask the data source for a complete file
+    - Rerun run_accessories.py
+
+# ---------------------------------------------------------------- accessories: staging
+
+ACCESS_STGNG_MISSING_PART_NUMBER:
+  severity: error
+  message: 'Source row {source_row}: the part number is empty; row left out'
+  facts: [source_row]
+  causes:
+    - An incomplete row in the accessory file
+  fix:
+    - Ask the data source for the part number, or remove the row
+    - Rerun run_accessories.py
+
+ACCESS_STGNG_MISSING_MODEL_NAME:
+  severity: error
+  message: 'Source row {source_row}: part {part_number} has no model name; row left out'
+  facts: [source_row, part_number]
+  causes:
+    - An incomplete row in the accessory file
+  fix:
+    - Ask the data source which model the part is for
+    - Rerun run_accessories.py
+
+ACCESS_STGNG_MAKE_MISMATCH:
+  severity: error
+  message: 'Source row {source_row}: make "{value}" is not {make}; row left out'
+  facts: [source_row, value, make]
+  causes:
+    - A row for another make in the accessory file
+    - A spelling difference in the make column
+  fix:
+    - If the row is another make, no action (it is left out)
+    - If it is a spelling difference, ask the data source to correct it
+
+ACCESS_STGNG_STATUS_UNEXPECTED:
+  severity: warning
+  message: 'Source row {source_row}: status "{value}" is not a known status; row left out'
+  facts: [source_row, value]
+  causes:
+    - A new status value in the accessory file
+  fix:
+    - If rows with this status should be kept, add it to keep_rows.status in config/accessories.yaml
+    - Otherwise add it to known_statuses there
+    - Rerun run_accessories.py
+
+ACCESS_STGNG_DUPLICATE_CONFLICT:
+  severity: warning
+  message: 'Part {part_number} for {model_name} appears several times with different {columns}'
+  facts: [part_number, model_name, columns]
+  causes:
+    - The accessory file lists the part twice with different values (e.g. two prices or year ranges)
+  fix:
+    - Check the rows shown under found against the source
+    - Ask the data source which values are correct; every copy is kept until then
+
+# ---------------------------------------------------------------- accessories: part numbers (idea 008)
+# make&model = part number + model name. Removing the row's model name from its end proves the part number.
+# Never padded: a part number is only restored when make&model holds the zeros stockCode lost.
+
+ACCESS_STGNG_PART_NUMBER_RESTORED:
+  severity: warning
+  message: 'Part number {stock_code} lost its leading zeros in the accessory file; restored to {part_number} from make&model ({rows})'
+  facts: [stock_code, part_number, rows]
+  causes:
+    - Excel stored stockCode as a number (General format), which drops leading zeros
+  fix:
+    - Nothing to change in the pipeline; make&model proves the full number and the export shows it
+    - Ask the data source to export stockCode as text, so the file itself is right
+
+ACCESS_STGNG_PART_NUMBER_MISMATCH:
+  severity: error
+  message: 'Part number {stock_code} does not match the part number in make&model ({make_model_part}); stockCode kept ({rows})'
+  facts: [stock_code, make_model_part, rows]
+  causes:
+    - A typo in stockCode or in make&model
+    - make&model was built from an older or different part number
+    - The part number uses characters outside part_number.allowed_characters
+  fix:
+    - Confirm the right part number with the data source and correct the file
+    - If the characters are valid, add them to part_number.allowed_characters in config/accessories.yaml
+    - Rerun run_accessories.py
+
+ACCESS_STGNG_PART_NUMBER_UNVERIFIED_NUMBER:
+  severity: error
+  message: 'Part number {stock_code} was stored as a number and make&model cannot prove it ({reason}); leading zeros may be lost ({rows})'
+  facts: [stock_code, reason, rows]
+  causes:
+    - make&model is empty, or does not end with the model name (spelling, case or spaces differ)
+    - Excel stored stockCode as a number, so any leading zeros are gone
+  fix:
+    - Get the complete part number from the data source (it is never padded)
+    - Ask them to fill make&model and export stockCode as text
+    - Rerun run_accessories.py
+
+ACCESS_STGNG_PART_NUMBER_UNVERIFIED:
+  severity: info
+  message: 'Part number {stock_code} cannot be confirmed by make&model ({reason}); stockCode kept as text ({rows})'
+  facts: [stock_code, reason, rows]
+  causes:
+    - make&model is empty, or does not end with the model name (spelling, case or spaces differ)
+  fix:
+    - No action needed for the part number (stored as text, nothing was lost)
+    - Ask the data source to correct make&model
+
+ACCESS_STGNG_PART_NUMBER_INCONSISTENT:
+  severity: warning
+  message: 'Part number {part_number} is written {count} ways in stockCode: {spellings}'
+  facts: [part_number, count, spellings]
+  causes:
+    - Some cells were stored as numbers (zeros lost) and others as text
+  fix:
+    - Nothing to change in the pipeline; every row uses the proven part number
+    - Ask the data source to export stockCode as text
+
+ACCESS_STGNG_PART_NUMBER_SPLIT_RATE:
+  severity: fatal
+  message: '{unproven} of {rows} accessory rows ({share}) have a part number make&model cannot prove; at most {limit} is allowed'
+  facts: [unproven, rows, share, limit]
+  causes:
+    - The accessory file layout changed (make&model or model holds something else)
+    - A new export format from the data source
+  fix:
+    - Open db/dq/part_number_check.csv and look at part_number_check and reason
+    - If the layout changed, update the part_number block in config/accessories.yaml
+    - If the file is right, raise part_number.max_unproven_share there
+    - Rerun run_accessories.py
+
+# ---------------------------------------------------------------- accessories: clean
+
+ACCESS_CLEAN_NOT_NUMERIC:
+  severity: error
+  message: 'Source row {source_row}: {column} "{value}" is not a number; left empty'
+  facts: [source_row, column, value]
+  causes:
+    - Text, a currency sign or a typo in a number column of the accessory file
+  fix:
+    - Correct the value in the accessory file, or ask the data source
+    - Rerun run_accessories.py
+
+ACCESS_CLEAN_BAD_CHARACTERS:
+  severity: info
+  message: '{count} values in {column} contain replacement characters from an encoding problem'
+  facts: [count, column]
+  causes:
+    - The accessory file was saved with a different text encoding
+  fix:
+    - No action for matching (model names and years are unaffected)
+    - Ask the data source for a UTF-8 export if the text is shown to customers
+
+# ---------------------------------------------------------------- accessories: lookup (idea 004, checks C1-C5)
+
+ACCESS_LOOKUP_UNKNOWN_MODEL_NAME:
+  severity: error
+  message: 'Accessory model name "{name}" is not a model or submodel in models.yaml'
+  facts: [name]
+  causes:
+    - A spelling difference (the accessory file uses another name for a known vehicle)
+    - A new vehicle the config does not know yet
+  fix:
+    - Spelling difference -> add an alias to config/models.yaml (shared by every dataset)
+    - New vehicle -> add it to config/models.yaml and config/vehicles/<model>.yaml, rerun run_ingest.py
+    - Rerun run_accessories.py
+
+ACCESS_LOOKUP_IN_DB_NOT_IN_CONFIG:
+  severity: warning
+  message: '{vehicle} {year} is in the vehicle DB, but its config does not declare {year}; model numbers attached'
+  facts: [vehicle, year]
+  causes:
+    - The option sets in config/vehicles/ end too early or skip this year
+  fix:
+    - Add {year} to the option set in the config file shown under checked
+    - Rerun run_ingest.py, then run_accessories.py
+
+ACCESS_LOOKUP_IN_CONFIG_NOT_IN_DB:
+  severity: error
+  message: 'Config says {vehicle} is offered in {year}, but the vehicle DB has no model numbers for it'
+  facts: [vehicle, year]
+  causes:
+    - The VW model export used for the last ingest does not include this vehicle
+    - The vehicle DB is older than the export (run_ingest.py not rerun)
+  fix:
+    - Rerun run_ingest.py with the latest VW model export
+    - If it is still missing, ask the data source whether the vehicle exists
+    - If it exists, add it to the source data (manual-add process to be defined), then rerun run_ingest.py and run_accessories.py
+
+ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN:
+  severity: error
+  message: 'Accessory file lists {vehicle} for {year}, but neither the vehicle DB nor the config has it after {last}'
+  facts: [vehicle, year, last]
+  causes:
+    - The vehicle was discontinued after {last} (the accessory range runs past its life)
+    - The {year} model year is not in the VW model export yet
+    - The config's end year is wrong
+  fix:
+    - Confirm with the data source whether {vehicle} {year} exists
+    - Discontinued -> no action
+    - Not exported yet -> rerun run_ingest.py when the export has it; config end year wrong -> fix the config file shown under checked
+
+ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN:
+  severity: error
+  message: 'Accessory file lists {vehicle} for {year}, but neither the vehicle DB nor the config has it before {first}'
+  facts: [vehicle, year, first]
+  causes:
+    - The vehicle was not sold before {first} (the accessory range starts before it)
+    - The VW model export is missing {vehicle} {year}
+  fix:
+    - Confirm with the data source whether {vehicle} {year} exists
+    - Not sold -> no action
+    - Sold -> get an export that includes it, add {year} to the config file shown under checked, rerun run_ingest.py then run_accessories.py
+
+ACCESS_LOOKUP_YEAR_IN_GAP:
+  severity: error
+  message: 'Accessory file lists {vehicle} for {year}, a year missing between the years the vehicle DB and config know'
+  facts: [vehicle, year]
+  causes:
+    - The vehicle skipped this model year
+    - The VW model export is missing this year
+  fix:
+    - Confirm with the data source whether {vehicle} {year} exists
+    - Skipped -> no action
+    - Sold -> get an export that includes it, add {year} to the config, rerun run_ingest.py then run_accessories.py
+
+ACCESS_LOOKUP_MODEL_NOT_IN_DB:
+  severity: error
+  message: '{vehicle} is in models.yaml, but the vehicle DB has no {vehicle} vehicles in any year'
+  facts: [vehicle]
+  causes:
+    - The VW model export does not include this vehicle
+    - The vehicle was not sold inside the year window
+  fix:
+    - Check the VW model export includes {vehicle}; if it should, ask the data source
+    - If it was not sold inside the window, no action
+
+ACCESS_LOOKUP_NO_CONFIG_FOR_MODEL:
+  severity: error
+  message: '{vehicle} has no option set in config/vehicles/, so its years cannot be checked'
+  facts: [vehicle]
+  causes:
+    - config/vehicles/<model>.yaml (or the submodel's option set) has not been written yet
+  fix:
+    - Add config/vehicles/<model>.yaml, or an option set for the submodel, with the years the vehicle was sold
+    - Rerun run_ingest.py, then run_accessories.py
+
+# ---------------------------------------------------------------- accessories: coverage
+
+ACCESS_COVER_VEHICLE_NO_PARTS:
+  severity: warning
+  message: '{count} {vehicle} {year} vehicles in the vehicle DB get no accessory parts'
+  facts: [count, vehicle, year]
+  causes:
+    - The accessory file is not updated for {year} yet
+    - No accessories exist for this vehicle
+  fix:
+    - Check the accessory years shown under found; if they stop before {year}, ask the data source for an updated accessory file
+    - Otherwise confirm with the data source that no parts exist
+
+ACCESS_COVER_MODEL_NO_PARTS:
+  severity: warning
+  message: '{vehicle} is in the vehicle DB, but the accessory file has no parts for it in any year'
+  facts: [vehicle]
+  causes:
+    - The accessory file does not cover this vehicle
+    - The accessory file uses a model name that resolves to another vehicle
+  fix:
+    - Check the accessory file for this vehicle under another name (add an alias to config/models.yaml if so)
+    - Otherwise ask the data source whether parts exist
+
+# ---------------------------------------------------------------- accessories: data quality
+
+ACCESS_DQ_VALUE_NOT_ABOVE:
+  severity: warning
+  message: '{left} {left_value} is not above {right} {right_value}'
+  facts: [left, left_value, right, right_value]
+  causes:
+    - A pricing error in the accessory file (e.g. MSRP not above cost)
+  fix:
+    - Check the part's prices with the data source
+    - Rerun run_accessories.py after the file is corrected
+
+ACCESS_DQ_VALUE_MISSING:
+  severity: warning
+  message: '{column} is empty'
+  facts: [column]
+  causes:
+    - An incomplete row in the accessory file
+  fix:
+    - Ask the data source for the missing value
+
+ACCESS_DQ_VALUE_ZERO:
+  severity: warning
+  message: '{column} is 0'
+  facts: [column]
+  causes:
+    - A placeholder or missing price in the accessory file
+  fix:
+    - Ask the data source for the real value
+
+ACCESS_DQ_VALUE_NEGATIVE:
+  severity: warning
+  message: '{column} is negative ({value})'
+  facts: [column, value]
+  causes:
+    - A typo in the accessory file
+  fix:
+    - Ask the data source for the correct value
+
+ACCESS_DQ_FITMENT_HINT:
+  severity: info
+  message: 'Description "{description}" hints at narrower fitment ("{hint}"); the part still fits its whole set'
+  facts: [description, hint]
+  causes:
+    - The description names a trim or configuration the part does or does not fit
+  fix:
+    - No action (an accessory fits every vehicle in its specified set, idea 003 A4)
+    - If fitment should be narrower, raise it with the data source
+
+# ---------------------------------------------------------------- accessories: export
+
+ACCESS_EXPORT_FILE_LOCKED:
+  severity: fatal
+  message: 'Cannot write {path}: the file is open in another program'
+  facts: [path]
+  causes:
+    - The export file is open in Excel or another program
+  fix:
+    - Close the file
+    - Rerun run_accessories.py
+
+ACCESS_EXPORT_SHEET_RENAMED:
+  severity: info
+  message: 'Model "{name}" is written to sheet "{sheet}" (Excel sheet names allow 31 characters, none of / \ ? * [ ] :)'
+  facts: [name, sheet]
+  causes:
+    - The model name is too long or holds characters Excel does not allow in sheet names
+  fix:
+    - No action
+
+ACCESS_EXPORT_SHEET_EMPTY:
+  severity: warning
+  message: 'Model "{name}" has no matched rows, so its sheet is empty'
+  facts: [name]
+  causes:
+    - None of the model's part-years found a vehicle (see the ACCESS_LOOKUP_ flags)
+  fix:
+    - Resolve the lookup flags for this model (db/review/accessory_review.csv)
+    - Rerun run_accessories.py

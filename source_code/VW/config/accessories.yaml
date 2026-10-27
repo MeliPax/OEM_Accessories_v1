@@ -1,0 +1,86 @@
+# ACCESSORIES: layout, filters, data-quality rules and export of the VW accessory file
+# (planning/ideas/003_accessory_model_matching_design.md, plan 003).
+# The file path is sources.accessories in pipeline.yaml; the year window is datasets.accessories there.
+# Model names are resolved with models.yaml (shared aliases), model numbers are fetched from db/final/vehicles.csv.
+
+sheet: 0              # sheet index (0 = first) or name
+header_row: 2         # spreadsheet row that holds the column names (1 = first row); data starts below it
+
+# source column -> pipeline column and type (text | number). Only these columns are read.
+columns:
+  stockCode:          { name: part_number, type: text }
+  make name:          { name: make, type: text }
+  model:              { name: model_name, type: text }
+  year range:         { name: year_range, type: text }
+  status:             { name: status, type: text }
+  productDescription: { name: product_description, type: text }
+  dealerNotes:        { name: comments, type: text }
+  MSRP:               { name: msrp, type: number }
+  cost:               { name: cost, type: number }
+  laborTime:          { name: labor_time, type: number }
+
+# Part numbers kept exactly as the source (planning/ideas/008_part_number_integrity_design.md).
+# check_column holds the part number followed directly by the model name ("000071200Atlas"). Removing the
+# row's own suffix_column value from its end proves the complete part number. It is never padded: a
+# part number is only restored when check_column holds the zeros stockCode lost.
+part_number:
+  column: part_number               # the pipeline column to protect (from columns: above)
+  check_column: make&model          # source column read alongside the others, as text
+  suffix_column: model_name         # pipeline column whose value ends check_column
+  restore: leading_zeros_only       # leading_zeros_only | never
+  allowed_characters: A-Z0-9        # characters a proven part number may use (a regex character class)
+  max_unproven_share: 0.01          # more rows than this not proven stops the run (the layout changed?)
+  export_as_text: true              # Part Number cells written as Excel text, so Excel never drops the zeros
+
+# rows kept; any other status value is flagged ACCESS_STGNG_STATUS_UNEXPECTED and left out
+keep_rows:
+  status: [Active]
+known_statuses: [Active, Inactive]
+
+# data-quality rules (the notebook's data_rules), flagged as warnings; they never stop the run.
+# The year range itself is checked when it is split (ACCESS_YEAR_RANGE_INVALID / _REVERSED).
+dq_rules:
+  greater_than: [[msrp, cost]]                  # left value must be > right value
+  not_null: [part_number, model_name, product_description, msrp, cost, labor_time]
+  numeric_non_zero: [msrp, cost]
+  numeric_non_negative: [labor_time]            # zero or more
+
+# description words that hint at narrower fitment. Logged at INFO only (ACCESS_DQ_FITMENT_HINT):
+# an accessory still fits every vehicle in its set (idea 003, A4).
+fitment_hints: [not for, without, except, only for, bench seating, captain chairs]
+
+# Variant: one label per vehicle that best describes it, built from its standardized taxonomy fields in
+# db/final/vehicles.csv (not the raw description, so the same vehicle reads the same in every year).
+# Model and submodel are left out (the Model column shows them); series and inventory_status too (internal / metadata).
+variant:
+  fields:                         # in this order; empty fields are skipped
+    - trim
+    - special_edition
+    - appearance_package
+    - performance_package
+    - technology_package
+    - engine
+    - transmission
+    - drivetrain
+    - body_style
+  separator: " "                  # between fields
+  multi_value_separator: " "      # between the values of a multi-value field (Black|R-Line -> "Black R-Line")
+  base_label: Base                # the label when the base rule applies
+  base_when: all_fields_empty     # rule: none of the fields above has a value (e.g. 2024 Golf GTI CD19UZ)
+
+export:
+  output_dir: output                            # inside source_code/VW, git-ignored
+  file_name: "{run_id}.xlsx"                    # run_id = vw_accessories_<YYYYMMDD_HHMMSS>
+  include_unmatched: false                      # rows without a model number stay in the review file
+  sort_by: [part_number, applicable_year, model_number]
+  columns:                                      # dict column: header in the file, in this order
+    part_number: Part Number
+    model_name_clean: Model                     # standard name (GTI -> Golf GTI); the sheet keeps the file's name
+    product_description: Description
+    msrp: MSRP
+    cost: Cost
+    labor_time: Labour Time
+    comments: Comments
+    variant: Variant                            # built per the variant block above
+    applicable_year: Year
+    model_number: Model Number

@@ -169,11 +169,15 @@ def _log_parse(ctx, step, row, p):
         log_change(ctx, step, key, m['category'], '', m['value'], f'keyword_{m["kind"]}', f'"{m["match"]}"')
 
     if p['parse_status'] == 'failed':
-        log_flag(ctx, step, key, 'no_model_match', 'error', 'model', '',
-                 f'"{row["description_clean"]}" does not start with a model in models.yaml')
+        log_flag(ctx, step, key, 'VEH_PARSE_NO_MODEL_MATCH', 'model', '',
+                 checked='description starts with a model or alias in models.yaml',
+                 found=f'no model matches "{row["description_clean"]}"', description=row['description_clean'])
     for token in p['unparsed'] if p['parse_status'] != 'failed' else []:
-        log_flag(ctx, step, key, 'unknown_token', 'warning', '', token,
-                 f'"{token}" in "{row["description_clean"]}" matches no keyword')
+        log_flag(ctx, step, key, 'VEH_PARSE_UNKNOWN_WORD', '', token,
+                 checked='every phrase and word in config/keywords.yaml', found=f'no keyword matches "{token}"',
+                 token=token, description=row['description_clean'])
     for category, values in p['conflicts'].items():
-        log_flag(ctx, step, key, 'single_value_conflict', 'warning', category, to_cell(values),
-                 f'{category} allows one value, found {len(values)}')
+        log_flag(ctx, step, key, 'VEH_PARSE_CONFLICTING_VALUES', category, to_cell(values),
+                 checked=f'{category} is single-value (categories.yaml)',
+                 found=f'{len(values)} values in "{row["description_clean"]}"', category=category,
+                 values=sorted(values))

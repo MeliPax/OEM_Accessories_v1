@@ -46,16 +46,18 @@ def apply_resolutions(vehicles, taxonomy, option_sets, ctx=None, step='resolve')
                 if other_years:
                     where = (f'vehicles/{found["file"]} {found["start"]}-{found["end"]}' if found
                              else 'no option set')
-                    log_flag(ctx, step, row, 'resolution_suggested', 'warning', to_cat, to_val,
-                             f'"{rule["match"]}" could be {to_val}{seen}, but {where} does not offer it; '
-                             f'add {to_cat}: [{to_val}] to the option set if it is')
+                    log_flag(ctx, step, row, 'VEH_RESOLVE_SUGGESTED', to_cat, to_val,
+                             checked=f'1) model number {row["model_number"]} in other years '
+                                     f'2) {where} offers {to_cat} {to_val}',
+                             found=f'1) {to_val} in {", ".join(other_years)} 2) not offered',
+                             word=rule['match'], to_category=to_cat, to_value=to_val, where=where)
                 continue
 
             to_values = split_multi_value(row[to_cat])
             if to_cat not in multi and to_values and to_val not in to_values:
-                log_flag(ctx, step, row, 'resolution_conflict', 'warning', to_cat, row[to_cat],
-                         f'"{rule["match"]}" would become {to_cat} = {to_val}, '
-                         f'but it already has {row[to_cat]}; not changed')
+                log_flag(ctx, step, row, 'VEH_RESOLVE_CONFLICT', to_cat, row[to_cat],
+                         checked=f'{to_cat} is empty or already {to_val}', found=f'{to_cat} = {row[to_cat]}',
+                         word=rule['match'], to_category=to_cat, to_value=to_val, current=row[to_cat])
                 continue
 
             reason = (f'"{rule["match"]}" -> {to_val}: vehicles/{found["file"]} '

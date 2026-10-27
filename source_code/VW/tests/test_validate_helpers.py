@@ -32,20 +32,23 @@ def test_value_outside_option_set_is_not_offered(ctx, make_vehicles, option_sets
                               ['T2', '2025', 'Tiguan Highline R-Line']])   # fine
     assert check_option_sets(vehicles, option_sets, option_categories(taxonomy), ctx) == 1
     flag = ctx['flags'][0]
-    assert (flag['rule'], flag['vehicle_id'], flag['category'], flag['value']) == \
-           ('not_offered', 'VW-2025-T1', 'trim', 'Execline')
+    assert (flag['code'], flag['vehicle_id'], flag['category'], flag['value']) == \
+           ('VEH_VALID_OPTION_NOT_OFFERED', 'VW-2025-T1', 'trim', 'Execline')
+    assert flag['message'] == 'Tiguan 2025 has trim = Execline, which its option set does not offer'
+    assert 'config/vehicles/tiguan.yaml' in flag['checked'] and flag['fix'].startswith('1) ')
 
 
 def test_unlisted_category_means_not_offered(ctx, make_vehicles, option_sets, taxonomy):
     vehicles = make_vehicles([['G1', '2025', 'Golf GTI Autobahn Manual']])   # 2025 GTI lists no transmission
     check_option_sets(vehicles, option_sets, option_categories(taxonomy), ctx)
-    assert 'nothing (category not listed)' in ctx['flags'][0]['detail']
+    assert 'nothing (category not listed)' in ctx['flags'][0]['found']
 
 
 def test_new_model_year_has_no_option_set(ctx, make_vehicles, option_sets, taxonomy):
     vehicles = make_vehicles([['T9', '2028', 'Tiguan Highline']])
     check_option_sets(vehicles, option_sets, option_categories(taxonomy), ctx)
-    assert [f['rule'] for f in ctx['flags']] == ['no_option_set']
+    assert [f['code'] for f in ctx['flags']] == ['VEH_VALID_NOT_IN_CONFIG']
+    assert 'declared: 2020-2020' in ctx['flags'][0]['found']
 
 
 def test_model_number_consistency(ctx, make_vehicles):

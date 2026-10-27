@@ -1,6 +1,6 @@
 # 003 — Accessory Ingest + Model Number Matching: Design
 
-**Status:** Idea — all decisions (A1–A9) made 2026-10-26; plan: [plans/003](../plans/003_accessory_model_matching.md)
+**Status:** Idea — all decisions made (A1–A8 2026-10-26; A10–A17 2026-10-27; A9 replaced by [idea 004](004_error_message_catalogue_design.md)). Plan: [plans/003](../plans/003_accessory_model_matching.md)
 **Builds on:** [001 VW model ingest](001_vw_model_ingest_design.md) (`db/final/vehicles.csv`), [002 logging](002_pipeline_logging_design.md)
 **Source:** `datasets/2026_10_20_VW Canada Accessories Data EN.xlsx`, explored in `oem_access_data_analysis.ipynb`
 
@@ -28,18 +28,18 @@ fits(part, vehicle)  ⇔  vehicle.make     = part.make
 
 Profiled 2026-10-26 (sheet `Sheet1`, 24,396 rows, first data row holds the real headers):
 
-| Finding | Impact on design |
-|---|---|
-| 20,399 Active rows; 13,051 inside the 2020+ window | Same `status = Active` filter and year window as the notebook |
-| **13,051 rows collapse to 1,357 unique (part, model) rows.** The repeats are exact copies; no column differs | Deduplicate on (part_number, model_name), and log how many were removed |
-| Each (part, model) has exactly one `year range` (e.g. `2018-2024`, `1990-2026`) | Expand to one row per applicable year, clipped to the window (D15) |
-| 448 unique parts; 186 of them are listed for more than one model | Part number alone is not the key; (part_number, model_name) is |
-| **14 model names**, all of which map to `models.yaml` with **one alias**: `GTI` → `Golf GTI` | The accessory side can use the same model / submodel parser as the vehicle side |
-| Submodels are listed separately: `Golf`, `GTI`, `Golf R` / `Jetta`, `Jetta GLI` / `Atlas`, `Atlas Cross Sport` | Accessory `Golf` means the **base** Golf only, not GTI or R. Match on model **and** submodel |
-| Accessory years run to 2026; vehicle years to 2027 | 2027 vehicles get no accessories until the accessory file covers 2027 (expected) |
-| `productDescription` rarely says anything about fitment. Real qualifiers in ~10 descriptions: `for R-Line` / `not for R-Line` (mud flaps), `Trunk Liner 4Motion (AWD)`, `Peak Edition` (wheel, mud flaps) | Not used for matching: an accessory fits its whole specified set (A4). Noted in the run log only |
-| Running the vehicle vocabulary over product descriptions gives **false positives**: `Black` (colour, 65 descriptions), `Dune` (mat colour), `PRO` (Thule T2 Pro) | Do **not** parse product descriptions with `keywords.yaml` |
-| `specialNote`, `applicationNotes`, `dealerNotes` are marketing / install text, not fitment | Not used for matching |
+| Finding                                                                                                                                                                                                             | Impact on design                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 20,399 Active rows; 13,051 inside the 2020+ window                                                                                                                                                                  | Same `status = Active` filter and year window as the notebook                                            |
+| **13,051 rows collapse to 1,357 unique (part, model) rows.** The repeats are exact copies; no column differs                                                                                                  | Deduplicate on (part_number, model_name), and log how many were removed                                    |
+| Each (part, model) has exactly one `year range` (e.g. `2018-2024`, `1990-2026`)                                                                                                                               | Expand to one row per applicable year, clipped to the window (D15)                                         |
+| 448 unique parts; 186 of them are listed for more than one model                                                                                                                                                    | Part number alone is not the key; (part_number, model_name) is                                             |
+| **14 model names**, all of which map to `models.yaml` with **one alias**: `GTI` → `Golf GTI`                                                                                                     | The accessory side can use the same model / submodel parser as the vehicle side                            |
+| Submodels are listed separately: `Golf`, `GTI`, `Golf R` / `Jetta`, `Jetta GLI` / `Atlas`, `Atlas Cross Sport`                                                                                        | Accessory `Golf` means the **base** Golf only, not GTI or R. Match on model **and** submodel |
+| Accessory years run to 2026; vehicle years to 2027                                                                                                                                                                  | 2027 vehicles get no accessories until the accessory file covers 2027 (expected)                           |
+| `productDescription` rarely says anything about fitment. Real qualifiers in ~10 descriptions: `for R-Line` / `not for R-Line` (mud flaps), `Trunk Liner 4Motion (AWD)`, `Peak Edition` (wheel, mud flaps) | Not used for matching: an accessory fits its whole specified set (A4). Noted in the run log only           |
+| Running the vehicle vocabulary over product descriptions gives **false positives**: `Black` (colour, 65 descriptions), `Dune` (mat colour), `PRO` (Thule T2 Pro)                                        | Do **not** parse product descriptions with `keywords.yaml`                                         |
+| `specialNote`, `applicationNotes`, `dealerNotes` are marketing / install text, not fitment                                                                                                                    | Not used for matching                                                                                      |
 
 ## The idea: resolve each unique (model name, year) once, then attach
 
@@ -74,35 +74,35 @@ accessories.xlsx (1,357 part/model rows)              db/final/vehicles.csv (269
 
 **Why this is efficient:**
 
-| | Record by record | Lookup by key |
-|---|---|---|
-| Model-name parses | 1,357 (one per row) | **14** (one per unique name) |
-| Vehicle DB searches | 6,474 (one per part-year) | **71** (one per unique model name + year) |
-| Building the vehicle index | per search | **once**, one `groupby` over 269 rows |
-| Attaching | a join per row | **one vectorized `map`**, then `explode` |
+|                            | Record by record          | Lookup by key                                      |
+| -------------------------- | ------------------------- | -------------------------------------------------- |
+| Model-name parses          | 1,357 (one per row)       | **14** (one per unique name)                 |
+| Vehicle DB searches        | 6,474 (one per part-year) | **71** (one per unique model name + year)    |
+| Building the vehicle index | per search                | **once**, one `groupby` over 269 rows      |
+| Attaching                  | a join per row            | **one vectorized `map`**, then `explode` |
 
 Nothing joined is saved. The vehicle DB is read with only the columns needed (model, submodel, model_year, model_number, vehicle_id), the lookup lives in memory, and the result is the dict.
 
 **What it gives on today's data (estimate):**
 
-| | Count |
-|---|---|
-| Accessory (part, model) rows after dedupe | 1,357 |
-| Unique (model_name, year) keys | 71 |
-| Keys found in the vehicle DB | 64 |
+|                                                    | Count                                                                         |
+| -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Accessory (part, model) rows after dedupe          | 1,357                                                                         |
+| Unique (model_name, year) keys                     | 71                                                                            |
+| Keys found in the vehicle DB                       | 64                                                                            |
 | Keys with **no vehicle** (flagged once each) | 7: Arteon 2022, 2023; Atlas 2020; Golf R 2020, 2021; ID. Buzz 2026; ID.4 2026 |
-| Part-years affected by those 7 misses | 451 of 6,474 |
-| Model numbers per found key | 1 to 13 (median 4) |
+| Part-years affected by those 7 misses              | 451 of 6,474                                                                  |
+| Model numbers per found key                        | 1 to 13 (median 4)                                                            |
 
 ## Where the config lives (single source of truth)
 
-| Need | Where | New or existing |
-|---|---|---|
-| What a model / submodel is | `models.yaml` | existing |
-| Spelling differences | `models.yaml` aliases, **one list shared by every dataset** (A3) | add `GTI: Golf GTI` |
-| Year window and rule (`range_overlap` on `min_year` / `max_year`) | `pipeline.yaml` → `datasets.accessories` | existing |
-| Which years a model / submodel legitimately exists (A2, A9) | `vehicles/<model>.yaml` option sets | existing |
-| Accessory file layout: source path, sheet, header row, column renames, `status` filter, DQ rules (MSRP > cost, ...) | **new** `config/accessories.yaml` | new |
+| Need                                                                                                                  | Where                                                                    | New or existing       |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------- |
+| What a model / submodel is                                                                                            | `models.yaml`                                                          | existing              |
+| Spelling differences                                                                                                  | `models.yaml` aliases, **one list shared by every dataset** (A3) | add `GTI: Golf GTI` |
+| Year window and rule (`range_overlap` on `min_year` / `max_year`)                                               | `pipeline.yaml` → `datasets.accessories`                            | existing              |
+| Which years a model / submodel legitimately exists (A2, A9)                                                           | `vehicles/<model>.yaml` option sets                                    | existing              |
+| Accessory file layout: source path, sheet, header row, column renames, `status` filter, DQ rules (MSRP > cost, ...) | **new** `config/accessories.yaml`                                | new                   |
 
 **One alias list for every dataset (A3).** The same aliases clean the VW descriptions and the accessory model names, so both sides produce the same standard names. `models.yaml` gets one new entry:
 
@@ -142,42 +142,81 @@ dq_rules:                         # the notebook's data_rules, as flags (never s
   numeric_non_negative: [labor_time]
 ```
 
-## Output structure
+## Output structure (updated 2026-10-27)
 
-**Result: the per-model dict, with model numbers attached. Nothing merged is written to the DB.**
+**Two results:** the per-model dict in memory, and an Excel export of it. Nothing merged is written to the DB.
+
+### The dict
+
+One DataFrame per model (A10). Each row is **one part, for one applicable year, on one vehicle**: the vehicle's model number and trim are fetched from `vehicles.csv` (A5, A12).
 
 ```python
-model_year_dict = build_accessory_model_dict()      # from pipeline/, called by the notebook
+model_year_dict = build_accessory_model_dict()
 model_year_dict["GTI"]
-# part_number | model_name | product_description | ... | applicable_year | model_number
+# part_number | model_name | model | submodel | product_description | comments | msrp | cost | labor_time
+# | applicable_year | match_key | model_number | vehicle_id | trim | match_status
 ```
 
-How the model numbers sit in each DataFrame (A5):
+- `applicable_year` is the vehicle year the row applies to. `year_range`, `min_year` and `max_year` are only used to build it, then dropped (A11).
+- `trim` comes from the vehicle DB, so it is empty where the VW description has no trim (56 of 269 vehicles today, e.g. Golf R).
+- `vehicle_id` (`VW-2023-AU…`) is the vehicle DB's own key, so any later join is exact. It stays in the dict and isn't exported.
+- **Unmatched part-years stay in the dict**, with `model_number` empty and `match_status` set to the `ACCESS_LOOKUP_*` code ([idea 004](004_error_message_catalogue_design.md)). They are logged, listed in `db/review/accessory_review.csv`, and left out of the export (A8, A13).
 
-| Option | Shape | Notes |
-|---|---|---|
-| **(a) One row per model number** *(recommended)* | A part that fits 6 GTIs in 2023 has 6 rows for 2023, one `model_number` each | Plain filters (`df[df.model_number == "..."]`); matches "a column with the model number"; ~25k rows in memory |
-| (b) One row per part-year, list column | `model_numbers = [...]` + `model_number_count` | Fewer rows; the list has to be exploded before filtering |
+### The Excel export
 
-- **Unmatched part-years stay in the dict** with `model_number` empty and `match_status` set to the miss reason, so the gap is visible where you work (A8).
-- **Every miss is logged and sent to review (A8):**
-  - the run log and flags CSV get one flag per missing key, with how many parts it affects;
-  - `db/review/accessory_review.csv` gets one row per unmatched part-year (part_number, model_name, year, match_key, reason), about 451 rows today. Unknown model names go there too.
-- **What else is written to disk:** the usual run log, steps, flags and changes, plus a small **lookup report** (`db/dq/accessory_lookup.csv`): 71 rows, one per key, with the model numbers found or the miss reason. It is the audit trail of every fetch, not the merged data.
+`output/<run_id>.xlsx` inside `source_code/VW`, e.g. `output/vw_accessories_20261027_143005.xlsx` (A15, A17), **one sheet per model**. The sheets and columns come from a new `export:` block in `accessories.yaml`:
+
+```yaml
+export:
+  output_dir: output
+  file_name: "{run_id}.xlsx"     # run_id = vw_accessories_<YYYYMMDD_HHMMSS> (A17)
+  include_unmatched: false            # A13
+  sort_by: [part_number, applicable_year, model_number]
+  columns:                            # pipeline column: header in the file, in this order
+    part_number: Part Number
+    model_name: Model
+    product_description: Description
+    msrp: MSRP
+    cost: Cost
+    labor_time: Labour Time
+    comments: Comments
+    trim: Trim
+    applicable_year: Year             # A14
+    model_number: Model Number
+```
+
+- The header names are config, so they can be renamed without code.
+- A config check fails the run (`CONFG_UNKNOWN_REFERENCE`) if a listed column doesn't exist in the dict.
+- Excel limits on sheet names (31 characters, no `/ \ ? * [ ] :`) are handled, and logged (`ACCESS_EXPORT_SHEET_RENAMED`).
+- If the file is open in Excel, the run stops with `ACCESS_EXPORT_FILE_LOCKED`: "close it and rerun".
+
+### What else is written
+
+- The usual run log, steps, flags and changes.
+- `db/dq/accessory_lookup.csv`: one row per key, the audit trail of every fetch.
+- `db/review/accessory_review.csv`: one row per unmatched part-year **and** per vehicle with no parts (A16), with the idea-004 fields (code, checked, found, causes, fix).
+- `db/dq/accessory_runs.csv`: one summary row per run, the input for the report card ([idea 005](005_pipeline_report_card_design.md)).
+
+### Later (separate ideas)
+
+- **Pipeline report card:** a management overview of each run, covering coverage, data updates, gaps and flags. Seeded in [idea 005](005_pipeline_report_card_design.md).
+- **Data-quality issues sheet:** also in idea 005, to be planned separately.
 
 ## Miss flags: what was checked, what failed (A9)
+
+> **Replaced 2026-10-27** by [idea 004](004_error_message_catalogue_design.md), which keeps the two checks below and splits the reasons into prefixed codes (`ACCESS_LOOKUP_IN_CONFIG_NOT_IN_DB`, `..._YEAR_AFTER_LAST_KNOWN`, `..._YEAR_BEFORE_FIRST_KNOWN`, `..._YEAR_IN_GAP`, ...). Kept here for history.
 
 A key that finds no vehicle is checked in two places, in order, and the flag names both checks and their results:
 
 1. **Vehicle DB** (`db/final/vehicles.csv`): rows with this model, submodel and year.
 2. **Fallback, config** (`vehicles/<model>.yaml`): does an option set for this model / submodel cover the year?
 
-| Check 1: vehicle DB | Check 2: config | Flag | Meaning | Fix |
-|---|---|---|---|---|
-| found | (not checked) | none | Model numbers attached | |
-| 0 rows | year covered | `model_number_not_found` | The config says this vehicle existed that year, but the DB has no model numbers for it | Get a fuller VW model export, rerun the vehicle ingest |
-| 0 rows | year not covered | `model_not_offered` | The accessory file lists a year the config says this vehicle wasn't sold | Usually nothing (the accessory range runs past the vehicle's life); if the vehicle was sold, add the year to `vehicles/<model>.yaml` |
-| (model name unknown) | (not checked) | `unknown_accessory_model` | The accessory model name isn't in `models.yaml` or its aliases | Add an alias or the model to `models.yaml` |
+| Check 1: vehicle DB  | Check 2: config  | Flag                        | Meaning                                                                                | Fix                                                                                                                                    |
+| -------------------- | ---------------- | --------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| found                | (not checked)    | none                        | Model numbers attached                                                                 |                                                                                                                                        |
+| 0 rows               | year covered     | `model_number_not_found`  | The config says this vehicle existed that year, but the DB has no model numbers for it | Get a fuller VW model export, rerun the vehicle ingest                                                                                 |
+| 0 rows               | year not covered | `model_not_offered`       | The accessory file lists a year the config says this vehicle wasn't sold               | Usually nothing (the accessory range runs past the vehicle's life); if the vehicle was sold, add the year to `vehicles/<model>.yaml` |
+| (model name unknown) | (not checked)    | `unknown_accessory_model` | The accessory model name isn't in `models.yaml` or its aliases                       | Add an alias or the model to `models.yaml`                                                                                           |
 
 Example log line (one per key, not per part):
 
@@ -197,53 +236,62 @@ The review file carries the same columns per part-year: `match_key`, `flag`, `ch
 One function, `build_accessory_model_dict()`, in `pipeline/accessory_helpers.py`, called from the notebook. A thin `run_accessories.py` calls the same function from the terminal (A7). Every step goes through `run_step`, so it is logged like the vehicle ingest:
 
 ```
-config -> ingest -> staging -> year_window -> clean -> resolve_names -> lookup -> build_dict -> validate
+config -> ingest -> staging -> year_window -> clean -> resolve_names -> lookup -> build_dict -> coverage -> validate -> export
 ```
 
-| Step | What happens | Logged / flagged |
-|---|---|---|
-| `config` | Load `accessories.yaml`, `models.yaml`, `pipeline.yaml`; check `vehicles.csv` exists and record its `taxonomy_version` | Config errors / missing vehicle DB -> FATAL |
-| `ingest` | Read the Excel sheet, promote the header row | Source file, rows, columns |
-| `staging` | Rename columns (`accessories.yaml`), keep `status = Active`, drop exact duplicates on (part_number, model_name) | Rows filtered, duplicates removed |
-| `year_window` | Split `year_range` into `min_year` / `max_year`; `range_overlap` (existing helper) | Each excluded row + reason |
-| `clean` | Trim text; apply the shared `models.yaml` aliases to `model_name` (`GTI` -> `Golf GTI`) | Before -> after per value |
-| `resolve_names` | `match_model()` on each of the 14 **unique** names -> canonical model / submodel | One line per name; unknown name -> `unknown_accessory_model` flag |
-| `lookup` | Build the vehicle index once; fetch the 71 unique keys; on a miss, check the declared years in `vehicles/<model>.yaml` | One line per key (`match_key` -> count + model numbers); a miss is flagged once per key with its reason (A9); lookup report written |
-| `build_dict` | Explode to applicable years (clipped, D15), attach model numbers by `map`, group by model name | Rows per model; unmatched part-years written to the review file |
-| `validate` | DQ rules from `accessories.yaml` (MSRP > cost, not null, ...); `fitment_hint` note for descriptions with qualifiers | Flags (never stop the run); hints at INFO only |
+| Step              | What happens                                                                                                                     | Logged / flagged                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`        | Load `accessories.yaml`, `models.yaml`, `pipeline.yaml`; check `vehicles.csv` exists and record its `taxonomy_version` | Config errors / missing vehicle DB -> FATAL                                                                                           |
+| `ingest`        | Read the Excel sheet, promote the header row                                                                                     | Source file, rows, columns                                                                                                            |
+| `staging`       | Rename columns (`accessories.yaml`), keep `status = Active`, drop exact duplicates on (part_number, model_name)              | Rows filtered, duplicates removed                                                                                                     |
+| `year_window`   | Split `year_range` into `min_year` / `max_year`; `range_overlap` (existing helper)                                       | Each excluded row + reason                                                                                                            |
+| `clean`         | Trim text; apply the shared `models.yaml` aliases to `model_name` (`GTI` -> `Golf GTI`)                                  | Before -> after per value                                                                                                             |
+| `resolve_names` | `match_model()` on each of the 14 **unique** names -> canonical model / submodel                                         | One line per name; unknown name -> `unknown_accessory_model` flag                                                                   |
+| `lookup`        | Build the vehicle index once; fetch the 71 unique keys; on a miss, check the declared years in `vehicles/<model>.yaml`         | One line per key (`match_key` -> count + model numbers); a miss is flagged once per key with its reason (A9); lookup report written |
+| `build_dict`    | Explode to applicable years (clipped, D15), attach model numbers by `map`, group by model name                                 | Rows per model; unmatched part-years written to the review file                                                                       |
+| `validate`      | DQ rules from `accessories.yaml` (MSRP > cost, not null, ...); `fitment_hint` note for descriptions with qualifiers          | Flags (never stop the run); hints at INFO only                                                                                        |
 
 **Code:** a new `pipeline/accessory_helpers.py` (read, header promotion, staging, DQ rules, `build_accessory_model_dict`) and a small `pipeline/lookup_helpers.py` (vehicle index, key fetch, lookup report). Reused unchanged: `clean_helpers`, `parse_helpers.match_model`, `ingest_helpers.filter_by_year_window` / `clip_years`, `logging_helpers`, `storage_helpers`.
 
 ## Risks
 
-| # | Risk | How likely / impact | Mitigation |
-|---|---|---|---|
-| 1 | **Accessory model names that don't map** (a new name, or a spelling like `GTI`) | Certain for new files / medium | Unknown names flagged `unknown_accessory_model` and sent to review, never guessed; fix with an alias in `models.yaml` (shared by all datasets) |
-| 2 | **Trim-specific descriptions inside a set.** E.g. `Front Mud Flaps, not for R-Line` is attached to every vehicle in its Tiguan set, R-Line ones included | Low volume (~10 descriptions) / accepted | **By requirement:** an accessory fits its whole specified set. The descriptions are noted in the run log (INFO, `fitment_hint`) for visibility only; they don't change matches and aren't flagged |
-| 3 | **Matching on the wrong vocabulary.** Running `keywords.yaml` over product descriptions misreads colours and brand names (`Black`, `Dune`, `PRO`) | High if attempted / high | Product descriptions are never parsed with the vehicle vocabulary; only explicit qualifier rules, if approved |
-| 4 | **Base model vs submodel.** Accessory `Golf` might sometimes be meant for all Golfs | Low (the file lists GTI / R separately) / medium | ✅ A2: base model only, exact submodel match; base years declared in `vehicles/<model>.yaml` |
-| 5 | **Gaps in the vehicle DB** (Arteon 2022–23, Atlas 2020, Golf R 2020–21, ID.4 / ID. Buzz 2026) | Certain today / low | Flagged once per key and listed in the review file; the reason says whether the year is declared (DB gap) or not (A9); resolved by a fuller VW model export or by declaring the years |
-| 6 | **Stale vehicle DB.** The accessories run uses an old `vehicles.csv` | Medium / medium | The run records the vehicles file's `taxonomy_version` and last ingest `run_id`, and warns if the config changed since |
-| 7 | **Per-record searching is slow and noisy** | Certain if done per row / low | Lookup by unique key: 71 fetches instead of 6,474; logs are per key, not per part-year |
-| 8 | **Messy source values** (prices as text, odd encodings like `�`, header row inside the data) | Certain / low | Staging keeps text; typed in `clean` with flags; encoding doesn't affect matching fields |
-| 9 | **Exact-duplicate rows** (13,051 → 1,357) hide real changes if deduped carelessly | Low / medium | Dedupe only rows identical on every column used; log the count; flag (part, model) pairs whose duplicates differ |
+| # | Risk                                                                                                                                                             | How likely / impact                              | Mitigation                                                                                                                                                                                                |
+| - | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **Accessory model names that don't map** (a new name, or a spelling like `GTI`)                                                                          | Certain for new files / medium                   | Unknown names flagged `unknown_accessory_model` and sent to review, never guessed; fix with an alias in `models.yaml` (shared by all datasets)                                                        |
+| 2 | **Trim-specific descriptions inside a set.** E.g. `Front Mud Flaps, not for R-Line` is attached to every vehicle in its Tiguan set, R-Line ones included | Low volume (~10 descriptions) / accepted         | **By requirement:** an accessory fits its whole specified set. The descriptions are noted in the run log (INFO, `fitment_hint`) for visibility only; they don't change matches and aren't flagged |
+| 3 | **Matching on the wrong vocabulary.** Running `keywords.yaml` over product descriptions misreads colours and brand names (`Black`, `Dune`, `PRO`)  | High if attempted / high                         | Product descriptions are never parsed with the vehicle vocabulary; only explicit qualifier rules, if approved                                                                                             |
+| 4 | **Base model vs submodel.** Accessory `Golf` might sometimes be meant for all Golfs                                                                      | Low (the file lists GTI / R separately) / medium | ✅ A2: base model only, exact submodel match; base years declared in `vehicles/<model>.yaml`                                                                                                            |
+| 5 | **Gaps in the vehicle DB** (Arteon 2022–23, Atlas 2020, Golf R 2020–21, ID.4 / ID. Buzz 2026)                                                            | Certain today / low                              | Flagged once per key and listed in the review file; the reason says whether the year is declared (DB gap) or not (A9); resolved by a fuller VW model export or by declaring the years                     |
+| 6 | **Stale vehicle DB.** The accessories run uses an old `vehicles.csv`                                                                                     | Medium / medium                                  | The run records the vehicles file's `taxonomy_version` and last ingest `run_id`, and warns if the config changed since                                                                                |
+| 7 | **Per-record searching is slow and noisy**                                                                                                                 | Certain if done per row / low                    | Lookup by unique key: 71 fetches instead of 6,474; logs are per key, not per part-year                                                                                                                    |
+| 8 | **Messy source values** (prices as text, odd encodings like `�`, header row inside the data)                                                            | Certain / low                                    | Staging keeps text; typed in `clean` with flags; encoding doesn't affect matching fields                                                                                                                |
+| 9 | **Exact-duplicate rows** (13,051 → 1,357) hide real changes if deduped carelessly                                                                         | Low / medium                                     | Dedupe only rows identical on every column used; log the count; flag (part, model) pairs whose duplicates differ                                                                                          |
 
 ## Decisions
 
-| ID | Question | Recommendation |
-|---|---|---|
-| A1 | Match = canonical (make, model, submodel, model_year) built from `models.yaml` on both sides? | ✅ 2026-10-26: yes. An accessory fits **every** vehicle in its specified set; fetched by unique key, not merged |
-| A2 | Accessory `Golf` / `Jetta` / `Atlas` = base model only (submodel must match exactly)? | ✅ 2026-10-26: yes. A base model is legit for the years its no-submodel option set declares in `vehicles/<model>.yaml` (base Golf: 2020–2021) |
-| A3 | Aliases per dataset or shared? | ✅ 2026-10-26: **one shared list** in `models.yaml`, so every dataset produces the same standard names; add `GTI: Golf GTI` (checked: no VW description changes) |
-| A4 | Trim-level fitment from product descriptions? | ✅ 2026-10-26: **not used.** An accessory fits its whole specified set. Qualifier words in descriptions are only noted in the run log |
-| A5 | In each model's DataFrame: (a) one row per model number, or (b) one row per part-year with a list of model numbers? | ✅ 2026-10-26: (a) one row per model number |
-| A6 | New `config/accessories.yaml` for the file layout, filters and DQ rules (moved out of the notebook)? | ✅ 2026-10-26: yes |
-| A7 | `build_accessory_model_dict()` in `pipeline/` called from the notebook, plus a thin `run_accessories.py` for the terminal; both need `vehicles.csv` to exist? | ✅ 2026-10-26: yes |
-| A8 | Unmatched part-years? | ✅ 2026-10-26: kept in the dict (`model_number` empty, `match_status` = reason), flagged in the logs, and listed in `db/review/accessory_review.csv`; plus the 71-row lookup report; no merged table |
-| A9 | What reason does a miss get? | ✅ 2026-10-26: check the vehicle DB first, then the config as a fallback. `model_number_not_found` (config covers the year, DB has no vehicle) or `model_not_offered` (config doesn't cover the year). Each flag states what was checked and what failed |
+| ID  | Question                                                                                                                                                              | Recommendation                                                                                                                                                                                                                                                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Match = canonical (make, model, submodel, model_year) built from `models.yaml` on both sides?                                                                       | ✅ 2026-10-26: yes. An accessory fits **every** vehicle in its specified set; fetched by unique key, not merged                                                                                                                                                                                                |
+| A2  | Accessory `Golf` / `Jetta` / `Atlas` = base model only (submodel must match exactly)?                                                                           | ✅ 2026-10-26: yes. A base model is legit for the years its no-submodel option set declares in `vehicles/<model>.yaml` (base Golf: 2020–2021)                                                                                                                                                                     |
+| A3  | Aliases per dataset or shared?                                                                                                                                        | ✅ 2026-10-26: **one shared list** in `models.yaml`, so every dataset produces the same standard names; add `GTI: Golf GTI` (checked: no VW description changes)                                                                                                                                           |
+| A4  | Trim-level fitment from product descriptions?                                                                                                                         | ✅ 2026-10-26: **not used.** An accessory fits its whole specified set. Qualifier words in descriptions are only noted in the run log                                                                                                                                                                          |
+| A5  | In each model's DataFrame: (a) one row per model number, or (b) one row per part-year with a list of model numbers?                                                   | ✅ 2026-10-26: (a) one row per model number                                                                                                                                                                                                                                                                          |
+| A6  | New `config/accessories.yaml` for the file layout, filters and DQ rules (moved out of the notebook)?                                                                | ✅ 2026-10-26: yes                                                                                                                                                                                                                                                                                                   |
+| A7  | `build_accessory_model_dict()` in `pipeline/` called from the notebook, plus a thin `run_accessories.py` for the terminal; both need `vehicles.csv` to exist? | ✅ 2026-10-26: yes                                                                                                                                                                                                                                                                                                   |
+| A8  | Unmatched part-years?                                                                                                                                                 | ✅ 2026-10-26: kept in the dict (`model_number` empty, `match_status` = reason), flagged in the logs, and listed in `db/review/accessory_review.csv`; plus the 71-row lookup report; no merged table                                                                                                           |
+| A9  | What reason does a miss get?                                                                                                                                          | ✅ 2026-10-26: check the vehicle DB first, then the config as a fallback. `model_number_not_found` (config covers the year, DB has no vehicle) or `model_not_offered` (config doesn't cover the year). Each flag states what was checked and what failed                                                         |
+| A10 | One dict entry / sheet per accessory model name or per model family?                                                                                                  | ✅ 2026-10-27: **per accessory model name** (14: `GTI`, `Golf R`, `Golf` separate), not per family; the `model` / `submodel` columns still show the family                                                                                                                                           |
+| A11 | Drop `year_range`, `min_year`, `max_year` after exploding to `applicable_year`?                                                                               | ✅ 2026-10-27: yes (user)                                                                                                                                                                                                                                                                                            |
+| A12 | Fetch `trim` (and `vehicle_id`) with each model number?                                                                                                           | ✅ 2026-10-27: **replaced by `variant`** (user, same day): the vehicle's standardized fields in config order, `Base` when none has a value (`accessories.yaml` variant block). Earlier: trim yes (user); `vehicle_id` kept in the dict, not exported                                                   |
+| A13 | Export only matched rows; unmatched stay in the dict and the review file?                                                                                             | ✅ 2026-10-27: yes                                                                                                                                                                                                                                                                                                   |
+| A14 | Add a `Year` column (`applicable_year`) to the export?                                                                                                            | ✅ 2026-10-27: yes. The same model number exists in several years (e.g. AU22M2 in 2020 and 2021)                                                                                                                                                                                                                     |
+| A15 | Export to `source_code/VW/output/`, git-ignored?                                                                                                                    | ✅ 2026-10-27: yes; file name `<run_id>.xlsx` (A17)                                                                                                                                                                                                                                                                |
+| A16 | Vehicles that get no parts?                                                                                                                                           | ✅ 2026-10-27: flagged (`ACCESS_COVER_VEHICLE_NO_PARTS`, `ACCESS_COVER_MODEL_NO_PARTS`), in the review file, and counted for the report card (idea 005). Today: the 14 model-year 2027 vehicles                                                                                                                  |
+| A17 | Run id format (both pipelines)?                                                                                                                                       | ✅ 2026-10-27: the pipeline name, then the run's date and time at the end: `vw_ingest_20261027_143005`, `vw_accessories_20261027_143005` (a second run in the same second gets `_2`). Used in every log file name, so runs sort and read by time; the export is `output/vw_accessories_20261027_143005.xlsx` |
 
 ## Out of scope for this idea
 
-- French accessories file / bilingual descriptions.
+- French accessories file / bilingual descriptions (none exists for now, 2026-10-27).
 - Prices, labour and DQ beyond what the notebook already checks.
+- The report card and the data-quality issues sheet (idea 005).
 - Writing back to `accy_v2` or a real database.

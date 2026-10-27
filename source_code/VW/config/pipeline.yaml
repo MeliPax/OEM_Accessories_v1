@@ -8,6 +8,7 @@ max_model_year:               # latest model year processed; empty = every avail
 # Source files, relative to source_code/VW
 sources:
   vw_models: datasets/vw_models_data.csv
+  accessories: datasets/2026_10_20_VW Canada Accessories Data EN.xlsx   # layout in accessories.yaml
 
 # How each dataset is checked against the year window (columns are the staged, snake_case names)
 datasets:

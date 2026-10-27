@@ -31,6 +31,10 @@ models:
   Taos: {}
   Tiguan: {}
 
-# Alternate spellings in the VW data -> the standard name. Applied while cleaning, before parsing.
+# Alternate spellings -> the standard name. One list shared by every dataset (VW models and accessories),
+# so both produce the same standard names. Applied while cleaning, before parsing; whole words only.
 aliases:
-  Atlas Sport Cross: Atlas Cross Sport   # 2020-2023 Atlas Cross Sport records
+  Atlas Sport Cross: Atlas Cross Sport   # VW model export: 2020-2023 Atlas Cross Sport records
+  GTI: Golf GTI                          # accessory file names the Golf GTI "GTI". Only the word GTI is rewritten;
+                                         # "Golf" alone stays the base Golf. "Golf GTI ..." -> "Golf Golf GTI ..." ->
+                                         # repeated word removed -> unchanged

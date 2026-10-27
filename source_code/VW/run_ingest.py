@@ -21,22 +21,25 @@ from pipeline import storage_helpers as store                                 # 
 from pipeline.clean_helpers import clean_descriptions                         # noqa: E402
 from pipeline.ingest_helpers import (KEY, filter_by_year_window, read_source,  # noqa: E402
                                      to_staging, validate_staging)
-from pipeline.logging_helpers import (end_run, log_change, log_info, run_status,  # noqa: E402
-                                      run_step, start_run)
+from pipeline.logging_helpers import (end_run, fatal, log_change, log_flag, log_info,  # noqa: E402
+                                      run_status, run_step, start_run)
+from pipeline.message_helpers import MessageError, describe, load_messages  # noqa: E402
 from pipeline.parse_helpers import build_vehicles, vehicle_columns            # noqa: E402
 from pipeline.resolve_helpers import apply_resolutions                        # noqa: E402
 from pipeline.validate_helpers import (build_review_queue, check_model_number_consistency,  # noqa: E402
                                        check_option_sets, check_required)
 
 DATASET = 'vw_models'
+PIPELINE = 'vw_ingest'
 
 
 def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=None):
     """Run the whole pipeline. Returns (status, ctx summary dict)."""
     config_dir, db_dir = Path(config_dir), Path(db_dir)
     settings = cfg.load_settings(config_dir)
+    messages = load_messages(config_dir / 'messages.yaml')
     source = Path(source) if source else VW_DIR / settings['sources'][DATASET]
-    ctx = start_run(settings, _display(source), db_dir, run_id=run_id)
+    ctx = start_run(settings, _display(source), db_dir, run_id=run_id, pipeline=PIPELINE, messages=messages)
     state = {}
 
     try:
@@ -55,8 +58,9 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
                        .get('compare', ['model', 'submodel']))
             unknown = [c for c in compare if c not in taxonomy['categories']]
             if unknown:
-                raise cfg.ConfigError(f'pipeline.yaml: validation.model_number_consistency.compare names '
-                                      f'unknown categor{"ies" if len(unknown) > 1 else "y"}: {", ".join(unknown)}')
+                raise cfg.ConfigError(f'CONFG_UNKNOWN_REFERENCE: pipeline.yaml: validation.model_number_consistency'
+                                      f'.compare names unknown categor{"ies" if len(unknown) > 1 else "y"}: '
+                                      f'{", ".join(unknown)}')
             state.update(taxonomy=taxonomy, option_sets=option_sets, compare_categories=list(compare))
 
         run_step(ctx, 'config', load_config, conditions={
@@ -71,7 +75,7 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
         # 3. staging: snake_case + lineage, key checks, written untouched
         def stage(df):
             staged = validate_staging(to_staging(df, _display(source), ctx), taxonomy['make'], ctx)
-            path = store.write_table(staged, db_dir, 'staging', 'stg_vw_models', sort_by=['model_year', 'model_number'])
+            path = _write(ctx, staged, db_dir, 'staging', 'stg_vw_models', sort_by=['model_year', 'model_number'])
             log_info(ctx, 'staging', 'WRITTEN', table=_display(path), rows=len(staged))
             return staged
 
@@ -124,10 +128,10 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
         def write(df):
             columns = vehicle_columns(taxonomy)
             compare_db_changes(ctx, store.read_table(db_dir, 'final', 'vehicles'), df, columns)
-            path = store.write_table(df, db_dir, 'final', 'vehicles',
-                                     sort_by=['model', 'submodel', 'model_year', 'model_number'], columns=columns)
+            path = _write(ctx, df, db_dir, 'final', 'vehicles',
+                          sort_by=['model', 'submodel', 'model_year', 'model_number'], columns=columns)
             queue = build_review_queue(ctx['flags'], df)
-            queue_path = store.write_table(queue, db_dir, 'review', 'review_queue')
+            queue_path = _write(ctx, queue, db_dir, 'review', 'review_queue')
             log_info(ctx, 'write', 'WRITTEN', vehicles=_display(path), rows=len(df),
                      review_queue=_display(queue_path), review_rows=len(queue))
             return df
@@ -165,8 +169,11 @@ def compare_db_changes(ctx, previous, current, columns):
         log_change(ctx, 'write', curr.loc[vid].to_dict() | {'vehicle_id': vid}, '(row)', '', 'added',
                    'db_added', curr.loc[vid, 'description_clean'])
     for vid in removed:
-        log_change(ctx, 'write', prev.loc[vid].to_dict() | {'vehicle_id': vid}, '(row)', 'present', 'removed',
-                   'db_removed', prev.loc[vid, 'description_clean'])
+        row = prev.loc[vid].to_dict() | {'vehicle_id': vid}
+        log_change(ctx, 'write', row, '(row)', 'present', 'removed', 'db_removed', prev.loc[vid, 'description_clean'])
+        log_flag(ctx, 'write', row, 'VEH_WRITE_VEHICLE_REMOVED',
+                 checked='every vehicle_id in the previous final/vehicles.csv is in this run',
+                 found=f'missing: {prev.loc[vid, "description_clean"]}', vehicle_id=vid)
     for vid in curr.index.intersection(prev.index):
         for col in columns:
             if col == 'vehicle_id' or col in lineage or col not in prev.columns:
@@ -178,6 +185,16 @@ def compare_db_changes(ctx, previous, current, columns):
                 changed_cells += 1
     log_info(ctx, 'write', 'DB COMPARE', previous_rows=len(prev), added=len(added), removed=len(removed),
              changed_values=changed_cells)
+
+
+def _write(ctx, df, db_dir, layer, name, **kwargs):
+    """store.write_table, stopping the run with VEH_WRITE_FILE_LOCKED if the file is open elsewhere."""
+    try:
+        return store.write_table(df, db_dir, layer, name, **kwargs)
+    except PermissionError:
+        path = store.table_path(db_dir, layer, name)
+        raise fatal(ctx, 'VEH_WRITE_FILE_LOCKED', checked=f'write {_display(path)}', found='permission denied',
+                    path=_display(path))
 
 
 def run_summary(ctx, staged, kept, vehicles):
@@ -206,11 +223,26 @@ def main(argv=None):
         status, _ = run(args.config_dir, args.db_dir, args.source)
     except cfg.ConfigError as error:
         print(f'CONFIG ERROR: {error}', file=sys.stderr)
+        print_config_fixes(error, Path(args.config_dir))
         return 2 if 'pipeline.yaml' in str(error) else 1
+    except MessageError as error:
+        print(f'CONFIG ERROR: {error}', file=sys.stderr)
+        return 1
     except Exception as error:   # already logged as FATAL in the run log
         print(f'RUN FAILED: {type(error).__name__}: {error}', file=sys.stderr)
         return 1
     return 1 if status in ('failed', 'ok_with_errors') else 0
+
+
+def print_config_fixes(error, config_dir):
+    """After a config error, print each problem code's causes and fix from messages.yaml (if it loads)."""
+    try:
+        messages = load_messages(config_dir / 'messages.yaml')
+    except MessageError:
+        return
+    for code in sorted({code for code, _ in error.problems}):
+        if code in messages:
+            print(describe(messages, code), file=sys.stderr)
 
 
 if __name__ == '__main__':

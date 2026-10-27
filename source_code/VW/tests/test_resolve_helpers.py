@@ -58,14 +58,14 @@ def test_model_number_evidence_alone_only_suggests(ctx, resolve, option_sets):
     out = resolve([['RM1VPJ', '2025', 'Tiguan Comfortline R-Line Black'],
                    ['RM1VPJ', '2027', 'Tiguan Comfortline R-Line Black Edition']], ctx, sets)
     assert out.loc['VW-2025-RM1VPJ', 'appearance_package'] == 'Black|R-Line'
-    assert [f['rule'] for f in ctx['flags']] == ['resolution_suggested']
-    assert 'is Black Edition in 2027' in ctx['flags'][0]['detail']
+    assert [f['code'] for f in ctx['flags']] == ['VEH_RESOLVE_SUGGESTED']
+    assert 'Black Edition in 2027' in ctx['flags'][0]['found']
 
 
 def test_existing_special_edition_is_a_conflict(ctx, resolve):
     out = resolve([['T1', '2025', 'Tiguan Comfortline United Edition Black']], ctx)
     assert out.loc['VW-2025-T1', 'special_edition'] == 'United Edition'
-    assert [f['rule'] for f in ctx['flags']] == ['resolution_conflict']
+    assert [f['code'] for f in ctx['flags']] == ['VEH_RESOLVE_CONFLICT']
 
 
 def test_broken_resolution_fails_to_load(config_copy):
