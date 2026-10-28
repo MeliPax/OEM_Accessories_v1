@@ -147,7 +147,7 @@ VEH_YEAR_OUT_OF_WINDOW:
   causes:
     - The export includes older (or newer) model years than the pipeline processes
   fix:
-    - No action, unless the window should change (min_model_year / max_model_year in config/pipeline.yaml)
+    - No action, unless the window should change (datasets.vw_models.min_model_year / max_model_year in config/pipeline.yaml)
 
 VEH_YEAR_WINDOW_EMPTY:
   severity: warning
@@ -157,7 +157,7 @@ VEH_YEAR_WINDOW_EMPTY:
     - min_model_year / max_model_year exclude every year in the file
     - The wrong source file was used
   fix:
-    - Check min_model_year / max_model_year in config/pipeline.yaml against the years in the file
+    - Check datasets.vw_models.min_model_year / max_model_year in config/pipeline.yaml against the years in the file
     - Rerun the pipeline
 
 # ---------------------------------------------------------------- vehicle ingest: parse and resolve
@@ -294,7 +294,7 @@ ACCESS_YEAR_OUT_OF_WINDOW:
   causes:
     - The accessory file still lists parts for older vehicles
   fix:
-    - No action, unless the window should change (min_model_year / max_model_year in config/pipeline.yaml)
+    - No action, unless the window should change (datasets.accessories.min_model_year / max_model_year in config/pipeline.yaml)
 
 ACCESS_YEAR_WINDOW_EMPTY:
   severity: warning
@@ -304,7 +304,7 @@ ACCESS_YEAR_WINDOW_EMPTY:
     - min_model_year / max_model_year exclude every year range in the file
     - The wrong accessory file was used
   fix:
-    - Check min_model_year / max_model_year in config/pipeline.yaml against the year ranges in the file
+    - Check datasets.accessories.min_model_year / max_model_year in config/pipeline.yaml against the year ranges in the file
     - Rerun run_accessories.py
 
 ACCESS_YEAR_RANGE_INVALID:
@@ -334,7 +334,7 @@ ACCESS_YEAR_CLIPPED:
   causes:
     - The parts also fit older vehicles than the pipeline processes
   fix:
-    - No action (years before min_model_year are never processed)
+    - No action (years before datasets.accessories.min_model_year are never processed)
 
 # ---------------------------------------------------------------- accessories: vehicle DB
 

@@ -16,6 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 from pipeline import storage_helpers as store
+from pipeline.ingest_helpers import in_window
 from pipeline.logging_helpers import fatal, log_detail, log_flag, log_info
 from pipeline.message_helpers import default_messages, join_causes, join_fix, message_for
 from pipeline.parse_helpers import split_multi_value
@@ -29,10 +30,12 @@ REPORT_COLUMNS = ['match_key', 'model', 'submodel', 'year', 'parts', 'in_db', 'i
 
 # ---------------------------------------------------------------- the vehicle index (built once)
 
-def load_vehicle_index(db_dir, config_version, variant, ctx=None, step='lookup'):
+def load_vehicle_index(db_dir, config_version, variant, ctx=None, step='lookup', settings=None):
     """Read only the columns the lookup needs from vehicles.csv and group them once:
     {'index': {(model, submodel, year): [vehicle dicts]}, 'known_years': {(model, submodel): [years]}, ...}.
-    submodel None = the base model. Each vehicle gets its variant label (variant_label, accessories.yaml)."""
+    submodel None = the base model. Each vehicle gets its variant label (variant_label, accessories.yaml).
+    With settings, only vehicles inside the accessory year window are indexed (lookup, coverage and
+    contradictions never see the others); known_years keeps every DB year, to explain a miss."""
     path = store.table_path(db_dir, 'final', 'vehicles')
     shown = _display(path, db_dir)
     if not path.exists():
@@ -54,13 +57,20 @@ def load_vehicle_index(db_dir, config_version, variant, ctx=None, step='lookup')
                  db_version=', '.join(versions) or 'none', config_version=config_version)
     _check_last_ingest(db_dir, ctx, step)
 
-    index, known = {}, {}
+    index, known, outside = {}, {}, 0
     for row in vehicles.sort_values(['model', 'submodel', 'model_year', 'model_number']).itertuples(index=False):
         submodel = row.submodel or None
         year = int(row.model_year)
+        known.setdefault((row.model, submodel), set()).add(year)
+        if settings is not None and not in_window(year, settings):
+            outside += 1
+            continue
         index.setdefault((row.model, submodel, year), []).append(
             {'model_number': row.model_number, 'vehicle_id': row.vehicle_id, 'variant': row.variant})
-        known.setdefault((row.model, submodel), set()).add(year)
+    if settings is not None:
+        log_info(ctx, step, 'VEHICLE WINDOW', window=settings['window'], in_window=len(vehicles) - outside,
+                 ignored=outside)
+        vehicles = vehicles[[in_window(int(y), settings) for y in vehicles['model_year']]]
     base = vehicles[vehicles['variant'] == variant['base_label']]
     log_info(ctx, step, 'VEHICLE INDEX', file=shown, vehicles=len(vehicles), keys=len(index),
              models=len(known), taxonomy_version=', '.join(versions))
@@ -214,11 +224,10 @@ def lookup_report(results):
 
 # ---------------------------------------------------------------- coverage: vehicles that get no parts
 
-def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage', min_year=None, max_year=None):
+def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage'):
     """DB vehicles whose (model, submodel, year) no accessory covers. One flag per key (with the vehicle
     count and the years that model's accessories do cover); a model with no parts at all gets one flag.
-    Only vehicle years inside the accessory window (min_year..max_year) are checked.
-    Returns review rows (one per vehicle)."""
+    The index holds only vehicles inside the accessory window. Returns review rows (one per vehicle)."""
     catalogue = ctx['messages'] if ctx else default_messages()
     make = taxonomy['make']
     covered = {(m, s) for m, s, _ in keys}
@@ -226,10 +235,8 @@ def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage', min_year=
     for m, s, y in keys:
         accessory_years.setdefault((m, s), set()).add(y)
     rows, flagged_models = [], set()
-    in_window = {k: v for k, v in vehicle_index['index'].items()
-                 if (min_year is None or k[2] >= min_year) and (max_year is None or k[2] <= max_year)}
 
-    for (model, submodel, year), vehicles in sorted(in_window.items(),
+    for (model, submodel, year), vehicles in sorted(vehicle_index['index'].items(),
                                                      key=lambda kv: (kv[0][0], kv[0][1] or '', kv[0][2])):
         if (model, submodel, year) in keys:
             continue
@@ -258,8 +265,7 @@ def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage', min_year=
                          'model_number': v['model_number'], 'code': code, 'severity': m['severity'],
                          'message': m['message'], 'checked': checked, 'found': found,
                          'causes': join_causes(m['causes']), 'fix': join_fix(m['fix'])})
-    log_info(ctx, step, 'COVERAGE', vehicle_keys=len(in_window),
-             outside_window=len(vehicle_index['index']) - len(in_window),
+    log_info(ctx, step, 'COVERAGE', vehicle_keys=len(vehicle_index['index']),
              keys_without_parts=len({r['match_key'] for r in rows}), vehicles_without_parts=len(rows))
     return rows
 

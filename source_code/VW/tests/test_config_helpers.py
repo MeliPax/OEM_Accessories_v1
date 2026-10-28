@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 import pandas as pd
 import pytest
@@ -31,8 +32,10 @@ def test_export_definitions(tmp_path, taxonomy, option_sets):
 
 
 @pytest.mark.parametrize('file, old, new, message', [
-    ('pipeline.yaml', 'min_model_year: 2020', 'min_model_year: twenty', 'min_model_year must be a 4-digit year'),
-    ('pipeline.yaml', 'max_model_year:               #', 'max_model_year: 2019 #', 'is before min_model_year'),
+    ('pipeline.yaml', 'min_model_year: 2020', 'min_model_year: twenty',
+     'datasets.vw_models.min_model_year must be a 4-digit year or current_year - N'),
+    ('pipeline.yaml', '    max_model_year:\n  accessories:', '    max_model_year: 2019\n  accessories:',
+     'datasets.vw_models.max_model_year .2019. is before its min_model_year .2020.'),
     ('pipeline.yaml', 'year_rule: single_year', 'year_rule: yearly', 'year_rule must be one of'),
     ('keywords.yaml', 'trim:\n  phrases:', 'trims:\n  phrases:', 'section "trims" is not a category'),
     ('keywords.yaml', '    - match: Highline\n', '    - match: Highline\n    - match: highline\n',
@@ -80,7 +83,7 @@ def test_config_problems_carry_their_codes(config_copy):
     with pytest.raises(ConfigError) as error:
         cfg.load_settings(config_copy)
     assert error.value.problems[0][0] == 'CONFG_VALUE_INVALID'
-    assert 'CONFG_VALUE_INVALID: min_model_year must be a 4-digit year' in str(error.value)
+    assert 'CONFG_VALUE_INVALID: datasets.vw_models.min_model_year must be a 4-digit year' in str(error.value)
 
 
 def test_vehicle_file_status_is_checked(config_copy):
@@ -144,28 +147,55 @@ def test_shared_gti_alias_leaves_vw_descriptions_unchanged(taxonomy):
 
 # ---------------------------------------------------------------- per-dataset year window
 
-def test_accessories_narrow_the_shared_window_and_vehicles_keep_it():
-    settings = cfg.load_settings(CONFIG_DIR)
-    assert (settings['min_model_year'], settings.get('max_model_year')) == (2020, None)
-    accessories = cfg.dataset_settings(settings, 'accessories')
-    assert (accessories['min_model_year'], accessories.get('max_model_year')) == (2024, None)
-    assert cfg.dataset_settings(settings, 'vw_models')['min_model_year'] == 2020
+ON_2026, ON_2027 = date(2026, 10, 28), date(2027, 1, 2)
+ACC_MIN = '    min_model_year: current_year - 2'
+VEH_MAX = '    max_model_year:\n  accessories:'
+
+
+def test_each_pipeline_has_its_own_window_and_the_accessory_min_moves_with_the_year():
+    settings = cfg.load_settings(CONFIG_DIR, today=ON_2026)
+    vehicles, accessories = (cfg.dataset_settings(settings, d) for d in ('vw_models', 'accessories'))
+    assert (vehicles['min_model_year'], vehicles['max_model_year'], vehicles['window']) == (2020, None, '2020..(no max)')
+    assert (accessories['min_model_year'], accessories['max_model_year']) == (2024, None)
+    assert accessories['window'] == '2024..(no max) [min = current_year - 2]'
+    assert cfg.dataset_settings(cfg.load_settings(CONFIG_DIR, today=ON_2027), 'accessories')['min_model_year'] == 2025
+
+
+@pytest.mark.parametrize('value, year', [(2020, 2020), ('current_year', 2026), ('current_year - 2', 2024),
+                                         ('current_year+1', 2027), ('current_year - x', None), ('2020', None),
+                                         (True, None), (None, None)])
+def test_year_value(value, year):
+    assert cfg.year_value(value, 2026) == year
+
+
+def test_an_empty_accessory_max_takes_the_vehicle_max(config_copy):
+    replace_in(config_copy / 'pipeline.yaml', VEH_MAX, '    max_model_year: 2025\n  accessories:')
+    settings = cfg.load_settings(config_copy, today=ON_2026)
+    assert cfg.dataset_settings(settings, 'accessories')['window'] == '2024..2025 [min = current_year - 2]'
 
 
 @pytest.mark.parametrize('old, new, message', [
-    ('    min_model_year: 2024 ', '    min_model_year: 2018 ',
-     'datasets.accessories.min_model_year (2018) is before the shared min_model_year (2020)'),
-    ('    min_model_year: 2024 ', '    min_model_year: soon ',
-     'datasets.accessories.min_model_year must be a 4-digit year or empty'),
-    ('    max_model_year:            ', '    max_model_year: 2023       ',
-     'datasets.accessories.max_model_year (2023) is before its min_model_year (2024)'),
-    ('max_model_year:               ', 'max_model_year: 2022         ',
-     'datasets.accessories.min_model_year (2024) is after the shared max_model_year (2022)'),
+    (ACC_MIN, '    min_model_year: 2018',
+     'datasets.accessories.min_model_year (2018) is before datasets.vw_models.min_model_year (2020)'),
+    (ACC_MIN, '    min_model_year: current_year - 7',
+     'datasets.accessories.min_model_year (2019) is before datasets.vw_models.min_model_year (2020)'),
+    (ACC_MIN, '    min_model_year: soon',
+     "datasets.accessories.min_model_year must be a 4-digit year or current_year - N, got 'soon'"),
+    (ACC_MIN, '    min_model_year:', 'datasets.accessories.min_model_year is required'),
+    ('    max_model_year:\n    within:', '    max_model_year: current_year - 5\n    within:',
+     'datasets.accessories.max_model_year (2021) is before its min_model_year (2024)'),
+    ('    max_model_year:\n    within:', '    max_model_year: 2026\n    within:',
+     'datasets.accessories.max_model_year (2026) goes past datasets.vw_models.max_model_year (2025)'),
+    ('    max_model_year: 2025\n  accessories:', '    max_model_year: 2023\n  accessories:',
+     'datasets.accessories: no year left (min 2024, max 2023 from datasets.vw_models)'),
+    ('    within: vw_models ', '    within: vw_modelz ', "datasets.accessories.within names unknown dataset 'vw_modelz'"),
+    ('sources:', 'min_model_year: 2020\nsources:', 'min_model_year is set per dataset now'),
 ])
-def test_a_dataset_window_outside_the_shared_one_is_rejected(config_copy, old, new, message):
+def test_a_broken_year_window_is_rejected(config_copy, old, new, message):
+    replace_in(config_copy / 'pipeline.yaml', VEH_MAX, '    max_model_year: 2025\n  accessories:')
     replace_in(config_copy / 'pipeline.yaml', old, new)
     with pytest.raises(ConfigError, match=re.escape(message)):
-        cfg.load_settings(config_copy)
+        cfg.load_settings(config_copy, today=ON_2026)
 
 
 # ---------------------------------------------------------------- verified facts (idea 009)

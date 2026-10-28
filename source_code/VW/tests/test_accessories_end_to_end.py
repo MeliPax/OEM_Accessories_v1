@@ -1,7 +1,7 @@
 """Full runs of the accessory pipeline on today's data, after a vehicle ingest into a temporary db/ folder.
 
-acc_run uses the real config: accessories from 2024 (datasets.accessories.min_model_year), vehicles from 2020.
-acc_run_2020 removes that override, so accessories fall back to the shared 2020 window."""
+acc_run uses the real config on 2026-10-28: accessories from current_year - 2 = 2024, vehicles from 2020.
+acc_run_2020 sets the accessory min to 2020, the vehicle window."""
 
 import re
 import shutil
@@ -12,10 +12,12 @@ import pytest
 import run_accessories
 import run_ingest
 from conftest import CONFIG_DIR, replace_in
+from datetime import date
 from pipeline import config_helpers as cfg
 from pipeline.accessory_helpers import build_accessory_model_dict, export_accessories, run_pipeline
 from pipeline.logging_helpers import PipelineFatal
 
+TODAY = date(2026, 10, 28)       # current_year 2026: accessories from 2024
 STEPS = ['config', 'ingest', 'part_numbers', 'staging', 'year_window', 'clean_text', 'dedupe', 'part_number_review',
          'clean', 'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'verify', 'export']
 MISSES = {                                               # accessories 2024+
@@ -42,7 +44,7 @@ def acc_run(tmp_path_factory):
     db = tmp_path_factory.mktemp('db')
     out = tmp_path_factory.mktemp('output')
     run_ingest.run(db_dir=db, run_id='ingest1')
-    status, summary, model_dict = run_pipeline(db_dir=db, run_id='acc1', output_dir=out)
+    status, summary, model_dict = run_pipeline(db_dir=db, run_id='acc1', output_dir=out, today=TODAY)
     return db, out, status, summary, model_dict
 
 
@@ -50,7 +52,7 @@ def acc_run(tmp_path_factory):
 def acc_run_2020(tmp_path_factory):
     config = tmp_path_factory.mktemp('config2020')
     shutil.copytree(CONFIG_DIR, config, dirs_exist_ok=True)
-    replace_in(config / 'pipeline.yaml', '    min_model_year: 2024 ', '    min_model_year:      ')
+    replace_in(config / 'pipeline.yaml', '    min_model_year: current_year - 2', '    min_model_year: 2020')
     db = tmp_path_factory.mktemp('db2020')
     out = tmp_path_factory.mktemp('output2020')
     run_ingest.run(db_dir=db, run_id='ingest1')
@@ -71,9 +73,16 @@ def test_every_step_is_logged_and_rows_reconcile(acc_run):
 
 
 def test_the_accessory_window_is_2024_while_vehicles_stay_at_2020(acc_run):
+    """Every accessory step sees only vehicles in its window: no 2020-2023 vehicle is looked up or checked."""
     db, *_, model_dict = acc_run
     vehicles = read(db / 'final' / 'vehicles.csv')
     assert vehicles['model_year'].astype(int).min() == 2020 and len(vehicles) == 269
+    log = (db / 'logs' / 'runs' / 'acc1.log').read_text(encoding='utf-8')
+    assert 'VEHICLE WINDOW | window=2024..(no max) [min = current_year - 2] | in_window=' in log
+    rows = pd.concat(model_dict.values())
+    assert rows.loc[rows['vehicle_id'] != '', 'vehicle_id'].str[3:7].astype(int).min() == 2024
+    review = read(db / 'review' / 'accessory_review.csv')
+    assert pd.to_numeric(review['year'], errors='coerce').dropna().min() >= 2024
     assert min(d['applicable_year'].min() for d in model_dict.values()) == 2024       # 2018-2026 -> 2024-2026
     flags = read(db / 'logs' / 'flags' / 'acc1.csv')
     window = flags[flags['code'] == 'ACCESS_YEAR_OUT_OF_WINDOW']
@@ -123,7 +132,8 @@ def test_verified_facts_outside_the_window_are_not_reported_unused(acc_run):
     assert not flags['code'].isin(['ACCESS_VERIFY_ENTRY_UNUSED', 'ACCESS_VERIFY_CONTRADICTED']).any()
     assert (summary['flags_verified'], summary['verified_contradicted']) == (0, 0)
     log = (db / 'logs' / 'runs' / 'acc1.log').read_text(encoding='utf-8')
-    assert 'OUTSIDE WINDOW | window=2024..(no max) | facts=2 | entries=arteon.yaml #1, golf.yaml #1' in log
+    assert ('OUTSIDE WINDOW | window=2024..(no max) [min = current_year - 2] | facts=2 | '
+            'entries=arteon.yaml #1, golf.yaml #1') in log
 
 
 # ---------------------------------------------------------------- the shared 2020 window (override removed)
@@ -228,7 +238,7 @@ def test_rerun_gives_identical_reports_and_export(acc_run, tmp_path):
     db, out, *_ = acc_run
     lookup = (db / 'dq' / 'accessory_lookup.csv').read_bytes()
     review = (db / 'review' / 'accessory_review.csv').read_bytes()
-    run_pipeline(db_dir=db, run_id='acc2', output_dir=out)
+    run_pipeline(db_dir=db, run_id='acc2', output_dir=out, today=TODAY)
     assert (db / 'dq' / 'accessory_lookup.csv').read_bytes() == lookup
     assert (db / 'review' / 'accessory_review.csv').read_bytes() == review
     first = pd.read_excel(out / 'acc1.xlsx', sheet_name=None)
@@ -285,7 +295,7 @@ def test_labour_time_is_exported_in_hours(acc_run):
 
 def test_notebook_entry_point_without_export(acc_run):
     db, *_ = acc_run
-    model_dict = build_accessory_model_dict(db_dir=db, export=False)
+    model_dict = build_accessory_model_dict(db_dir=db, export=False, today=TODAY)
     assert len(model_dict) == 10
 
 

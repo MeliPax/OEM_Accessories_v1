@@ -37,7 +37,7 @@ PIPELINE = 'vw_ingest'
 def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=None):
     """Run the whole pipeline. Returns (status, ctx summary dict)."""
     config_dir, db_dir = Path(config_dir), Path(db_dir)
-    settings = cfg.load_settings(config_dir)
+    settings = cfg.dataset_settings(cfg.load_settings(config_dir), DATASET)    # the vehicle year window
     messages = load_messages(config_dir / 'messages.yaml')
     source = Path(source) if source else VW_DIR / settings['sources'][DATASET]
     ctx = start_run(settings, _display(source), db_dir, run_id=run_id, pipeline=PIPELINE, messages=messages)
@@ -85,7 +85,7 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
         staged = run_step(ctx, 'staging', stage, raw, conditions={'key': '(model_number, model_year)'})
 
         # 4. year window
-        window = f"{settings['min_model_year']}..{settings.get('max_model_year') or '(no max)'}"
+        window = settings['window']
         kept = run_step(ctx, 'year_window', lambda df: filter_by_year_window(df, settings, DATASET, ctx), staged,
                         conditions={'rule': settings['datasets'][DATASET]['year_rule'],
                                     'column': settings['datasets'][DATASET]['year_column'], 'window': window})

@@ -2,7 +2,17 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-28 — Accessories from model year 2024 (plan 003 config)
+## 2026-10-28 — One year window per pipeline; accessories from current year - 2
+
+- `pipeline.yaml`: the shared window is gone. `datasets.vw_models` and `datasets.accessories` each set
+  `min_model_year` / `max_model_year`: a year, or `current_year - N` worked out at run start. Vehicles: 2020+.
+  Accessories: `current_year - 2` (2024+ in 2026). Max empty = open.
+- The accessory run reads only vehicles inside its window: lookup, coverage and contradiction checks never see
+  2020–2023 vehicles. The run log shows `VEHICLE WINDOW` with the counts.
+- `within: vw_models`: an accessory window outside the vehicle window is a config error; an empty accessory max
+  takes the vehicle max.
+
+## 2026-10-28 — Accessories from model year 2024 (plan 003 config) · `a2d8f78`
 
 - `pipeline.yaml`: a dataset can narrow the shared year window. `datasets.accessories.min_model_year: 2024`; the vehicle ingest keeps 2020+. A dataset window outside the shared one is a `CONFG_VALUE_INVALID` error.
 - Coverage checks only vehicle years inside the accessory window, so 2020–2023 vehicles aren't flagged as having no parts.

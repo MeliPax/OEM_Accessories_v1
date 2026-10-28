@@ -718,10 +718,11 @@ def export_accessories(model_dict, spec, run_id, output_dir, ctx=None, step='exp
 # ---------------------------------------------------------------- the whole run
 
 def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=None, export=True,
-                 output_dir=None):
-    """Run every step. Returns (status, summary, model_dict)."""
+                 output_dir=None, today=None):
+    """Run every step. Returns (status, summary, model_dict). today (a date) fixes current_year in the year
+    window; empty = today."""
     config_dir, db_dir = Path(config_dir), Path(db_dir)
-    settings = cfg.dataset_settings(cfg.load_settings(config_dir), DATASET)    # the accessory year window
+    settings = cfg.dataset_settings(cfg.load_settings(config_dir, today), DATASET)    # the accessory year window
     messages = load_messages(config_dir / 'messages.yaml')
     spec = cfg.load_accessory_config(config_dir, settings)
     source = Path(source) if source else VW_DIR / spec['source']
@@ -761,7 +762,7 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
                                       'max_unproven_share': pn['max_unproven_share']})
         staged = run_step(ctx, 'staging', lambda df: stage_accessories(df, spec, taxonomy['make'], ctx), proven,
                           conditions={'keep_rows': spec['keep_rows'], 'make': taxonomy['make']})
-        window = f"{settings['min_model_year']}..{settings.get('max_model_year') or '(no max)'}"
+        window = settings['window']
         kept = run_step(ctx, 'year_window', lambda df: note_clipped(
                             filter_by_year_window(df, settings, DATASET, ctx), settings, ctx), staged,
                         conditions={'rule': settings['datasets'][DATASET]['year_rule'], 'window': window})
@@ -783,7 +784,7 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
                          conditions={'names': cleaned['model_name_clean'].nunique()})
 
         def lookup(df):
-            index = load_vehicle_index(db_dir, taxonomy['version'], spec['variant'], ctx)
+            index = load_vehicle_index(db_dir, taxonomy['version'], spec['variant'], ctx, settings=settings)
             keys = unique_keys(df, settings)
             results = fetch(keys, index, state['declared'], taxonomy, ctx)
             path = store.write_table(lookup_report(results), db_dir, 'dq', 'accessory_lookup')
@@ -791,7 +792,7 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
             state.update(index=index, keys=keys, results=results)
             return df
 
-        run_step(ctx, 'lookup', lookup, named, conditions={'vehicle_db': 'db/final/vehicles.csv',
+        run_step(ctx, 'lookup', lookup, named, conditions={'vehicle_db': 'db/final/vehicles.csv', 'window': window,
                                                            'key': '(make, model, submodel, year)'})
 
         def build(df):
@@ -809,9 +810,7 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
         run_step(ctx, 'build_dict', build, named, conditions={'one_row_per': 'part, applicable year, vehicle'})
 
         def cover(df):
-            state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx,
-                                               min_year=settings['min_model_year'],
-                                               max_year=settings.get('max_model_year'))
+            state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx)
             return df
 
         run_step(ctx, 'coverage', cover, named, conditions={'direction': 'vehicle DB -> accessories',
@@ -872,9 +871,9 @@ def _keep_review(state, name, result):
 
 
 def build_accessory_model_dict(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, export=True,
-                               output_dir=None):
+                               output_dir=None, today=None):
     """The per-model dict of accessory DataFrames with model numbers attached (the notebook entry point)."""
-    return run_pipeline(config_dir, db_dir, source, export=export, output_dir=output_dir)[2]
+    return run_pipeline(config_dir, db_dir, source, export=export, output_dir=output_dir, today=today)[2]
 
 
 def run_summary(ctx, raw, staged, kept, unique, named, state):

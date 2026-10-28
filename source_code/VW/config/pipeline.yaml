@@ -1,27 +1,29 @@
 # Run settings for the VW pipeline. Taxonomy vocabulary lives in categories/models/keywords.yaml,
 # availability in vehicles/*.yaml.
 
-# Model year window, shared by every dataset (VW models and accessories). A dataset can narrow it with its
-# own min_model_year / max_model_year under datasets: (empty or left out = the shared value).
-min_model_year: 2020          # earliest model year processed (required, 4 digits)
-max_model_year:               # latest model year processed; empty = every available year from min onward
-
 # Source files, relative to source_code/VW
 sources:
   vw_models: datasets/vw_models_data.csv
   accessories: datasets/2026_10_20_VW Canada Accessories Data EN.xlsx   # layout in accessories.yaml
 
-# How each dataset is checked against the year window (columns are the staged, snake_case names)
+# Model year window per dataset: every step that selects data uses its dataset's window, and anything
+# outside it is ignored. Columns are the staged, snake_case names.
+#   min_model_year  required: a 4-digit year, or current_year / current_year - N (worked out at run start)
+#   max_model_year  empty = no upper limit (the usual case); same forms as min
+#   within          another dataset whose window this one must sit inside (its data is matched against it)
 datasets:
   vw_models:
     year_rule: single_year     # keep rows where min <= year <= max
     year_column: model_year
+    min_model_year: 2020
+    max_model_year:
   accessories:
-    year_rule: range_overlap   # keep rows whose [start, end] range overlaps the window
+    year_rule: range_overlap   # keep rows whose [start, end] range overlaps the window, clipped to it
     start_column: min_year
     end_column: max_year
-    min_model_year: 2024       # accessories from 2024 onward only; vehicles keep the shared 2020
-    max_model_year:            # empty = the shared max_model_year
+    min_model_year: current_year - 2    # 2026 -> 2024; moves on by itself each January
+    max_model_year:
+    within: vw_models          # accessories are matched to vehicles: no year outside the vehicle window
 
 validation:
   # A model number may be reused across model years: the key is (model_number, model_year).

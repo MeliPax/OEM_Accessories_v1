@@ -25,7 +25,8 @@ def option_sets(taxonomy):
 
 @pytest.fixture(scope='session')
 def settings():
-    return cfg.load_settings(CONFIG_DIR)
+    """The vehicle ingest's settings (window 2020+)."""
+    return cfg.dataset_settings(cfg.load_settings(CONFIG_DIR), 'vw_models')
 
 
 @pytest.fixture

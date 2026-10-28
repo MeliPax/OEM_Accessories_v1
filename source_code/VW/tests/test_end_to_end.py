@@ -135,7 +135,8 @@ def test_changing_one_keyword_changes_only_affected_rows(config_copy, tmp_path):
 
 
 def test_max_model_year_caps_the_window(config_copy, tmp_path):
-    replace_in(config_copy / 'pipeline.yaml', 'max_model_year:               #', 'max_model_year: 2024 #')
+    replace_in(config_copy / 'pipeline.yaml', '    max_model_year:\n  accessories:',
+               '    max_model_year: 2024\n  accessories:')
     _, summary = run_ingest.run(config_dir=config_copy, db_dir=tmp_path / 'db', run_id='capped')
     assert summary['rows_final'] == 197
 

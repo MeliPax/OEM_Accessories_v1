@@ -11,12 +11,14 @@ Every validation problem raises ConfigError with a readable message; a broken co
 
 import hashlib
 import re
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import yaml
 
 YEAR_RULES = {'single_year': ['year_column'], 'range_overlap': ['start_column', 'end_column']}
+YEAR_EXPRESSION = re.compile(r'^current_year\s*(?:([+-])\s*(\d+))?$')   # current_year, current_year - 2
 REVIEW_STATUSES = ('drafted', 'reviewed')     # vehicles/*.yaml: drafted from data, or checked by a person
 CONFIG_FILES = ['pipeline.yaml', 'categories.yaml', 'models.yaml', 'keywords.yaml']
 
@@ -49,29 +51,32 @@ def read_yaml(path):
 
 # ---------------------------------------------------------------- pipeline.yaml
 
-def load_settings(config_dir):
-    """Read pipeline.yaml and check the year window, dataset rules and logging block."""
+def load_settings(config_dir, today=None):
+    """Read pipeline.yaml and check each dataset's year window and rules, the logging block.
+    Each dataset's min/max_model_year is resolved to a year (current_year - 2 -> 2024 in 2026); the text as
+    written is kept in min_model_year_rule / max_model_year_rule."""
     settings = read_yaml(Path(config_dir) / 'pipeline.yaml')
     errors = []
+    current_year = (today or date.today()).year
 
-    min_year = settings.get('min_model_year')
-    max_year = settings.get('max_model_year')
-    if not _is_year(min_year):
-        errors.append(f'CONFG_VALUE_INVALID: min_model_year must be a 4-digit year, got {min_year!r}')
-    if max_year is not None and not _is_year(max_year):
-        errors.append(f'CONFG_VALUE_INVALID: max_model_year must be a 4-digit year or empty, got {max_year!r}')
-    if _is_year(min_year) and _is_year(max_year) and max_year < min_year:
-        errors.append(f'CONFG_VALUE_INVALID: max_model_year ({max_year}) is before min_model_year ({min_year})')
+    for key in ('min_model_year', 'max_model_year'):
+        if key in settings:
+            errors.append(f'CONFG_VALUE_INVALID: {key} is set per dataset now (datasets.<name>.{key}), '
+                          f'not at the top of pipeline.yaml')
 
-    for name, dataset in (settings.get('datasets') or {}).items():
-        rule = (dataset or {}).get('year_rule')
+    datasets = settings.get('datasets') or {}
+    for name, dataset in datasets.items():
+        dataset = dataset or {}
+        rule = dataset.get('year_rule')
         if rule not in YEAR_RULES:
             errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.year_rule must be one of {sorted(YEAR_RULES)}, got {rule!r}')
-            continue
-        for key in YEAR_RULES[rule]:
-            if not dataset.get(key):
-                errors.append(f'CONFG_VALUE_INVALID: datasets.{name}: year_rule {rule} needs {key}')
-        errors += _dataset_window_errors(name, dataset, min_year, max_year)
+        else:
+            for key in YEAR_RULES[rule]:
+                if not dataset.get(key):
+                    errors.append(f'CONFG_VALUE_INVALID: datasets.{name}: year_rule {rule} needs {key}')
+        errors += _resolve_window(name, dataset, current_year)
+    for name, dataset in datasets.items():
+        errors += _within_errors(name, dataset or {}, datasets)
 
     logging_block = settings.get('logging') or {}
     keep_runs = logging_block.get('keep_runs', 30)
@@ -82,35 +87,77 @@ def load_settings(config_dir):
     return settings
 
 
-def _dataset_window_errors(name, dataset, min_year, max_year):
-    """A dataset's own window may only narrow the shared one: years outside it have no vehicles to match."""
+def year_value(value, current_year):
+    """A configured year: 2020 -> 2020, 'current_year - 2' -> current_year - 2; None if it isn't one."""
+    if _is_year(value):
+        return value
+    match = YEAR_EXPRESSION.match(str(value).strip()) if isinstance(value, str) else None
+    if not match:
+        return None
+    sign, years = match.groups()
+    return current_year + (int(years) if sign == '+' else -int(years) if sign else 0)
+
+
+def _resolve_window(name, dataset, current_year):
+    """Resolve datasets.<name>.min/max_model_year in place; returns the problems."""
     errors = []
+    for key, required in (('min_model_year', True), ('max_model_year', False)):
+        written = dataset.get(key)
+        dataset[f'{key}_rule'] = '' if written is None else str(written)
+        if written is None:
+            if required:
+                errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} is required '
+                              f'(a 4-digit year or current_year - N)')
+            continue
+        year = year_value(written, current_year)
+        if year is None:
+            errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} must be a 4-digit year or '
+                          f'current_year - N{"" if required else ", or empty"}, got {written!r}')
+        dataset[key] = year
     lo, hi = dataset.get('min_model_year'), dataset.get('max_model_year')
-    for key, value in (('min_model_year', lo), ('max_model_year', hi)):
-        if value is not None and not _is_year(value):
-            errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} must be a 4-digit year or empty, got {value!r}')
-    if errors or not _is_year(min_year):
-        return errors
-    if lo is not None and lo < min_year:
-        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.min_model_year ({lo}) is before the shared '
-                      f'min_model_year ({min_year})')
-    if _is_year(max_year):
-        for key, value in (('min_model_year', lo), ('max_model_year', hi)):
-            if value is not None and value > max_year:
-                errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} ({value}) is after the shared '
-                              f'max_model_year ({max_year})')
     if lo is not None and hi is not None and hi < lo:
-        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.max_model_year ({hi}) is before its min_model_year ({lo})')
+        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.max_model_year ({hi}) is before its '
+                      f'min_model_year ({lo})')
+    return errors
+
+
+def _within_errors(name, dataset, datasets):
+    """within: <other> - this window must sit inside the other's (its data is matched against that data).
+    An empty max takes the other's max."""
+    other_name = dataset.get('within')
+    if other_name is None:
+        return []
+    other = datasets.get(other_name)
+    if not isinstance(other, dict):
+        return [f'CONFG_UNKNOWN_REFERENCE: datasets.{name}.within names unknown dataset {other_name!r}']
+    lo, hi, o_lo, o_hi = (dataset.get('min_model_year'), dataset.get('max_model_year'),
+                          other.get('min_model_year'), other.get('max_model_year'))
+    if lo is None or o_lo is None:
+        return []
+    errors = []
+    if hi is None and o_hi is not None:
+        dataset['max_model_year'] = hi = o_hi
+        if hi < lo:
+            return [f'CONFG_VALUE_INVALID: datasets.{name}: no year left (min {lo}, max {hi} from '
+                    f'datasets.{other_name})']
+    if lo < o_lo:
+        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.min_model_year ({lo}) is before '
+                      f'datasets.{other_name}.min_model_year ({o_lo}): those years have no {other_name} data to match')
+    if o_hi is not None and hi > o_hi:
+        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.max_model_year ({hi}) goes past '
+                      f'datasets.{other_name}.max_model_year ({o_hi}): those years have no {other_name} data to match')
     return errors
 
 
 def dataset_settings(settings, dataset):
-    """Settings with the year window this dataset uses: its own min/max_model_year, else the shared ones."""
-    own = (settings.get('datasets') or {}).get(dataset) or {}
-    out = dict(settings)
-    for key in ('min_model_year', 'max_model_year'):
-        if own.get(key) is not None:
-            out[key] = own[key]
+    """Settings for one pipeline: its dataset's resolved year window as min/max_model_year, and the window
+    as text for logs ('2024..(no max) [min = current_year - 2]')."""
+    own = settings['datasets'][dataset]
+    out = dict(settings, min_model_year=own['min_model_year'], max_model_year=own.get('max_model_year'))
+    rules = [f'{k[:3]} = {own[k + "_rule"]}' for k in ('min_model_year', 'max_model_year')
+             if own.get(k + '_rule') and not str(own[k + '_rule']).isdigit()]
+    out['window'] = (f'{out["min_model_year"]}..{out["max_model_year"] or "(no max)"}'
+                     + (f' [{"; ".join(rules)}]' if rules else ''))
     return out
 
 
