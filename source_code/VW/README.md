@@ -19,7 +19,7 @@ datasets/...Accessories Data EN.xlsx                            │ (one lookup 
    │  run_accessories.py                                        ▼
    ▼
 config ─► ingest ─► part numbers ─► staging ─► year window ─► clean text ─► dedupe ─► part number review ─► clean ─► resolve names ─► lookup
-        ─► build dict ─► coverage ─► validate ─► export ─► output/vw_accessories_<date_time>.xlsx
+        ─► build dict ─► coverage ─► validate ─► verify ─► export ─► output/vw_accessories_<date_time>.xlsx
 ```
 
 ## Requirements
@@ -100,6 +100,7 @@ The tests cover each helper module, the message catalogue, and full runs of both
 | `db/review/accessory_review.csv` | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
 | `db/dq/part_number_check.csv` | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not |
 | `db/dq/accessory_lookup.csv` | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed |
+| `db/dq/verified_flags.csv` | Flags a verified fact explained this run (now info, left out of review), with the entry, reason, who and when |
 | `output/<run_id>.xlsx` | The accessory export: one sheet per accessory model name, matched rows only (git-ignored) |
 | `db/logs/runs/<run_id>.log` | The readable story of a run; each flag is a block with what / checked / found / causes / fix |
 | `db/logs/changes/<run_id>.csv` | Every value set or changed: before, after, and the rule or keyword that did it |
@@ -132,7 +133,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 | `categories.yaml` | The taxonomy fields and whether each is single- or multi-value |
 | `models.yaml` | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`) |
 | `keywords.yaml` | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it) |
-| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person) |
+| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person). A `verified:` section records facts a person confirmed, e.g. never offered in a year (see below) |
 | `accessories.yaml` | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), **units** (labour minutes → hours), **comment cleaning** (separators, tags, link rules, allowed link hosts), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, columns and headers in order) |
 | `messages.yaml` | Severity, message, causes and fix for every flag code |
 
@@ -145,6 +146,32 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
    - an `ACCESS_LOOKUP_*` code means accessory years have no vehicle; the fix steps say whether to rerun the ingest, add a year to the config, or ask the data source;
    - `ACCESS_COVER_VEHICLE_NO_PARTS` means vehicles have no parts yet, usually because the accessory file isn't updated for that model year.
 5. Once someone has checked a `vehicles/<model>.yaml`, set `status: reviewed` with `reviewed_by` / `reviewed_on`.
+
+### Recording what a person confirmed (verified facts)
+
+When a flag keeps coming back for something a person has confirmed, record the fact once in `config/vehicles/<model>.yaml`:
+
+```yaml
+verified:
+  - submodel: R                      # leave out for the base model
+    never_offered:
+      years: [2020, 2021]            # each year listed; never a range
+    reason: Golf R wasn't offered in Canada for model years 2020-2021; it returned for 2022
+    verified_by: P.M
+    verified_on: 2026-10-28
+```
+
+| Fact | Means | Effect |
+|---|---|---|
+| `never_offered: {years: [...]}` | The vehicle didn't exist in those years | Accessory lookup flags for exactly that model, submodel and year drop to info and leave the review file |
+| `never_offered: {<category>: [...]}` + `years: [...]` | That option didn't exist on the vehicle in those years | Guards the data: a vehicle in the export with that option is an error |
+| `no_parts_expected: {years: [...], until: YYYY-MM-DD}` | The vehicle exists, but no parts are expected yet | Its `ACCESS_COVER_VEHICLE_NO_PARTS` flags drop to info until the date, then come back (`ACCESS_VERIFY_EXPIRED`) |
+
+The final `verify` step in both pipelines applies these:
+- **Kept:** nothing is deleted. A verified flag keeps its original severity and the entry in the flag log, and is listed in `db/dq/verified_flags.csv`.
+- **Contradictions:** data that contradicts a fact becomes an error (`ACCESS_VERIFY_CONTRADICTED`, `VEH_VERIFY_CONTRADICTED`), for example a Golf R 2021 in a future export.
+- **Unused facts:** a fact that matched nothing is reported as info (`ACCESS_VERIFY_ENTRY_UNUSED`).
+- **Which flags:** only the codes marked `verifiable: true` in `messages.yaml` can be verified.
 
 A broken config stops the run with a `CONFG_` code, the file and entry to fix, and the fix steps. Examples: an unknown category, a duplicate keyword, a typo in an option set, an export column that doesn't exist.
 

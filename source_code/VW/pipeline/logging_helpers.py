@@ -35,7 +35,9 @@ from pipeline.message_helpers import default_messages, join_causes, join_fix, me
 CHANGE_COLUMNS = ['run_id', 'step', 'record', 'vehicle_id', 'model_number', 'model_year',
                   'field', 'before', 'after', 'rule', 'detail']
 FLAG_COLUMNS = ['run_id', 'step', 'code', 'severity', 'subject', 'record', 'vehicle_id', 'model_number', 'model_year',
-                'category', 'value', 'message', 'checked', 'found', 'causes', 'fix']
+                'model', 'submodel', 'category', 'value', 'message', 'checked', 'found', 'causes', 'fix',
+                'original_severity', 'verified_entry']
+KEY_FIELDS = ('record', 'vehicle_id', 'model_number', 'model_year', 'model', 'submodel')
 REVIEW_SEVERITIES = ('fatal', 'error', 'warning')       # info flags stay in the log
 STEP_COLUMNS = ['run_id', 'step_order', 'step', 'started_at', 'duration_s', 'rows_in', 'rows_out',
                 'rows_changed', 'rows_excluded', 'flags', 'conditions', 'status', 'message']
@@ -362,14 +364,14 @@ def _add_change(ctx, step, row_key, field, before, after, rule, detail):
 
 def _key_fields(row_key):
     get = row_key.get if hasattr(row_key, 'get') else (lambda k, d='': d)
-    return {k: _text(get(k, '')) for k in ('record', 'vehicle_id', 'model_number', 'model_year')}
+    return {k: _text(get(k, '')) for k in KEY_FIELDS}
 
 
 def _row_key(row):
     """record / vehicle_id / model_number / model_year from a row, dict or Series. A vehicle row gets its
     vehicle_id (built if missing); an accessory row (part_number + source_row) gets ACC-<source row>-<part>."""
     get = row.get if hasattr(row, 'get') else (lambda k, d='': d)
-    key = {k: _text(get(k, '')) for k in ('record', 'vehicle_id', 'model_number', 'model_year')}
+    key = {k: _text(get(k, '')) for k in KEY_FIELDS}
     if not key['vehicle_id'] and key['model_number'] and key['model_year']:
         key['vehicle_id'] = vehicle_id(key['model_year'], key['model_number'])
     if not key['record']:

@@ -34,6 +34,7 @@ from pipeline.lookup_helpers import coverage, fetch, load_vehicle_index, lookup_
 from pipeline.message_helpers import join_causes, join_fix, load_messages, message_for
 from pipeline.parse_helpers import build_matchers, match_model, tokenize
 from pipeline.text_helpers import clean_text, link_host
+from pipeline.verify_helpers import accessory_contradictions, drop_verified, verified_report, verify_flags
 
 VW_DIR = Path(__file__).resolve().parents[1]
 PIPELINE = 'vw_accessories'
@@ -730,11 +731,13 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
             taxonomy = cfg.validate_taxonomy(cfg.load_taxonomy(config_dir))
             option_sets = cfg.load_option_sets(config_dir, taxonomy)
             declared = cfg.vehicle_years(option_sets)
+            verified = cfg.load_verified(config_dir, taxonomy, option_sets)
             version = config_version(config_dir)
             log_info(ctx, 'config', 'LOADED', columns=len(spec['renames']), dq_rules=len(spec['dq_rules']),
                      export_columns=len(spec['export']['columns']), aliases=len(taxonomy['aliases']),
-                     option_sets=len(option_sets), taxonomy_version=taxonomy['version'], accessory_config=version)
-            state.update(taxonomy=taxonomy, declared=declared, accessory_config=version)
+                     option_sets=len(option_sets), verified_facts=len(verified), taxonomy_version=taxonomy['version'],
+                     accessory_config=version)
+            state.update(taxonomy=taxonomy, declared=declared, verified=verified, accessory_config=version)
 
         run_step(ctx, 'config', load_config, conditions={'config_dir': _display(config_dir),
                                                          'files': 'pipeline, accessories, models, messages + vehicles/*.yaml'})
@@ -806,18 +809,33 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
 
         def cover(df):
             state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx)
-            review = pd.DataFrame(state['part_review'] + state['part_number_review'] + state['text_review']
-                                  + state['unit_review'] + state['vehicle_review'], columns=REVIEW_COLUMNS)
-            path = store.write_table(review, db_dir, 'review', 'accessory_review')
-            log_info(ctx, 'coverage', 'WRITTEN', review=_display(path), part_rows=len(state['part_review']),
-                     part_number_rows=len(state['part_number_review']),
-                     value_rows=len(state['text_review']) + len(state['unit_review']),
-                     vehicle_rows=len(state['vehicle_review']))
             return df
 
         run_step(ctx, 'coverage', cover, named, conditions={'direction': 'vehicle DB -> accessories'})
         run_step(ctx, 'validate', lambda df: check_quality(df, spec, ctx), named,
                  conditions={'rules': ', '.join(spec['dq_rules']), 'fitment_hints': len(spec['fitment_hints'])})
+
+        # the final check: flags a verified fact explains drop to info; contradictions become errors (idea 009)
+        def verify(df):
+            rows, verified = verify_flags(ctx, state['verified'])
+            contradicted = accessory_contradictions(ctx, state['verified'], state['index'], taxonomy['make'])
+            for d in state['model_dict'].values():
+                hit = [(c, k) in verified for c, k in zip(d['match_status'], d['match_key'])]
+                d.loc[hit, 'match_status'] = 'never_offered'
+            review_rows = drop_verified(state['part_review'] + state['part_number_review'] + state['text_review']
+                                        + state['unit_review'] + state['vehicle_review'], verified)
+            review = pd.DataFrame(review_rows, columns=REVIEW_COLUMNS)
+            path = store.write_table(review, db_dir, 'review', 'accessory_review')
+            report = store.write_table(verified_report(rows), db_dir, 'dq', 'verified_flags')
+            log_info(ctx, 'verify', 'WRITTEN', review=_display(path), review_rows=len(review),
+                     verified_flags=_display(report), flags_verified=len(rows), contradicted=contradicted,
+                     part_rows=sum(r['type'] == 'part' for r in review_rows),
+                     vehicle_rows=sum(r['type'] == 'vehicle' for r in review_rows))
+            state.update(review_rows=len(review), flags_verified=len(rows), verified_contradicted=contradicted)
+            return df
+
+        run_step(ctx, 'verify', verify, named, conditions={'facts': len(state['verified']),
+                                                           'match': 'exact (model, submodel, year)'})
 
         state['export'] = ('', {})
         if export:
@@ -870,6 +888,8 @@ def run_summary(ctx, raw, staged, kept, unique, named, state):
             'unmatched_part_years': len(state['part_review']),
             'vehicles_without_parts': len(state['vehicle_review']),
             'export_file': _display(path) if path else '', 'export_sheets': len(sheets),
+            'review_rows': state['review_rows'], 'flags_verified': state['flags_verified'],
+            'verified_contradicted': state['verified_contradicted'],
             'flags_warning': sum(f['severity'] == 'warning' for f in ctx['flags']),
             'flags_error': sum(f['severity'] in ('error', 'fatal') for f in ctx['flags'])}
 

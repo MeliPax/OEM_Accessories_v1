@@ -3,7 +3,7 @@ import re
 import pytest
 
 from conftest import CONFIG_DIR, VW_DIR, replace_in
-from pipeline.message_helpers import MessageError, load_messages, message_for
+from pipeline.message_helpers import MessageError, load_messages, message_for, verifiable_codes
 
 CODE_IN_SOURCE = re.compile(r"""['"]((?:CONFG|VEH|ACCESS)_[A-Z0-9_]+)['":]""")
 
@@ -46,8 +46,18 @@ def test_missing_fact_and_unknown_code_fail_loudly():
     ('severity: warning', 'severity: loud', 'severity must be one of'),
     ('facts: [token, description]', 'facts: [token]', "placeholders ['description']"),
     ('VEH_PARSE_UNKNOWN_WORD:', 'veh_parse_unknown_word:', 'code must look like'),
+    ('  severity: error\n  verifiable: true', '  severity: error\n  verifiable: "true"',
+     'verifiable must be true or false'),
+    ('VEH_PARSE_UNKNOWN_WORD:\n  severity: warning', 'VEH_PARSE_UNKNOWN_WORD:\n  severity: warning\n  verifiable: true',
+     'VEH_PARSE_UNKNOWN_WORD: only LOOKUP/COVER codes that are not fatal can be verifiable'),
 ])
 def test_broken_catalogue_is_rejected(config_copy, old, new, problem):
     replace_in(config_copy / 'messages.yaml', old, new)
     with pytest.raises(MessageError, match=re.escape(problem)):
         load_messages(config_copy / 'messages.yaml')
+
+
+def test_only_availability_codes_are_verifiable():
+    assert verifiable_codes(load_messages(CONFIG_DIR / 'messages.yaml')) == {
+        'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN', 'ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN', 'ACCESS_LOOKUP_YEAR_IN_GAP',
+        'ACCESS_LOOKUP_MODEL_NOT_IN_DB', 'ACCESS_COVER_VEHICLE_NO_PARTS'}

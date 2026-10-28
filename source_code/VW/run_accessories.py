@@ -50,10 +50,12 @@ def main(argv=None):
         print(f'{name:<20}{len(df):>8}{int((df["model_number"] != "").sum()):>9}')
     print(f'\nstatus: {status} | keys found {summary["keys_found"]} of {summary["keys"]} | '
           f'unmatched part-years {summary["unmatched_part_years"]} | '
-          f'vehicles without parts {summary["vehicles_without_parts"]}')
+          f'vehicles without parts {summary["vehicles_without_parts"]} | '
+          f'verified {summary["flags_verified"]} | review rows {summary["review_rows"]}')
     if summary['export_file']:
         print(f'export: {summary["export_file"]}')
-    print('review: db/review/accessory_review.csv | lookup: db/dq/accessory_lookup.csv')
+    print('review: db/review/accessory_review.csv | lookup: db/dq/accessory_lookup.csv | '
+          'verified: db/dq/verified_flags.csv')
     return 1 if status in ('failed', 'ok_with_errors') else 0
 
 

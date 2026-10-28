@@ -74,12 +74,12 @@ Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_da
 |---|---|
 | Vehicles in `vehicles.csv` | 269 (54 rows excluded by the year window) |
 | Accessory rows: read / in window / unique (part, model) | 24,396 / 13,051 / 1,357 |
-| Lookup keys: total / found / missed | 71 / 64 / 7 |
+| Lookup keys: total / found / missed / verified | 71 / 64 / 7 / 4 (3 errors left) |
 | Dict rows / exported rows / export sheets | 25,796 / 25,345 / 14 |
 | Vehicles with no parts | 14 (model year 2027) |
-| Accessory review rows | 467 |
+| Accessory review rows | 241 (467 before plan 009) |
 | Part numbers restored / unproven | 704 / 0 |
-| Tests | 230 passing |
+| Tests | 253 passing |
 
 ## Index
 
@@ -100,7 +100,7 @@ Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_da
 | 008 | [Part Numbers Kept Exactly as the Source: Design](ideas/008_part_number_integrity_design.md) | Idea — approved | completed with plan 008 once testing is signed off (OI-01) | 2026-10-27 |
 | 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (OI-01); ask the source to export stockCode as text (OI-07) | 2026-10-28 |
 | 009 | [Human-Verified Vehicle Facts: Design](ideas/009_human_verified_vehicle_facts_design.md) | Idea — approved | build plan 009 | 2026-10-28 |
-| 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Plan — approved | build after plans 010 and 011 (idea 011 DOC-10); Phase V4 needs the verified_by name (OI-12) | 2026-10-28 |
+| 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-28 |
 | 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | build plan 010 | 2026-10-28 |
 | 010 | [Work Process, Tracking and Indexing: Plan](plans/010_work_process_and_tracking.md) | Built — in user testing | user signs off testing (OI-01); idea 011 extends the checks once approved (OI-13) | 2026-10-28 |
 | 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides DOC-1 to DOC-10 (OI-13) | 2026-10-28 |

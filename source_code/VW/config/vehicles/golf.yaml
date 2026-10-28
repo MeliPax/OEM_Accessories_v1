@@ -64,3 +64,16 @@ option_sets:
   - submodel: R
     years: [2025, 2026]
     appearance_package: [Black]
+
+# Facts a person confirmed (idea 009). Each entry needs reason, verified_by and verified_on; years are
+# listed one by one. A flag an entry covers drops to info; data that contradicts it is an error.
+#   never_offered: {years: [...]}             the vehicle didn't exist in those years
+#   never_offered: {<category>: [...]}        that option didn't exist (with years: [...] on the entry)
+#   no_parts_expected: {years: [...], until}  the vehicle exists, but no parts are expected until the date
+verified:
+  - submodel: R
+    never_offered:
+      years: [2020, 2021]
+    reason: Golf R wasn't offered in Canada for model years 2020-2021; it returned for 2022
+    verified_by: P.M
+    verified_on: 2026-10-28

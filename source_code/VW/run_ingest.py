@@ -28,6 +28,7 @@ from pipeline.parse_helpers import build_vehicles, vehicle_columns            # 
 from pipeline.resolve_helpers import apply_resolutions                        # noqa: E402
 from pipeline.validate_helpers import (build_review_queue, check_model_number_consistency,  # noqa: E402
                                        check_option_sets, check_required)
+from pipeline.verify_helpers import vehicle_contradictions                   # noqa: E402
 
 DATASET = 'vw_models'
 PIPELINE = 'vw_ingest'
@@ -47,10 +48,11 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
         def load_config(_):
             taxonomy = cfg.validate_taxonomy(cfg.load_taxonomy(config_dir))
             option_sets = cfg.load_option_sets(config_dir, taxonomy)
-            counts = cfg.export_definitions(taxonomy, option_sets, db_dir / 'definitions')
+            verified = cfg.load_verified(config_dir, taxonomy, option_sets)
+            counts = cfg.export_definitions(taxonomy, option_sets, db_dir / 'definitions', verified=verified)
             log_info(ctx, 'config', 'LOADED', categories=len(taxonomy['categories']),
                      models=len(taxonomy['models']), keywords=len(taxonomy['keywords']),
-                     aliases=len(taxonomy['aliases']), option_sets=len(option_sets),
+                     aliases=len(taxonomy['aliases']), option_sets=len(option_sets), verified_facts=len(verified),
                      taxonomy_version=taxonomy['version'])
             log_info(ctx, 'config', 'DEFINITIONS WRITTEN',
                      **{name: f'{rows} rows' for name, rows in counts.items()})
@@ -61,7 +63,8 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
                 raise cfg.ConfigError(f'CONFG_UNKNOWN_REFERENCE: pipeline.yaml: validation.model_number_consistency'
                                       f'.compare names unknown categor{"ies" if len(unknown) > 1 else "y"}: '
                                       f'{", ".join(unknown)}')
-            state.update(taxonomy=taxonomy, option_sets=option_sets, compare_categories=list(compare))
+            state.update(taxonomy=taxonomy, option_sets=option_sets, verified=verified,
+                         compare_categories=list(compare))
 
         run_step(ctx, 'config', load_config, conditions={
             'config_dir': _display(config_dir),
@@ -124,7 +127,17 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
                                         'categories_checked': len(option_categories),
                                         'model_number_compare': ', '.join(compare_categories)})
 
-        # 9. write: compare with the previous vehicles.csv, then write final + review queue
+        # 9. verify: vehicles a verified fact says were never offered (in that year, or with that option) are
+        #    errors (idea 009). Vehicle flags are never downgraded: a flagged vehicle exists in the export.
+        def verify(df):
+            contradicted = vehicle_contradictions(ctx, state['verified'], df)
+            log_info(ctx, 'verify', 'CHECKED', facts=len(state['verified']), contradicted=contradicted)
+            return df
+
+        vehicles = run_step(ctx, 'verify', verify, vehicles,
+                            conditions={'facts': len(state['verified']), 'match': 'exact (model, submodel, year)'})
+
+        # 10. write: compare with the previous vehicles.csv, then write final + review queue
         def write(df):
             columns = vehicle_columns(taxonomy)
             compare_db_changes(ctx, store.read_table(db_dir, 'final', 'vehicles'), df, columns)
@@ -202,6 +215,7 @@ def run_summary(ctx, staged, kept, vehicles):
     return {'rows_staged': len(staged), 'rows_excluded_by_year': len(staged) - len(kept),
             'rows_final': len(vehicles),
             'parsed_complete_pct': round(100 * complete / len(vehicles), 1) if len(vehicles) else 0.0,
+            'verified_contradicted': sum(f['code'] == 'VEH_VERIFY_CONTRADICTED' for f in ctx['flags']),
             'flags_warning': sum(f['severity'] == 'warning' for f in ctx['flags']),
             'flags_error': sum(f['severity'] == 'error' for f in ctx['flags'])}
 

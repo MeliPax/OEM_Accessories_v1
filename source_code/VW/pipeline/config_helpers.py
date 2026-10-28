@@ -317,6 +317,132 @@ def vehicle_years(option_sets):
                 'status': 'reviewed' if v['status'] == {'reviewed'} else 'drafted'} for k, v in years.items()}
 
 
+# ---------------------------------------------------------------- verified facts (idea 009)
+
+VERIFIED_KEYS = {'submodel', 'years', 'never_offered', 'no_parts_expected', 'reason', 'verified_by', 'verified_on'}
+VERIFIED_REQUIRED = ('reason', 'verified_by', 'verified_on')
+
+
+def _year_list(value):
+    """A list of 4-digit years, each one named (never a range), or None."""
+    if isinstance(value, list) and value and all(_is_year(y) for y in value):
+        return set(value)
+    return None
+
+
+def _date_text(value):
+    """A YAML date (2026-10-28) or 'YYYY-MM-DD' text, as text; None when it isn't one."""
+    text = str(value) if value is not None else ''
+    return text if re.fullmatch(r'\d{4}-\d{2}-\d{2}', text) else None
+
+
+def load_verified(config_dir, taxonomy, option_sets):
+    """The verified: entries of config/vehicles/*.yaml as a flat list of facts, validated against the
+    vocabulary and the option sets. Each fact is one thing a person confirmed:
+      never_offered years      the vehicle didn't exist in those years
+      never_offered <category> that option didn't exist on the vehicle in those years
+      no_parts_expected        the vehicle exists, but no parts are expected until a date
+    Years are always listed one by one, so a fact covers exactly what is written."""
+    allowed = keyword_values(taxonomy)
+    declared = vehicle_years(option_sets)
+    facts, errors = [], []
+
+    for path in sorted((Path(config_dir) / 'vehicles').glob('*.yaml')):
+        doc = read_yaml(path)
+        model = doc.get('model')
+        if model not in taxonomy['models']:
+            continue                                     # reported by load_option_sets
+        submodels = (taxonomy['models'][model] or {}).get('submodels') or {}
+        for i, entry in enumerate(doc.get('verified') or [], start=1):
+            entry = entry or {}
+            where = f'vehicles/{path.name} verified #{i}'
+            submodel = entry.get('submodel')
+            submodel = None if submodel is None else str(submodel)
+            vehicle = f'{model}{" " + submodel if submodel else ""}'
+            problems = []
+            for key in sorted(set(entry) - VERIFIED_KEYS):
+                problems.append(f'CONFG_UNKNOWN_REFERENCE: {where}: "{key}" is not a verified field '
+                                f'(use {", ".join(sorted(VERIFIED_KEYS))})')
+            for key in VERIFIED_REQUIRED:
+                if not str(entry.get(key) or '').strip():
+                    problems.append(f'CONFG_VALUE_INVALID: {where}: {key} is required')
+            if entry.get('verified_on') and not _date_text(entry['verified_on']):
+                problems.append(f'CONFG_VALUE_INVALID: {where}: verified_on must be a date YYYY-MM-DD, '
+                                f'got {entry["verified_on"]!r}')
+            if submodel is not None and submodel not in submodels:
+                problems.append(f'CONFG_UNKNOWN_REFERENCE: {where}: submodel {submodel!r} is not defined for {model} '
+                                f'in models.yaml')
+            kinds = [k for k in ('never_offered', 'no_parts_expected') if k in entry]
+            if len(kinds) != 1:
+                problems.append(f'CONFG_VALUE_INVALID: {where}: give exactly one of never_offered, no_parts_expected')
+            if problems:
+                errors += problems
+                continue
+
+            base = {'file': path.name, 'entry': i, 'label': f'{path.name} #{i}', 'model': model,
+                    'submodel': submodel, 'vehicle': vehicle, 'reason': str(entry['reason']).strip(),
+                    'verified_by': str(entry['verified_by']).strip(), 'verified_on': _date_text(entry['verified_on']),
+                    'until': ''}
+            known = declared.get((model, submodel), {}).get('years', set())
+            body = entry[kinds[0]] or {}
+            if not isinstance(body, dict) or not body:
+                errors.append(f'CONFG_VALUE_INVALID: {where}: {kinds[0]} must list what is covered, e.g. years: [2020]')
+                continue
+
+            if kinds[0] == 'no_parts_expected':
+                years, until = _year_list(body.get('years')), _date_text(body.get('until'))
+                if years is None:
+                    errors.append(f'CONFG_VALUE_INVALID: {where}: no_parts_expected.years must list 4-digit years')
+                    continue
+                if until is None:
+                    errors.append(f'CONFG_VALUE_INVALID: {where}: no_parts_expected.until must be a date YYYY-MM-DD '
+                                  f'(the fact expires then, so a forgotten gap comes back)')
+                    continue
+                if years - known:
+                    errors.append(f'CONFG_VALUE_INVALID: {where}: no_parts_expected years {sorted(years - known)} are '
+                                  f'not declared for {vehicle} in the option sets (the vehicle must exist)')
+                    continue
+                facts.append({**base, 'kind': 'no_parts_expected', 'years': years, 'category': '',
+                              'values': set(), 'until': until})
+                continue
+
+            for key, value in body.items():
+                if key == 'years':
+                    years = _year_list(value)
+                    if years is None:
+                        errors.append(f'CONFG_VALUE_INVALID: {where}: never_offered.years must list 4-digit years, '
+                                      f'one by one (got {value!r})')
+                    elif years & known:
+                        errors.append(f'CONFG_VALUE_INVALID: {where}: {vehicle} never offered in '
+                                      f'{sorted(years & known)}, but its option sets declare those years '
+                                      f'(the file says both)')
+                    else:
+                        facts.append({**base, 'kind': 'never_offered', 'years': years, 'category': '', 'values': set()})
+                    continue
+                if key not in allowed:
+                    errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: never_offered.{key} is not a keyword category')
+                    continue
+                years = _year_list(entry.get('years'))
+                if years is None:
+                    errors.append(f'CONFG_VALUE_INVALID: {where}: never_offered.{key} needs the years it applies to '
+                                  f'(years: [2024, 2025] at the entry level)')
+                    continue
+                values = {str(v) for v in (value or [])}
+                for v in sorted(values - allowed[key]):
+                    errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: {key} value "{v}" is not produced by any keyword')
+                offered = sorted({(y, v) for y in years for v in values
+                                  if v in ((find_option_set(option_sets, model, submodel, y) or {})
+                                           .get('options', {}).get(key, set()))})
+                for y, v in offered:
+                    errors.append(f'CONFG_VALUE_INVALID: {where}: {vehicle} {y}: {key} "{v}" is never offered here, '
+                                  f'but the option set offers it (the file says both)')
+                if values and not offered and not values - allowed[key]:
+                    facts.append({**base, 'kind': 'never_offered', 'years': years, 'category': key, 'values': values})
+
+    _raise_if(errors, 'verified facts')
+    return facts
+
+
 def find_option_set(option_sets, model, submodel, year):
     """The option set covering this model / submodel / year, or None."""
     for s in option_sets:
@@ -580,8 +706,9 @@ def _part_number_spec(block, columns, renames, types, where, errors):
 
 # ---------------------------------------------------------------- definitions export
 
-def export_definitions(taxonomy, option_sets, out_dir):
-    """Write the flattened, read-only definition tables to db/definitions/. Returns {name: rows}."""
+def export_definitions(taxonomy, option_sets, out_dir, verified=None):
+    """Write the flattened, read-only definition tables to db/definitions/ (dim_verified too when the
+    verified facts are given). Returns {name: rows}."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -616,6 +743,14 @@ def export_definitions(taxonomy, option_sets, out_dir):
 
     tables = {'dim_category': dim_category, 'dim_keyword': dim_keyword, 'dim_model': dim_model,
               'dim_option_set': dim_option_set, 'dim_resolution': dim_resolution}
+    if verified is not None:
+        tables['dim_verified'] = pd.DataFrame([
+            {'model': f['model'], 'submodel': f['submodel'] or '', 'kind': f['kind'], 'category': f['category'],
+             'values': '|'.join(sorted(f['values'])), 'years': '|'.join(str(y) for y in sorted(f['years'])),
+             'until': f['until'], 'reason': f['reason'], 'verified_by': f['verified_by'],
+             'verified_on': f['verified_on'], 'entry': f['label']} for f in verified],
+            columns=['model', 'submodel', 'kind', 'category', 'values', 'years', 'until', 'reason',
+                     'verified_by', 'verified_on', 'entry'])
     for name, df in tables.items():
         df.to_csv(out_dir / f'{name}.csv', index=False)
     return {name: len(df) for name, df in tables.items()}

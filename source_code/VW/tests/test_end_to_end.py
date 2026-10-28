@@ -6,7 +6,8 @@ import pytest
 import run_ingest
 from conftest import SOURCE, replace_in
 
-STEPS = ['config', 'ingest', 'staging', 'year_window', 'clean', 'parse', 'resolve', 'validate', 'write']
+STEPS = ['config', 'ingest', 'staging', 'year_window', 'clean', 'parse', 'resolve', 'validate', 'verify',
+         'write']
 
 
 def read(path):

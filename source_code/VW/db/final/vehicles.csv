@@ -1,270 +1,270 @@
 vehicle_id,make,model_number,model_year,description_raw,description_clean,model,series,submodel,trim,special_edition,appearance_package,technology_package,performance_package,engine,transmission,drivetrain,body_style,battery_supplier,inventory_status,unparsed_tokens,parse_status,source_file,taxonomy_version
-VW-2020-3H72Q8,Volkswagen,3H72Q8,2020,Arteon Execline Auto,Arteon Execline Auto,Arteon,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-3H82Q8,Volkswagen,3H82Q8,2021,Arteon Execline Auto,Arteon Execline Auto,Arteon,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA22NR,Volkswagen,CA22NR,2021,Atlas Trendline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Trendline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA22UR,Volkswagen,CA22UR,2021,Atlas Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Trendline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA23NR,Volkswagen,CA23NR,2021,Atlas Comfortline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Comfortline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA23UR,Volkswagen,CA23UR,2021,Atlas Comfortline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Comfortline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA24NR,Volkswagen,CA24NR,2021,Atlas Highline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Highline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA24UR,Volkswagen,CA24UR,2021,Atlas Highline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Highline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA25UR,Volkswagen,CA25UR,2021,Atlas Execline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Execline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2BNR,Volkswagen,CA2BNR,2021,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2CNR,Volkswagen,CA2CNR,2021,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2CUR,Volkswagen,CA2CUR,2021,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2DNR,Volkswagen,CA2DNR,2021,Atlas Highline 2.0 TSI 4MOTION,Atlas Highline 2.0 TSI 4MOTION,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2DUR,Volkswagen,CA2DUR,2021,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CA2EUR,Volkswagen,CA2EUR,2021,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA22NR,Volkswagen,CA22NR,2022,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA23NR,Volkswagen,CA23NR,2022,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA23UR,Volkswagen,CA23UR,2022,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA24NR,Volkswagen,CA24NR,2022,Atlas Highline 2.0 TSI 4MOTION,Atlas Highline 2.0 TSI 4MOTION,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA24UR,Volkswagen,CA24UR,2022,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CA25UR,Volkswagen,CA25UR,2022,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CA22NR,Volkswagen,CA22NR,2023,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CA23NR,Volkswagen,CA23NR,2023,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CA23UR,Volkswagen,CA23UR,2023,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CA24UR,Volkswagen,CA24UR,2023,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CA25UR,Volkswagen,CA25UR,2023,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CA33PR,Volkswagen,CA33PR,2024,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CA34PR,Volkswagen,CA34PR,2024,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CA35PR,Volkswagen,CA35PR,2024,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CA37PR,Volkswagen,CA37PR,2024,Atlas Peak Edition,Atlas Peak Edition,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CA33PR,Volkswagen,CA33PR,2025,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CA34PR,Volkswagen,CA34PR,2025,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CA35PR,Volkswagen,CA35PR,2025,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CA37PR,Volkswagen,CA37PR,2025,Atlas Peak Edition,Atlas Peak Edition,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CA33PR,Volkswagen,CA33PR,2026,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CA34PR,Volkswagen,CA34PR,2026,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CA35PR,Volkswagen,CA35PR,2026,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CA37PR,Volkswagen,CA37PR,2026,Atlas Peak,Atlas Peak,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-DJ13WJ,Volkswagen,DJ13WJ,2027,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-DJ14WJ,Volkswagen,DJ14WJ,2027,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-DJ15WJ,Volkswagen,DJ15WJ,2027,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC2NR,Volkswagen,CMC2NR,2020,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC2UR,Volkswagen,CMC2UR,2020,Atlas Sport Cross Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Cross Sport Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,Cross Sport,Trendline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC4NR,Volkswagen,CMC4NR,2020,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC4UR,Volkswagen,CMC4UR,2020,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC5NR,Volkswagen,CMC5NR,2020,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-CMC5UR,Volkswagen,CMC5UR,2020,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC2NR,Volkswagen,CMC2NR,2021,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC3NR,Volkswagen,CMC3NR,2021,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC3UR,Volkswagen,CMC3UR,2021,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC4NR,Volkswagen,CMC4NR,2021,Atlas Sport Cross Highline 2.0 TSI 4MOTION,Atlas Cross Sport Highline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC4UR,Volkswagen,CMC4UR,2021,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC5NR,Volkswagen,CMC5NR,2021,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-CMC5UR,Volkswagen,CMC5UR,2021,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC2NR,Volkswagen,CMC2NR,2022,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC3NR,Volkswagen,CMC3NR,2022,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC3UR,Volkswagen,CMC3UR,2022,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC4NR,Volkswagen,CMC4NR,2022,Atlas Sport Cross Highline 2.0 TSI 4MOTION,Atlas Cross Sport Highline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC4UR,Volkswagen,CMC4UR,2022,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC5NR,Volkswagen,CMC5NR,2022,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CMC5UR,Volkswagen,CMC5UR,2022,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CMC2NR,Volkswagen,CMC2NR,2023,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CMC3NR,Volkswagen,CMC3NR,2023,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CMC3UR,Volkswagen,CMC3UR,2023,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CMC4UR,Volkswagen,CMC4UR,2023,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CMC5UR,Volkswagen,CMC5UR,2023,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CMD3PR,Volkswagen,CMD3PR,2024,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CMD4PR,Volkswagen,CMD4PR,2024,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CMD5PR,Volkswagen,CMD5PR,2024,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CMD3PR,Volkswagen,CMD3PR,2025,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CMD4PR,Volkswagen,CMD4PR,2025,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CMD5PR,Volkswagen,CMD5PR,2025,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CMD7PR,Volkswagen,CMD7PR,2025,Atlas Cross Sport Comfortline R-Line Black,Atlas Cross Sport Comfortline R-Line Black,Atlas,,Cross Sport,Comfortline,,Black|R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CMD3PR,Volkswagen,CMD3PR,2026,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CMD4PR,Volkswagen,CMD4PR,2026,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CMD5PR,Volkswagen,CMD5PR,2026,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU22M2,Volkswagen,AU22M2,2020,Golf Comfortline 5-door Manual,Golf Comfortline 5-door Manual,Golf,,,Comfortline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU22MS,Volkswagen,AU22MS,2020,Golf Comfortline 5-door Auto,Golf Comfortline 5-door Auto,Golf,,,Comfortline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU23M2,Volkswagen,AU23M2,2020,Golf Highline 5-door Manual,Golf Highline 5-door Manual,Golf,,,Highline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU23MS,Volkswagen,AU23MS,2020,Golf Highline 5-door Auto,Golf Highline 5-door Auto,Golf,,,Highline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU22M2,Volkswagen,AU22M2,2021,Golf Comfortline 5-door Manual,Golf Comfortline 5-door Manual,Golf,,,Comfortline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU22MS,Volkswagen,AU22MS,2021,Golf Comfortline 5-door Auto,Golf Comfortline 5-door Auto,Golf,,,Comfortline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU23M2,Volkswagen,AU23M2,2021,Golf Highline 5-door Manual,Golf Highline 5-door Manual,Golf,,,Highline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU23MS,Volkswagen,AU23MS,2021,Golf Highline 5-door Auto,Golf Highline 5-door Auto,Golf,,,Highline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU29V2,Volkswagen,AU29V2,2020,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU29VZ,Volkswagen,AU29VZ,2020,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU2AV2,Volkswagen,AU2AV2,2020,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-AU2AVZ,Volkswagen,AU2AVZ,2020,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU2AV2,Volkswagen,AU2AV2,2021,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-AU2AVZ,Volkswagen,AU2AVZ,2021,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD19U2,Volkswagen,CD19U2,2022,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD19UZ,Volkswagen,CD19UZ,2022,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1AU2,Volkswagen,CD1AU2,2022,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1AUZ,Volkswagen,CD1AUZ,2022,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1PU2,Volkswagen,CD1PU2,2022,Golf GTI Performance Manual,Golf GTI Performance Manual,Golf,Performance,GTI,,,,,Performance,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1PUZ,Volkswagen,CD1PUZ,2022,Golf GTI Performance Auto,Golf GTI Performance Auto,Golf,Performance,GTI,,,,,Performance,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD14U2,Volkswagen,CD14U2,2023,Golf GTI 40th Anniversary Manual,Golf GTI 40th Anniversary Manual,Golf,Performance,GTI,,40th Anniversary,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD14UZ,Volkswagen,CD14UZ,2023,Golf GTI 40th Anniversary Auto,Golf GTI 40th Anniversary Auto,Golf,Performance,GTI,,40th Anniversary,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD19U2,Volkswagen,CD19U2,2023,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD19UZ,Volkswagen,CD19UZ,2023,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1AU2,Volkswagen,CD1AU2,2023,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1AUZ,Volkswagen,CD1AUZ,2023,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1PU2,Volkswagen,CD1PU2,2023,Golf GTI Performance Manual,Golf GTI Performance Manual,Golf,Performance,GTI,,,,,Performance,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1PUZ,Volkswagen,CD1PUZ,2023,Golf GTI Performance Auto,Golf GTI Performance Auto,Golf,Performance,GTI,,,,,Performance,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD19UZ,Volkswagen,CD19UZ,2024,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1AU2,Volkswagen,CD1AU2,2024,Golf GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1AUZ,Volkswagen,CD1AUZ,2024,Golf GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1PU2,Volkswagen,CD1PU2,2024,Golf GTI Performance,Golf GTI Performance,Golf,Performance,GTI,,,,,Performance,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1PUZ,Volkswagen,CD1PUZ,2024,Golf GTI Performance,Golf GTI Performance,Golf,Performance,GTI,,,,,Performance,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-DA19UZ,Volkswagen,DA19UZ,2025,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-DA1AUZ,Volkswagen,DA1AUZ,2025,Golf GTI GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-DA19UZ,Volkswagen,DA19UZ,2026,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-DA1AUZ,Volkswagen,DA1AUZ,2026,Golf GTI GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1RM4,Volkswagen,CD1RM4,2022,Golf R Manual,Golf R Manual,Golf,Performance,R,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CD1RMT,Volkswagen,CD1RMT,2022,Golf R DSG,Golf R DSG,Golf,Performance,R,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD12M4,Volkswagen,CD12M4,2023,Golf R 20th Anniversary Manual,Golf R 20th Anniversary Manual,Golf,Performance,R,,20th Anniversary,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD12MT,Volkswagen,CD12MT,2023,Golf R 20th Anniversary DSG,Golf R 20th Anniversary DSG,Golf,Performance,R,,20th Anniversary,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1RM4,Volkswagen,CD1RM4,2023,Golf R Manual,Golf R Manual,Golf,Performance,R,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CD1RMT,Volkswagen,CD1RMT,2023,Golf R DSG,Golf R DSG,Golf,Performance,R,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1RM4,Volkswagen,CD1RM4,2024,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CD1RMT,Volkswagen,CD1RMT,2024,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-DA1BPT,Volkswagen,DA1BPT,2025,Golf R Golf R Black,Golf R Black,Golf,Performance,R,,,Black,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-DA1RPT,Volkswagen,DA1RPT,2025,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-DA1BPT,Volkswagen,DA1BPT,2026,Golf R Golf R Black,Golf R Black,Golf,Performance,R,,,Black,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-DA1RPT,Volkswagen,DA1RPT,2026,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-EBJR5S,Volkswagen,EBJR5S,2025,ID. Buzz ID. Buzz 1st Edition 4MOTION,ID. Buzz 1st Edition 4MOTION,ID. Buzz,,,,1st Edition,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-EBJR7S,Volkswagen,EBJR7S,2025,ID. Buzz ID. Buzz 1st Edition,ID. Buzz 1st Edition,ID. Buzz,,,,1st Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-E213MN,Volkswagen,E213MN,2021,ID.4 Pro RWD,ID.4 Pro RWD,ID.4,,,PRO,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-E213TN,Volkswagen,E213TN,2021,ID.4 Pro AWD,ID.4 Pro AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-E213MN,Volkswagen,E213MN,2022,ID.4 Pro RWD,ID.4 Pro RWD,ID.4,,,PRO,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-E213TN,Volkswagen,E213TN,2022,ID.4 Pro AWD,ID.4 Pro AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-E812MJ,Volkswagen,E812MJ,2023,ID.4 RWD,ID.4 RWD,ID.4,,,,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-E813LG,Volkswagen,E813LG,2023,ID.4 Pro RWD w/LG Battery,ID.4 Pro RWD w/LG Battery,ID.4,,,PRO,,,,,,,RWD,,LG Energy Solution,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-E813MN,Volkswagen,E813MN,2023,ID.4 Pro RWD w/SK On Battery,ID.4 Pro RWD w/SK On Battery,ID.4,,,PRO,,,,,,,RWD,,SK On,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-E813SN,Volkswagen,E813SN,2023,ID.4 Pro AWD w/SK On Battery,ID.4 Pro AWD w/SK On Battery,ID.4,,,PRO,,,,,,,AWD,,SK On,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E812MJ,Volkswagen,E812MJ,2024,ID.4 ID.4,ID.4,ID.4,,,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E812MS,Volkswagen,E812MS,2024,ID.4 ID.4 S,ID.4 S,ID.4,,,S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E813RN,Volkswagen,E813RN,2024,ID.4 ID.4 PRO,ID.4 PRO,ID.4,,,PRO,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E813RS,Volkswagen,E813RS,2024,ID.4 ID.4 PRO S,ID.4 PRO S,ID.4,,,PRO S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E813VN,Volkswagen,E813VN,2024,ID.4 ID.4 PRO AWD,ID.4 PRO AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-E813VS,Volkswagen,E813VS,2024,ID.4 ID.4 PRO S AWD,ID.4 PRO S AWD,ID.4,,,PRO S,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-E812MJ,Volkswagen,E812MJ,2025,ID.4 ID.4,ID.4,ID.4,,,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-E813RN,Volkswagen,E813RN,2025,ID.4 ID.4 PRO,ID.4 PRO,ID.4,,,PRO,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-E813RS,Volkswagen,E813RS,2025,ID.4 ID.4 PRO S,ID.4 PRO S,ID.4,,,PRO S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-E813VN,Volkswagen,E813VN,2025,ID.4 ID.4 PRO AWD,ID.4 PRO AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-E813VS,Volkswagen,E813VS,2025,ID.4 ID.4 PRO S AWD,ID.4 PRO S AWD,ID.4,,,PRO S,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU32M2,Volkswagen,BU32M2,2020,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU32MS,Volkswagen,BU32MS,2020,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU33M2,Volkswagen,BU33M2,2020,Jetta Highline Manual,Jetta Highline Manual,Jetta,,,Highline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU33MS,Volkswagen,BU33MS,2020,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU34MS,Volkswagen,BU34MS,2020,Jetta Execline Auto,Jetta Execline Auto,Jetta,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU32M2,Volkswagen,BU32M2,2021,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU32MS,Volkswagen,BU32MS,2021,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU33M2,Volkswagen,BU33M2,2021,Jetta Highline Manual,Jetta Highline Manual,Jetta,,,Highline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU33MS,Volkswagen,BU33MS,2021,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU34MS,Volkswagen,BU34MS,2021,Jetta Execline Auto,Jetta Execline Auto,Jetta,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU42R2,Volkswagen,BU42R2,2022,Jetta Trendline Manual,Jetta Trendline Manual,Jetta,,,Trendline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU42RS,Volkswagen,BU42RS,2022,Jetta Trendline Auto,Jetta Trendline Auto,Jetta,,,Trendline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU43R2,Volkswagen,BU43R2,2022,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU43RS,Volkswagen,BU43RS,2022,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU44RS,Volkswagen,BU44RS,2022,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU42R2,Volkswagen,BU42R2,2023,Jetta Trendline Manual,Jetta Trendline Manual,Jetta,,,Trendline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU42RS,Volkswagen,BU42RS,2023,Jetta Trendline Auto,Jetta Trendline Auto,Jetta,,,Trendline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU43R2,Volkswagen,BU43R2,2023,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU43RS,Volkswagen,BU43RS,2023,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU44RS,Volkswagen,BU44RS,2023,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU42R2,Volkswagen,BU42R2,2024,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU42RS,Volkswagen,BU42RS,2024,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU43R2,Volkswagen,BU43R2,2024,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU43RS,Volkswagen,BU43RS,2024,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU44RS,Volkswagen,BU44RS,2024,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-BU52RS,Volkswagen,BU52RS,2025,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-BU53RS,Volkswagen,BU53RS,2025,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-BU54RS,Volkswagen,BU54RS,2025,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-BU52RS,Volkswagen,BU52RS,2026,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-BU53RS,Volkswagen,BU53RS,2026,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-BU54RS,Volkswagen,BU54RS,2026,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-BU53RS,Volkswagen,BU53RS,2027,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU39V2,Volkswagen,BU39V2,2020,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BU39VZ,Volkswagen,BU39VZ,2020,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU39V2,Volkswagen,BU39V2,2021,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BU39VZ,Volkswagen,BU39VZ,2021,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU49V2,Volkswagen,BU49V2,2022,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BU49VZ,Volkswagen,BU49VZ,2022,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU49V2,Volkswagen,BU49V2,2023,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BU49VZ,Volkswagen,BU49VZ,2023,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU40V2,Volkswagen,BU40V2,2024,Jetta GLI 40th,Jetta GLI 40th,Jetta,,GLI,,40th Anniversary,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU40VZ,Volkswagen,BU40VZ,2024,Jetta GLI 40th,Jetta GLI 40th,Jetta,,GLI,,40th Anniversary,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU49V2,Volkswagen,BU49V2,2024,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BU49VZ,Volkswagen,BU49VZ,2024,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-BU59V2,Volkswagen,BU59V2,2025,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-BU59VZ,Volkswagen,BU59VZ,2025,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-BU59V2,Volkswagen,BU59V2,2026,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-BU59VZ,Volkswagen,BU59VZ,2026,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-BU59VZ,Volkswagen,BU59VZ,2027,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-A342P6,Volkswagen,A342P6,2020,Passat Comfortline Auto,Passat Comfortline Auto,Passat,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-A343P6,Volkswagen,A343P6,2020,Passat Highline Auto,Passat Highline Auto,Passat,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-A344P6,Volkswagen,A344P6,2020,Passat Execline Auto,Passat Execline Auto,Passat,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-A343P6,Volkswagen,A343P6,2021,Passat Highline Auto,Passat Highline Auto,Passat,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-A344P6,Volkswagen,A344P6,2021,Passat Execline Auto,Passat Execline Auto,Passat,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CL12RT,Volkswagen,CL12RT,2022,Taos Trendline 4MOTION,Taos Trendline 4MOTION,Taos,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CL12RZ,Volkswagen,CL12RZ,2022,Taos Trendline FWD,Taos Trendline FWD,Taos,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CL13RT,Volkswagen,CL13RT,2022,Taos Comfortline 4MOTION,Taos Comfortline 4MOTION,Taos,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CL13RZ,Volkswagen,CL13RZ,2022,Taos Comfortline FWD,Taos Comfortline FWD,Taos,,,Comfortline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-CL14RT,Volkswagen,CL14RT,2022,Taos Highline 4MOTION,Taos Highline 4MOTION,Taos,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL12RT,Volkswagen,CL12RT,2023,Taos Trendline 4MOTION *Ltd Avail*,Taos Trendline 4MOTION *Ltd Avail*,Taos,,,Trendline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL12RV,Volkswagen,CL12RV,2023,Taos Trendline 4MOTION,Taos Trendline 4MOTION,Taos,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL12RZ,Volkswagen,CL12RZ,2023,Taos Trendline FWD,Taos Trendline FWD,Taos,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL13RT,Volkswagen,CL13RT,2023,Taos Comfortline 4MOTION *Ltd Avail*,Taos Comfortline 4MOTION *Ltd Avail*,Taos,,,Comfortline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL13RV,Volkswagen,CL13RV,2023,Taos Comfortline 4MOTION,Taos Comfortline 4MOTION,Taos,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL13RZ,Volkswagen,CL13RZ,2023,Taos Comfortline FWD,Taos Comfortline FWD,Taos,,,Comfortline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL14RT,Volkswagen,CL14RT,2023,Taos Highline 4MOTION *Ltd Avail*,Taos Highline 4MOTION *Ltd Avail*,Taos,,,Highline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-CL14RV,Volkswagen,CL14RV,2023,Taos Highline 4MOTION,Taos Highline 4MOTION,Taos,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL12RV,Volkswagen,CL12RV,2024,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL12RZ,Volkswagen,CL12RZ,2024,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL13BE,Volkswagen,CL13BE,2024,Taos Comfortline Black Edition,Taos Comfortline Black Edition,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL13RV,Volkswagen,CL13RV,2024,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL13RZ,Volkswagen,CL13RZ,2024,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-CL14RV,Volkswagen,CL14RV,2024,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CL22SR,Volkswagen,CL22SR,2025,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CL22SZ,Volkswagen,CL22SZ,2025,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CL23SR,Volkswagen,CL23SR,2025,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CL24SR,Volkswagen,CL24SR,2025,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-CL26SR,Volkswagen,CL26SR,2025,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CL22SR,Volkswagen,CL22SR,2026,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CL22SZ,Volkswagen,CL22SZ,2026,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CL23SR,Volkswagen,CL23SR,2026,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CL24SR,Volkswagen,CL24SR,2026,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-CL26SR,Volkswagen,CL26SR,2026,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-CL22SR,Volkswagen,CL22SR,2027,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-CL22SZ,Volkswagen,CL22SZ,2027,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-CL23SR,Volkswagen,CL23SR,2027,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-CL24SR,Volkswagen,CL24SR,2027,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-CL26SR,Volkswagen,CL26SR,2027,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BW22VJ,Volkswagen,BW22VJ,2020,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BW22VS,Volkswagen,BW22VS,2020,Tiguan Trendline FWD,Tiguan Trendline FWD,Tiguan,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BW23VJ,Volkswagen,BW23VJ,2020,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BW24VJ,Volkswagen,BW24VJ,2020,Tiguan Highline 4MOTION,Tiguan Highline 4MOTION,Tiguan,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BW2IVJ,Volkswagen,BW2IVJ,2020,Tiguan IQ Drive 4MOTION,Tiguan IQ Drive 4MOTION,Tiguan,,,,,,IQ.DRIVE,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BW22VJ,Volkswagen,BW22VJ,2021,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BW22VS,Volkswagen,BW22VS,2021,Tiguan Trendline FWD,Tiguan Trendline FWD,Tiguan,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BW23VJ,Volkswagen,BW23VJ,2021,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BW24VJ,Volkswagen,BW24VJ,2021,Tiguan Highline 4MOTION,Tiguan Highline 4MOTION,Tiguan,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2021-BW2UVJ,Volkswagen,BW2UVJ,2021,Tiguan United 4MOTION,Tiguan United 4MOTION,Tiguan,,,,United Edition,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BJ22VJ,Volkswagen,BJ22VJ,2022,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BJ23VJ,Volkswagen,BJ23VJ,2022,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BJ24VJ,Volkswagen,BJ24VJ,2022,Tiguan Highline R-Line 4MOTION,Tiguan Highline R-Line 4MOTION,Tiguan,,,Highline,,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2022-BJ26VJ,Volkswagen,BJ26VJ,2022,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BJ22VJ,Volkswagen,BJ22VJ,2023,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BJ23VJ,Volkswagen,BJ23VJ,2023,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BJ24VJ,Volkswagen,BJ24VJ,2023,Tiguan Highline R-Line 4MOTION,Tiguan Highline R-Line 4MOTION,Tiguan,,,Highline,,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2023-BJ2VVJ,Volkswagen,BJ2VVJ,2023,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BJ22VJ,Volkswagen,BJ22VJ,2024,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BJ23VJ,Volkswagen,BJ23VJ,2024,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BJ24VJ,Volkswagen,BJ24VJ,2024,Tiguan Highline,Tiguan Highline,Tiguan,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2024-BJ2VVJ,Volkswagen,BJ2VVJ,2024,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-RM12PJ,Volkswagen,RM12PJ,2025,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-RM13PJ,Volkswagen,RM13PJ,2025,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-RM14PJ,Volkswagen,RM14PJ,2025,Tiguan Highline R-Line,Tiguan Highline R-Line,Tiguan,,,Highline,,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2025-RM1VPJ,Volkswagen,RM1VPJ,2025,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-RM12PJ,Volkswagen,RM12PJ,2026,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-RM13PJ,Volkswagen,RM13PJ,2026,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-RM14QJ,Volkswagen,RM14QJ,2026,Tiguan Highline R-Line,Tiguan Highline R-Line,Tiguan,,,Highline,,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2026-RM1VPJ,Volkswagen,RM1VPJ,2026,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-RM12PJ,Volkswagen,RM12PJ,2027,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-RM13PJ,Volkswagen,RM13PJ,2027,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-RM14QJ,Volkswagen,RM14QJ,2027,Tiguan Highline Turbo R-Line,Tiguan Highline Turbo R-Line,Tiguan,,,Highline,,R-Line,,,Turbo,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2027-RM1VPJ,Volkswagen,RM1VPJ,2027,Tiguan Comfortline R-Line Black Edition,Tiguan Comfortline R-Line Black Edition,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,604330b804
-VW-2020-BE23D1,Volkswagen,BE23D1,2020,e-Golf 5dr HB Comfortline,e-Golf 5dr HB Comfortline,e-Golf,,,Comfortline,,,,,,,,5-Door|Hatchback,,,,complete,datasets/vw_models_data.csv,604330b804
+VW-2020-3H72Q8,Volkswagen,3H72Q8,2020,Arteon Execline Auto,Arteon Execline Auto,Arteon,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-3H82Q8,Volkswagen,3H82Q8,2021,Arteon Execline Auto,Arteon Execline Auto,Arteon,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA22NR,Volkswagen,CA22NR,2021,Atlas Trendline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Trendline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA22UR,Volkswagen,CA22UR,2021,Atlas Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Trendline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA23NR,Volkswagen,CA23NR,2021,Atlas Comfortline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Comfortline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA23UR,Volkswagen,CA23UR,2021,Atlas Comfortline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Comfortline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA24NR,Volkswagen,CA24NR,2021,Atlas Highline 2.0 TSI 4MOTION *Ltd Avail*,Atlas Highline 2.0 TSI 4MOTION *Ltd Avail*,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA24UR,Volkswagen,CA24UR,2021,Atlas Highline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Highline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA25UR,Volkswagen,CA25UR,2021,Atlas Execline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Execline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2BNR,Volkswagen,CA2BNR,2021,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2CNR,Volkswagen,CA2CNR,2021,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2CUR,Volkswagen,CA2CUR,2021,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2DNR,Volkswagen,CA2DNR,2021,Atlas Highline 2.0 TSI 4MOTION,Atlas Highline 2.0 TSI 4MOTION,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2DUR,Volkswagen,CA2DUR,2021,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CA2EUR,Volkswagen,CA2EUR,2021,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA22NR,Volkswagen,CA22NR,2022,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA23NR,Volkswagen,CA23NR,2022,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA23UR,Volkswagen,CA23UR,2022,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA24NR,Volkswagen,CA24NR,2022,Atlas Highline 2.0 TSI 4MOTION,Atlas Highline 2.0 TSI 4MOTION,Atlas,,,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA24UR,Volkswagen,CA24UR,2022,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CA25UR,Volkswagen,CA25UR,2022,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CA22NR,Volkswagen,CA22NR,2023,Atlas Trendline 2.0 TSI 4MOTION,Atlas Trendline 2.0 TSI 4MOTION,Atlas,,,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CA23NR,Volkswagen,CA23NR,2023,Atlas Comfortline 2.0 TSI 4MOTION,Atlas Comfortline 2.0 TSI 4MOTION,Atlas,,,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CA23UR,Volkswagen,CA23UR,2023,Atlas Comfortline 3.6 FSI 4MOTION,Atlas Comfortline 3.6 FSI 4MOTION,Atlas,,,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CA24UR,Volkswagen,CA24UR,2023,Atlas Highline 3.6 FSI 4MOTION,Atlas Highline 3.6 FSI 4MOTION,Atlas,,,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CA25UR,Volkswagen,CA25UR,2023,Atlas Execline 3.6 FSI 4MOTION,Atlas Execline 3.6 FSI 4MOTION,Atlas,,,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CA33PR,Volkswagen,CA33PR,2024,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CA34PR,Volkswagen,CA34PR,2024,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CA35PR,Volkswagen,CA35PR,2024,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CA37PR,Volkswagen,CA37PR,2024,Atlas Peak Edition,Atlas Peak Edition,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CA33PR,Volkswagen,CA33PR,2025,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CA34PR,Volkswagen,CA34PR,2025,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CA35PR,Volkswagen,CA35PR,2025,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CA37PR,Volkswagen,CA37PR,2025,Atlas Peak Edition,Atlas Peak Edition,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CA33PR,Volkswagen,CA33PR,2026,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CA34PR,Volkswagen,CA34PR,2026,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CA35PR,Volkswagen,CA35PR,2026,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CA37PR,Volkswagen,CA37PR,2026,Atlas Peak,Atlas Peak,Atlas,,,,Peak Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-DJ13WJ,Volkswagen,DJ13WJ,2027,Atlas Comfortline,Atlas Comfortline,Atlas,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-DJ14WJ,Volkswagen,DJ14WJ,2027,Atlas Highline,Atlas Highline,Atlas,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-DJ15WJ,Volkswagen,DJ15WJ,2027,Atlas Execline,Atlas Execline,Atlas,,,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC2NR,Volkswagen,CMC2NR,2020,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC2UR,Volkswagen,CMC2UR,2020,Atlas Sport Cross Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas Cross Sport Trendline 3.6 FSI 4MOTION *Ltd Avail*,Atlas,,Cross Sport,Trendline,,,,,3.6L FSI,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC4NR,Volkswagen,CMC4NR,2020,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC4UR,Volkswagen,CMC4UR,2020,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC5NR,Volkswagen,CMC5NR,2020,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-CMC5UR,Volkswagen,CMC5UR,2020,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC2NR,Volkswagen,CMC2NR,2021,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC3NR,Volkswagen,CMC3NR,2021,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC3UR,Volkswagen,CMC3UR,2021,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC4NR,Volkswagen,CMC4NR,2021,Atlas Sport Cross Highline 2.0 TSI 4MOTION,Atlas Cross Sport Highline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC4UR,Volkswagen,CMC4UR,2021,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC5NR,Volkswagen,CMC5NR,2021,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-CMC5UR,Volkswagen,CMC5UR,2021,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC2NR,Volkswagen,CMC2NR,2022,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC3NR,Volkswagen,CMC3NR,2022,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC3UR,Volkswagen,CMC3UR,2022,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC4NR,Volkswagen,CMC4NR,2022,Atlas Sport Cross Highline 2.0 TSI 4MOTION,Atlas Cross Sport Highline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC4UR,Volkswagen,CMC4UR,2022,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC5NR,Volkswagen,CMC5NR,2022,Atlas Sport Cross Execline 2.0 TSI 4MOTION,Atlas Cross Sport Execline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CMC5UR,Volkswagen,CMC5UR,2022,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CMC2NR,Volkswagen,CMC2NR,2023,Atlas Sport Cross Trendline 2.0 TSI 4MOTION,Atlas Cross Sport Trendline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Trendline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CMC3NR,Volkswagen,CMC3NR,2023,Atlas Sport Cross Comfortline 2.0 TSI 4MOTION,Atlas Cross Sport Comfortline 2.0 TSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,2.0L TSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CMC3UR,Volkswagen,CMC3UR,2023,Atlas Sport Cross Comfortline 3.6 FSI 4MOTION,Atlas Cross Sport Comfortline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Comfortline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CMC4UR,Volkswagen,CMC4UR,2023,Atlas Sport Cross Highline 3.6 FSI 4MOTION,Atlas Cross Sport Highline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Highline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CMC5UR,Volkswagen,CMC5UR,2023,Atlas Sport Cross Execline 3.6 FSI 4MOTION,Atlas Cross Sport Execline 3.6 FSI 4MOTION,Atlas,,Cross Sport,Execline,,,,,3.6L FSI,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CMD3PR,Volkswagen,CMD3PR,2024,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CMD4PR,Volkswagen,CMD4PR,2024,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CMD5PR,Volkswagen,CMD5PR,2024,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CMD3PR,Volkswagen,CMD3PR,2025,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CMD4PR,Volkswagen,CMD4PR,2025,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CMD5PR,Volkswagen,CMD5PR,2025,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CMD7PR,Volkswagen,CMD7PR,2025,Atlas Cross Sport Comfortline R-Line Black,Atlas Cross Sport Comfortline R-Line Black,Atlas,,Cross Sport,Comfortline,,Black|R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CMD3PR,Volkswagen,CMD3PR,2026,Atlas Cross Sport Comfortline,Atlas Cross Sport Comfortline,Atlas,,Cross Sport,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CMD4PR,Volkswagen,CMD4PR,2026,Atlas Cross Sport Highline,Atlas Cross Sport Highline,Atlas,,Cross Sport,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CMD5PR,Volkswagen,CMD5PR,2026,Atlas Cross Sport Execline,Atlas Cross Sport Execline,Atlas,,Cross Sport,Execline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU22M2,Volkswagen,AU22M2,2020,Golf Comfortline 5-door Manual,Golf Comfortline 5-door Manual,Golf,,,Comfortline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU22MS,Volkswagen,AU22MS,2020,Golf Comfortline 5-door Auto,Golf Comfortline 5-door Auto,Golf,,,Comfortline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU23M2,Volkswagen,AU23M2,2020,Golf Highline 5-door Manual,Golf Highline 5-door Manual,Golf,,,Highline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU23MS,Volkswagen,AU23MS,2020,Golf Highline 5-door Auto,Golf Highline 5-door Auto,Golf,,,Highline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU22M2,Volkswagen,AU22M2,2021,Golf Comfortline 5-door Manual,Golf Comfortline 5-door Manual,Golf,,,Comfortline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU22MS,Volkswagen,AU22MS,2021,Golf Comfortline 5-door Auto,Golf Comfortline 5-door Auto,Golf,,,Comfortline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU23M2,Volkswagen,AU23M2,2021,Golf Highline 5-door Manual,Golf Highline 5-door Manual,Golf,,,Highline,,,,,,Manual,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU23MS,Volkswagen,AU23MS,2021,Golf Highline 5-door Auto,Golf Highline 5-door Auto,Golf,,,Highline,,,,,,Automatic,,5-Door,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU29V2,Volkswagen,AU29V2,2020,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU29VZ,Volkswagen,AU29VZ,2020,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU2AV2,Volkswagen,AU2AV2,2020,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-AU2AVZ,Volkswagen,AU2AVZ,2020,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU2AV2,Volkswagen,AU2AV2,2021,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-AU2AVZ,Volkswagen,AU2AVZ,2021,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD19U2,Volkswagen,CD19U2,2022,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD19UZ,Volkswagen,CD19UZ,2022,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1AU2,Volkswagen,CD1AU2,2022,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1AUZ,Volkswagen,CD1AUZ,2022,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1PU2,Volkswagen,CD1PU2,2022,Golf GTI Performance Manual,Golf GTI Performance Manual,Golf,Performance,GTI,,,,,Performance,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1PUZ,Volkswagen,CD1PUZ,2022,Golf GTI Performance Auto,Golf GTI Performance Auto,Golf,Performance,GTI,,,,,Performance,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD14U2,Volkswagen,CD14U2,2023,Golf GTI 40th Anniversary Manual,Golf GTI 40th Anniversary Manual,Golf,Performance,GTI,,40th Anniversary,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD14UZ,Volkswagen,CD14UZ,2023,Golf GTI 40th Anniversary Auto,Golf GTI 40th Anniversary Auto,Golf,Performance,GTI,,40th Anniversary,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD19U2,Volkswagen,CD19U2,2023,Golf GTI Manual,Golf GTI Manual,Golf,Performance,GTI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD19UZ,Volkswagen,CD19UZ,2023,Golf GTI Auto,Golf GTI Auto,Golf,Performance,GTI,,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1AU2,Volkswagen,CD1AU2,2023,Golf GTI Autobahn Manual,Golf GTI Autobahn Manual,Golf,Performance,GTI,Autobahn,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1AUZ,Volkswagen,CD1AUZ,2023,Golf GTI Autobahn Auto,Golf GTI Autobahn Auto,Golf,Performance,GTI,Autobahn,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1PU2,Volkswagen,CD1PU2,2023,Golf GTI Performance Manual,Golf GTI Performance Manual,Golf,Performance,GTI,,,,,Performance,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1PUZ,Volkswagen,CD1PUZ,2023,Golf GTI Performance Auto,Golf GTI Performance Auto,Golf,Performance,GTI,,,,,Performance,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD19UZ,Volkswagen,CD19UZ,2024,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1AU2,Volkswagen,CD1AU2,2024,Golf GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1AUZ,Volkswagen,CD1AUZ,2024,Golf GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1PU2,Volkswagen,CD1PU2,2024,Golf GTI Performance,Golf GTI Performance,Golf,Performance,GTI,,,,,Performance,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1PUZ,Volkswagen,CD1PUZ,2024,Golf GTI Performance,Golf GTI Performance,Golf,Performance,GTI,,,,,Performance,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-DA19UZ,Volkswagen,DA19UZ,2025,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-DA1AUZ,Volkswagen,DA1AUZ,2025,Golf GTI GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-DA19UZ,Volkswagen,DA19UZ,2026,Golf GTI GTI,Golf GTI,Golf,Performance,GTI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-DA1AUZ,Volkswagen,DA1AUZ,2026,Golf GTI GTI Autobahn,Golf GTI Autobahn,Golf,Performance,GTI,Autobahn,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1RM4,Volkswagen,CD1RM4,2022,Golf R Manual,Golf R Manual,Golf,Performance,R,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CD1RMT,Volkswagen,CD1RMT,2022,Golf R DSG,Golf R DSG,Golf,Performance,R,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD12M4,Volkswagen,CD12M4,2023,Golf R 20th Anniversary Manual,Golf R 20th Anniversary Manual,Golf,Performance,R,,20th Anniversary,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD12MT,Volkswagen,CD12MT,2023,Golf R 20th Anniversary DSG,Golf R 20th Anniversary DSG,Golf,Performance,R,,20th Anniversary,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1RM4,Volkswagen,CD1RM4,2023,Golf R Manual,Golf R Manual,Golf,Performance,R,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CD1RMT,Volkswagen,CD1RMT,2023,Golf R DSG,Golf R DSG,Golf,Performance,R,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1RM4,Volkswagen,CD1RM4,2024,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CD1RMT,Volkswagen,CD1RMT,2024,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-DA1BPT,Volkswagen,DA1BPT,2025,Golf R Golf R Black,Golf R Black,Golf,Performance,R,,,Black,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-DA1RPT,Volkswagen,DA1RPT,2025,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-DA1BPT,Volkswagen,DA1BPT,2026,Golf R Golf R Black,Golf R Black,Golf,Performance,R,,,Black,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-DA1RPT,Volkswagen,DA1RPT,2026,Golf R Golf R,Golf R,Golf,Performance,R,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-EBJR5S,Volkswagen,EBJR5S,2025,ID. Buzz ID. Buzz 1st Edition 4MOTION,ID. Buzz 1st Edition 4MOTION,ID. Buzz,,,,1st Edition,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-EBJR7S,Volkswagen,EBJR7S,2025,ID. Buzz ID. Buzz 1st Edition,ID. Buzz 1st Edition,ID. Buzz,,,,1st Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-E213MN,Volkswagen,E213MN,2021,ID.4 Pro RWD,ID.4 Pro RWD,ID.4,,,PRO,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-E213TN,Volkswagen,E213TN,2021,ID.4 Pro AWD,ID.4 Pro AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-E213MN,Volkswagen,E213MN,2022,ID.4 Pro RWD,ID.4 Pro RWD,ID.4,,,PRO,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-E213TN,Volkswagen,E213TN,2022,ID.4 Pro AWD,ID.4 Pro AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-E812MJ,Volkswagen,E812MJ,2023,ID.4 RWD,ID.4 RWD,ID.4,,,,,,,,,,RWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-E813LG,Volkswagen,E813LG,2023,ID.4 Pro RWD w/LG Battery,ID.4 Pro RWD w/LG Battery,ID.4,,,PRO,,,,,,,RWD,,LG Energy Solution,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-E813MN,Volkswagen,E813MN,2023,ID.4 Pro RWD w/SK On Battery,ID.4 Pro RWD w/SK On Battery,ID.4,,,PRO,,,,,,,RWD,,SK On,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-E813SN,Volkswagen,E813SN,2023,ID.4 Pro AWD w/SK On Battery,ID.4 Pro AWD w/SK On Battery,ID.4,,,PRO,,,,,,,AWD,,SK On,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E812MJ,Volkswagen,E812MJ,2024,ID.4 ID.4,ID.4,ID.4,,,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E812MS,Volkswagen,E812MS,2024,ID.4 ID.4 S,ID.4 S,ID.4,,,S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E813RN,Volkswagen,E813RN,2024,ID.4 ID.4 PRO,ID.4 PRO,ID.4,,,PRO,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E813RS,Volkswagen,E813RS,2024,ID.4 ID.4 PRO S,ID.4 PRO S,ID.4,,,PRO S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E813VN,Volkswagen,E813VN,2024,ID.4 ID.4 PRO AWD,ID.4 PRO AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-E813VS,Volkswagen,E813VS,2024,ID.4 ID.4 PRO S AWD,ID.4 PRO S AWD,ID.4,,,PRO S,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-E812MJ,Volkswagen,E812MJ,2025,ID.4 ID.4,ID.4,ID.4,,,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-E813RN,Volkswagen,E813RN,2025,ID.4 ID.4 PRO,ID.4 PRO,ID.4,,,PRO,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-E813RS,Volkswagen,E813RS,2025,ID.4 ID.4 PRO S,ID.4 PRO S,ID.4,,,PRO S,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-E813VN,Volkswagen,E813VN,2025,ID.4 ID.4 PRO AWD,ID.4 PRO AWD,ID.4,,,PRO,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-E813VS,Volkswagen,E813VS,2025,ID.4 ID.4 PRO S AWD,ID.4 PRO S AWD,ID.4,,,PRO S,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU32M2,Volkswagen,BU32M2,2020,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU32MS,Volkswagen,BU32MS,2020,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU33M2,Volkswagen,BU33M2,2020,Jetta Highline Manual,Jetta Highline Manual,Jetta,,,Highline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU33MS,Volkswagen,BU33MS,2020,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU34MS,Volkswagen,BU34MS,2020,Jetta Execline Auto,Jetta Execline Auto,Jetta,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU32M2,Volkswagen,BU32M2,2021,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU32MS,Volkswagen,BU32MS,2021,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU33M2,Volkswagen,BU33M2,2021,Jetta Highline Manual,Jetta Highline Manual,Jetta,,,Highline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU33MS,Volkswagen,BU33MS,2021,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU34MS,Volkswagen,BU34MS,2021,Jetta Execline Auto,Jetta Execline Auto,Jetta,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU42R2,Volkswagen,BU42R2,2022,Jetta Trendline Manual,Jetta Trendline Manual,Jetta,,,Trendline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU42RS,Volkswagen,BU42RS,2022,Jetta Trendline Auto,Jetta Trendline Auto,Jetta,,,Trendline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU43R2,Volkswagen,BU43R2,2022,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU43RS,Volkswagen,BU43RS,2022,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU44RS,Volkswagen,BU44RS,2022,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU42R2,Volkswagen,BU42R2,2023,Jetta Trendline Manual,Jetta Trendline Manual,Jetta,,,Trendline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU42RS,Volkswagen,BU42RS,2023,Jetta Trendline Auto,Jetta Trendline Auto,Jetta,,,Trendline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU43R2,Volkswagen,BU43R2,2023,Jetta Comfortline Manual,Jetta Comfortline Manual,Jetta,,,Comfortline,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU43RS,Volkswagen,BU43RS,2023,Jetta Comfortline Auto,Jetta Comfortline Auto,Jetta,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU44RS,Volkswagen,BU44RS,2023,Jetta Highline Auto,Jetta Highline Auto,Jetta,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU42R2,Volkswagen,BU42R2,2024,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU42RS,Volkswagen,BU42RS,2024,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU43R2,Volkswagen,BU43R2,2024,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU43RS,Volkswagen,BU43RS,2024,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU44RS,Volkswagen,BU44RS,2024,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-BU52RS,Volkswagen,BU52RS,2025,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-BU53RS,Volkswagen,BU53RS,2025,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-BU54RS,Volkswagen,BU54RS,2025,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-BU52RS,Volkswagen,BU52RS,2026,Jetta Trendline,Jetta Trendline,Jetta,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-BU53RS,Volkswagen,BU53RS,2026,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-BU54RS,Volkswagen,BU54RS,2026,Jetta Highline,Jetta Highline,Jetta,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-BU53RS,Volkswagen,BU53RS,2027,Jetta Comfortline,Jetta Comfortline,Jetta,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU39V2,Volkswagen,BU39V2,2020,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BU39VZ,Volkswagen,BU39VZ,2020,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU39V2,Volkswagen,BU39V2,2021,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BU39VZ,Volkswagen,BU39VZ,2021,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU49V2,Volkswagen,BU49V2,2022,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BU49VZ,Volkswagen,BU49VZ,2022,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU49V2,Volkswagen,BU49V2,2023,Jetta GLI Manual,Jetta GLI Manual,Jetta,,GLI,,,,,,,Manual,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BU49VZ,Volkswagen,BU49VZ,2023,Jetta GLI DSG,Jetta GLI DSG,Jetta,,GLI,,,,,,,DSG Dual-Clutch,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU40V2,Volkswagen,BU40V2,2024,Jetta GLI 40th,Jetta GLI 40th,Jetta,,GLI,,40th Anniversary,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU40VZ,Volkswagen,BU40VZ,2024,Jetta GLI 40th,Jetta GLI 40th,Jetta,,GLI,,40th Anniversary,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU49V2,Volkswagen,BU49V2,2024,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BU49VZ,Volkswagen,BU49VZ,2024,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-BU59V2,Volkswagen,BU59V2,2025,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-BU59VZ,Volkswagen,BU59VZ,2025,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-BU59V2,Volkswagen,BU59V2,2026,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-BU59VZ,Volkswagen,BU59VZ,2026,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-BU59VZ,Volkswagen,BU59VZ,2027,Jetta GLI GLI,Jetta GLI,Jetta,,GLI,,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-A342P6,Volkswagen,A342P6,2020,Passat Comfortline Auto,Passat Comfortline Auto,Passat,,,Comfortline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-A343P6,Volkswagen,A343P6,2020,Passat Highline Auto,Passat Highline Auto,Passat,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-A344P6,Volkswagen,A344P6,2020,Passat Execline Auto,Passat Execline Auto,Passat,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-A343P6,Volkswagen,A343P6,2021,Passat Highline Auto,Passat Highline Auto,Passat,,,Highline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-A344P6,Volkswagen,A344P6,2021,Passat Execline Auto,Passat Execline Auto,Passat,,,Execline,,,,,,Automatic,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CL12RT,Volkswagen,CL12RT,2022,Taos Trendline 4MOTION,Taos Trendline 4MOTION,Taos,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CL12RZ,Volkswagen,CL12RZ,2022,Taos Trendline FWD,Taos Trendline FWD,Taos,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CL13RT,Volkswagen,CL13RT,2022,Taos Comfortline 4MOTION,Taos Comfortline 4MOTION,Taos,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CL13RZ,Volkswagen,CL13RZ,2022,Taos Comfortline FWD,Taos Comfortline FWD,Taos,,,Comfortline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-CL14RT,Volkswagen,CL14RT,2022,Taos Highline 4MOTION,Taos Highline 4MOTION,Taos,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL12RT,Volkswagen,CL12RT,2023,Taos Trendline 4MOTION *Ltd Avail*,Taos Trendline 4MOTION *Ltd Avail*,Taos,,,Trendline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL12RV,Volkswagen,CL12RV,2023,Taos Trendline 4MOTION,Taos Trendline 4MOTION,Taos,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL12RZ,Volkswagen,CL12RZ,2023,Taos Trendline FWD,Taos Trendline FWD,Taos,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL13RT,Volkswagen,CL13RT,2023,Taos Comfortline 4MOTION *Ltd Avail*,Taos Comfortline 4MOTION *Ltd Avail*,Taos,,,Comfortline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL13RV,Volkswagen,CL13RV,2023,Taos Comfortline 4MOTION,Taos Comfortline 4MOTION,Taos,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL13RZ,Volkswagen,CL13RZ,2023,Taos Comfortline FWD,Taos Comfortline FWD,Taos,,,Comfortline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL14RT,Volkswagen,CL14RT,2023,Taos Highline 4MOTION *Ltd Avail*,Taos Highline 4MOTION *Ltd Avail*,Taos,,,Highline,,,,,,,AWD,,,Limited Availability,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-CL14RV,Volkswagen,CL14RV,2023,Taos Highline 4MOTION,Taos Highline 4MOTION,Taos,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL12RV,Volkswagen,CL12RV,2024,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL12RZ,Volkswagen,CL12RZ,2024,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL13BE,Volkswagen,CL13BE,2024,Taos Comfortline Black Edition,Taos Comfortline Black Edition,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL13RV,Volkswagen,CL13RV,2024,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL13RZ,Volkswagen,CL13RZ,2024,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-CL14RV,Volkswagen,CL14RV,2024,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CL22SR,Volkswagen,CL22SR,2025,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CL22SZ,Volkswagen,CL22SZ,2025,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CL23SR,Volkswagen,CL23SR,2025,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CL24SR,Volkswagen,CL24SR,2025,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-CL26SR,Volkswagen,CL26SR,2025,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CL22SR,Volkswagen,CL22SR,2026,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CL22SZ,Volkswagen,CL22SZ,2026,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CL23SR,Volkswagen,CL23SR,2026,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CL24SR,Volkswagen,CL24SR,2026,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-CL26SR,Volkswagen,CL26SR,2026,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-CL22SR,Volkswagen,CL22SR,2027,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-CL22SZ,Volkswagen,CL22SZ,2027,Taos Trendline,Taos Trendline,Taos,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-CL23SR,Volkswagen,CL23SR,2027,Taos Comfortline,Taos Comfortline,Taos,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-CL24SR,Volkswagen,CL24SR,2027,Taos Highline,Taos Highline,Taos,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-CL26SR,Volkswagen,CL26SR,2027,Taos Comfortline Black,Taos Comfortline Black,Taos,,,Comfortline,Black Edition,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BW22VJ,Volkswagen,BW22VJ,2020,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BW22VS,Volkswagen,BW22VS,2020,Tiguan Trendline FWD,Tiguan Trendline FWD,Tiguan,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BW23VJ,Volkswagen,BW23VJ,2020,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BW24VJ,Volkswagen,BW24VJ,2020,Tiguan Highline 4MOTION,Tiguan Highline 4MOTION,Tiguan,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BW2IVJ,Volkswagen,BW2IVJ,2020,Tiguan IQ Drive 4MOTION,Tiguan IQ Drive 4MOTION,Tiguan,,,,,,IQ.DRIVE,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BW22VJ,Volkswagen,BW22VJ,2021,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BW22VS,Volkswagen,BW22VS,2021,Tiguan Trendline FWD,Tiguan Trendline FWD,Tiguan,,,Trendline,,,,,,,FWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BW23VJ,Volkswagen,BW23VJ,2021,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BW24VJ,Volkswagen,BW24VJ,2021,Tiguan Highline 4MOTION,Tiguan Highline 4MOTION,Tiguan,,,Highline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2021-BW2UVJ,Volkswagen,BW2UVJ,2021,Tiguan United 4MOTION,Tiguan United 4MOTION,Tiguan,,,,United Edition,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BJ22VJ,Volkswagen,BJ22VJ,2022,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BJ23VJ,Volkswagen,BJ23VJ,2022,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BJ24VJ,Volkswagen,BJ24VJ,2022,Tiguan Highline R-Line 4MOTION,Tiguan Highline R-Line 4MOTION,Tiguan,,,Highline,,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2022-BJ26VJ,Volkswagen,BJ26VJ,2022,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BJ22VJ,Volkswagen,BJ22VJ,2023,Tiguan Trendline 4MOTION,Tiguan Trendline 4MOTION,Tiguan,,,Trendline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BJ23VJ,Volkswagen,BJ23VJ,2023,Tiguan Comfortline 4MOTION,Tiguan Comfortline 4MOTION,Tiguan,,,Comfortline,,,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BJ24VJ,Volkswagen,BJ24VJ,2023,Tiguan Highline R-Line 4MOTION,Tiguan Highline R-Line 4MOTION,Tiguan,,,Highline,,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2023-BJ2VVJ,Volkswagen,BJ2VVJ,2023,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan Comfortline R-Line Black Edition 4MOTION,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,AWD,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BJ22VJ,Volkswagen,BJ22VJ,2024,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BJ23VJ,Volkswagen,BJ23VJ,2024,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BJ24VJ,Volkswagen,BJ24VJ,2024,Tiguan Highline,Tiguan Highline,Tiguan,,,Highline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2024-BJ2VVJ,Volkswagen,BJ2VVJ,2024,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-RM12PJ,Volkswagen,RM12PJ,2025,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-RM13PJ,Volkswagen,RM13PJ,2025,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-RM14PJ,Volkswagen,RM14PJ,2025,Tiguan Highline R-Line,Tiguan Highline R-Line,Tiguan,,,Highline,,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2025-RM1VPJ,Volkswagen,RM1VPJ,2025,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-RM12PJ,Volkswagen,RM12PJ,2026,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-RM13PJ,Volkswagen,RM13PJ,2026,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-RM14QJ,Volkswagen,RM14QJ,2026,Tiguan Highline R-Line,Tiguan Highline R-Line,Tiguan,,,Highline,,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2026-RM1VPJ,Volkswagen,RM1VPJ,2026,Tiguan Comfortline R-Line Black,Tiguan Comfortline R-Line Black,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-RM12PJ,Volkswagen,RM12PJ,2027,Tiguan Trendline,Tiguan Trendline,Tiguan,,,Trendline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-RM13PJ,Volkswagen,RM13PJ,2027,Tiguan Comfortline,Tiguan Comfortline,Tiguan,,,Comfortline,,,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-RM14QJ,Volkswagen,RM14QJ,2027,Tiguan Highline Turbo R-Line,Tiguan Highline Turbo R-Line,Tiguan,,,Highline,,R-Line,,,Turbo,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2027-RM1VPJ,Volkswagen,RM1VPJ,2027,Tiguan Comfortline R-Line Black Edition,Tiguan Comfortline R-Line Black Edition,Tiguan,,,Comfortline,Black Edition,R-Line,,,,,,,,,,complete,datasets/vw_models_data.csv,4251671a76
+VW-2020-BE23D1,Volkswagen,BE23D1,2020,e-Golf 5dr HB Comfortline,e-Golf 5dr HB Comfortline,e-Golf,,,Comfortline,,,,,,,,5-Door|Hatchback,,,,complete,datasets/vw_models_data.csv,4251671a76

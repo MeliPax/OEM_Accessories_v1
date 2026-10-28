@@ -140,3 +140,46 @@ def test_shared_gti_alias_leaves_vw_descriptions_unchanged(taxonomy):
     without = {k: v for k, v in taxonomy['aliases'].items() if k != 'GTI'}
     assert 'GTI' in taxonomy['aliases']
     assert all(clean_value(d, taxonomy['aliases'])[0] == clean_value(d, without)[0] for d in descriptions)
+
+
+# ---------------------------------------------------------------- verified facts (idea 009)
+
+def load_verified(config_dir):
+    taxonomy, option_sets = load_all(config_dir)
+    return cfg.load_verified(config_dir, taxonomy, option_sets)
+
+
+def test_real_verified_facts(taxonomy, option_sets):
+    facts = cfg.load_verified(CONFIG_DIR, taxonomy, option_sets)
+    assert {(f['label'], f['model'], f['submodel'], tuple(sorted(f['years']))) for f in facts} == {
+        ('golf.yaml #1', 'Golf', 'R', (2020, 2021)), ('arteon.yaml #1', 'Arteon', None, (2022, 2023))}
+    assert {f['verified_by'] for f in facts} == {'P.M'}
+
+
+@pytest.mark.parametrize('old, new, message', [
+    ('    verified_by: P.M\n', '', 'golf.yaml verified #1: verified_by is required'),
+    ('    verified_on: 2026-10-28', '    verified_on: yesterday', 'verified_on must be a date YYYY-MM-DD'),
+    ('  - submodel: R\n    never_offered:', '  - submodel: RS\n    never_offered:', "submodel 'RS' is not defined"),
+    ('      years: [2020, 2021]\n    reason', '      years: [2021, 2022]\n    reason',
+     'Golf R never offered in [2022], but its option sets declare those years (the file says both)'),
+    ('      years: [2020, 2021]\n    reason', '      year: [2020, 2021]\n    reason',
+     'never_offered.year is not a keyword category'),
+    ('    never_offered:\n      years: [2020, 2021]\n', '    never_offered:\n      transmission: [Manual]\n',
+     'never_offered.transmission needs the years it applies to'),
+    ('    reason: Golf R', '    because: x\n    reason: Golf R', '"because" is not a verified field'),
+    ('    never_offered:\n      years: [2020, 2021]\n',
+     '    no_parts_expected:\n      years: [2020]\n      until: 2027-06-30\n',
+     'no_parts_expected years [2020] are not declared for Golf R'),
+])
+def test_broken_verified_entry_is_rejected(config_copy, old, new, message):
+    replace_in(config_copy / 'vehicles' / 'golf.yaml', old, new)
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        load_verified(config_copy)
+
+
+def test_an_option_the_option_set_offers_cannot_be_never_offered(config_copy):
+    replace_in(config_copy / 'vehicles' / 'golf.yaml', '    never_offered:\n      years: [2020, 2021]\n',
+               '    years: [2022]\n    never_offered:\n      transmission: [Manual]\n')
+    with pytest.raises(ConfigError, match=re.escape('Golf R 2022: transmission "Manual" is never offered here, '
+                                                    'but the option set offers it')):
+        load_verified(config_copy)

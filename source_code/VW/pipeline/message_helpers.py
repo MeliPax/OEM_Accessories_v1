@@ -17,6 +17,7 @@ DEFAULT_PATH = Path(__file__).resolve().parents[1] / 'config' / 'messages.yaml'
 SEVERITIES = ('fatal', 'error', 'warning', 'info')
 CODE_PATTERN = re.compile(r'^(CONFG|VEH|ACCESS)_[A-Z0-9]+(_[A-Z0-9]+)*$')
 FIELDS = ('severity', 'message', 'causes', 'fix')
+VERIFIABLE_STAGES = ('LOOKUP', 'COVER')     # availability codes a verified fact can explain (idea 009)
 
 _default = None
 
@@ -53,9 +54,20 @@ def load_messages(path=DEFAULT_PATH):
         unknown = placeholders(entry) - set(entry.get('facts') or [])
         if unknown:
             errors.append(f'{code}: placeholders {sorted(unknown)} are not listed under facts')
+        if 'verifiable' in entry:
+            if not isinstance(entry['verifiable'], bool):
+                errors.append(f'{code}: verifiable must be true or false')
+            elif entry['verifiable'] and (entry['severity'] == 'fatal'
+                                          or str(code).split('_')[1] not in VERIFIABLE_STAGES):
+                errors.append(f'{code}: only {"/".join(VERIFIABLE_STAGES)} codes that are not fatal can be verifiable')
     if errors:
         raise MessageError('messages.yaml: ' + f'{len(errors)} problem(s)\n  - ' + '\n  - '.join(errors))
     return catalogue
+
+
+def verifiable_codes(catalogue):
+    """The codes a verified fact may explain (verifiable: true)."""
+    return {code for code, entry in catalogue.items() if (entry or {}).get('verifiable') is True}
 
 
 def default_messages():

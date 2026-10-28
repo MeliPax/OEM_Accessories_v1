@@ -2,7 +2,17 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-28 — Work process, tracking and indexing (plan 010)
+## 2026-10-28 — Human-verified vehicle facts (plan 009)
+
+- New `verified:` section in `config/vehicles/<model>.yaml`: `never_offered` years or options, and `no_parts_expected` until a date. Each entry needs a reason, `verified_by` and `verified_on`, and is validated at load.
+- New final `verify` step in both pipelines:
+  - a flag a fact covers exactly drops to info, keeping its original severity, and leaves the review file;
+  - contradictions become errors (`ACCESS_VERIFY_CONTRADICTED`, `VEH_VERIFY_CONTRADICTED`);
+  - unused facts are reported, and expired facts bring their flags back.
+- New `db/dq/verified_flags.csv` and `db/definitions/dim_verified.csv`. Flags gain `model`, `submodel`, `original_severity` and `verified_entry`.
+- First facts (P.M, 2026-10-28): Golf R never offered 2020–2021, Arteon never offered 2022–2023. Accessory lookup errors go from 7 to 3, and review rows from 467 to 241.
+
+## 2026-10-28 — Work process, tracking and indexing (plan 010) · `18a80bf`
 
 - Every idea and plan opens with a fixed five-field header (`Status`, `Updated`, `Next`, `Links`, `Summary`), using fixed status words.
 - The planning index gains `Next` and `Updated` columns, and the README gains a run *Baseline* table.

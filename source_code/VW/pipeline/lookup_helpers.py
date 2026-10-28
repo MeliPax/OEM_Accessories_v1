@@ -183,8 +183,8 @@ def fetch(keys, vehicle_index, declared, taxonomy, ctx=None, step='lookup'):
             m = message_for(catalogue, code, **facts)
             issue = {'code': code, 'severity': m['severity'], 'message': m['message'], 'checked': checked,
                      'found': found, 'causes': join_causes(m['causes']), 'fix': join_fix(m['fix'])}
-            log_flag(ctx, step, {}, code, subject=f'{key_text} - {parts} parts', checked=checked, found=found,
-                     **facts)
+            log_flag(ctx, step, {'record': key_text, 'model': model, 'submodel': submodel or '', 'model_year': year},
+                     code, subject=f'{key_text} - {parts} parts', checked=checked, found=found, **facts)
         if vehicles:
             log_detail(ctx, step, 'LOOKUP OK', match_key=key_text, parts=parts, found=len(vehicles),
                        model_numbers=', '.join(v['model_number'] for v in vehicles))
@@ -245,7 +245,9 @@ def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage'):
             subject = f'{match_key(make, model, submodel, "*")}'
         m = message_for(catalogue, code, **facts)
         if code == 'ACCESS_COVER_VEHICLE_NO_PARTS' or (model, submodel) not in flagged_models:
-            log_flag(ctx, step, {}, code, subject=subject, checked=checked, found=found, **facts)
+            key = {'record': key_text if code == 'ACCESS_COVER_VEHICLE_NO_PARTS' else subject, 'model': model,
+                   'submodel': submodel or '', 'model_year': year if code == 'ACCESS_COVER_VEHICLE_NO_PARTS' else ''}
+            log_flag(ctx, step, key, code, subject=subject, checked=checked, found=found, **facts)
             flagged_models.add((model, submodel))
         for v in vehicles:
             rows.append({'type': 'vehicle', 'record': v['vehicle_id'], 'part_number': '', 'model_name': label,

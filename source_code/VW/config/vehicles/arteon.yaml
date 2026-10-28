@@ -17,3 +17,11 @@ option_sets:
   - years: [2020, 2021]
     trim: [Execline]
     transmission: [Automatic]
+
+# Facts a person confirmed (idea 009); see golf.yaml for the format.
+verified:
+  - never_offered:
+      years: [2022, 2023]
+    reason: Arteon was discontinued in Canada after model year 2021
+    verified_by: P.M
+    verified_on: 2026-10-28

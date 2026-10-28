@@ -10,6 +10,8 @@
 #   facts     the placeholder names the code must pass
 #   causes    likely causes, most likely first
 #   fix       numbered steps, naming the file or command
+#   verifiable true when a verified fact in config/vehicles/<model>.yaml can explain the flag (idea 009);
+#             only availability codes (LOOKUP, COVER stages), never a fatal
 # The code also attaches "checked" (what was looked at) and "found" (the result) to every flag.
 # tests/test_messages.py keeps this file and the codes used in pipeline/ in sync.
 
@@ -651,6 +653,7 @@ ACCESS_LOOKUP_IN_CONFIG_NOT_IN_DB:
 
 ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN:
   severity: error
+  verifiable: true
   message: 'Accessory file lists {vehicle} for {year}, but neither the vehicle DB nor the config has it after {last}'
   facts: [vehicle, year, last]
   causes:
@@ -664,6 +667,7 @@ ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN:
 
 ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN:
   severity: error
+  verifiable: true
   message: 'Accessory file lists {vehicle} for {year}, but neither the vehicle DB nor the config has it before {first}'
   facts: [vehicle, year, first]
   causes:
@@ -676,6 +680,7 @@ ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN:
 
 ACCESS_LOOKUP_YEAR_IN_GAP:
   severity: error
+  verifiable: true
   message: 'Accessory file lists {vehicle} for {year}, a year missing between the years the vehicle DB and config know'
   facts: [vehicle, year]
   causes:
@@ -688,6 +693,7 @@ ACCESS_LOOKUP_YEAR_IN_GAP:
 
 ACCESS_LOOKUP_MODEL_NOT_IN_DB:
   severity: error
+  verifiable: true
   message: '{vehicle} is in models.yaml, but the vehicle DB has no {vehicle} vehicles in any year'
   facts: [vehicle]
   causes:
@@ -711,6 +717,7 @@ ACCESS_LOOKUP_NO_CONFIG_FOR_MODEL:
 
 ACCESS_COVER_VEHICLE_NO_PARTS:
   severity: warning
+  verifiable: true
   message: '{count} {vehicle} {year} vehicles in the vehicle DB get no accessory parts'
   facts: [count, vehicle, year]
   causes:
@@ -810,3 +817,50 @@ ACCESS_EXPORT_SHEET_EMPTY:
   fix:
     - Resolve the lookup flags for this model (db/review/accessory_review.csv)
     - Rerun run_accessories.py
+
+# ---------------------------------------------------------------- verified facts (idea 009)
+
+VEH_VERIFY_CONTRADICTED:
+  severity: error
+  message: '{entry} says {what} was never offered in {year}, but the VW export has it ({vehicle_id})'
+  facts: [entry, what, year, vehicle_id]
+  causes:
+    - The data changed (a new or corrected VW export) and the fact is out of date
+    - The verified entry is wrong
+  fix:
+    - Check the vehicle in the VW export (see found)
+    - The vehicle is real -> remove or correct the entry in config/vehicles/<model>.yaml (and its option sets)
+    - The vehicle is wrong -> ask the data source to correct the export
+
+ACCESS_VERIFY_CONTRADICTED:
+  severity: error
+  message: '{entry} says {vehicle} was never offered in {year}, but the vehicle DB has {count} vehicles for it'
+  facts: [entry, vehicle, year, count]
+  causes:
+    - The vehicle DB changed (a new VW export) and the fact is out of date
+    - The verified entry is wrong
+  fix:
+    - Check the model numbers shown under found
+    - The vehicles are real -> remove or correct the entry in config/vehicles/<model>.yaml, rerun run_ingest.py then run_accessories.py
+    - They are wrong -> ask the data source to correct the export
+
+ACCESS_VERIFY_EXPIRED:
+  severity: warning
+  message: '{entry}: no parts expected for {vehicle} {years} until {until}; that date has passed, so its coverage flags are back'
+  facts: [entry, vehicle, years, until]
+  causes:
+    - The accessory file still has no parts for these vehicles after the expected date
+  fix:
+    - Ask the data source for an updated accessory file
+    - If parts are now expected later, set a new until date in config/vehicles/<model>.yaml (with verified_on updated)
+
+ACCESS_VERIFY_ENTRY_UNUSED:
+  severity: info
+  message: '{entry} ({vehicle}, {kind} {years}) matched no flag in this run'
+  facts: [entry, vehicle, kind, years]
+  causes:
+    - The gap it explains is gone (the accessory file or the vehicle DB changed)
+    - The entry doesn't match the flag exactly (model, submodel or year)
+  fix:
+    - If the gap is gone, the entry can be removed from config/vehicles/<model>.yaml
+    - Otherwise check the model, submodel and years against the flag

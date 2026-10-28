@@ -13,7 +13,7 @@ from pipeline.accessory_helpers import build_accessory_model_dict, export_access
 from pipeline.logging_helpers import PipelineFatal
 
 STEPS = ['config', 'ingest', 'part_numbers', 'staging', 'year_window', 'clean_text', 'dedupe', 'part_number_review',
-         'clean', 'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'export']
+         'clean', 'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'verify', 'export']
 MISSES = {
     'volkswagen|arteon|(base)|2022': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
     'volkswagen|arteon|(base)|2023': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
@@ -42,7 +42,7 @@ def test_every_step_is_logged_and_rows_reconcile(acc_run):
     db, _, status, summary, _ = acc_run
     steps = read(db / 'logs' / 'steps.csv')
     assert steps[steps['run_id'] == 'acc1']['step'].tolist() == STEPS
-    assert status == 'ok_with_errors'                     # the 7 missing keys are errors to review
+    assert status == 'ok_with_errors'                     # 3 of the 7 missing keys are still errors to review
     assert (summary['rows_read'], summary['rows_staged'], summary['rows_in_window'], summary['rows_unique']) == \
            (24396, 20399, 13051, 1357)
     assert (summary['model_names'], summary['unknown_model_names']) == (14, 0)
@@ -73,15 +73,34 @@ def test_vehicles_without_parts_are_the_2027_vehicles(acc_run):
         'volkswagen|taos|(base)|2027', 'volkswagen|tiguan|(base)|2027']
 
 
-def test_dict_unmatched_rows_equal_the_review_part_rows(acc_run):
+def test_dict_unmatched_rows_equal_the_review_part_rows_plus_the_verified_ones(acc_run):
     db, _, _, summary, model_dict = acc_run
     assert len(model_dict) == 14 and 'GTI' in model_dict and 'Golf' in model_dict
     unmatched = pd.concat([d[d['model_number'] == ''] for d in model_dict.values()])
     review = read(db / 'review' / 'accessory_review.csv')
     parts = review[review['type'] == 'part']
-    assert len(unmatched) == len(parts) == summary['unmatched_part_years'] == 451
-    assert set(unmatched['match_status']) == set(MISSES.values())
+    verified = unmatched[unmatched['match_status'] == 'never_offered']
+    assert len(unmatched) == summary['unmatched_part_years'] == 451                  # nothing deleted
+    assert len(verified) == 226 and len(parts) == 451 - 226                          # Golf R 108 + Arteon 118
+    assert set(unmatched['match_status']) == set(MISSES.values()) | {'never_offered'}
     assert len(review[review['type'] == 'vehicle']) == 14
+
+
+def test_verified_facts_turn_four_lookup_errors_into_info(acc_run):
+    db, _, _, summary, _ = acc_run
+    flags = read(db / 'logs' / 'flags' / 'acc1.csv')
+    lookup = flags[flags['code'].str.startswith('ACCESS_LOOKUP_')]
+    verified = lookup[lookup['verified_entry'] != '']
+    assert sorted(verified['record']) == ['volkswagen|arteon|(base)|2022', 'volkswagen|arteon|(base)|2023',
+                                          'volkswagen|golf|r|2020', 'volkswagen|golf|r|2021']
+    assert set(verified['severity']) == {'info'} and set(verified['original_severity']) == {'error'}
+    assert set(verified['verified_entry']) == {'arteon.yaml #1', 'golf.yaml #1'}
+    assert sorted(lookup.loc[lookup['severity'] == 'error', 'record']) == [
+        'volkswagen|atlas|(base)|2020', 'volkswagen|id. buzz|(base)|2026', 'volkswagen|id.4|(base)|2026']
+    report = read(db / 'dq' / 'verified_flags.csv')
+    assert len(report) == 4 and set(report['verified_by']) == {'P.M'} and (report['reason'] != '').all()
+    assert (summary['flags_verified'], summary['verified_contradicted'], summary['review_rows']) == (4, 0, 241)
+    assert not flags['code'].isin(['ACCESS_VERIFY_ENTRY_UNUSED', 'ACCESS_VERIFY_CONTRADICTED']).any()
 
 
 def test_dict_shape(acc_run):

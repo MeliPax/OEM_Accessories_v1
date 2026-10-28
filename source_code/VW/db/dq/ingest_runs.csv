@@ -1,7 +1,8 @@
-run_id,started_at,source_file,min_model_year,max_model_year,taxonomy_version,status,rows_staged,rows_excluded_by_year,rows_final,parsed_complete_pct,flags_warning,flags_error
-20261026_094028,2026-10-26 09:40:28,datasets/vw_models_data.csv,2020,,a02ccc4755,ok_with_warnings,323,54,269,100.0,12,0
-20261026_094138,2026-10-26 09:41:38,datasets/vw_models_data.csv,2020,,a02ccc4755,ok_with_warnings,323,54,269,100.0,12,0
-20261026_103927,2026-10-26 10:39:27,datasets/vw_models_data.csv,2020,,20e1330dc5,ok_with_warnings,323,54,269,100.0,7,0
-20261026_111927,2026-10-26 11:19:27,datasets/vw_models_data.csv,2020,,20e1330dc5,ok,323,54,269,100.0,0,0
-vw_ingest_20261027_095415,2026-10-27 09:54:15,datasets/vw_models_data.csv,2020,,c0080918ef,ok,323,54,269,100.0,0,0
-vw_ingest_20261027_100309,2026-10-27 10:03:09,datasets/vw_models_data.csv,2020,,604330b804,ok,323,54,269,100.0,0,0
+run_id,started_at,source_file,min_model_year,max_model_year,taxonomy_version,status,rows_staged,rows_excluded_by_year,rows_final,parsed_complete_pct,flags_warning,flags_error,verified_contradicted
+20261026_094028,2026-10-26 09:40:28,datasets/vw_models_data.csv,2020,,a02ccc4755,ok_with_warnings,323,54,269,100.0,12,0,
+20261026_094138,2026-10-26 09:41:38,datasets/vw_models_data.csv,2020,,a02ccc4755,ok_with_warnings,323,54,269,100.0,12,0,
+20261026_103927,2026-10-26 10:39:27,datasets/vw_models_data.csv,2020,,20e1330dc5,ok_with_warnings,323,54,269,100.0,7,0,
+20261026_111927,2026-10-26 11:19:27,datasets/vw_models_data.csv,2020,,20e1330dc5,ok,323,54,269,100.0,0,0,
+vw_ingest_20261027_095415,2026-10-27 09:54:15,datasets/vw_models_data.csv,2020,,c0080918ef,ok,323,54,269,100.0,0,0,
+vw_ingest_20261027_100309,2026-10-27 10:03:09,datasets/vw_models_data.csv,2020,,604330b804,ok,323,54,269,100.0,0,0,
+vw_ingest_20261028_123746,2026-10-28 12:37:46,datasets/vw_models_data.csv,2020,,4251671a76,ok,323,54,269,100.0,0,0,0
