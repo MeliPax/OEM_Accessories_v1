@@ -1,6 +1,6 @@
 # 007 — Comment Text Cleaning: Design
 
-**Status:** Idea — all decisions (C1–C8) approved 2026-10-27; next: plan
+**Status:** Built 2026-10-28 — all decisions (C1–C8) approved; see *Build notes* at the end. Plan (as built): [plans/007](../plans/007_comment_text_cleaning.md)
 **Applies to:** the accessory pipeline (plan 003), the `comments` column (`dealerNotes` in the file)
 **Asked for:**
 - remove HTML (`<p>`, `<b>`, `<br/>`);
@@ -115,3 +115,23 @@ Why `link_rules` match the URL and not the whole sentence: the sentence around i
 | C6 | Keep `comments_source` (raw) in the dict; export the clean text? | ✅ 2026-10-27: Yes |
 | C7 | Clean `comments` only for now; `product_description` later if needed (`columns:` makes it a one-word change)? | ✅ 2026-10-27: Yes |
 | C8 | Normalize curly quotes (`THULE’s` → `THULE's`)? | ✅ 2026-10-27: No for now (cosmetic); can be a config switch later |
+
+## Build notes (2026-10-28)
+
+Built together with idea 006, on the user's go-ahead.
+
+| Where | What |
+|---|---|
+| `config/accessories.yaml` | `text_cleaning:` block |
+| `pipeline/text_helpers.py` (new) | `clean_text` and the link helpers: pure functions, one rule at a time |
+| `pipeline/config_helpers.py` | Validates columns, tag lists, punctuation and link rules (`CONFG_` errors) |
+| `pipeline/accessory_helpers.py` | New `clean_text` step after the year window, before duplicate removal (C5): once per distinct text, keeps `comments_source`, logs each change with the rules that fired, and flags `ACCESS_CLEAN_UNREVIEWED_LINK` (to review) and `ACCESS_CLEAN_UNKNOWN_TAG` (log only) |
+| Tests | `tests/test_text_helpers.py` (every rule, links, the step, dedupe), config cases, end-to-end `test_comments_are_clean_and_keep_the_raw_text`; 221 passing |
+
+Deviations from the idea text, found on the data:
+- **`remove_tags` is a list** (`b, i, u, strong, em, span, font`), not `any_other`. Any tag outside both lists is still removed, and it's logged `ACCESS_CLEAN_UNKNOWN_TAG`, so "new markup is visible" works as intended.
+- **Links stop at `<`.** The vwhub links run straight into the next tag (`.../trailer-hitch<p>Always`).
+- **No full stop after a sentence that ends with a link,** so the link stays usable.
+- **A space before punctuation is removed only when the mark ends the word.** `5G0.071.644.B .GRU` is a part reference and is left as it is.
+
+Real run (2026-10-20 file): 62 distinct texts, 54 changed (2,969 rows in the year window; the idea's estimate was about 40, because every text without a final full stop now gets one). 1 link replaced (Salsify → Thule.com), 3 vwhub links kept, 0 flagged, 0 unknown tags. Duplicate removal still ends at 1,357 rows. One text glued together in the source ("ReferAlways install") is left as it is (user decision 2026-10-28): no cleaning rule splits or rewrites it. See data issue DI-16 (Accepted).

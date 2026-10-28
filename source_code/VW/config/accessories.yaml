@@ -32,6 +32,44 @@ part_number:
   max_unproven_share: 0.01          # more rows than this not proven stops the run (the layout changed?)
   export_as_text: true              # Part Number cells written as Excel text, so Excel never drops the zeros
 
+# Units (planning/ideas/006_labor_time_units_design.md). Each unit is defined by how many of it make one
+# hour; the multiplier is definitions[target_unit] / definitions[source_unit] (minutes -> hours = 1/60).
+# The dict keeps <column>_source (the value as read); the export shows the converted value.
+units:
+  definitions:
+    hours: 1
+    minutes: 60
+  columns:
+    labor_time:
+      source_unit: minutes        # what the accessory file holds
+      target_unit: hours          # what the dict and the export hold
+      decimals: 2                 # rounding of the converted value (25 min -> 0.42 h)
+      suspect_if:                 # values that look like the wrong unit: flagged ACCESS_CLEAN_UNIT_SUSPECT, still converted
+        not_whole: true           # a fraction of a minute (0.4) probably means the value is already in hours
+        above: 600                # more than 10 hours of labour is unlikely for an accessory
+
+# Comment cleaning (planning/ideas/007_comment_text_cleaning_design.md). Separators split a text into
+# sentences; each is trimmed and gets sentence_end when it has no ending punctuation (not after a link);
+# the sentences are joined with join_with. Runs once per distinct text, before duplicate removal.
+# The dict keeps <column>_source (the raw text); the export shows the clean text.
+text_cleaning:
+  columns: [comments]
+  decode_html_entities: true      # &amp; -> &, &nbsp; -> space
+  separators:                     # each one ends a sentence
+    pipes: true                   # | and || (also at the start / end)
+    tags: [p, br, li, div]        # <p> </p> <br> <br/> ... (open, close or self-closing)
+  remove_tags: [b, i, u, strong, em, span, font]   # inline tags: removed, text kept. Any other tag is removed too,
+                                                   # and logged ACCESS_CLEAN_UNKNOWN_TAG so this list can be updated
+  sentence_end: "."
+  ending_punctuation: [".", "!", "?", ":", ";"]
+  join_with: " "
+  link_rules:                     # a link that doesn't work -> a useful direction; only the URL is replaced
+    - match: https://app.salsify.com/catalogs/fde773be-fbbd-410b-99ab-5178d20956b6
+      match_type: exact           # exact | prefix
+      replace_with: Thule.com
+      reason: Salsify catalogue link is not public; Thule.com has the product, spare parts and warranty information
+  allowed_link_hosts: [www.vwhub.com]   # kept as they are (VW dealer portal, idea 007 C3); any other link is flagged
+
 # rows kept; any other status value is flagged ACCESS_STGNG_STATUS_UNEXPECTED and left out
 keep_rows:
   status: [Active]
@@ -79,7 +117,7 @@ export:
     product_description: Description
     msrp: MSRP
     cost: Cost
-    labor_time: Labour Time
+    labor_time: Labour Time (hours)             # converted per units: above (idea 006)
     comments: Comments
     variant: Variant                            # built per the variant block above
     applicable_year: Year

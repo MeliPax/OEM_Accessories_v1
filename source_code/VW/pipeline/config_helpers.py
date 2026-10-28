@@ -333,6 +333,7 @@ ACCESSORY_REQUIRED = ['part_number', 'make', 'model_name', 'year_range', 'status
 ACCESSORY_DERIVED = ['model_name_clean', 'model', 'submodel', 'applicable_year', 'match_key', 'model_number',
                      'vehicle_id', 'variant', 'match_status', 'part_number_source', 'part_number_check']
 PART_NUMBER_RESTORE = ('leading_zeros_only', 'never')
+LINK_MATCH_TYPES = ('exact', 'prefix')
 CHECK_COLUMN_NAME = 'make_model'               # pipeline name of part_number.check_column
 VARIANT_BASE_RULES = ('all_fields_empty',)     # when the variant gets base_label
 DQ_RULES = {'greater_than': 'pairs', 'not_null': 'columns', 'numeric_non_zero': 'columns',
@@ -395,7 +396,10 @@ def load_accessory_config(config_dir, settings):
                               f'(known: {", ".join(sorted(known))})')
 
     export = spec.get('export') or {}
-    usable = known | set(ACCESSORY_DERIVED)
+    units = _units_spec(spec.get('units'), types, where, errors)
+    text_cleaning = _text_cleaning_spec(spec.get('text_cleaning'), types, where, errors)
+    sources = {f'{c}_source' for c in list(units['columns']) + text_cleaning['columns']}   # lineage columns
+    usable = known | set(ACCESSORY_DERIVED) | sources
     if not export.get('columns'):
         errors.append(f'CONFG_VALUE_INVALID: {where}: export.columns is empty')
     for name in list(export.get('columns') or {}) + list(export.get('sort_by') or []):
@@ -431,7 +435,99 @@ def load_accessory_config(config_dir, settings):
             'sheet': spec.get('sheet', 0), 'keep_rows': spec.get('keep_rows') or {},
             'known_statuses': spec.get('known_statuses') or [], 'dq_rules': spec.get('dq_rules') or {},
             'fitment_hints': [str(h) for h in spec.get('fitment_hints') or []], 'export': export,
-            'variant': variant, 'part_number': part_number}
+            'variant': variant, 'part_number': part_number, 'units': units, 'text_cleaning': text_cleaning}
+
+
+def _number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _units_spec(block, types, where, errors):
+    """Check the units block (idea 006). Returns {definitions, columns: {column: {..., factor}}}: factor is
+    definitions[target_unit] / definitions[source_unit]."""
+    block = block or {}
+    definitions = block.get('definitions') or {}
+    for unit, per_hour in definitions.items():
+        if not _number(per_hour) or per_hour <= 0:
+            errors.append(f'CONFG_VALUE_INVALID: {where}: units.definitions.{unit} must be a number above 0 '
+                          f'(how many {unit} make one hour), got {per_hour!r}')
+    columns = {}
+    for column, rule in (block.get('columns') or {}).items():
+        rule = rule or {}
+        at = f'units.columns.{column}'
+        if types.get(column) != 'number':
+            errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: {at} is not a number column '
+                          f'(number columns: {", ".join(sorted(c for c, t in types.items() if t == "number"))})')
+        for side in ('source_unit', 'target_unit'):
+            if rule.get(side) not in definitions:
+                errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: {at}.{side} {rule.get(side)!r} is not in '
+                              f'units.definitions (known: {", ".join(definitions)})')
+        decimals = rule.get('decimals', 2)
+        if not isinstance(decimals, int) or isinstance(decimals, bool) or not 0 <= decimals <= 10:
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.decimals must be a whole number from 0 to 10, '
+                          f'got {decimals!r}')
+        suspect = rule.get('suspect_if') or {}
+        unknown = set(suspect) - {'not_whole', 'above'}
+        if unknown:
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.suspect_if has unknown rules '
+                          f'{", ".join(sorted(unknown))} (known: not_whole, above)')
+        if not isinstance(suspect.get('not_whole', False), bool):
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.suspect_if.not_whole must be true or false')
+        if suspect.get('above') is not None and not _number(suspect['above']):
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.suspect_if.above must be a number')
+        source, target = definitions.get(rule.get('source_unit')), definitions.get(rule.get('target_unit'))
+        factor = target / source if _number(source) and _number(target) and source > 0 else None
+        columns[str(column)] = {'source_unit': rule.get('source_unit'), 'target_unit': rule.get('target_unit'),
+                                'decimals': decimals, 'factor': factor,
+                                'not_whole': bool(suspect.get('not_whole', False)), 'above': suspect.get('above')}
+    return {'definitions': definitions, 'columns': columns}
+
+
+def _text_cleaning_spec(block, types, where, errors):
+    """Check the text_cleaning block (idea 007). Returns it normalized; tag names are lower case."""
+    block = block or {}
+    at = 'text_cleaning'
+    columns = [str(c) for c in block.get('columns') or []]
+    for column in columns:
+        if types.get(column) != 'text':
+            errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: {at}.columns {column!r} is not a text column '
+                          f'(text columns: {", ".join(sorted(c for c, t in types.items() if t == "text"))})')
+    separators = block.get('separators') or {}
+    if not isinstance(separators.get('pipes', True), bool):
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.separators.pipes must be true or false')
+    tags = {'separators.tags': separators.get('tags') or [], 'remove_tags': block.get('remove_tags') or []}
+    for name, values in tags.items():
+        if not isinstance(values, list) or not all(isinstance(t, str) and t.isalnum() for t in values):
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.{name} must be a list of tag names like [p, br]')
+    both = {str(t).lower() for t in tags['separators.tags']} & {str(t).lower() for t in tags['remove_tags']}
+    if both:
+        errors.append(f'CONFG_DUPLICATE_ENTRY: {where}: {at}: tags {", ".join(sorted(both))} are both '
+                      f'separators and remove_tags')
+    punctuation = block.get('ending_punctuation') or []
+    if not all(isinstance(c, str) and len(c) == 1 for c in punctuation):
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.ending_punctuation must be single characters')
+    sentence_end = block.get('sentence_end', '.')
+    if not isinstance(sentence_end, str):
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.sentence_end must be text')
+    rules = []
+    for n, rule in enumerate(block.get('link_rules') or [], start=1):
+        rule = rule or {}
+        for key in ('match', 'replace_with', 'reason'):
+            if not str(rule.get(key) or '').strip():
+                errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.link_rules #{n}: {key} is empty')
+        if rule.get('match_type', 'exact') not in LINK_MATCH_TYPES:
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.link_rules #{n}: match_type must be one of '
+                          f'{", ".join(LINK_MATCH_TYPES)}, got {rule.get("match_type")!r}')
+        rules.append({'match': str(rule.get('match') or ''), 'match_type': rule.get('match_type', 'exact'),
+                      'replace_with': str(rule.get('replace_with') or ''), 'reason': str(rule.get('reason') or '')})
+    hosts = [str(h).lower() for h in block.get('allowed_link_hosts') or []]
+    return {'columns': columns, 'decode_html_entities': bool(block.get('decode_html_entities', True)),
+            'pipes': bool(separators.get('pipes', True)),
+            'separator_tags': [str(t).lower() for t in tags['separators.tags'] if isinstance(t, str)],
+            'remove_tags': [str(t).lower() for t in tags['remove_tags'] if isinstance(t, str)],
+            'sentence_end': sentence_end if isinstance(sentence_end, str) else '.',
+            'ending_punctuation': [c for c in punctuation if isinstance(c, str)],
+            'join_with': str(block.get('join_with', ' ')), 'link_rules': rules, 'allowed_link_hosts': hosts}
 
 
 def _part_number_spec(block, columns, renames, types, where, errors):

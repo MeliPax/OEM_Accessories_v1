@@ -560,6 +560,39 @@ ACCESS_STGNG_PART_NUMBER_SPLIT_RATE:
 
 # ---------------------------------------------------------------- accessories: clean
 
+ACCESS_CLEAN_UNIT_SUSPECT:
+  severity: warning
+  message: 'Part {part_number}: {column} {value} {source_unit} looks like the wrong unit ({reason}); converted to {converted} {target_unit} anyway ({rows})'
+  facts: [part_number, column, value, source_unit, target_unit, converted, reason, rows]
+  causes:
+    - The value was entered in another unit (e.g. already in hours)
+    - A typo in the accessory file
+  fix:
+    - Confirm the unit with the data source; if the value is already in hours, ask them to correct the file
+    - If values like this are normal, change units.columns.{column}.suspect_if in config/accessories.yaml
+    - Rerun run_accessories.py
+
+ACCESS_CLEAN_UNREVIEWED_LINK:
+  severity: warning
+  message: 'The {column} link {url} is not covered by a link rule or an allowed host; kept as it is ({rows})'
+  facts: [column, url, rows]
+  causes:
+    - A new link in the accessory file
+  fix:
+    - Open the link. If it works and is meant for readers, add its host to text_cleaning.allowed_link_hosts
+    - If it doesn't work, add a text_cleaning.link_rules entry with what to show instead
+    - Rerun run_accessories.py
+
+ACCESS_CLEAN_UNKNOWN_TAG:
+  severity: info
+  message: 'Tag <{tag}> in {column} is not in the configured tag lists; removed, its text kept ({texts} texts)'
+  facts: [tag, column, texts]
+  causes:
+    - New markup in the accessory file
+  fix:
+    - If the tag starts a new line or paragraph, add it to text_cleaning.separators.tags
+    - Otherwise add it to text_cleaning.remove_tags, so it is no longer reported
+
 ACCESS_CLEAN_NOT_NUMERIC:
   severity: error
   message: 'Source row {source_row}: {column} "{value}" is not a number; left empty'

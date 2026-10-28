@@ -121,6 +121,13 @@ def test_accessory_config_is_valid(settings):
     ('allowed_characters: A-Z0-9 ', 'allowed_characters: Z-A ', 'allowed_characters'),
     ('  dealerNotes:', '  make&model:         { name: mm, type: text }\n  dealerNotes:',
      "check_column 'make&model' is already read as 'mm'"),
+    ('      target_unit: hours ', '      target_unit: days ', "target_unit 'days' is not in units.definitions"),
+    ('    minutes: 60', '    minutes: 0', 'units.definitions.minutes must be a number above 0'),
+    ('      decimals: 2 ', '      decimals: -1 ', 'decimals must be a whole number from 0 to 10'),
+    ('  columns: [comments]', '  columns: [msrp]', "text_cleaning.columns 'msrp' is not a text column"),
+    ('      match_type: exact ', '      match_type: regex ', 'match_type must be one of exact, prefix'),
+    ('      replace_with: Thule.com', '      replace_with: ""', 'link_rules #1: replace_with is empty'),
+    ('remove_tags: [b,', 'remove_tags: [p, b,', 'tags p are both separators and remove_tags'),
 ])
 def test_broken_accessory_config_is_rejected(config_copy, settings, old, new, message):
     replace_in(config_copy / 'accessories.yaml', old, new)

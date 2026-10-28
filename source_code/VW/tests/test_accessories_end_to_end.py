@@ -12,8 +12,8 @@ from pipeline import config_helpers as cfg
 from pipeline.accessory_helpers import build_accessory_model_dict, export_accessories, run_pipeline
 from pipeline.logging_helpers import PipelineFatal
 
-STEPS = ['config', 'ingest', 'part_numbers', 'staging', 'year_window', 'dedupe', 'part_number_review', 'clean',
-         'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'export']
+STEPS = ['config', 'ingest', 'part_numbers', 'staging', 'year_window', 'clean_text', 'dedupe', 'part_number_review',
+         'clean', 'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'export']
 MISSES = {
     'volkswagen|arteon|(base)|2022': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
     'volkswagen|arteon|(base)|2023': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
@@ -169,6 +169,31 @@ def test_part_numbers_are_proven_by_make_and_model(acc_run):
                                                                    'part_number']) == {'000071200'}
     atlas = pd.read_excel(out / 'acc1.xlsx', sheet_name='Atlas', dtype=str)
     assert '000071200' in set(atlas['Part Number'])
+
+
+def test_comments_are_clean_and_keep_the_raw_text(acc_run):
+    """Idea 007 on today's file: 54 of 62 distinct comments change; no markup or pipes are left."""
+    db, out, _, summary, model_dict = acc_run
+    assert (summary['texts_cleaned'], summary['links_flagged']) == (54, 0)
+    rows = pd.concat(model_dict.values())
+    comments = set(rows['comments']) - {''}
+    assert not [c for c in comments if '<' in c or '|' in c or 'salsify' in c or ' ' in c]
+    assert any('https://www.vwhub.com/snetljct/en/web/vw/adhesive Always install' in c for c in comments)
+    assert (rows['comments_source'] != rows['comments']).any() and 'comments_source' in rows.columns
+
+
+def test_labour_time_is_exported_in_hours(acc_run):
+    """Idea 006: minutes -> hours, 2 decimals; the 0.4 value on 3QF601025KAX1 is flagged for review."""
+    db, out, _, summary, model_dict = acc_run
+    rows = pd.concat(model_dict.values())
+    pairs = set(zip(rows['labor_time_source'], rows['labor_time']))
+    assert {(25.0, 0.42), (250.0, 4.17), (0.0, 0.0), (0.4, 0.01)} <= pairs
+    assert summary['unit_suspects'] == 1
+    review = read(db / 'review' / 'accessory_review.csv')
+    value = review[review['type'] == 'value']
+    assert value['code'].tolist() == ['ACCESS_CLEAN_UNIT_SUSPECT'] and value['part_number'].tolist() == ['3QF601025KAX1']
+    golf = pd.read_excel(out / 'acc1.xlsx', sheet_name='Golf')
+    assert 'Labour Time (hours)' in golf.columns and golf['Labour Time (hours)'].max() < 10
 
 
 def test_notebook_entry_point_without_export(acc_run):

@@ -5,12 +5,13 @@
     model_year_dict["GTI"]                                # one row per part, applicable year and vehicle
 
 Steps (every one logged through run_step):
-    config -> ingest -> part_numbers -> staging -> year_window -> dedupe -> part_number_review -> clean
-    -> resolve_names -> lookup -> build_dict -> coverage -> validate -> export
+    config -> ingest -> part_numbers -> staging -> year_window -> clean_text -> dedupe -> part_number_review
+    -> clean -> resolve_names -> lookup -> build_dict -> coverage -> validate -> export
 
 Nothing merged is written to the DB. Written: the run logs, db/dq/part_number_check.csv (one row per
 stockCode / make&model / model, idea 008), db/dq/accessory_lookup.csv (one row per key),
-db/review/accessory_review.csv (unmatched part-years, unproven part numbers, vehicles with no parts),
+db/review/accessory_review.csv (unmatched part-years, unproven part numbers, suspect values and links,
+vehicles with no parts),
 db/dq/accessory_runs.csv, and the Excel export output/<run_id>.xlsx (one sheet per accessory model name,
 matched rows only).
 """
@@ -32,6 +33,7 @@ from pipeline.logging_helpers import (end_run, fatal, log_change, log_detail, lo
 from pipeline.lookup_helpers import coverage, fetch, load_vehicle_index, lookup_report
 from pipeline.message_helpers import join_causes, join_fix, load_messages, message_for
 from pipeline.parse_helpers import build_matchers, match_model, tokenize
+from pipeline.text_helpers import clean_text, link_host
 
 VW_DIR = Path(__file__).resolve().parents[1]
 PIPELINE = 'vw_accessories'
@@ -51,6 +53,7 @@ SPLIT_REASONS = {'no_check_value': 'make&model is empty',
                  'no_part_left': 'nothing is left after removing the model name',
                  'no_stock_code': 'stockCode is empty'}
 # lineage columns say how a value arrived, not what it is; ignored when comparing copies
+# (also every <column>_source column: the value as read, before units or text cleaning)
 LINEAGE_COLUMNS = ['part_number_source', 'part_number_stored_as', 'part_number_check']
 PART_NUMBER_REPORT = ['part_number_source', 'stored_as', 'make_model', 'model_name', 'make_model_part_number',
                       'make_model_model_name', 'part_number_check', 'part_number', 'reason', 'rows', 'source_rows']
@@ -361,10 +364,14 @@ def note_clipped(df, settings, ctx=None, step='year_window'):
     return df
 
 
+def _is_lineage(column):
+    return column in LINEAGE_COLUMNS or column.endswith('_source')
+
+
 def remove_duplicates(df, ctx=None, step='dedupe'):
     """Drop rows identical on every column but source_row and the lineage columns (the file repeats many
     rows), logging each one with the row it copies. Pairs (part_number, model_name) whose copies differ are flagged and all kept."""
-    columns = [c for c in df.columns if c != 'source_row' and c not in LINEAGE_COLUMNS]
+    columns = [c for c in df.columns if c != 'source_row' and not _is_lineage(c)]
     first_row = df.groupby(columns, dropna=False, sort=False)['source_row'].transform('first')
     duplicated = df.duplicated(columns, keep='first')
     log_excluded(ctx, step, df[duplicated], lambda r: f'exact copy of source row {first_row[r.name]}')
@@ -381,6 +388,109 @@ def remove_duplicates(df, ctx=None, step='dedupe'):
                  part_number=part, model_name=model_name, columns=differing)
     log_info(ctx, step, 'DUPLICATES REMOVED', rows_in=len(df), removed=int(duplicated.sum()), rows_out=len(kept))
     return kept
+
+
+# ---------------------------------------------------------------- comment cleaning (idea 007) + units (idea 006)
+
+def _value_review(flag, group):
+    """A review row for a flagged value (a suspect unit, an unreviewed link)."""
+    first = group.iloc[0]
+    return {'type': 'value', 'record': flag['record'], 'part_number': first['part_number'],
+            'model_name': ', '.join(sorted(set(group['model_name']))), 'model': '', 'submodel': '', 'year': '',
+            'match_key': '', 'model_number': '',
+            **{k: flag[k] for k in ('code', 'severity', 'message', 'checked', 'found', 'causes', 'fix')}}
+
+
+def clean_text_columns(df, spec, ctx=None, step='clean_text'):
+    """Clean the text_cleaning columns once per distinct text (idea 007): separators -> sentences, tags
+    removed, link rules, spaces. Keeps <column>_source (the raw text). Each changed text is logged with
+    the rules that fired; links no rule or allowed host covers are flagged. Returns (df, review rows)."""
+    rules = spec['text_cleaning']
+    df = df.copy()
+    review = []
+    for col in rules['columns']:
+        df[f'{col}_source'] = df[col]
+        cleaned, unknown_tags = {}, {}
+        counts = {'texts': 0, 'changed': 0, 'rows_changed': 0, 'links_replaced': 0, 'links_allowed': 0,
+                  'links_unreviewed': 0}
+        for text, group in df[df[col] != ''].groupby(col, sort=True):
+            result = clean_text(text, rules)
+            cleaned[text] = result['text']
+            counts['texts'] += 1
+            first = group.iloc[0]
+            if result['text'] != text:
+                counts['changed'] += 1
+                counts['rows_changed'] += len(group)
+                log_change(ctx, step, {'record': f'{col} of {first["part_number"]} (+{len(group) - 1} rows)'},
+                           col, text, result['text'], '; '.join(result['rules']), f'{_rows(len(group))}')
+            for url, action, detail in result['links']:
+                counts[f'links_{action}'] += 1
+                if action == 'unreviewed':
+                    flag = log_flag(ctx, step, first, 'ACCESS_CLEAN_UNREVIEWED_LINK', col, url,
+                                    subject=f'{url} - {_rows(len(group))}',
+                                    checked=f'link rules ({len(rules["link_rules"])}) and allowed hosts '
+                                            f'({", ".join(rules["allowed_link_hosts"]) or "none"})',
+                                    found=f'host {link_host(url)} is not covered', url=url, column=col,
+                                    rows=_rows(len(group)))
+                    if flag:
+                        review.append(_value_review(flag, group))
+            for name in result['unknown_tags']:
+                unknown_tags.setdefault(name, []).append(len(group))
+        for name, sizes in sorted(unknown_tags.items()):
+            log_flag(ctx, step, {}, 'ACCESS_CLEAN_UNKNOWN_TAG', col, f'<{name}>', subject=f'<{name}> in {col}',
+                     checked=f'tags in separators.tags ({", ".join(rules["separator_tags"])}) and remove_tags '
+                             f'({", ".join(rules["remove_tags"])})',
+                     found=f'<{name}> in {len(sizes)} texts, {sum(sizes)} rows', tag=name, column=col,
+                     texts=len(sizes))
+        df[col] = df[col].map(lambda v: cleaned.get(v, v))
+        log_info(ctx, step, 'TEXT CLEANED', column=col, **counts)
+    return df, review
+
+
+def convert_units(df, spec, ctx=None, step='clean'):
+    """Convert the units columns (idea 006): value x definitions[target] / definitions[source], rounded.
+    Keeps <column>_source (the value as read). One change per distinct value; values that look like the
+    wrong unit are flagged ACCESS_CLEAN_UNIT_SUSPECT and still converted. Returns (df, review rows)."""
+    df = df.copy()
+    review = []
+    for col, rule in spec['units']['columns'].items():
+        source = df[col]
+        df[f'{col}_source'] = source
+        df[col] = (source * rule['factor']).round(rule['decimals'])
+        log_info(ctx, step, 'UNITS', column=col, rule=f'{rule["source_unit"]} -> {rule["target_unit"]} '
+                 f'x {rule["factor"]:.6g}, {rule["decimals"]} decimals')
+        for value, rows in source.dropna().value_counts().sort_index().items():
+            converted = round(value * rule['factor'], rule['decimals'])
+            if converted == value:                                      # 0 minutes = 0 hours
+                continue
+            log_change(ctx, step, {'record': f'{col} {_number_text(value)}'}, col, _number_text(value),
+                       _number_text(converted), 'unit_convert',
+                       f'{rule["source_unit"]} -> {rule["target_unit"]} x {rule["factor"]:.6g}, '
+                       f'{rule["decimals"]} decimals; {_rows(rows)}')
+        suspect = pd.Series('', index=df.index)
+        if rule['not_whole']:
+            suspect[source.notna() & (source % 1 != 0)] = f'not a whole number of {rule["source_unit"]}'
+        if rule['above'] is not None:
+            suspect[source.notna() & (source > rule['above'])] = f'above {_number_text(rule["above"])} ' \
+                                                                  f'{rule["source_unit"]}'
+        flagged = df[suspect != ''].assign(reason=suspect[suspect != ''])
+        for (part, value), group in flagged.groupby(['part_number', f'{col}_source'], sort=True):
+            first = group.iloc[0]
+            flag = log_flag(ctx, step, first, 'ACCESS_CLEAN_UNIT_SUSPECT', col, value,
+                            subject=f'{part} {col}={_number_text(value)} - {_rows(len(group))}',
+                            checked=f'{col} in {rule["source_unit"]}: suspect if not whole / above '
+                                    f'{_number_text(rule["above"])}',
+                            found=first['reason'], column=col, value=_number_text(value),
+                            source_unit=rule['source_unit'], target_unit=rule['target_unit'],
+                            converted=_number_text(first[col]), reason=first['reason'], part_number=part,
+                            rows=_rows(len(group)))
+            if flag:
+                review.append(_value_review(flag, group))
+    return df, review
+
+
+def _number_text(value):
+    return '' if value is None or pd.isna(value) else (str(int(value)) if float(value).is_integer() else str(value))
 
 
 # ---------------------------------------------------------------- clean + resolve names
@@ -477,7 +587,8 @@ def build_model_year_dict(df, results, settings, catalogue):
     rows = rows.drop(columns=['vehicles'])
 
     review = _part_review_rows(rows[rows['model_number'] == ''], results, catalogue)
-    rows = rows.reindex(columns=DICT_COLUMNS)
+    rows = rows.reindex(columns=DICT_COLUMNS + [c for c in rows.columns
+                                                if c.endswith('_source') and c not in DICT_COLUMNS])
     model_dict = {name: group.sort_values(['part_number', 'applicable_year', 'model_number'])
                              .reset_index(drop=True)
                   for name, group in rows.groupby('model_name', sort=True)}
@@ -650,12 +761,18 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
         kept = run_step(ctx, 'year_window', lambda df: note_clipped(
                             filter_by_year_window(df, settings, DATASET, ctx), settings, ctx), staged,
                         conditions={'rule': settings['datasets'][DATASET]['year_rule'], 'window': window})
-        unique = run_step(ctx, 'dedupe', lambda df: remove_duplicates(df, ctx), kept,
+        tc = spec['text_cleaning']
+        cleaned_text = run_step(ctx, 'clean_text', lambda df: _keep_review(
+                                    state, 'text_review', clean_text_columns(df, spec, ctx)), kept,
+                                conditions={'columns': ', '.join(tc['columns']), 'link_rules': len(tc['link_rules']),
+                                            'allowed_hosts': ', '.join(tc['allowed_link_hosts'])})
+        unique = run_step(ctx, 'dedupe', lambda df: remove_duplicates(df, ctx), cleaned_text,
                           conditions={'compare': 'every column but source_row and lineage'})
         run_step(ctx, 'part_number_review', lambda df: state.update(
                      part_number_review=flag_part_numbers(df, state['part_number_report'], ctx)) or df, unique,
                  conditions={'flagged': 'every result but same, rows in scope only'})
-        cleaned = run_step(ctx, 'clean', lambda df: clean_accessories(df, spec, taxonomy['aliases'], ctx), unique,
+        cleaned = run_step(ctx, 'clean', lambda df: _keep_review(state, 'unit_review', convert_units(
+                               clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)), unique,
                            conditions={'aliases': len(taxonomy['aliases']),
                                        'numbers': ', '.join(c for c, t in spec['types'].items() if t == 'number')})
         named = run_step(ctx, 'resolve_names', lambda df: resolve_names(df, taxonomy, ctx), cleaned,
@@ -689,11 +806,12 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
 
         def cover(df):
             state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx)
-            review = pd.DataFrame(state['part_review'] + state['part_number_review'] + state['vehicle_review'],
-                                  columns=REVIEW_COLUMNS)
+            review = pd.DataFrame(state['part_review'] + state['part_number_review'] + state['text_review']
+                                  + state['unit_review'] + state['vehicle_review'], columns=REVIEW_COLUMNS)
             path = store.write_table(review, db_dir, 'review', 'accessory_review')
             log_info(ctx, 'coverage', 'WRITTEN', review=_display(path), part_rows=len(state['part_review']),
                      part_number_rows=len(state['part_number_review']),
+                     value_rows=len(state['text_review']) + len(state['unit_review']),
                      vehicle_rows=len(state['vehicle_review']))
             return df
 
@@ -721,6 +839,12 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
         raise
 
 
+def _keep_review(state, name, result):
+    """Store a step's review rows in state and pass its DataFrame on."""
+    df, state[name] = result
+    return df
+
+
 def build_accessory_model_dict(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, export=True,
                                output_dir=None):
     """The per-model dict of accessory DataFrames with model numbers attached (the notebook entry point)."""
@@ -734,7 +858,9 @@ def run_summary(ctx, raw, staged, kept, unique, named, state):
     checks = state['part_number_report'].groupby('part_number_check')['rows'].sum()
     return {'rows_read': len(raw),
             'part_numbers_restored': int(checks.get('restored', 0)),
-            'part_numbers_unproven': int(checks[~checks.index.isin(PROVEN)].sum()), 'rows_staged': len(staged), 'rows_in_window': len(kept),
+            'part_numbers_unproven': int(checks[~checks.index.isin(PROVEN)].sum()),
+            'texts_cleaned': sum(1 for c in ctx['changes'] if c['step'] == 'clean_text'),
+            'links_flagged': len(state['text_review']), 'unit_suspects': len(state['unit_review']), 'rows_staged': len(staged), 'rows_in_window': len(kept),
             'rows_unique': len(unique), 'model_names': named['model_name'].nunique(),
             'unknown_model_names': named.loc[named['model'] == '', 'model_name'].nunique(),
             'keys': len(results), 'keys_found': sum(1 for r in results.values() if r['vehicles']),

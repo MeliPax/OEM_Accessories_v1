@@ -30,15 +30,16 @@
 | [DI-04](#di-04) | Accessories | Golf GTI is named only "GTI" | 109 parts | Handled |
 | [DI-05](#di-05) | Accessories | Year ranges reach years with no VW vehicle | 7 model-years, 451 part-years | **Open** |
 | [DI-06](#di-06) | Accessories | No parts listed for model year 2027 | 14 vehicles | **Open** |
-| [DI-07](#di-07) | Accessories | Labour time unit not stated (minutes); one value looks like hours | 1,357 rows; 1 part suspect | Planned (006) + **Open** |
-| [DI-08](#di-08) | Accessories | Comments hold HTML markup; sentences run together | 38 texts, 256 rows | Planned (007) |
-| [DI-09](#di-09) | Accessories | Comments use `\|` / `\|\|` as line breaks | 8 texts, 64 rows | Planned (007) |
-| [DI-10](#di-10) | Accessories | Comment links to a catalogue page that isn't public | 1 part, 13 rows | Planned (007) |
-| [DI-11](#di-11) | Accessories | Comment spacing (non-breaking space, space before full stop) | 2 texts, 36 rows | Planned (007) |
+| [DI-07](#di-07) | Accessories | Labour time unit not stated (minutes); one value looks like hours | 1,357 rows; 1 part suspect | Handled (006) + **Open** (one value) |
+| [DI-08](#di-08) | Accessories | Comments hold HTML markup; sentences run together | 38 texts, 256 rows | Handled (007) |
+| [DI-09](#di-09) | Accessories | Comments use `\|` / `\|\|` as line breaks | 8 texts, 64 rows | Handled (007) |
+| [DI-10](#di-10) | Accessories | Comment links to a catalogue page that isn't public | 1 part, 13 rows | Handled (007) |
+| [DI-11](#di-11) | Accessories | Comment spacing (non-breaking space, space before full stop) | 2 texts, 36 rows | Handled (007) |
 | [DI-12](#di-12) | Accessories | Comments link to the VW dealer portal | 3 texts, 4 parts | Accepted |
 | [DI-13](#di-13) | Accessories | Product descriptions hint at narrower fitment | 16 descriptions | Accepted |
 | [DI-14](#di-14) | Accessories | Redundant `make&model` column | whole file | Handled |
 | [DI-15](#di-15) | Accessories | Inactive parts and parts for older vehicles | 3,997 + 7,348 rows | Handled |
+| [DI-16](#di-16) | Accessories | Two sentences glued together in a comment ("ReferAlways install") | 1 text, 2 rows | Accepted |
 | [DV-01](#dv-01) | VW models | Only `Description` is filled; 7 columns are empty | whole file | Handled |
 | [DV-02](#dv-02) | VW models | Repeated words in descriptions | 13 distinct descriptions | Handled |
 | [DV-03](#dv-03) | VW models | "Atlas Sport Cross" spelling for Atlas Cross Sport | 2020–2023 | Handled |
@@ -152,48 +153,50 @@
 
 - **Found:** `laborTime` holds minutes, but the file doesn't say so. The values are 0 (793 rows) and whole minutes from 10 to 250. Part `3QF601025KAX1` (20" Mejorada wheel, Atlas and Atlas Cross Sport) has **0.4**, which is not a whole minute and is most likely already in hours (24 minutes).
 - **Impact:** the export shows minutes under a "Labour Time" header; the 0.4 value is inconsistent with every other row.
-- **Planned fix:** [idea 006](ideas/006_labor_time_units_design.md):
+- **Fix:** [idea 006](ideas/006_labor_time_units_design.md):
   - convert minutes to hours using unit definitions in config (2 decimals);
   - keep the raw minutes for lineage;
   - export the header as `Labour Time (hours)`;
   - flag values that look like the wrong unit (`ACCESS_CLEAN_UNIT_SUSPECT`).
+- **Handling (built 2026-10-28):** the export shows hours. `3QF601025KAX1` is flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`; it is still converted (0.4 min → 0.01 h) until the source confirms the value.
 - **Ask the data source:** confirm the unit, and the labour time for `3QF601025KAX1`.
-- **Status:** Planned + **Open** (one value).
+- **Status:** Handled (idea 006) + **Open** (the 0.4 value).
 
 ### DI-08
 
 **Comments hold HTML markup; sentences run together**
 
 - **Found:** 38 distinct comment texts (256 rows, 106 parts) contain HTML tags: `<p>`, `</p>`, `<br>`, `<br/>`, `<b>`. In 23 of them a closing `</p>` is followed straight by the next sentence, e.g. `...9TJ, 9TL</p>Always install...`.
-- **Planned fix:** [idea 007](ideas/007_comment_text_cleaning_design.md):
+- **Fix:** [idea 007](ideas/007_comment_text_cleaning_design.md):
   - paragraph and line-break tags become sentence breaks;
   - other tags are removed;
   - every change is logged before → after.
-- **Status:** Planned.
+- **Handling (built 2026-10-28):** 54 of the 62 distinct comments change (2,969 rows in the year window); no tags or pipes are left in the export. The raw text is kept as `comments_source`.
+- **Status:** Handled.
 
 ### DI-09
 
 **Comments use `|` / `||` as line breaks**
 
 - **Found:** 8 distinct texts (64 rows, 9 parts) start with `|` and separate lines with `||`. Example: `|Installs in top left of trunk under hat shelf. ||Weight limit 10 lbs. (5kg)||Not for vehicles with Fender Amplifier||...`
-- **Planned fix:** idea 007 splits on the pipes, trims each piece, adds a full stop where one is missing, and joins the pieces into sentences.
-- **Status:** Planned.
+- **Fix:** idea 007 splits on the pipes, trims each piece, adds a full stop where one is missing, and joins the pieces into sentences.
+- **Status:** Handled (2026-10-28).
 
 ### DI-10
 
 **Comment links to a catalogue page that isn't public**
 
 - **Found:** part `000071120APDC` (13 rows, one per model) says: "Visit https://app.salsify.com/catalogs/fde773be-fbbd-410b-99ab-5178d20956b6 for additional product information, information on spare parts, and THULE's warranty claim process." The Salsify page isn't publicly accessible.
-- **Planned fix:** idea 007 link rule: replace the URL with `Thule.com`. That matches the wording VW already uses on other Thule parts. Any future link not covered by a rule or an allowed site is flagged `ACCESS_CLEAN_UNREVIEWED_LINK`.
-- **Status:** Planned.
+- **Fix:** idea 007 link rule: replace the URL with `Thule.com`. That matches the wording VW already uses on other Thule parts. Any future link not covered by a rule or an allowed site is flagged `ACCESS_CLEAN_UNREVIEWED_LINK`.
+- **Status:** Handled (2026-10-28).
 
 ### DI-11
 
 **Comment spacing**
 
 - **Found:** a non-breaking space in 1 text (2 rows), and a space before the full stop in 1 text (34 rows: "...warranty claim process .").
-- **Planned fix:** idea 007 normalizes spaces and removes spaces before punctuation.
-- **Status:** Planned.
+- **Fix:** idea 007 normalizes spaces and removes a space before punctuation, but only when the mark ends the word. So `5G0.071.644.B .GRU` (a part reference) is left as it is.
+- **Status:** Handled (2026-10-28).
 
 ### DI-12
 
@@ -230,6 +233,15 @@
   - 10,197 rows start before 2020; only their years from 2020 on are used.
 - **Handling:** left out by the status filter and the year window; each row is logged with its reason.
 - **Status:** Handled.
+
+### DI-16
+
+**Two sentences glued together in a comment**
+
+- **Found:** one comment reads `ReferAlways install the product according to the manufacturer's instructions...` (2 rows). It looks like a "Refer to ..." sentence was cut off and joined to the standard installation sentence.
+- **Impact:** the export shows "ReferAlways".
+- **Decision (2026-10-28):** leave the text as it is. Cleaning has no rule for it: there is no separator to split on, and the pipeline never guesses missing text.
+- **Status:** Accepted.
 
 ---
 

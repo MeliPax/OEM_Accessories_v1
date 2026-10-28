@@ -1,6 +1,6 @@
 # 006 — Labour Time Units (minutes → hours): Design
 
-**Status:** Idea — all decisions (L1–L5) approved 2026-10-27; next: plan
+**Status:** Built 2026-10-28 — all decisions (L1–L5) approved; see *Build notes* at the end. Plan (as built): [plans/006](../plans/006_labor_time_units.md)
 **Applies to:** the accessory pipeline (plan 003), `clean` step
 **Asked for:** labour time arrives in minutes; the export should show hours. The units and the multiplier are config, not code, with good governance.
 
@@ -72,3 +72,16 @@ The multiplier is `definitions[target] / definitions[source]` = 1 / 60. The run 
 | L3 | Suspect values (fraction of a minute, more than 600 minutes): flag and still convert? | ✅ 2026-10-27: Yes: one rule for every row; the warning sends the 2 rows to review. Never guessed |
 | L4 | Keep `labor_time_source` (raw minutes) in the dict for lineage; export hours only? | ✅ 2026-10-27: Yes |
 | L5 | Export header `Labour Time (hours)`? | ✅ 2026-10-27: Yes |
+
+## Build notes (2026-10-28)
+
+Built together with idea 007, on the user's go-ahead (the plan was written up afterwards: [plans/006](../plans/006_labor_time_units.md)).
+
+| Where | What |
+|---|---|
+| `config/accessories.yaml` | `units:` block as designed; export header `Labour Time (hours)` |
+| `pipeline/config_helpers.py` | Validates units, columns, decimals and suspect rules (`CONFG_` errors); works out the multiplier (1/60) |
+| `pipeline/accessory_helpers.py` | `convert_units` in the `clean` step: keeps `labor_time_source`, one change per distinct value (0 → 0 isn't logged), flags `ACCESS_CLEAN_UNIT_SUSPECT` once per part and value, and adds a `type = value` row to `accessory_review.csv` |
+| Tests | `tests/test_text_helpers.py` (units section), config cases, end-to-end `test_labour_time_is_exported_in_hours` |
+
+Real run (2026-10-20 file): log line `minutes -> hours x 0.0166667, 2 decimals`; 15 distinct values converted; 1 suspect (`3QF601025KAX1`, 0.4 min → 0.01 h, 2 rows) in review.

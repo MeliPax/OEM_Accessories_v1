@@ -18,7 +18,7 @@ config ─► ingest ─► staging ─► year window ─► clean ─► parse
 datasets/...Accessories Data EN.xlsx                            │ (one lookup per unique key)
    │  run_accessories.py                                        ▼
    ▼
-config ─► ingest ─► part numbers ─► staging ─► year window ─► dedupe ─► part number review ─► clean ─► resolve names ─► lookup
+config ─► ingest ─► part numbers ─► staging ─► year window ─► clean text ─► dedupe ─► part number review ─► clean ─► resolve names ─► lookup
         ─► build dict ─► coverage ─► validate ─► export ─► output/vw_accessories_<date_time>.xlsx
 ```
 
@@ -97,7 +97,7 @@ The tests cover each helper module, the message catalogue, and full runs of both
 |---|---|
 | `db/final/vehicles.csv` | One row per vehicle with its taxonomy fields |
 | `db/review/review_queue.csv` | Vehicles a person should check (vehicle ingest) |
-| `db/review/accessory_review.csv` | Accessory part-years with no vehicle, and vehicles with no parts, each with code, checks, causes and fix |
+| `db/review/accessory_review.csv` | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
 | `db/dq/part_number_check.csv` | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not |
 | `db/dq/accessory_lookup.csv` | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed |
 | `output/<run_id>.xlsx` | The accessory export: one sheet per accessory model name, matched rows only (git-ignored) |
@@ -133,7 +133,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 | `models.yaml` | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`) |
 | `keywords.yaml` | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it) |
 | `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person) |
-| `accessories.yaml` | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, columns and headers in order) |
+| `accessories.yaml` | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), **units** (labour minutes → hours), **comment cleaning** (separators, tags, link rules, allowed link hosts), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, columns and headers in order) |
 | `messages.yaml` | Severity, message, causes and fix for every flag code |
 
 ### When new vehicles or a new accessory file come out
@@ -165,7 +165,8 @@ source_code/VW/
 │   ├── parse_helpers.py             description → taxonomy fields
 │   ├── resolve_helpers.py           resolutions (e.g. lone "Black" → Black Edition)
 │   ├── validate_helpers.py          option-set and consistency checks
-│   ├── accessory_helpers.py         accessory ingest, dict, data quality, export
+│   ├── accessory_helpers.py         accessory ingest, part numbers, units, dict, data quality, export
+│   ├── text_helpers.py              comment cleaning (tags, pipes, links, spaces)
 │   ├── lookup_helpers.py            vehicle index, per-key fetch, coverage
 │   └── storage_helpers.py           the only module that knows the db/ layout
 ├── tests/                           pytest

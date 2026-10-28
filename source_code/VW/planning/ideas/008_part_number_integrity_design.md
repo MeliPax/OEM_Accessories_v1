@@ -1,6 +1,6 @@
 # 008 — Part Numbers Kept Exactly as the Source: Design
 
-**Status:** Built 2026-10-27 — all decisions (P1–P13) approved; see *Build notes* at the end
+**Status:** Built 2026-10-27 — all decisions (P1–P13) approved; see *Build notes* at the end. Plan (as built): [plans/008](../plans/008_part_number_integrity.md)
 **Applies to:** the accessory pipeline (plan 003): `ingest`, `staging` and `export`
 **Asked for:** keep part numbers exactly as the source has them, leading zeros included ([DI-03](../data_issues.md#di-03)).
 
@@ -153,7 +153,7 @@ Restoring happens in staging, before the status filter and year window. So the 7
 
 ## Build notes (2026-10-27)
 
-Built on the user's go-ahead after P1–P13 were approved (no separate plan file: the idea held every decision).
+Built on the user's go-ahead after P1–P13 were approved (the plan was written up afterwards: [plans/008](../plans/008_part_number_integrity.md)).
 
 | Where | What |
 |---|---|
