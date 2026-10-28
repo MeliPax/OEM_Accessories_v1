@@ -1,12 +1,17 @@
 """The only module that knows the db/ layout. Writes are sorted and use a fixed column order,
 so diffs between runs are meaningful.
 
+Every file a run writes carries its run id (<pipeline>_<YYYYMMDD_HHMMSS>), so nothing is overwritten and
+each file traces to its run: db/final/vehicles_vw_ingest_20261028_150102.csv. A reader takes the newest
+(latest_path). The run registers (dq/ingest_runs.csv, dq/accessory_runs.csv) and logs/steps.csv are one file
+each, appended once per run.
+
 db/
-  definitions/   generated from config/ (read-only)
-  staging/       source rows as ingested
-  final/         vehicles.csv
-  review/        review_queue.csv
-  dq/            ingest_runs.csv
+  definitions/   generated from config/ (read-only)    dim_<name>_<run_id>.csv
+  staging/       source rows as ingested                stg_vw_models_<run_id>.csv
+  final/         vehicles                               vehicles_<run_id>.csv
+  review/        review queues                          review_queue_<run_id>.csv, accessory_review_<run_id>.csv
+  dq/            reports and the run registers          accessory_lookup_<run_id>.csv, ingest_runs.csv, ...
   logs/          run logs (see logging_helpers)
 """
 
@@ -17,15 +22,25 @@ import pandas as pd
 LAYERS = ('definitions', 'staging', 'final', 'review', 'dq')
 
 
-def table_path(db_dir, layer, name):
+def table_path(db_dir, layer, name, run_id=None):
+    """db/<layer>/<name>_<run_id>.csv, or db/<layer>/<name>.csv for a run register (no run id)."""
     if layer not in LAYERS:
         raise ValueError(f'unknown db layer {layer!r}; expected one of {LAYERS}')
-    return Path(db_dir) / layer / f'{name}.csv'
+    return Path(db_dir) / layer / (f'{name}_{run_id}.csv' if run_id else f'{name}.csv')
 
 
-def write_table(df, db_dir, layer, name, sort_by=None, columns=None):
-    """Write a table as CSV (sorted by sort_by, columns in the given order). Returns the path."""
-    path = table_path(db_dir, layer, name)
+def latest_path(db_dir, layer, name):
+    """The newest run's <name>_<run_id>.csv (by write time, then name), or None if no run wrote one."""
+    if layer not in LAYERS:
+        raise ValueError(f'unknown db layer {layer!r}; expected one of {LAYERS}')
+    paths = list((Path(db_dir) / layer).glob(f'{name}_*.csv'))
+    return max(paths, key=lambda p: (p.stat().st_mtime_ns, p.name)) if paths else None
+
+
+def write_table(df, db_dir, layer, name, sort_by=None, columns=None, run_id=None):
+    """Write a table as CSV (sorted by sort_by, columns in the given order), named with the run id.
+    Returns the path."""
+    path = table_path(db_dir, layer, name, run_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     if columns is not None:
         df = df.reindex(columns=columns)
@@ -35,10 +50,11 @@ def write_table(df, db_dir, layer, name, sort_by=None, columns=None):
     return path
 
 
-def read_table(db_dir, layer, name):
-    """Read a table with every value as text (empty cells as ''), or None if it doesn't exist yet."""
-    path = table_path(db_dir, layer, name)
-    if not path.exists():
+def read_table(db_dir, layer, name, latest=False):
+    """Read a table with every value as text (empty cells as ''), or None if it doesn't exist yet.
+    latest: the newest run's file (latest_path) instead of a run register."""
+    path = latest_path(db_dir, layer, name) if latest else table_path(db_dir, layer, name)
+    if path is None or not path.exists():
         return None
     return pd.read_csv(path, dtype=str, keep_default_na=False)
 

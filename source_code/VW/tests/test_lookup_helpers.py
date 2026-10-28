@@ -16,7 +16,7 @@ def vehicles_db(db_dir, rows, version=VERSION):
     df = pd.DataFrame([{'vehicle_id': f'VW-{y}-{n}', 'model': m, 'submodel': s, 'model_year': str(y),
                         'model_number': n, 'trim': (t[0] if t else ''), 'transmission': '', 'taxonomy_version': version}
                        for m, s, y, n, *t in rows], columns=INDEX_COLUMNS + ['trim', 'transmission'])
-    store.write_table(df, db_dir, 'final', 'vehicles')
+    store.write_table(df, db_dir, 'final', 'vehicles', run_id='ingest1')
     return db_dir
 
 
@@ -74,7 +74,7 @@ def test_missing_db_and_missing_column_are_fatal(tmp_path, ctx):
     with pytest.raises(PipelineFatal) as missing:
         load(tmp_path, ctx)
     assert missing.value.code == 'ACCESS_DB_NOT_FOUND' and 'run_ingest.py' in str(missing.value)
-    store.write_table(pd.DataFrame({'model': ['Golf']}), tmp_path, 'final', 'vehicles')
+    store.write_table(pd.DataFrame({'model': ['Golf']}), tmp_path, 'final', 'vehicles', run_id='ingest1')
     with pytest.raises(PipelineFatal) as column:
         load(tmp_path, ctx)
     assert column.value.code == 'ACCESS_DB_COLUMN_MISSING'

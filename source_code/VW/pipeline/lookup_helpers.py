@@ -5,7 +5,7 @@ accessory key is looked up once, and the answer is attached while the per-model 
 
 Each key goes through the checks of idea 004:
     C1  the accessory model name is a model / submodel in models.yaml      (resolve_names, before this)
-    C2  db/final/vehicles.csv has vehicles for this model, submodel, year
+    C2  db/final/vehicles_<run_id>.csv has vehicles for this model, submodel, year
     C3  config/vehicles/<model>.yaml declares the year
     C4  otherwise: which years the DB and the config do know (after / before / gap)
     C5  whether that config file is drafted from data or reviewed by a person
@@ -31,15 +31,17 @@ REPORT_COLUMNS = ['match_key', 'model', 'submodel', 'year', 'parts', 'in_db', 'i
 # ---------------------------------------------------------------- the vehicle index (built once)
 
 def load_vehicle_index(db_dir, config_version, variant, ctx=None, step='lookup', settings=None):
-    """Read only the columns the lookup needs from vehicles.csv and group them once:
+    """Read only the columns the lookup needs from vehicles_<run_id>.csv and group them once:
     {'index': {(model, submodel, year): [vehicle dicts]}, 'known_years': {(model, submodel): [years]}, ...}.
     submodel None = the base model. Each vehicle gets its variant label (variant_label, accessories.yaml).
     With settings, only vehicles inside the accessory year window are indexed (lookup, coverage and
     contradictions never see the others); known_years keeps every DB year, to explain a miss."""
-    path = store.table_path(db_dir, 'final', 'vehicles')
+    path = store.latest_path(db_dir, 'final', 'vehicles')
+    if path is None:
+        shown = _display(store.table_path(db_dir, 'final', 'vehicles', '<run_id>'), db_dir)
+        raise fatal(ctx, 'ACCESS_DB_NOT_FOUND', checked=f'file {shown}', found='no vehicle ingest has written one',
+                    path=shown)
     shown = _display(path, db_dir)
-    if not path.exists():
-        raise fatal(ctx, 'ACCESS_DB_NOT_FOUND', checked=f'file {shown}', found='file does not exist', path=shown)
     needed = INDEX_COLUMNS + [f for f in variant['fields'] if f not in INDEX_COLUMNS]
     header = pd.read_csv(path, nrows=0).columns
     missing = [c for c in needed if c not in header]
@@ -53,7 +55,7 @@ def load_vehicle_index(db_dir, config_version, variant, ctx=None, step='lookup',
     if versions != [config_version]:
         log_flag(ctx, step, {}, 'ACCESS_DB_STALE', subject=shown,
                  checked=f'taxonomy_version in {shown} = current config version {config_version}',
-                 found=f'vehicles.csv has {", ".join(versions) or "none"}',
+                 found=f'vehicles_<run_id>.csv has {", ".join(versions) or "none"}',
                  db_version=', '.join(versions) or 'none', config_version=config_version)
     _check_last_ingest(db_dir, ctx, step)
 
@@ -213,7 +215,7 @@ def fetch(keys, vehicle_index, declared, taxonomy, ctx=None, step='lookup'):
 
 
 def lookup_report(results):
-    """One row per key: what was checked, what was found, the model numbers (db/dq/accessory_lookup.csv)."""
+    """One row per key: what was checked, what was found, the model numbers (db/dq/accessory_lookup_<run_id>.csv)."""
     rows = [{**{k: r[k] for k in REPORT_COLUMNS if k in r},
              'in_db': len(r['vehicles']), 'in_config': 'yes' if r['in_config'] else 'no',
              'code': r['issue']['code'] if r['issue'] else '', 'model_count': len(r['vehicles']),

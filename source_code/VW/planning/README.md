@@ -79,7 +79,7 @@ Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_da
 | Dict rows / exported rows / export sheets | 9,481 / 9,388 / 10 (25,796 / 25,345 / 14 at 2020+) |
 | Vehicles with no parts | 14 (model year 2027) |
 | Accessory review rows | 109 (241 at 2020+) |
-| Part numbers restored / unproven | 704 / 0 |
+| Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
 | Tests | 276 passing |
 
 ## Index

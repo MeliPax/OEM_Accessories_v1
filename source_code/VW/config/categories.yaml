@@ -1,4 +1,4 @@
-# The taxonomy levels, in hierarchy order. Each one becomes a column in db/final/vehicles.csv.
+# The taxonomy levels, in hierarchy order. Each one becomes a column in db/final/vehicles_<run_id>.csv.
 #
 #   source:           where the value comes from: config (make), models (models.yaml) or keywords (keywords.yaml)
 #   multi_value:      true if a vehicle can have several values (stored sorted, joined with "|")

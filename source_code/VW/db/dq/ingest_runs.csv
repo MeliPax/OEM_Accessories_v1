@@ -6,3 +6,7 @@ run_id,started_at,source_file,min_model_year,max_model_year,taxonomy_version,sta
 vw_ingest_20261027_095415,2026-10-27 09:54:15,datasets/vw_models_data.csv,2020,,c0080918ef,ok,323,54,269,100.0,0,0,
 vw_ingest_20261027_100309,2026-10-27 10:03:09,datasets/vw_models_data.csv,2020,,604330b804,ok,323,54,269,100.0,0,0,
 vw_ingest_20261028_123746,2026-10-28 12:37:46,datasets/vw_models_data.csv,2020,,4251671a76,ok,323,54,269,100.0,0,0,0
+vw_ingest_20261028_144155,2026-10-28 14:41:55,datasets/vw_models_data.csv,2020,,4251671a76,ok,323,54,269,100.0,0,0,0
+vw_ingest_20261028_145206,2026-10-28 14:52:06,datasets/vw_models_data.csv,2020,,4251671a76,ok,323,54,269,100.0,0,0,0
+vw_ingest_20261028_151850,2026-10-28 15:18:50,datasets/vw_models_data.csv,2020,,4251671a76,ok,323,54,269,100.0,0,0,0
+vw_ingest_20261028_152148,2026-10-28 15:21:48,datasets/vw_models_data.csv,2020,,fa8f28d77a,ok,323,54,269,100.0,0,0,0

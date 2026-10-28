@@ -49,7 +49,8 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
             taxonomy = cfg.validate_taxonomy(cfg.load_taxonomy(config_dir))
             option_sets = cfg.load_option_sets(config_dir, taxonomy)
             verified = cfg.load_verified(config_dir, taxonomy, option_sets)
-            counts = cfg.export_definitions(taxonomy, option_sets, db_dir / 'definitions', verified=verified)
+            counts = cfg.export_definitions(taxonomy, option_sets, db_dir / 'definitions', verified=verified,
+                                            run_id=ctx['run_id'])
             log_info(ctx, 'config', 'LOADED', categories=len(taxonomy['categories']),
                      models=len(taxonomy['models']), keywords=len(taxonomy['keywords']),
                      aliases=len(taxonomy['aliases']), option_sets=len(option_sets), verified_facts=len(verified),
@@ -137,10 +138,10 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
         vehicles = run_step(ctx, 'verify', verify, vehicles,
                             conditions={'facts': len(state['verified']), 'match': 'exact (model, submodel, year)'})
 
-        # 10. write: compare with the previous vehicles.csv, then write final + review queue
+        # 10. write: compare with the previous vehicles_<run_id>.csv, then write final + review queue
         def write(df):
             columns = vehicle_columns(taxonomy)
-            compare_db_changes(ctx, store.read_table(db_dir, 'final', 'vehicles'), df, columns)
+            compare_db_changes(ctx, store.read_table(db_dir, 'final', 'vehicles', latest=True), df, columns)
             path = _write(ctx, df, db_dir, 'final', 'vehicles',
                           sort_by=['model', 'submodel', 'model_year', 'model_number'], columns=columns)
             queue = build_review_queue(ctx['flags'], df)
@@ -149,7 +150,7 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
                      review_queue=_display(queue_path), review_rows=len(queue))
             return df
 
-        vehicles = run_step(ctx, 'write', write, vehicles, conditions={'compare_with': 'previous final/vehicles.csv'})
+        vehicles = run_step(ctx, 'write', write, vehicles, conditions={'compare_with': 'previous final/vehicles_<run_id>.csv'})
 
         summary = run_summary(ctx, staged, kept, vehicles)
         store.append_row({'run_id': ctx['run_id'], 'started_at': ctx['started_at'],
@@ -166,7 +167,7 @@ def run(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None, run_id=
 
 
 def compare_db_changes(ctx, previous, current, columns):
-    """Log rows added / removed / changed in vehicles.csv since the previous run."""
+    """Log rows added / removed / changed in vehicles_<run_id>.csv since the previous run."""
     if previous is None:
         log_info(ctx, 'write', 'DB COMPARE', previous='none (first run)', added=len(current))
         for _, row in current.iterrows():
@@ -185,7 +186,7 @@ def compare_db_changes(ctx, previous, current, columns):
         row = prev.loc[vid].to_dict() | {'vehicle_id': vid}
         log_change(ctx, 'write', row, '(row)', 'present', 'removed', 'db_removed', prev.loc[vid, 'description_clean'])
         log_flag(ctx, 'write', row, 'VEH_WRITE_VEHICLE_REMOVED',
-                 checked='every vehicle_id in the previous final/vehicles.csv is in this run',
+                 checked='every vehicle_id in the previous final/vehicles_<run_id>.csv is in this run',
                  found=f'missing: {prev.loc[vid, "description_clean"]}', vehicle_id=vid)
     for vid in curr.index.intersection(prev.index):
         for col in columns:
@@ -194,18 +195,19 @@ def compare_db_changes(ctx, previous, current, columns):
             before, after = prev.at[vid, col], curr.at[vid, col]
             if before != after:
                 log_change(ctx, 'write', curr.loc[vid].to_dict() | {'vehicle_id': vid}, col, before, after,
-                           'db_changed', 'differs from previous vehicles.csv')
+                           'db_changed', 'differs from previous vehicles_<run_id>.csv')
                 changed_cells += 1
     log_info(ctx, 'write', 'DB COMPARE', previous_rows=len(prev), added=len(added), removed=len(removed),
              changed_values=changed_cells)
 
 
 def _write(ctx, df, db_dir, layer, name, **kwargs):
-    """store.write_table, stopping the run with VEH_WRITE_FILE_LOCKED if the file is open elsewhere."""
+    """store.write_table named with the run id, stopping the run with VEH_WRITE_FILE_LOCKED if the file is
+    open elsewhere."""
     try:
-        return store.write_table(df, db_dir, layer, name, **kwargs)
+        return store.write_table(df, db_dir, layer, name, run_id=ctx['run_id'], **kwargs)
     except PermissionError:
-        path = store.table_path(db_dir, layer, name)
+        path = store.table_path(db_dir, layer, name, ctx['run_id'])
         raise fatal(ctx, 'VEH_WRITE_FILE_LOCKED', checked=f'write {_display(path)}', found='permission denied',
                     path=_display(path))
 

@@ -8,9 +8,9 @@ Steps (every one logged through run_step):
     config -> ingest -> part_numbers -> staging -> year_window -> clean_text -> dedupe -> part_number_review
     -> clean -> resolve_names -> lookup -> build_dict -> coverage -> validate -> export
 
-Nothing merged is written to the DB. Written: the run logs, db/dq/part_number_check.csv (one row per
-stockCode / make&model / model, idea 008), db/dq/accessory_lookup.csv (one row per key),
-db/review/accessory_review.csv (unmatched part-years, unproven part numbers, suspect values and links,
+Nothing merged is written to the DB. Written, each named with the run id (<name>_<run_id>.csv): the run
+logs, db/dq/part_number_check (one row per stockCode / make&model / model, idea 008), db/dq/accessory_lookup
+(one row per key), db/review/accessory_review (unmatched part-years, unproven part numbers, suspect values and links,
 vehicles with no parts),
 db/dq/accessory_runs.csv, and the Excel export output/<run_id>.xlsx (one sheet per accessory model name,
 matched rows only).
@@ -294,8 +294,9 @@ def stage_accessories(df, spec, make, ctx=None, step='staging'):
             reasons[idx] = reason(df.loc[idx]) if callable(reason) else reason
         drop |= new
 
+    pn = spec['part_number']
     for idx, row in df[df['part_number'] == ''].iterrows():
-        held = row.get('make_model_part_number', '')
+        held = split_check_value(row.get(cfg.CHECK_COLUMN_NAME, ''), row.get(pn['suffix_column'], ''))[0]
         found = f'empty; make&model holds "{held}", not filled in (nothing to compare it with)' if held else 'empty'
         log_flag(ctx, step, row, 'ACCESS_STGNG_MISSING_PART_NUMBER', 'part_number', '',
                  checked='part_number is filled', found=found, subject=f'source row {row["source_row"]}',
@@ -749,26 +750,28 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
                        conditions={'file': _display(source), 'sheet': spec['sheet'], 'header_row': spec['header_row']})
         def part_numbers(df):
             checked, report = check_part_numbers(df, spec, ctx)
-            path = store.write_table(report, db_dir, 'dq', 'part_number_check')
+            path = store.write_table(report, db_dir, 'dq', 'part_number_check', run_id=ctx['run_id'])
+            state['files'] = {'part_number_file': _display(path)}
             log_info(ctx, 'part_numbers', 'WRITTEN', check_report=_display(path), combinations=len(report))
             check_unproven_share(report, spec, ctx)
             state['part_number_report'] = report
             return checked
 
-        pn = spec['part_number']
-        proven = run_step(ctx, 'part_numbers', part_numbers, raw,
-                          conditions={'check_column': pn['check_column'], 'suffix': pn['suffix_column'],
-                                      'restore': pn['restore'], 'allowed': pn['allowed_characters'],
-                                      'max_unproven_share': pn['max_unproven_share']})
-        staged = run_step(ctx, 'staging', lambda df: stage_accessories(df, spec, taxonomy['make'], ctx), proven,
+        staged = run_step(ctx, 'staging', lambda df: stage_accessories(df, spec, taxonomy['make'], ctx), raw,
                           conditions={'keep_rows': spec['keep_rows'], 'make': taxonomy['make']})
         window = settings['window']
         kept = run_step(ctx, 'year_window', lambda df: note_clipped(
                             filter_by_year_window(df, settings, DATASET, ctx), settings, ctx), staged,
                         conditions={'rule': settings['datasets'][DATASET]['year_rule'], 'window': window})
+        pn = spec['part_number']
+        proven = run_step(ctx, 'part_numbers', part_numbers, kept,
+                          conditions={'rows': 'inside the year window', 'check_column': pn['check_column'],
+                                      'suffix': pn['suffix_column'], 'restore': pn['restore'],
+                                      'allowed': pn['allowed_characters'],
+                                      'max_unproven_share': pn['max_unproven_share']})
         tc = spec['text_cleaning']
         cleaned_text = run_step(ctx, 'clean_text', lambda df: _keep_review(
-                                    state, 'text_review', clean_text_columns(df, spec, ctx)), kept,
+                                    state, 'text_review', clean_text_columns(df, spec, ctx)), proven,
                                 conditions={'columns': ', '.join(tc['columns']), 'link_rules': len(tc['link_rules']),
                                             'allowed_hosts': ', '.join(tc['allowed_link_hosts'])})
         unique = run_step(ctx, 'dedupe', lambda df: remove_duplicates(df, ctx), cleaned_text,
@@ -787,12 +790,14 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
             index = load_vehicle_index(db_dir, taxonomy['version'], spec['variant'], ctx, settings=settings)
             keys = unique_keys(df, settings)
             results = fetch(keys, index, state['declared'], taxonomy, ctx)
-            path = store.write_table(lookup_report(results), db_dir, 'dq', 'accessory_lookup')
+            path = store.write_table(lookup_report(results), db_dir, 'dq', 'accessory_lookup', run_id=ctx['run_id'])
+            state['files'].update(vehicles_file=index['path'], lookup_file=_display(path))
             log_info(ctx, 'lookup', 'WRITTEN', lookup_report=_display(path), keys=len(results))
             state.update(index=index, keys=keys, results=results)
             return df
 
-        run_step(ctx, 'lookup', lookup, named, conditions={'vehicle_db': 'db/final/vehicles.csv', 'window': window,
+        run_step(ctx, 'lookup', lookup, named, conditions={'vehicle_db': 'newest db/final/vehicles_<run_id>.csv',
+                                                           'window': window,
                                                            'key': '(make, model, submodel, year)'})
 
         def build(df):
@@ -832,8 +837,9 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
             review_rows = drop_verified(state['part_review'] + state['part_number_review'] + state['text_review']
                                         + state['unit_review'] + state['vehicle_review'], verified)
             review = pd.DataFrame(review_rows, columns=REVIEW_COLUMNS)
-            path = store.write_table(review, db_dir, 'review', 'accessory_review')
-            report = store.write_table(verified_report(rows), db_dir, 'dq', 'verified_flags')
+            path = store.write_table(review, db_dir, 'review', 'accessory_review', run_id=ctx['run_id'])
+            report = store.write_table(verified_report(rows), db_dir, 'dq', 'verified_flags', run_id=ctx['run_id'])
+            state['files'].update(review_file=_display(path), verified_file=_display(report))
             log_info(ctx, 'verify', 'WRITTEN', review=_display(path), review_rows=len(review),
                      verified_flags=_display(report), flags_verified=len(rows), contradicted=contradicted,
                      part_rows=sum(r['type'] == 'part' for r in review_rows),
@@ -894,7 +900,7 @@ def run_summary(ctx, raw, staged, kept, unique, named, state):
             'matched_rows': sum(int((d['model_number'] != '').sum()) for d in model_dict.values()),
             'unmatched_part_years': len(state['part_review']),
             'vehicles_without_parts': len(state['vehicle_review']),
-            'export_file': _display(path) if path else '', 'export_sheets': len(sheets),
+            'export_file': _display(path) if path else '', 'export_sheets': len(sheets), **state['files'],
             'review_rows': state['review_rows'], 'flags_verified': state['flags_verified'],
             'verified_contradicted': state['verified_contradicted'],
             'flags_warning': sum(f['severity'] == 'warning' for f in ctx['flags']),

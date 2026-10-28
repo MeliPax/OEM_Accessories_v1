@@ -7,3 +7,8 @@ __pycache__/
 
 # Accessory exports: rebuilt every run (plan 003, A15)
 output/
+
+# Run outputs in db/: every file carries its run id (<name>_<run_id>.csv), so each run adds new files.
+# The run registers (dq/ingest_runs.csv, dq/accessory_runs.csv) stay tracked.
+db/*/*_vw_ingest_*.csv
+db/*/*_vw_accessories_*.csv

@@ -13,7 +13,7 @@ datasets/vw_models_data.csv
    ▼
 config ─► ingest ─► staging ─► year window ─► clean ─► parse ─► resolve ─► validate ─► write
                                                                                         │
-                                                         db/final/vehicles.csv  ◄───────┘
+                                                         db/final/vehicles_<run_id>.csv  ◄───────┘
                                                                 │
 datasets/...Accessories Data EN.xlsx                            │ (one lookup per unique key)
    │  run_accessories.py                                        ▼
@@ -55,7 +55,7 @@ python run_accessories.py     # 2. accessories + model numbers + Excel export
 ```
 status: ok_with_errors | keys found 64 of 71 | unmatched part-years 451 | vehicles without parts 14
 export: output/vw_accessories_20261027_100331.xlsx
-review: db/review/accessory_review.csv | lookup: db/dq/accessory_lookup.csv
+review: db/review/accessory_review_<run_id>.csv | lookup: db/dq/accessory_lookup_<run_id>.csv
 ```
 
 From the notebook:
@@ -93,14 +93,16 @@ The tests cover each helper module, the message catalogue, and full runs of both
 
 ## Where to look after a run
 
+Every file a run writes is named with its run id, `<pipeline>_<YYYYMMDD_HHMMSS>` (e.g. `db/review/accessory_review_vw_accessories_20261028_151851.csv`), so no run overwrites another and each file traces to its run. The accessory run reads the newest `vehicles_<run_id>.csv`; the file it used is in its terminal line and in `db/dq/accessory_runs.csv` (`vehicles_file`, `review_file`, ...). `db/dq/ingest_runs.csv`, `db/dq/accessory_runs.csv` and `db/logs/steps.csv` are one file each, one row per run. Run files in `db/` are git-ignored, like the logs and exports.
+
 | File | What it shows |
 |---|---|
-| `db/final/vehicles.csv` | One row per vehicle with its taxonomy fields |
-| `db/review/review_queue.csv` | Vehicles a person should check (vehicle ingest) |
-| `db/review/accessory_review.csv` | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
-| `db/dq/part_number_check.csv` | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not |
-| `db/dq/accessory_lookup.csv` | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed |
-| `db/dq/verified_flags.csv` | Flags a verified fact explained this run (now info, left out of review), with the entry, reason, who and when |
+| `db/final/vehicles_<run_id>.csv` | One row per vehicle with its taxonomy fields |
+| `db/review/review_queue_<run_id>.csv` | Vehicles a person should check (vehicle ingest) |
+| `db/review/accessory_review_<run_id>.csv` | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
+| `db/dq/part_number_check_<run_id>.csv` | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not |
+| `db/dq/accessory_lookup_<run_id>.csv` | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed |
+| `db/dq/verified_flags_<run_id>.csv` | Flags a verified fact explained this run (now info, left out of review), with the entry, reason, who and when |
 | `output/<run_id>.xlsx` | The accessory export: one sheet per accessory model name, matched rows only (git-ignored) |
 | `db/logs/runs/<run_id>.log` | The readable story of a run; each flag is a block with what / checked / found / causes / fix |
 | `db/logs/changes/<run_id>.csv` | Every value set or changed: before, after, and the rule or keyword that did it |
@@ -142,7 +144,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 1. Run `python run_ingest.py` on the new VW export.
 2. New words show up as `VEH_PARSE_UNKNOWN_WORD` → add them to `config/keywords.yaml`.
 3. New models or years show up as `VEH_VALID_NOT_IN_CONFIG` → add or extend the option set in `config/vehicles/<model>.yaml`.
-4. Run `python run_accessories.py`. Check `db/review/accessory_review.csv`:
+4. Run `python run_accessories.py`. Check `db/review/accessory_review_<run_id>.csv`:
    - an `ACCESS_LOOKUP_*` code means accessory years have no vehicle; the fix steps say whether to rerun the ingest, add a year to the config, or ask the data source;
    - `ACCESS_COVER_VEHICLE_NO_PARTS` means vehicles have no parts yet, usually because the accessory file isn't updated for that model year.
 5. Once someone has checked a `vehicles/<model>.yaml`, set `status: reviewed` with `reviewed_by` / `reviewed_on`.
@@ -168,7 +170,7 @@ verified:
 | `no_parts_expected: {years: [...], until: YYYY-MM-DD}` | The vehicle exists, but no parts are expected yet | Its `ACCESS_COVER_VEHICLE_NO_PARTS` flags drop to info until the date, then come back (`ACCESS_VERIFY_EXPIRED`) |
 
 The final `verify` step in both pipelines applies these:
-- **Kept:** nothing is deleted. A verified flag keeps its original severity and the entry in the flag log, and is listed in `db/dq/verified_flags.csv`.
+- **Kept:** nothing is deleted. A verified flag keeps its original severity and the entry in the flag log, and is listed in `db/dq/verified_flags_<run_id>.csv`.
 - **Contradictions:** data that contradicts a fact becomes an error (`ACCESS_VERIFY_CONTRADICTED`, `VEH_VERIFY_CONTRADICTED`), for example a Golf R 2021 in a future export.
 - **Unused facts:** a fact that matched nothing is reported as info (`ACCESS_VERIFY_ENTRY_UNUSED`).
 - **Which flags:** only the codes marked `verifiable: true` in `messages.yaml` can be verified.

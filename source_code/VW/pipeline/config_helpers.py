@@ -786,9 +786,9 @@ def _part_number_spec(block, columns, renames, types, where, errors):
 
 # ---------------------------------------------------------------- definitions export
 
-def export_definitions(taxonomy, option_sets, out_dir, verified=None):
+def export_definitions(taxonomy, option_sets, out_dir, verified=None, run_id=None):
     """Write the flattened, read-only definition tables to db/definitions/ (dim_verified too when the
-    verified facts are given). Returns {name: rows}."""
+    verified facts are given), each named <name>_<run_id>.csv when run_id is given. Returns {name: rows}."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -832,7 +832,7 @@ def export_definitions(taxonomy, option_sets, out_dir, verified=None):
             columns=['model', 'submodel', 'kind', 'category', 'values', 'years', 'until', 'reason',
                      'verified_by', 'verified_on', 'entry'])
     for name, df in tables.items():
-        df.to_csv(out_dir / f'{name}.csv', index=False)
+        df.to_csv(out_dir / (f'{name}_{run_id}.csv' if run_id else f'{name}.csv'), index=False)
     return {name: len(df) for name, df in tables.items()}
 
 

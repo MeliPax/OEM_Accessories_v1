@@ -8,6 +8,7 @@ VW_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(VW_DIR))
 
 from pipeline import config_helpers as cfg  # noqa: E402
+from pipeline import storage_helpers as store  # noqa: E402
 
 CONFIG_DIR = VW_DIR / 'config'
 SOURCE = VW_DIR / 'datasets' / 'vw_models_data.csv'
@@ -35,6 +36,11 @@ def config_copy(tmp_path):
     target = tmp_path / 'config'
     shutil.copytree(CONFIG_DIR, target)
     return target
+
+
+def run_file(db_dir, layer, name, run_id):
+    """The file a run wrote: db/<layer>/<name>_<run_id>.csv."""
+    return store.table_path(db_dir, layer, name, run_id)
 
 
 def replace_in(path, old, new):

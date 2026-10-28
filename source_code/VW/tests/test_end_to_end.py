@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import run_ingest
-from conftest import SOURCE, replace_in
+from conftest import SOURCE, replace_in, run_file
 
 STEPS = ['config', 'ingest', 'staging', 'year_window', 'clean', 'parse', 'resolve', 'validate', 'verify',
          'write']
@@ -29,8 +29,8 @@ def test_row_counts_reconcile(first_run):
     assert summary['rows_final'] == 269
     assert summary['rows_staged'] == summary['rows_final'] + summary['rows_excluded_by_year']
     assert summary['parsed_complete_pct'] == 100.0
-    assert len(read(db / 'staging' / 'stg_vw_models.csv')) == 323
-    assert len(read(db / 'final' / 'vehicles.csv')) == 269
+    assert len(read(run_file(db, 'staging', 'stg_vw_models', 'run1'))) == 323
+    assert len(read(run_file(db, 'final', 'vehicles', 'run1'))) == 269
 
 
 def test_every_step_is_logged(first_run):
@@ -44,7 +44,7 @@ def test_every_step_is_logged(first_run):
 
 def test_every_value_is_traceable_in_the_change_log(first_run):
     db, _, _ = first_run
-    vehicles = read(db / 'final' / 'vehicles.csv')
+    vehicles = read(run_file(db, 'final', 'vehicles', 'run1'))
     changes = read(db / 'logs' / 'changes' / 'run1.csv')
     logged = {}
     for r in changes[changes['step'] == 'parse'].itertuples():
@@ -74,7 +74,7 @@ def test_excluded_rows_have_reasons(first_run):
 def test_no_flags_on_todays_data(first_run):
     db, _, _ = first_run
     flags = read(db / 'logs' / 'flags' / 'run1.csv')
-    queue = read(db / 'review' / 'review_queue.csv')
+    queue = read(run_file(db, 'review', 'review_queue', 'run1'))
     # Tiguan Black resolved; Atlas trim change on a reused code is allowed; only the info note on 2019 rows
     assert flags['code'].tolist() == ['VEH_YEAR_OUT_OF_WINDOW'] and flags.iloc[0]['severity'] == 'info'
     assert flags.iloc[0]['message'].startswith('54 rows were left out') and queue.empty
@@ -103,7 +103,7 @@ def test_unknown_compare_category_stops_the_run(config_copy, tmp_path):
 
 def test_lone_black_resolved_to_black_edition(first_run):
     db, _, _ = first_run
-    vehicles = read(db / 'final' / 'vehicles.csv').set_index('vehicle_id')
+    vehicles = read(run_file(db, 'final', 'vehicles', 'run1')).set_index('vehicle_id')
     for vid in ['VW-2024-BJ2VVJ', 'VW-2025-RM1VPJ', 'VW-2026-RM1VPJ',
                 'VW-2025-CL26SR', 'VW-2026-CL26SR', 'VW-2027-CL26SR']:
         assert vehicles.loc[vid, 'special_edition'] == 'Black Edition', vid
@@ -113,9 +113,9 @@ def test_lone_black_resolved_to_black_edition(first_run):
 
 def test_rerun_changes_nothing(first_run):
     db, _, _ = first_run
-    before = (db / 'final' / 'vehicles.csv').read_bytes()
+    before = run_file(db, 'final', 'vehicles', 'run1').read_bytes()
     run_ingest.run(db_dir=db, run_id='run2')
-    assert (db / 'final' / 'vehicles.csv').read_bytes() == before
+    assert run_file(db, 'final', 'vehicles', 'run2').read_bytes() == before    # a new file; run1's is kept
     changes = read(db / 'logs' / 'changes' / 'run2.csv')
     assert changes[changes['step'] == 'write'].empty
     assert len(read(db / 'dq' / 'ingest_runs.csv')) == 2
@@ -124,7 +124,7 @@ def test_rerun_changes_nothing(first_run):
 def test_changing_one_keyword_changes_only_affected_rows(config_copy, tmp_path):
     db = tmp_path / 'db'
     run_ingest.run(config_dir=config_copy, db_dir=db, run_id='before')
-    limited = read(db / 'final' / 'vehicles.csv')['inventory_status'].eq('Limited Availability').sum()
+    limited = read(run_file(db, 'final', 'vehicles', 'before'))['inventory_status'].eq('Limited Availability').sum()
     replace_in(config_copy / 'keywords.yaml', 'value: Limited Availability', 'value: Limited')
     run_ingest.run(config_dir=config_copy, db_dir=db, run_id='after')
     changes = read(db / 'logs' / 'changes' / 'after.csv')
@@ -148,7 +148,7 @@ def test_made_up_word_is_partial_with_one_unknown_token(tmp_path):
                            'ModelNumber': 'ZZ9TST', 'ModelYear': '2025'}])
     pd.concat([df, extra]).to_csv(source, index=False)
     _, summary = run_ingest.run(db_dir=tmp_path / 'db', source=source, run_id='madeup')
-    vehicles = read(tmp_path / 'db' / 'final' / 'vehicles.csv')
+    vehicles = read(run_file(tmp_path / 'db', 'final', 'vehicles', 'madeup'))
     flags = read(tmp_path / 'db' / 'logs' / 'flags' / 'madeup.csv')
     row = vehicles[vehicles['model_number'] == 'ZZ9TST'].iloc[0]
     assert row['parse_status'] == 'partial' and row['unparsed_tokens'] == 'Sparkle'

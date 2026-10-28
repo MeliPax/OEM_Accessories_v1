@@ -1,7 +1,7 @@
 # ACCESSORIES: layout, filters, data-quality rules and export of the VW accessory file
 # (planning/ideas/003_accessory_model_matching_design.md, plan 003).
 # The file path is sources.accessories in pipeline.yaml; the year window is datasets.accessories there.
-# Model names are resolved with models.yaml (shared aliases), model numbers are fetched from db/final/vehicles.csv.
+# Model names are resolved with models.yaml (shared aliases), model numbers are fetched from db/final/vehicles_<run_id>.csv.
 
 sheet: 0              # sheet index (0 = first) or name
 header_row: 2         # spreadsheet row that holds the column names (1 = first row); data starts below it
@@ -88,7 +88,7 @@ dq_rules:
 fitment_hints: [not for, without, except, only for, bench seating, captain chairs]
 
 # Variant: one label per vehicle that best describes it, built from its standardized taxonomy fields in
-# db/final/vehicles.csv (not the raw description, so the same vehicle reads the same in every year).
+# db/final/vehicles_<run_id>.csv (not the raw description, so the same vehicle reads the same in every year).
 # Model and submodel are left out (the Model column shows them); series and inventory_status too (internal / metadata).
 variant:
   fields:                         # in this order; empty fields are skipped

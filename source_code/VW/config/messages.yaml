@@ -266,7 +266,7 @@ VEH_VALID_MODEL_NUMBER_REUSED:
 
 VEH_WRITE_VEHICLE_REMOVED:
   severity: warning
-  message: '{vehicle_id} was in the previous vehicles.csv but is not in this run'
+  message: '{vehicle_id} was in the previous vehicles_<run_id>.csv but is not in this run'
   facts: [vehicle_id]
   causes:
     - The new export no longer lists the vehicle
@@ -353,9 +353,9 @@ ACCESS_DB_COLUMN_MISSING:
   message: 'The vehicle DB is missing column(s) the lookup needs: {columns}'
   facts: [columns]
   causes:
-    - vehicles.csv was built by an older version of the vehicle ingest, or edited by hand
+    - vehicles_<run_id>.csv was built by an older version of the vehicle ingest, or edited by hand
   fix:
-    - Rerun run_ingest.py to rebuild db/final/vehicles.csv
+    - Rerun run_ingest.py to rebuild db/final/vehicles_<run_id>.csv
     - Rerun run_accessories.py
 
 ACCESS_DB_STALE:
@@ -365,7 +365,7 @@ ACCESS_DB_STALE:
   causes:
     - models.yaml, keywords.yaml, categories.yaml or vehicles/*.yaml changed after the last vehicle ingest
   fix:
-    - Rerun run_ingest.py so vehicles.csv matches the current config
+    - Rerun run_ingest.py so vehicles_<run_id>.csv matches the current config
     - Rerun run_accessories.py
 
 ACCESS_DB_LAST_INGEST_NOT_OK:
@@ -373,9 +373,9 @@ ACCESS_DB_LAST_INGEST_NOT_OK:
   message: 'The last vehicle ingest ({run_id}) ended {status}'
   facts: [run_id, status]
   causes:
-    - The vehicle ingest flagged errors or failed, so vehicles.csv may be incomplete
+    - The vehicle ingest flagged errors or failed, so vehicles_<run_id>.csv may be incomplete
   fix:
-    - Check that run's review queue (db/review/review_queue.csv) and run log
+    - Check that run's review queue (db/review/review_queue_<run_id>.csv) and run log
     - Fix the problems, rerun run_ingest.py, then rerun run_accessories.py
 
 # ---------------------------------------------------------------- accessories: source file
@@ -555,7 +555,7 @@ ACCESS_STGNG_PART_NUMBER_SPLIT_RATE:
     - The accessory file layout changed (make&model or model holds something else)
     - A new export format from the data source
   fix:
-    - Open db/dq/part_number_check.csv and look at part_number_check and reason
+    - Open db/dq/part_number_check_<run_id>.csv and look at part_number_check and reason
     - If the layout changed, update the part_number block in config/accessories.yaml
     - If the file is right, raise part_number.max_unproven_share there
     - Rerun run_accessories.py
@@ -815,7 +815,7 @@ ACCESS_EXPORT_SHEET_EMPTY:
   causes:
     - None of the model's part-years found a vehicle (see the ACCESS_LOOKUP_ flags)
   fix:
-    - Resolve the lookup flags for this model (db/review/accessory_review.csv)
+    - Resolve the lookup flags for this model (db/review/accessory_review_<run_id>.csv)
     - Rerun run_accessories.py
 
 # ---------------------------------------------------------------- verified facts (idea 009)

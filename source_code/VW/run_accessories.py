@@ -54,8 +54,8 @@ def main(argv=None):
           f'verified {summary["flags_verified"]} | review rows {summary["review_rows"]}')
     if summary['export_file']:
         print(f'export: {summary["export_file"]}')
-    print('review: db/review/accessory_review.csv | lookup: db/dq/accessory_lookup.csv | '
-          'verified: db/dq/verified_flags.csv')
+    print(f'review: {summary["review_file"]} | lookup: {summary["lookup_file"]} | '
+          f'verified: {summary["verified_file"]} | vehicles used: {summary["vehicles_file"]}')
     return 1 if status in ('failed', 'ok_with_errors') else 0
 
 

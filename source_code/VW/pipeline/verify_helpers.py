@@ -13,7 +13,7 @@ The verify step runs last in both pipelines:
   - data that contradicts a fact (the vehicle exists, or has the option) is a new error;
   - a fact that matched nothing is reported (info); a no_parts_expected fact past its until date brings
     its coverage flags back (warning).
-Nothing is deleted: every verified flag is listed in db/dq/verified_flags.csv.
+Nothing is deleted: every verified flag is listed in db/dq/verified_flags_<run_id>.csv.
 """
 
 from datetime import date
@@ -61,7 +61,7 @@ def match_flag(flag, facts, codes, today=None):
 
 def verify_flags(ctx, facts, step='verify', today=None):
     """Downgrade the flags a fact covers; report expired and unused facts. Returns (verified rows for
-    verified_flags.csv, {(code, record)} of the verified flags)."""
+    verified_flags_<run_id>.csv, {(code, record)} of the verified flags)."""
     today = today or date.today()
     codes = verifiable_codes(ctx['messages'])
     flags = [f for f in ctx['flags'] if f['code'] in codes]

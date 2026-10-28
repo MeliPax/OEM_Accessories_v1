@@ -2,7 +2,14 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-28 — One year window per pipeline; accessories from current year - 2
+## 2026-10-28 — Run-id file names; part numbers proven inside the window
+
+- Every file a run writes is named `<name>_<run_id>.csv` (run id = `<pipeline>_<YYYYMMDD_HHMMSS>`); nothing is overwritten. Readers take the newest file. The run registers and `steps.csv` stay one file each.
+- `accessory_runs.csv` records the files each accessory run used and wrote (`vehicles_file`, `review_file`, `lookup_file`, `verified_file`, `part_number_file`); the terminal line prints them.
+- Run files in `db/` are git-ignored; the old fixed-name files were removed from the repo.
+- The part number check runs after the year window: 151 rows restored (704 across the whole file before).
+
+## 2026-10-28 — One year window per pipeline; accessories from current year - 2 · `05de7c1`
 
 - `pipeline.yaml`: the shared window is gone. `datasets.vw_models` and `datasets.accessories` each set
   `min_model_year` / `max_model_year`: a year, or `current_year - N` worked out at run start. Vehicles: 2020+.
