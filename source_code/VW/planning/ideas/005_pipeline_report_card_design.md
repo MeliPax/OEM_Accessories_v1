@@ -1,6 +1,10 @@
 # 005 — Pipeline Run Report: Design
 
-**Status:** Idea — R1–R3 decided 2026-10-28; waiting for decisions R4–R12
+**Status:** Idea — waiting for decisions (R1–R3 decided 2026-10-28; R4–R12 open)
+**Updated:** 2026-10-28
+**Next:** user decides R4–R12 (OI-11)
+**Links:** uses plans [002](../plans/002_pipeline_logging.md), [003](../plans/003_accessory_model_matching.md) · `VERIFIED` status from plan [009](../plans/009_human_verified_vehicle_facts.md)
+**Summary:** One Excel run report per run (`<run_id>_report.xlsx`), one worksheet per category, built for the platform manager.
 **Applies to:** both pipelines (vehicle ingest and accessories); one report per run
 **Asked for:**
 - a structured way to read a pipeline run that is easy for the **platform manager**;

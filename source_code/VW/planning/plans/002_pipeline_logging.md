@@ -1,7 +1,10 @@
 # 002 — Pipeline Logging: Plan
 
-**Status:** Built 2026-10-26 with plan 001 — in user testing. Open: notebook cell.
-**Idea / design:** [ideas/002_pipeline_logging_design.md](../ideas/002_pipeline_logging_design.md)
+**Status:** Built — in user testing (2026-10-26)
+**Updated:** 2026-10-26
+**Next:** user signs off testing (OI-01); notebook cell (OI-02)
+**Links:** idea [002](../ideas/002_pipeline_logging_design.md) · built before plan [001](001_vw_model_ingest_mvp.md) Phase 1
+**Summary:** Logging helpers wired into every step: run log, steps.csv, change log, flag log, run summary and retention.
 **Order:** built **before** [plan 001](001_vw_model_ingest_mvp.md) Phase 1, so every ingest phase logs from day one.
 
 ## Outcome

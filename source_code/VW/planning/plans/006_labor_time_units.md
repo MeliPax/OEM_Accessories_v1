@@ -1,8 +1,10 @@
 # 006 — Labour Time Units (minutes → hours): Plan
 
-**Status:** Built 2026-10-28 — in user testing. Open: confirm the 0.4 value with the data source ([DI-07](../data_issues.md#di-07))
-**Idea / design:** [ideas/006_labor_time_units_design.md](../ideas/006_labor_time_units_design.md) (decisions L1–L5)
-**Depends on:** [plan 003](003_accessory_model_matching.md) (the accessory pipeline and its `clean` step)
+**Status:** Built — in user testing (2026-10-28)
+**Updated:** 2026-10-28
+**Next:** user signs off testing (OI-01); confirm the 0.4 value with the source (OI-06)
+**Links:** idea [006](../ideas/006_labor_time_units_design.md) · depends on plan [003](003_accessory_model_matching.md)
+**Summary:** Labour minutes converted to hours in the clean step, with lineage, suspect-value flags and the unit in the export header.
 **Note:** written after the build, on 2026-10-28, from the idea's decisions and build notes. The plan step was skipped at build time, and this file records the work in the standard format.
 
 ## Outcome

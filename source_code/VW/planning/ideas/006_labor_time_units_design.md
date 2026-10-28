@@ -1,6 +1,10 @@
 # 006 — Labour Time Units (minutes → hours): Design
 
-**Status:** Built 2026-10-28 — all decisions (L1–L5) approved; see *Build notes* at the end. Plan (as built): [plans/006](../plans/006_labor_time_units.md)
+**Status:** Idea — approved (L1–L5, 2026-10-27)
+**Updated:** 2026-10-28
+**Next:** completed with plan 006 once testing is signed off (OI-01)
+**Links:** plan [006](../plans/006_labor_time_units.md) (as built) · data issue [DI-07](../data_issues.md#di-07)
+**Summary:** Labour time converted from minutes to hours with the multiplier from unit definitions in config.
 **Applies to:** the accessory pipeline (plan 003), `clean` step
 **Asked for:** labour time arrives in minutes; the export should show hours. The units and the multiplier are config, not code, with good governance.
 

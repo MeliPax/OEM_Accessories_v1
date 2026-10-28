@@ -1,6 +1,10 @@
 # 008 — Part Numbers Kept Exactly as the Source: Design
 
-**Status:** Built 2026-10-27 — all decisions (P1–P13) approved; see *Build notes* at the end. Plan (as built): [plans/008](../plans/008_part_number_integrity.md)
+**Status:** Idea — approved (P1–P13, 2026-10-27)
+**Updated:** 2026-10-27
+**Next:** completed with plan 008 once testing is signed off (OI-01)
+**Links:** plan [008](../plans/008_part_number_integrity.md) (as built) · data issue [DI-03](../data_issues.md#di-03)
+**Summary:** Part numbers kept exactly as the source: leading zeros restored only when make&model proves them; never padded.
 **Applies to:** the accessory pipeline (plan 003): `ingest`, `staging` and `export`
 **Asked for:** keep part numbers exactly as the source has them, leading zeros included ([DI-03](../data_issues.md#di-03)).
 

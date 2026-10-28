@@ -1,6 +1,10 @@
 # 004 — Error and Flag Messages: Design
 
-**Status:** Idea — E1–E7 decided 2026-10-27, with the user's more descriptive prefixes (`CONFG`, `VEH`, `ACCESS`; stage `STGNG`)
+**Status:** Idea — approved (E1–E7, 2026-10-27)
+**Updated:** 2026-10-27
+**Next:** completed with plan 003 once testing is signed off (OI-01)
+**Links:** built in plan [003](../plans/003_accessory_model_matching.md) · catalogue `config/messages.yaml`
+**Summary:** Every flag and fatal gets a prefixed code with message, checked, found, causes and fix, worded in config/messages.yaml.
 **Applies to:** the vehicle ingest (built, plans 001–002) and the accessory pipeline (plan 003)
 **Asked for:** "go through all the possible scenarios ... from start to end, to come up with a concrete error message plan"; prefix every error so it's clear what is going on.
 

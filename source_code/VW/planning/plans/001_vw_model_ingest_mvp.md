@@ -1,7 +1,10 @@
 # 001 — VW Model Ingest MVP: Plan
 
-**Status:** Built 2026-10-26 — 74 tests passing; in user testing. Open: review of `config/vehicles/` by the user, notebook hook-up.
-**Idea / design:** [ideas/001_vw_model_ingest_design.md](../ideas/001_vw_model_ingest_design.md)
+**Status:** Built — in user testing (2026-10-26)
+**Updated:** 2026-10-26
+**Next:** user signs off testing (OI-01); review config/vehicles (OI-03); notebook cell (OI-02)
+**Links:** idea [001](../ideas/001_vw_model_ingest_design.md) · logging from plan [002](002_pipeline_logging.md)
+**Summary:** The VW vehicle ingest: config, staging, year window, cleaning, parsing, resolutions, validation and vehicles.csv.
 **Branch:** `feature/vw-data-analysis` (or a new `feature/vw-model-ingest` from `dev`, per `accy_v2/planning/VERSIONING.md`)
 
 ## Outcome

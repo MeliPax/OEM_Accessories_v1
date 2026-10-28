@@ -1,8 +1,10 @@
 # 008 — Part Numbers Kept Exactly as the Source: Plan
 
-**Status:** Built 2026-10-27 — in user testing. Open: ask the data source to export `stockCode` as text
-**Idea / design:** [ideas/008_part_number_integrity_design.md](../ideas/008_part_number_integrity_design.md) (decisions P1–P13, split cases S1–S11)
-**Depends on:** [plan 003](003_accessory_model_matching.md) (accessory ingest, staging, dedupe, export)
+**Status:** Built — in user testing (2026-10-27)
+**Updated:** 2026-10-28
+**Next:** user signs off testing (OI-01); ask the source to export stockCode as text (OI-07)
+**Links:** idea [008](../ideas/008_part_number_integrity_design.md) · depends on plan [003](003_accessory_model_matching.md)
+**Summary:** Every part number is proven against make&model, leading zeros restored only when proven, never padded, and exported as Excel text.
 **Note:** written after the build, on 2026-10-28, from the idea's decisions and build notes. The plan step was skipped at build time, and this file records the work in the standard format.
 
 ## Outcome

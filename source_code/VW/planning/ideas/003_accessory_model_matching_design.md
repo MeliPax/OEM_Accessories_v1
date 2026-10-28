@@ -1,7 +1,10 @@
 # 003 — Accessory Ingest + Model Number Matching: Design
 
-**Status:** Idea — all decisions made (A1–A8 2026-10-26; A10–A17 2026-10-27; A9 replaced by [idea 004](004_error_message_catalogue_design.md)). Plan: [plans/003](../plans/003_accessory_model_matching.md)
-**Builds on:** [001 VW model ingest](001_vw_model_ingest_design.md) (`db/final/vehicles.csv`), [002 logging](002_pipeline_logging_design.md)
+**Status:** Idea — approved (A1–A17, 2026-10-27)
+**Updated:** 2026-10-27
+**Next:** completed with plan 003 once testing is signed off (OI-01)
+**Links:** plan [003](../plans/003_accessory_model_matching.md) · builds on ideas [001](001_vw_model_ingest_design.md), [002](002_pipeline_logging_design.md); A9 replaced by idea [004](004_error_message_catalogue_design.md)
+**Summary:** Ingest the accessory file and attach model numbers by a unique (model, submodel, year) lookup; one DataFrame per accessory model.
 **Source:** `datasets/2026_10_20_VW Canada Accessories Data EN.xlsx`, explored in `oem_access_data_analysis.ipynb`
 
 ## Goal

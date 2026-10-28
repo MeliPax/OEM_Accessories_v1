@@ -1,6 +1,10 @@
 # 007 — Comment Text Cleaning: Design
 
-**Status:** Built 2026-10-28 — all decisions (C1–C8) approved; see *Build notes* at the end. Plan (as built): [plans/007](../plans/007_comment_text_cleaning.md)
+**Status:** Idea — approved (C1–C8, 2026-10-27)
+**Updated:** 2026-10-28
+**Next:** completed with plan 007 once testing is signed off (OI-01)
+**Links:** plan [007](../plans/007_comment_text_cleaning.md) (as built) · data issues [DI-08](../data_issues.md#di-08) to [DI-11](../data_issues.md#di-11), [DI-16](../data_issues.md#di-16)
+**Summary:** Comments cleaned into readable sentences (tags, pipes, links, spaces) by rules in config; the raw text is kept.
 **Applies to:** the accessory pipeline (plan 003), the `comments` column (`dealerNotes` in the file)
 **Asked for:**
 - remove HTML (`<p>`, `<b>`, `<br/>`);

@@ -1,9 +1,10 @@
 # 003 — Accessory Ingest + Model Number Matching: Plan
 
-**Status:** Built 2026-10-27, in user testing. 152 tests pass. Open: notebook cell (added when the notebook is closed)
-**Ideas / design:** [ideas/003](../ideas/003_accessory_model_matching_design.md) (accessories, A1–A17), [ideas/004](../ideas/004_error_message_catalogue_design.md) (flag codes and messages, E1–E7)
-**Depends on:** [plan 001](001_vw_model_ingest_mvp.md) (`db/final/vehicles.csv`, `config/`) and [plan 002](002_pipeline_logging.md) (`run_step` and the logging helpers)
-**Later:** report card and data-quality sheet ([idea 005](../ideas/005_pipeline_report_card_design.md)); not in this plan
+**Status:** Built — in user testing (2026-10-27)
+**Updated:** 2026-10-27
+**Next:** user signs off testing (OI-01); notebook cell (OI-02); lookup misses as warnings? (OI-09)
+**Links:** ideas [003](../ideas/003_accessory_model_matching_design.md), [004](../ideas/004_error_message_catalogue_design.md) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md) · later: idea [005](../ideas/005_pipeline_report_card_design.md)
+**Summary:** The accessory pipeline: ingest, dedupe, model-number lookup, per-model dict, coverage, data quality and the Excel export; flag codes from messages.yaml.
 
 ## Outcome
 

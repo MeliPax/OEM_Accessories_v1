@@ -1,7 +1,10 @@
 # 001 — VW Model Ingest: Design Ideas
 
-**Status:** Idea — all decisions made (see [Decisions](#decisions))
-**Related plan:** [plans/001_vw_model_ingest_mvp.md](../plans/001_vw_model_ingest_mvp.md)
+**Status:** Idea — approved (D1–D19, 2026-10-26)
+**Updated:** 2026-10-26
+**Next:** completed with plan 001 once testing is signed off (OI-01)
+**Links:** plan [001](../plans/001_vw_model_ingest_mvp.md)
+**Summary:** How to ingest the VW model export into a vehicle table broken into taxonomy fields, driven by YAML config.
 **Taxonomy source:** [assets/vw_vehicle_keyword_taxonomy_and_normalization_guide.md](../../assets/vw_vehicle_keyword_taxonomy_and_normalization_guide.md)
 
 ## Goal

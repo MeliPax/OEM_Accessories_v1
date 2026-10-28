@@ -1,10 +1,10 @@
 # 010 — Work Process, Tracking and Indexing: Plan
 
-**Status:** Plan — approved (2026-10-28)
+**Status:** Built — in user testing (2026-10-28)
 **Updated:** 2026-10-28
-**Next:** build; idea 011 (requirements and documentation) extends Phases W2–W4 once approved
-**Links:** idea [010](../ideas/010_work_process_and_tracking_design.md) (G1–G9) · rules in [../../CLAUDE.md](../../CLAUDE.md)
-**Summary:** Fixed headers and status words on every planning doc, an index with next actions, `open_items.md`, `CHANGELOG.md`, a baseline table, and a test that keeps the index and the docs in step.
+**Next:** user signs off testing (OI-01); idea 011 extends the checks once approved (OI-13)
+**Links:** idea [010](../ideas/010_work_process_and_tracking_design.md) · rules in [../../CLAUDE.md](../../CLAUDE.md)
+**Summary:** Fixed headers and status words on every planning doc, an index with next actions, open_items.md, CHANGELOG.md, a baseline table, a resume procedure, and a test that keeps the index and the docs in step.
 
 ## Outcome
 
@@ -14,57 +14,57 @@
 
 **Success criteria**
 
-- [ ] All ideas and plans (10 ideas, 8 plans today) open with `Status` / `Updated` / `Next` / `Links` / `Summary`, using only the fixed status words (G4).
-- [ ] `grep -m1 "^\*\*Status:" planning/*/*.md` prints one fixed-word status per file.
-- [ ] The README *Index* has `Next` and `Updated` columns, one row per idea and plan, and a *Baseline* table (G8).
-- [ ] `planning/open_items.md` exists with OI-01 to OI-11 from the idea (G5), each with an owner and a linked doc.
-- [ ] `source_code/VW/CHANGELOG.md` exists, seeded from commits `7b42c88`, `b068917`, `f0e0ffa` and today's uncommitted work (G6).
-- [ ] `tests/test_planning_docs.py` passes, and fails on each broken case (missing field, unknown status, file not indexed, index stage ≠ file status, plan without idea, completed plan without *Completion notes*, unknown `OI-NN`) (G7).
-- [ ] `CLAUDE.md` names the new files and stays under 80 lines (G9).
-- [ ] Nothing is moved to `completed/` (that waits for the user's sign-off, OI-01).
-- [ ] **Resume, not redo:** build work interrupted at any point (a session ends, context runs out, the machine restarts) carries on from its last checkpoint. Ticked tasks are checked, not redone (Phase W5).
+- [x] All ideas and plans (10 ideas, 8 plans today) open with `Status` / `Updated` / `Next` / `Links` / `Summary`, using only the fixed status words (G4).
+- [x] `grep -m1 "^\*\*Status:" planning/*/*.md` prints one fixed-word status per file.
+- [x] The README *Index* has `Next` and `Updated` columns, one row per idea and plan, and a *Baseline* table (G8).
+- [x] `planning/open_items.md` exists with OI-01 to OI-11 from the idea (G5), each with an owner and a linked doc.
+- [x] `source_code/VW/CHANGELOG.md` exists, seeded from commits `7b42c88`, `b068917`, `f0e0ffa` and today's uncommitted work (G6).
+- [x] `tests/test_planning_docs.py` passes, and fails on each broken case (missing field, unknown status, file not indexed, index stage ≠ file status, plan without idea, completed plan without *Completion notes*, unknown `OI-NN`) (G7).
+- [x] `CLAUDE.md` names the new files and stays under 80 lines (G9).
+- [x] Nothing is moved to `completed/` (that waits for the user's sign-off, OI-01).
+- [ ] **Resume, not redo** (procedure and checks in place; proven at the first real interruption): build work interrupted at any point (a session ends, context runs out, the machine restarts) carries on from its last checkpoint. Ticked tasks are checked, not redone (Phase W5).
 
 ---
 
 ## Phase W1 — Headers and status words
 
-- [ ] Rewrite the first lines of each idea and plan into the five-field header. Old detail moves to `Next` or the body; the bodies stay as they are.
-- [ ] Fixed status words:
+- [x] Rewrite the first lines of each idea and plan into the five-field header. Old detail moves to `Next` or the body; the bodies stay as they are.
+- [x] Fixed status words:
   - `Seed`;
   - `Idea — waiting for decisions` / `Idea — approved` / `Completed`;
   - `Plan — waiting for approval` / `Plan — approved` / `Building` / `Built — in user testing`;
   - `Dropped`.
   - A date or extra detail may follow after ` (`, e.g. `Idea — approved (2026-10-28)`.
-- [ ] Update the *Lifecycle* section of `planning/README.md` to the four stages and three gates (G1, G3).
+- [x] Update the *Lifecycle* section of `planning/README.md` to the four stages and three gates (G1, G3).
 
 **Done when:** the grep above prints only fixed-word statuses.
 
 ## Phase W2 — Tracking files
 
-- [ ] README *Index*: columns `#`, `doc`, `stage`, `next`, `updated`.
-- [ ] README *Baseline*: vehicles 269 · accessory rows unique 1,357 · keys 71 (64 found / 7 missed) · exported rows 25,345 · review rows 467 · tests 221. Update it after each build's real run.
-- [ ] `planning/open_items.md`: the table from the idea, plus a short "how to add / close an item" note. A closed item keeps its row, with status `Closed` and the date.
-- [ ] `CHANGELOG.md`: newest first, one entry per build or completion: date, plan numbers, what changed, commit.
-- [ ] `planning/data_issues.md`: fix the stale heading "Units and text (planned, ideas 006 and 007)", and update *Last updated*.
+- [x] README *Index*: columns `#`, `doc`, `stage`, `next`, `updated`.
+- [x] README *Baseline*: vehicles 269 · accessory rows unique 1,357 · keys 71 (64 found / 7 missed) · exported rows 25,345 · review rows 467 · tests 221. Update it after each build's real run.
+- [x] `planning/open_items.md`: the table from the idea, plus a short "how to add / close an item" note. A closed item keeps its row, with status `Closed` and the date.
+- [x] `CHANGELOG.md`: newest first, one entry per build or completion: date, plan numbers, what changed, commit.
+- [x] `planning/data_issues.md`: fix the stale heading "Units and text (planned, ideas 006 and 007)", and update *Last updated*.
 
 **Done when:** each file exists, and the index has every doc.
 
 ## Phase W3 — The check (`tests/test_planning_docs.py`)
 
-- [ ] Parse the header of every `ideas/*.md`, `plans/*.md` and `completed/*.md`.
-- [ ] Check:
+- [x] Parse the header of every `ideas/*.md`, `plans/*.md` and `completed/*.md`.
+- [x] Check:
   - the fields are present and the status is a fixed word;
   - every file has an index row with a matching stage;
   - every plan has an idea with the same number;
   - every completed plan has `## Completion notes`;
   - every `OI-NN` mentioned exists in `open_items.md`.
-- [ ] One failing case per check, using a copy of the planning folder in `tmp_path`.
+- [x] One failing case per check, using a copy of the planning folder in `tmp_path`.
 
 **Done when:** the test passes on the real folder, and every broken case fails with a readable message.
 
 ## Phase W4 — Rules file
 
-- [ ] `CLAUDE.md`: name `open_items.md`, `CHANGELOG.md` and the baseline in the *Keep updated* table; point to the header format; keep it under 80 lines.
+- [x] `CLAUDE.md`: name `open_items.md`, `CHANGELOG.md` and the baseline in the *Keep updated* table; point to the header format; keep it under 80 lines.
 
 **Done when:** the rules file names the new files and stays under 80 lines.
 
@@ -78,8 +78,8 @@ The goal: never redo work that already landed.
 | The machine restarts, or OneDrive syncs mid-edit | Uncommitted files may be half edited, with no record of which | The checkpoint lists the files in progress; tests show whether they're whole |
 | A long gap between sessions | Someone has to re-read the conversation | Read the checkpoint, check, continue |
 
-- [ ] **Small tasks, ticked as they land.** Each plan task fits in one sitting. It is ticked the moment it's done, with its evidence: the test that passes, or the file and function.
-- [ ] **A checkpoint line in the header**, for plans with status `Building`:
+- [x] **Small tasks, ticked as they land.** Each plan task fits in one sitting. It is ticked the moment it's done, with its evidence: the test that passes, or the file and function.
+- [x] **A checkpoint line in the header**, for plans with status `Building`:
 
   ```markdown
   **Checkpoint:** 2026-10-28 14:10 · Phase V3, task 2 of 4 · done: verify_helpers.py + 6 tests passing
@@ -87,16 +87,16 @@ The goal: never redo work that already landed.
   ```
 
   It's updated at the end of every phase, before any long step, and whenever work stops.
-- [ ] **Phases end in a safe state.** Each phase's *Done when* leaves the full test suite passing. A phase boundary is always a clean place to stop.
-- [ ] **Resume procedure** in `CLAUDE.md`. At the start of a session:
+- [x] **Phases end in a safe state.** Each phase's *Done when* leaves the full test suite passing. A phase boundary is always a clean place to stop.
+- [x] **Resume procedure** in `CLAUDE.md`. At the start of a session:
   1. look for any plan with status `Building`;
   2. read its checkpoint and its first unticked task;
   3. run `git status` and the test suite to confirm the state matches the checkpoint;
   4. continue from there.
 
   Ticked tasks are checked, not redone. If the state doesn't match the checkpoint, stop and report before changing anything.
-- [ ] **A commit per phase** (decision W-A below): with the user's standing approval, each finished phase is committed on the feature branch. A restart then loses at most the phase in progress.
-- [ ] `tests/test_planning_docs.py`: a `Building` plan must have a `Checkpoint` line.
+- [x] **A commit per phase** (decision W-A below): with the user's standing approval, each finished phase is committed on the feature branch. A restart then loses at most the phase in progress.
+- [x] `tests/test_planning_docs.py`: a `Building` plan must have a `Checkpoint` line.
 
 **Done when:** a test session can be stopped mid-phase and resumed from the checkpoint, with no ticked task redone.
 
@@ -119,6 +119,10 @@ The goal: never redo work that already landed.
 | 2026-10-28 | **Plan.** Plans 009 and 010 already use the five-field header | The format was approved (G4); no rewrite needed later |
 | 2026-10-28 | **Plan.** Phase W5 added: checkpoints and a resume procedure for interrupted build work | User: "prevent redoing the whole thing when the process is interrupted" |
 | 2026-10-28 | Plan approved; W-A approved | User: "I like plan in 9 and 10"; "commit what is approved and tested" |
+| 2026-10-28 | **Build.** The index `Next` column mirrors each doc's `**Next:**` line, and the test checks both match | Otherwise the index's next actions would drift first |
+| 2026-10-28 | **Build.** Extra header lines (`Applies to`, `Asked for`, `Note`, `Branch`, ...) stay after the five fields | The five fields are what the index and the test read; the rest is context worth keeping |
+| 2026-10-28 | **Build.** Ideas whose plan is built stay `Idea — approved` until the plan is completed | Only completion changes an idea's stage |
+| 2026-10-28 | **Build.** 230 tests pass (221 + 9 in `test_planning_docs.py`); `CLAUDE.md` is 57 lines | |
 | 2026-10-28 | No retry or resume work for pipeline runs for now, and no idea for it | User: the pipelines are small and quick to run (1 s and 12 s); revisit if runs get long |
 
 ## Risks

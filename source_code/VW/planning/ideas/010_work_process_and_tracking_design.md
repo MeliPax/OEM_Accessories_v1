@@ -1,6 +1,10 @@
 # 010 — Work Process, Tracking and Indexing: Design
 
-**Status:** Idea — approved 2026-10-28 (G1–G9 as proposed). Plan: [plans/010](../plans/010_work_process_and_tracking.md)
+**Status:** Idea — approved (G1–G9, 2026-10-28)
+**Updated:** 2026-10-28
+**Next:** build plan 010
+**Links:** plan [010](../plans/010_work_process_and_tracking.md) · rules in [../../CLAUDE.md](../../CLAUDE.md)
+**Summary:** The idea → plan → build → completed process, what we track and where, and indexing so status is read without loading whole files.
 **Applies to:** all VW work: the planning folder, the docs, and how an agent finds what was done
 **Asked for:**
 - every new task goes idea → planning → implementation → moved to completed and documented;

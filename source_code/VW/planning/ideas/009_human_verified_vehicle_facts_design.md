@@ -1,6 +1,10 @@
 # 009 — Human-Verified Vehicle Facts: Design
 
-**Status:** Idea — approved 2026-10-28 (V1–V8 as proposed). Plan: [plans/009](../plans/009_human_verified_vehicle_facts.md)
+**Status:** Idea — approved (V1–V8, 2026-10-28)
+**Updated:** 2026-10-28
+**Next:** build plan 009
+**Links:** plan [009](../plans/009_human_verified_vehicle_facts.md)
+**Summary:** A verified: section per vehicle YAML records what a person confirmed was never offered, so the flags it explains stop coming back.
 **Applies to:** both pipelines. Facts live in `config/vehicles/<model>.yaml`; the check runs on the vehicle ingest's validation flags and the accessory lookup and coverage flags.
 **Asked for:** a way to record that a person has confirmed some facts about specific vehicles, especially what was **never offered** (years, trims, other options). Flags those facts explain stop coming back as errors and warnings. The config acts as a final check on whether a flag is still valid.
 

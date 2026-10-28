@@ -1,7 +1,7 @@
 # VW Data Issues Log
 
 **Purpose:** a running log of the data issues found in the VW source files, how the pipeline handles each one, and what still needs action. It closes with the data boundaries and definitions the pipeline uses, so everyone reads the numbers the same way.
-**Last updated:** 2026-10-27
+**Last updated:** 2026-10-28
 **Sources reviewed:**
 
 | Source | File | Received |
@@ -382,7 +382,7 @@
 | Unmatched | A part-year with no vehicle keeps an empty model number, goes to the review file, and is left out of the export |
 | Duplicates | Rows identical on every column (except the row number) are copies and are removed; rows for the same part and model that differ are flagged and kept |
 
-### Units and text (planned, ideas 006 and 007)
+### Units and text (ideas 006 and 007)
 
 | Item | Definition |
 |---|---|

@@ -2,9 +2,9 @@
 
 **Status:** Plan — approved (2026-10-28)
 **Updated:** 2026-10-28
-**Next:** build Phases V1–V3; V4 needs the name to record as `verified_by` for the first two entries
-**Links:** idea [009](../ideas/009_human_verified_vehicle_facts_design.md) (V1–V8) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md), [003](003_accessory_model_matching.md) · feeds idea [005](../ideas/005_pipeline_report_card_design.md) (the `VERIFIED` action status)
-**Summary:** A `verified:` section per vehicle YAML records facts a person confirmed; a final `verify` step in both pipelines downgrades the flags those facts explain, and turns contradictions into errors.
+**Next:** build after plans 010 and 011 (idea 011 DOC-10); Phase V4 needs the verified_by name (OI-12)
+**Links:** idea [009](../ideas/009_human_verified_vehicle_facts_design.md) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md), [003](003_accessory_model_matching.md) · feeds idea [005](../ideas/005_pipeline_report_card_design.md)
+**Summary:** A verified: section per vehicle YAML and a final verify step in both pipelines: matched flags drop to info, contradictions become errors.
 
 ## Outcome
 

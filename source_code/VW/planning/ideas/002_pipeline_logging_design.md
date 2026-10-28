@@ -1,8 +1,10 @@
 # 002 — Pipeline Logging: Design
 
-**Status:** Idea — all decisions made (L1–L6 accepted 2026-10-26)
-**Related plan:** [plans/002_pipeline_logging.md](../plans/002_pipeline_logging.md)
-**Used by:** [plans/001_vw_model_ingest_mvp.md](../plans/001_vw_model_ingest_mvp.md) (every phase)
+**Status:** Idea — approved (L1–L6, 2026-10-26)
+**Updated:** 2026-10-26
+**Next:** completed with plan 002 once testing is signed off (OI-01)
+**Links:** plan [002](../plans/002_pipeline_logging.md) · used by plan [001](../plans/001_vw_model_ingest_mvp.md)
+**Summary:** Every pipeline step logs what ran, rows in and out, each value changed (before → after) and every flag.
 
 ## Goal
 
