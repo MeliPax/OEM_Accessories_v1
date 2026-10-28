@@ -20,6 +20,7 @@ from datetime import date
 
 import pandas as pd
 
+from pipeline.ingest_helpers import in_window
 from pipeline.logging_helpers import log_flag, log_info
 from pipeline.lookup_helpers import match_key, year_span
 from pipeline.message_helpers import verifiable_codes
@@ -142,6 +143,13 @@ def vehicle_contradictions(ctx, facts, vehicles, step='verify'):
                      entry=fact['label'], what=what, year=int(row['model_year']), vehicle_id=row['vehicle_id'])
             count += 1
     return count
+
+
+def facts_in_window(facts, settings):
+    """(facts with a year inside the window, facts entirely outside it). Facts outside are still true but
+    can't match this run's flags, so they aren't reported unused; contradiction checks still use every fact."""
+    inside = [f for f in facts if any(in_window(y, settings) for y in f['years'])]
+    return inside, [f for f in facts if f not in inside]
 
 
 def drop_verified(rows, verified):

@@ -71,6 +71,7 @@ def load_settings(config_dir):
         for key in YEAR_RULES[rule]:
             if not dataset.get(key):
                 errors.append(f'CONFG_VALUE_INVALID: datasets.{name}: year_rule {rule} needs {key}')
+        errors += _dataset_window_errors(name, dataset, min_year, max_year)
 
     logging_block = settings.get('logging') or {}
     keep_runs = logging_block.get('keep_runs', 30)
@@ -79,6 +80,38 @@ def load_settings(config_dir):
 
     _raise_if(errors, 'pipeline.yaml')
     return settings
+
+
+def _dataset_window_errors(name, dataset, min_year, max_year):
+    """A dataset's own window may only narrow the shared one: years outside it have no vehicles to match."""
+    errors = []
+    lo, hi = dataset.get('min_model_year'), dataset.get('max_model_year')
+    for key, value in (('min_model_year', lo), ('max_model_year', hi)):
+        if value is not None and not _is_year(value):
+            errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} must be a 4-digit year or empty, got {value!r}')
+    if errors or not _is_year(min_year):
+        return errors
+    if lo is not None and lo < min_year:
+        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.min_model_year ({lo}) is before the shared '
+                      f'min_model_year ({min_year})')
+    if _is_year(max_year):
+        for key, value in (('min_model_year', lo), ('max_model_year', hi)):
+            if value is not None and value > max_year:
+                errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.{key} ({value}) is after the shared '
+                              f'max_model_year ({max_year})')
+    if lo is not None and hi is not None and hi < lo:
+        errors.append(f'CONFG_VALUE_INVALID: datasets.{name}.max_model_year ({hi}) is before its min_model_year ({lo})')
+    return errors
+
+
+def dataset_settings(settings, dataset):
+    """Settings with the year window this dataset uses: its own min/max_model_year, else the shared ones."""
+    own = (settings.get('datasets') or {}).get(dataset) or {}
+    out = dict(settings)
+    for key in ('min_model_year', 'max_model_year'):
+        if own.get(key) is not None:
+            out[key] = own[key]
+    return out
 
 
 def _is_year(value):

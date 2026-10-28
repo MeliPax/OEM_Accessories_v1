@@ -34,7 +34,8 @@ from pipeline.lookup_helpers import coverage, fetch, load_vehicle_index, lookup_
 from pipeline.message_helpers import join_causes, join_fix, load_messages, message_for
 from pipeline.parse_helpers import build_matchers, match_model, tokenize
 from pipeline.text_helpers import clean_text, link_host
-from pipeline.verify_helpers import accessory_contradictions, drop_verified, verified_report, verify_flags
+from pipeline.verify_helpers import (accessory_contradictions, drop_verified, facts_in_window, verified_report,
+                                     verify_flags)
 
 VW_DIR = Path(__file__).resolve().parents[1]
 PIPELINE = 'vw_accessories'
@@ -720,7 +721,7 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
                  output_dir=None):
     """Run every step. Returns (status, summary, model_dict)."""
     config_dir, db_dir = Path(config_dir), Path(db_dir)
-    settings = cfg.load_settings(config_dir)
+    settings = cfg.dataset_settings(cfg.load_settings(config_dir), DATASET)    # the accessory year window
     messages = load_messages(config_dir / 'messages.yaml')
     spec = cfg.load_accessory_config(config_dir, settings)
     source = Path(source) if source else VW_DIR / spec['source']
@@ -808,16 +809,23 @@ def run_pipeline(config_dir=VW_DIR / 'config', db_dir=VW_DIR / 'db', source=None
         run_step(ctx, 'build_dict', build, named, conditions={'one_row_per': 'part, applicable year, vehicle'})
 
         def cover(df):
-            state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx)
+            state['vehicle_review'] = coverage(state['index'], state['keys'], taxonomy, ctx,
+                                               min_year=settings['min_model_year'],
+                                               max_year=settings.get('max_model_year'))
             return df
 
-        run_step(ctx, 'coverage', cover, named, conditions={'direction': 'vehicle DB -> accessories'})
+        run_step(ctx, 'coverage', cover, named, conditions={'direction': 'vehicle DB -> accessories',
+                                                            'window': window})
         run_step(ctx, 'validate', lambda df: check_quality(df, spec, ctx), named,
                  conditions={'rules': ', '.join(spec['dq_rules']), 'fitment_hints': len(spec['fitment_hints'])})
 
         # the final check: flags a verified fact explains drop to info; contradictions become errors (idea 009)
         def verify(df):
-            rows, verified = verify_flags(ctx, state['verified'])
+            facts, outside = facts_in_window(state['verified'], settings)
+            if outside:
+                log_info(ctx, 'verify', 'OUTSIDE WINDOW', window=window, facts=len(outside),
+                         entries=', '.join(f['label'] for f in outside))
+            rows, verified = verify_flags(ctx, facts)
             contradicted = accessory_contradictions(ctx, state['verified'], state['index'], taxonomy['make'])
             for d in state['model_dict'].values():
                 hit = [(c, k) in verified for c, k in zip(d['match_status'], d['match_key'])]

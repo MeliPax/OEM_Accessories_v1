@@ -245,6 +245,7 @@ New `pipeline/lookup_helpers.py`:
 | 2026-10-27 | **Build notes.** Change and flag logs gained a `record` column: the vehicle_id, or `ACC-<source row>-<part>` for accessory rows | Accessory rows have no vehicle_id; every logged row must still be traceable |
 | 2026-10-27 | **Build notes.** Fitment hint words are config (`fitment_hints` in `accessories.yaml`); 16 descriptions noted today | No hard-coded words |
 | 2026-10-27 | **Variant replaces Trim** in the dict and the export: the vehicle's standardized fields joined in config order (trim > special edition > appearance > performance > technology > engine > transmission > drivetrain > body style), empty fields skipped; `Base` when none has a value (`base_label` / `base_when: all_fields_empty` in `accessories.yaml`). Today: 64 distinct variants, 16 vehicles `Base`, 0 blank cells | User: 56 of 269 vehicles had no trim; build from parsed fields (not raw text) so a vehicle reads the same every year; the Base keyword and its rule are config, not code |
+| 2026-10-28 | **Accessory year window 2024+.** `datasets.accessories.min_model_year: 2024` in `pipeline.yaml` narrows the shared window (2020) for accessories only; vehicles stay at 2020+. Coverage checks vehicle years inside the accessory window only; verified facts entirely outside it are logged (`OUTSIDE WINDOW`), not flagged unused. Unique rows 1,357 -> 1,028, keys 71 -> 29, lookup errors 3 -> 2, review rows 241 -> 109 | User: process accessories from 2024 onward; a config change, not a new idea |
 
 ## Risks
 

@@ -144,6 +144,11 @@ def filter_by_year_window(df, settings, dataset, ctx=None, step='year_window'):
     return kept
 
 
+def in_window(year, settings):
+    return year >= settings['min_model_year'] and (settings.get('max_model_year') is None
+                                                   or year <= settings['max_model_year'])
+
+
 def clip_years(min_year_value, max_year_value, settings):
     """Applicable years for a range, clipped to the window (D15): 2018-2022 at min 2020 -> [2020, 2021, 2022]."""
     lo = max(int(min_year_value), settings['min_model_year'])

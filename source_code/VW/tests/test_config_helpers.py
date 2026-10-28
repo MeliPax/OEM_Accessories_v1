@@ -142,6 +142,32 @@ def test_shared_gti_alias_leaves_vw_descriptions_unchanged(taxonomy):
     assert all(clean_value(d, taxonomy['aliases'])[0] == clean_value(d, without)[0] for d in descriptions)
 
 
+# ---------------------------------------------------------------- per-dataset year window
+
+def test_accessories_narrow_the_shared_window_and_vehicles_keep_it():
+    settings = cfg.load_settings(CONFIG_DIR)
+    assert (settings['min_model_year'], settings.get('max_model_year')) == (2020, None)
+    accessories = cfg.dataset_settings(settings, 'accessories')
+    assert (accessories['min_model_year'], accessories.get('max_model_year')) == (2024, None)
+    assert cfg.dataset_settings(settings, 'vw_models')['min_model_year'] == 2020
+
+
+@pytest.mark.parametrize('old, new, message', [
+    ('    min_model_year: 2024 ', '    min_model_year: 2018 ',
+     'datasets.accessories.min_model_year (2018) is before the shared min_model_year (2020)'),
+    ('    min_model_year: 2024 ', '    min_model_year: soon ',
+     'datasets.accessories.min_model_year must be a 4-digit year or empty'),
+    ('    max_model_year:            ', '    max_model_year: 2023       ',
+     'datasets.accessories.max_model_year (2023) is before its min_model_year (2024)'),
+    ('max_model_year:               ', 'max_model_year: 2022         ',
+     'datasets.accessories.min_model_year (2024) is after the shared max_model_year (2022)'),
+])
+def test_a_dataset_window_outside_the_shared_one_is_rejected(config_copy, old, new, message):
+    replace_in(config_copy / 'pipeline.yaml', old, new)
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        cfg.load_settings(config_copy)
+
+
 # ---------------------------------------------------------------- verified facts (idea 009)
 
 def load_verified(config_dir):

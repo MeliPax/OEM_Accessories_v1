@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 
 from pipeline.logging_helpers import end_run, log_flag, start_run
-from pipeline.verify_helpers import (accessory_contradictions, drop_verified, match_flag, vehicle_contradictions,
-                                     verify_flags)
+from pipeline.verify_helpers import (accessory_contradictions, drop_verified, facts_in_window, match_flag,
+                                     vehicle_contradictions, verify_flags)
 
 GOLF_R = {'file': 'golf.yaml', 'entry': 1, 'label': 'golf.yaml #1', 'model': 'Golf', 'submodel': 'R',
           'vehicle': 'Golf R', 'kind': 'never_offered', 'years': {2020, 2021}, 'category': '', 'values': set(),
@@ -87,6 +87,12 @@ def test_a_fact_that_matches_nothing_is_reported(ctx):
     verify_flags(ctx, [GOLF_R], today=BEFORE)
     unused = [f for f in ctx['flags'] if f['code'] == 'ACCESS_VERIFY_ENTRY_UNUSED']
     assert len(unused) == 1 and unused[0]['severity'] == 'info' and unused[0]['record'] == 'golf.yaml #1'
+
+
+def test_facts_outside_the_window_are_set_aside():
+    inside, outside = facts_in_window([GOLF_R, TAOS_2027], {'min_model_year': 2024, 'max_model_year': None})
+    assert inside == [TAOS_2027] and outside == [GOLF_R]
+    assert facts_in_window([GOLF_R], {'min_model_year': 2021, 'max_model_year': None}) == ([GOLF_R], [])
 
 
 def test_review_rows_of_verified_flags_are_left_out():

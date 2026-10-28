@@ -2,7 +2,14 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-28 — Human-verified vehicle facts (plan 009)
+## 2026-10-28 — Accessories from model year 2024 (plan 003 config)
+
+- `pipeline.yaml`: a dataset can narrow the shared year window. `datasets.accessories.min_model_year: 2024`; the vehicle ingest keeps 2020+. A dataset window outside the shared one is a `CONFG_VALUE_INVALID` error.
+- Coverage checks only vehicle years inside the accessory window, so 2020–2023 vehicles aren't flagged as having no parts.
+- Verified facts entirely outside the window are logged as `OUTSIDE WINDOW`, not flagged unused.
+- Today's data: unique accessory rows 1,357 -> 1,028, keys 71 -> 29, lookup errors 3 -> 2, review rows 241 -> 109, export 14 -> 10 sheets.
+
+## 2026-10-28 — Human-verified vehicle facts (plan 009) · `05acbae`
 
 - New `verified:` section in `config/vehicles/<model>.yaml`: `never_offered` years or options, and `no_parts_expected` until a date. Each entry needs a reason, `verified_by` and `verified_on`, and is validated at load.
 - New final `verify` step in both pipelines:

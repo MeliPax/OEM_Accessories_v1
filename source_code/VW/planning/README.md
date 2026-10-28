@@ -73,13 +73,14 @@ Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_da
 | Measure | Value |
 |---|---|
 | Vehicles in `vehicles.csv` | 269 (54 rows excluded by the year window) |
-| Accessory rows: read / in window / unique (part, model) | 24,396 / 13,051 / 1,357 |
-| Lookup keys: total / found / missed / verified | 71 / 64 / 7 / 4 (3 errors left) |
-| Dict rows / exported rows / export sheets | 25,796 / 25,345 / 14 |
+| Accessory year window | 2024 onward (`datasets.accessories.min_model_year`); vehicles 2020 onward |
+| Accessory rows: read / in window / unique (part, model) | 24,396 / 9,675 / 1,028 (13,051 / 1,357 at 2020+) |
+| Lookup keys: total / found / missed / verified | 29 / 27 / 2 / 0 (2 errors: ID.4, ID. Buzz 2026); 71 / 64 / 7 / 4 at 2020+ |
+| Dict rows / exported rows / export sheets | 9,481 / 9,388 / 10 (25,796 / 25,345 / 14 at 2020+) |
 | Vehicles with no parts | 14 (model year 2027) |
-| Accessory review rows | 241 (467 before plan 009) |
+| Accessory review rows | 109 (241 at 2020+) |
 | Part numbers restored / unproven | 704 / 0 |
-| Tests | 253 passing |
+| Tests | 262 passing |
 
 ## Index
 

@@ -214,9 +214,10 @@ def lookup_report(results):
 
 # ---------------------------------------------------------------- coverage: vehicles that get no parts
 
-def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage'):
+def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage', min_year=None, max_year=None):
     """DB vehicles whose (model, submodel, year) no accessory covers. One flag per key (with the vehicle
     count and the years that model's accessories do cover); a model with no parts at all gets one flag.
+    Only vehicle years inside the accessory window (min_year..max_year) are checked.
     Returns review rows (one per vehicle)."""
     catalogue = ctx['messages'] if ctx else default_messages()
     make = taxonomy['make']
@@ -225,8 +226,10 @@ def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage'):
     for m, s, y in keys:
         accessory_years.setdefault((m, s), set()).add(y)
     rows, flagged_models = [], set()
+    in_window = {k: v for k, v in vehicle_index['index'].items()
+                 if (min_year is None or k[2] >= min_year) and (max_year is None or k[2] <= max_year)}
 
-    for (model, submodel, year), vehicles in sorted(vehicle_index['index'].items(),
+    for (model, submodel, year), vehicles in sorted(in_window.items(),
                                                      key=lambda kv: (kv[0][0], kv[0][1] or '', kv[0][2])):
         if (model, submodel, year) in keys:
             continue
@@ -255,7 +258,8 @@ def coverage(vehicle_index, keys, taxonomy, ctx=None, step='coverage'):
                          'model_number': v['model_number'], 'code': code, 'severity': m['severity'],
                          'message': m['message'], 'checked': checked, 'found': found,
                          'causes': join_causes(m['causes']), 'fix': join_fix(m['fix'])})
-    log_info(ctx, step, 'COVERAGE', vehicle_keys=len(vehicle_index['index']),
+    log_info(ctx, step, 'COVERAGE', vehicle_keys=len(in_window),
+             outside_window=len(vehicle_index['index']) - len(in_window),
              keys_without_parts=len({r['match_key'] for r in rows}), vehicles_without_parts=len(rows))
     return rows
 

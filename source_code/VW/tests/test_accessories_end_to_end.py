@@ -1,6 +1,10 @@
-"""Full runs of the accessory pipeline on today's data, after a vehicle ingest into a temporary db/ folder."""
+"""Full runs of the accessory pipeline on today's data, after a vehicle ingest into a temporary db/ folder.
+
+acc_run uses the real config: accessories from 2024 (datasets.accessories.min_model_year), vehicles from 2020.
+acc_run_2020 removes that override, so accessories fall back to the shared 2020 window."""
 
 import re
+import shutil
 
 import pandas as pd
 import pytest
@@ -14,7 +18,11 @@ from pipeline.logging_helpers import PipelineFatal
 
 STEPS = ['config', 'ingest', 'part_numbers', 'staging', 'year_window', 'clean_text', 'dedupe', 'part_number_review',
          'clean', 'resolve_names', 'lookup', 'build_dict', 'coverage', 'validate', 'verify', 'export']
-MISSES = {
+MISSES = {                                               # accessories 2024+
+    'volkswagen|id.4|(base)|2026': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
+    'volkswagen|id. buzz|(base)|2026': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
+}
+MISSES_2020 = {                                          # accessories 2020+ (the shared window)
     'volkswagen|arteon|(base)|2022': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
     'volkswagen|arteon|(base)|2023': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
     'volkswagen|id.4|(base)|2026': 'ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN',
@@ -38,34 +46,59 @@ def acc_run(tmp_path_factory):
     return db, out, status, summary, model_dict
 
 
+@pytest.fixture(scope='module')
+def acc_run_2020(tmp_path_factory):
+    config = tmp_path_factory.mktemp('config2020')
+    shutil.copytree(CONFIG_DIR, config, dirs_exist_ok=True)
+    replace_in(config / 'pipeline.yaml', '    min_model_year: 2024 ', '    min_model_year:      ')
+    db = tmp_path_factory.mktemp('db2020')
+    out = tmp_path_factory.mktemp('output2020')
+    run_ingest.run(db_dir=db, run_id='ingest1')
+    status, summary, model_dict = run_pipeline(config_dir=config, db_dir=db, run_id='acc2020', output_dir=out)
+    return db, out, status, summary, model_dict
+
+
 def test_every_step_is_logged_and_rows_reconcile(acc_run):
     db, _, status, summary, _ = acc_run
     steps = read(db / 'logs' / 'steps.csv')
     assert steps[steps['run_id'] == 'acc1']['step'].tolist() == STEPS
-    assert status == 'ok_with_errors'                     # 3 of the 7 missing keys are still errors to review
+    assert status == 'ok_with_errors'                     # ID.4 and ID. Buzz 2026 are errors to review
     assert (summary['rows_read'], summary['rows_staged'], summary['rows_in_window'], summary['rows_unique']) == \
-           (24396, 20399, 13051, 1357)
-    assert (summary['model_names'], summary['unknown_model_names']) == (14, 0)
-    assert read(db / 'dq' / 'accessory_runs.csv').iloc[-1]['run_id'] == 'acc1'
+           (24396, 20399, 9675, 1028)
+    assert (summary['model_names'], summary['unknown_model_names']) == (10, 0)
+    runs = read(db / 'dq' / 'accessory_runs.csv').iloc[-1]
+    assert (runs['run_id'], runs['min_model_year'], runs['max_model_year']) == ('acc1', '2024', '')
 
 
-def test_lookup_finds_64_of_71_keys_and_explains_the_7_misses(acc_run):
+def test_the_accessory_window_is_2024_while_vehicles_stay_at_2020(acc_run):
+    db, *_, model_dict = acc_run
+    vehicles = read(db / 'final' / 'vehicles.csv')
+    assert vehicles['model_year'].astype(int).min() == 2020 and len(vehicles) == 269
+    assert min(d['applicable_year'].min() for d in model_dict.values()) == 2024       # 2018-2026 -> 2024-2026
+    flags = read(db / 'logs' / 'flags' / 'acc1.csv')
+    window = flags[flags['code'] == 'ACCESS_YEAR_OUT_OF_WINDOW']
+    assert len(window) == 1 and '2024..(no max)' in window['found'].iloc[0] + window['checked'].iloc[0]
+
+
+def test_lookup_finds_27_of_29_keys_and_explains_the_2_misses(acc_run):
     db, _, _, summary, _ = acc_run
-    assert (summary['keys'], summary['keys_found'], summary['keys_missed']) == (71, 64, 7)
+    assert (summary['keys'], summary['keys_found'], summary['keys_missed']) == (29, 27, 2)
     report = read(db / 'dq' / 'accessory_lookup.csv')
     missed = report[report['code'] != '']
     assert dict(zip(missed['match_key'], missed['code'])) == MISSES
     flags = read(db / 'logs' / 'flags' / 'acc1.csv')
     lookup_flags = flags[flags['code'].str.startswith('ACCESS_LOOKUP_')]
-    assert len(lookup_flags) == 7                                         # once per key, not per part
+    assert len(lookup_flags) == 2                                         # once per key, not per part
     for _, flag in lookup_flags.iterrows():
         assert '/final/vehicles.csv model=' in flag['checked'] and '2) config/vehicles/' in flag['checked']
         assert 'drafted from data, not reviewed' in flag['checked'] and flag['fix'].startswith('1) ')
 
 
 def test_vehicles_without_parts_are_the_2027_vehicles(acc_run):
+    """Coverage checks vehicle years inside the accessory window only: 2020-2023 vehicles are not flagged."""
     db, _, _, summary, _ = acc_run
     assert summary['vehicles_without_parts'] == 14
+    assert 'ACCESS_COVER_MODEL_NO_PARTS' not in set(read(db / 'logs' / 'flags' / 'acc1.csv')['code'])
     flags = read(db / 'logs' / 'flags' / 'acc1.csv')
     cover = flags[flags['code'] == 'ACCESS_COVER_VEHICLE_NO_PARTS']
     assert sorted(s.split(' - ')[0] for s in cover['subject']) == [
@@ -73,8 +106,46 @@ def test_vehicles_without_parts_are_the_2027_vehicles(acc_run):
         'volkswagen|taos|(base)|2027', 'volkswagen|tiguan|(base)|2027']
 
 
-def test_dict_unmatched_rows_equal_the_review_part_rows_plus_the_verified_ones(acc_run):
+def test_dict_unmatched_rows_equal_the_review_part_rows(acc_run):
     db, _, _, summary, model_dict = acc_run
+    assert list(model_dict) == ['Atlas', 'Atlas Cross Sport', 'GTI', 'Golf R', 'ID. Buzz', 'ID.4', 'Jetta',
+                                'Jetta GLI', 'Taos', 'Tiguan']
+    unmatched = pd.concat([d[d['model_number'] == ''] for d in model_dict.values()])
+    review = read(db / 'review' / 'accessory_review.csv')
+    assert len(unmatched) == summary['unmatched_part_years'] == len(review[review['type'] == 'part']) == 93
+    assert set(unmatched['match_status']) == set(MISSES.values())
+    assert len(review[review['type'] == 'vehicle']) == 14 and summary['review_rows'] == len(review) == 109
+
+
+def test_verified_facts_outside_the_window_are_not_reported_unused(acc_run):
+    db, _, _, summary, _ = acc_run
+    flags = read(db / 'logs' / 'flags' / 'acc1.csv')
+    assert not flags['code'].isin(['ACCESS_VERIFY_ENTRY_UNUSED', 'ACCESS_VERIFY_CONTRADICTED']).any()
+    assert (summary['flags_verified'], summary['verified_contradicted']) == (0, 0)
+    log = (db / 'logs' / 'runs' / 'acc1.log').read_text(encoding='utf-8')
+    assert 'OUTSIDE WINDOW | window=2024..(no max) | facts=2 | entries=arteon.yaml #1, golf.yaml #1' in log
+
+
+# ---------------------------------------------------------------- the shared 2020 window (override removed)
+
+def test_without_the_override_accessories_use_the_shared_window(acc_run_2020):
+    db, _, status, summary, model_dict = acc_run_2020
+    assert status == 'ok_with_errors'                     # 3 of the 7 missing keys are still errors to review
+    assert (summary['rows_in_window'], summary['rows_unique'], summary['model_names']) == (13051, 1357, 14)
+    assert (summary['keys'], summary['keys_found'], summary['keys_missed']) == (71, 64, 7)
+    report = read(db / 'dq' / 'accessory_lookup.csv')
+    missed = report[report['code'] != '']
+    assert dict(zip(missed['match_key'], missed['code'])) == MISSES_2020
+    assert read(db / 'dq' / 'accessory_runs.csv').iloc[-1]['min_model_year'] == '2020'
+    golf = model_dict['Golf']                                                        # base Golf only (A2)
+    assert set(golf['model_number']) == {'AU22M2', 'AU22MS', 'AU23M2', 'AU23MS'}
+    assert model_dict['GTI']['applicable_year'].min() >= 2020                        # clipped (D15)
+    rows = golf[golf['vehicle_id'] == 'VW-2020-AU22M2']
+    assert len(rows) and set(rows['variant']) == {'Comfortline Manual 5-Door'}
+
+
+def test_dict_unmatched_rows_equal_the_review_part_rows_plus_the_verified_ones(acc_run_2020):
+    db, _, _, summary, model_dict = acc_run_2020
     assert len(model_dict) == 14 and 'GTI' in model_dict and 'Golf' in model_dict
     unmatched = pd.concat([d[d['model_number'] == ''] for d in model_dict.values()])
     review = read(db / 'review' / 'accessory_review.csv')
@@ -82,13 +153,13 @@ def test_dict_unmatched_rows_equal_the_review_part_rows_plus_the_verified_ones(a
     verified = unmatched[unmatched['match_status'] == 'never_offered']
     assert len(unmatched) == summary['unmatched_part_years'] == 451                  # nothing deleted
     assert len(verified) == 226 and len(parts) == 451 - 226                          # Golf R 108 + Arteon 118
-    assert set(unmatched['match_status']) == set(MISSES.values()) | {'never_offered'}
+    assert set(unmatched['match_status']) == set(MISSES_2020.values()) | {'never_offered'}
     assert len(review[review['type'] == 'vehicle']) == 14
 
 
-def test_verified_facts_turn_four_lookup_errors_into_info(acc_run):
-    db, _, _, summary, _ = acc_run
-    flags = read(db / 'logs' / 'flags' / 'acc1.csv')
+def test_verified_facts_turn_four_lookup_errors_into_info(acc_run_2020):
+    db, _, _, summary, _ = acc_run_2020
+    flags = read(db / 'logs' / 'flags' / 'acc2020.csv')
     lookup = flags[flags['code'].str.startswith('ACCESS_LOOKUP_')]
     verified = lookup[lookup['verified_entry'] != '']
     assert sorted(verified['record']) == ['volkswagen|arteon|(base)|2022', 'volkswagen|arteon|(base)|2023',
@@ -110,17 +181,14 @@ def test_dict_shape(acc_run):
     assert {'model_number', 'variant', 'vehicle_id', 'applicable_year', 'match_key'} <= set(gti.columns)
     assert 'trim' not in gti.columns and (gti['model_number'] == '').sum() == 0 and (gti['variant'] != '').all()
     assert (gti['model_name_clean'] == 'Golf GTI').all() and (gti['submodel'] == 'GTI').all()
-    golf = model_dict['Golf']                                                        # base Golf only (A2)
-    assert set(golf['model_number']) == {'AU22M2', 'AU22MS', 'AU23M2', 'AU23MS'}
-    assert gti['applicable_year'].min() >= 2020                                      # clipped (D15)
+    assert sorted(gti['applicable_year'].unique()) == [2024, 2025, 2026]             # clipped (D15)
 
 
 @pytest.mark.parametrize('model, vehicle_id, variant', [
-    ('GTI', 'VW-2022-CD1PU2', 'Performance Manual'),
-    ('GTI', 'VW-2023-CD14UZ', '40th Anniversary Automatic'),
+    ('GTI', 'VW-2024-CD1PU2', 'Performance'),
+    ('GTI', 'VW-2025-DA1AUZ', 'Autobahn'),
     ('GTI', 'VW-2024-CD19UZ', 'Base'),                     # no field beyond model + submodel
     ('Atlas', 'VW-2026-CA37PR', 'Peak Edition'),            # raw text says "Atlas Peak": same label every year
-    ('Golf', 'VW-2020-AU22M2', 'Comfortline Manual 5-Door'),
 ])
 def test_variant_describes_each_vehicle(acc_run, model, vehicle_id, variant):
     *_, model_dict = acc_run
@@ -131,7 +199,7 @@ def test_variant_describes_each_vehicle(acc_run, model, vehicle_id, variant):
 def test_export_has_a_sheet_per_model_with_the_configured_columns(acc_run):
     _, out, _, summary, model_dict = acc_run
     path = out / 'acc1.xlsx'
-    assert summary['export_sheets'] == 14 and path.exists()
+    assert summary['export_sheets'] == 10 and path.exists()
     sheets = pd.read_excel(path, sheet_name=None, dtype=str)
     assert list(sheets) == list(model_dict)
     spec = cfg.load_accessory_config(CONFIG_DIR, cfg.load_settings(CONFIG_DIR))
@@ -139,7 +207,7 @@ def test_export_has_a_sheet_per_model_with_the_configured_columns(acc_run):
         assert list(sheet.columns) == list(spec['export']['columns'].values())
         assert sheet['Model Number'].notna().all()                                   # matched rows only (A13)
         assert len(sheet) == int((model_dict[name]['model_number'] != '').sum())
-    assert 'Year' in sheets['Golf'].columns and set(sheets['Golf']['Year']) == {'2020', '2021'}
+    assert set(sheets['GTI']['Year']) == {'2024', '2025', '2026'} and set(sheets['ID. Buzz']['Year']) == {'2025'}
 
 
 def test_every_exported_model_number_traces_to_a_lookup_line(acc_run):
@@ -179,9 +247,9 @@ def test_part_numbers_are_proven_by_make_and_model(acc_run):
     assert (report['make_model'] == report['make_model_part_number'] + report['make_model_model_name']).all()
 
     review = read(db / 'review' / 'accessory_review.csv')
-    pn = review[review['type'] == 'part_number']                       # in scope only: 1 part, 12 rows (P13)
+    pn = review[review['type'] == 'part_number']                       # in scope only: 1 part, 10 rows (P13)
     assert pn['code'].tolist() == ['ACCESS_STGNG_PART_NUMBER_RESTORED'] and pn['part_number'].tolist() == ['000071200']
-    assert pn['message'].iloc[0].endswith('restored to 000071200 from make&model (12 rows)')
+    assert pn['message'].iloc[0].endswith('restored to 000071200 from make&model (10 rows)')
 
     rows = pd.concat(model_dict.values())
     assert '71200' not in set(rows['part_number']) and set(rows.loc[rows['part_number_source'] == '71200',
@@ -191,9 +259,9 @@ def test_part_numbers_are_proven_by_make_and_model(acc_run):
 
 
 def test_comments_are_clean_and_keep_the_raw_text(acc_run):
-    """Idea 007 on today's file: 54 of 62 distinct comments change; no markup or pipes are left."""
+    """Idea 007 on today's file (2024+): 34 distinct comments change; no markup or pipes are left."""
     db, out, _, summary, model_dict = acc_run
-    assert (summary['texts_cleaned'], summary['links_flagged']) == (54, 0)
+    assert (summary['texts_cleaned'], summary['links_flagged']) == (34, 0)
     rows = pd.concat(model_dict.values())
     comments = set(rows['comments']) - {''}
     assert not [c for c in comments if '<' in c or '|' in c or 'salsify' in c or ' ' in c]
@@ -211,14 +279,14 @@ def test_labour_time_is_exported_in_hours(acc_run):
     review = read(db / 'review' / 'accessory_review.csv')
     value = review[review['type'] == 'value']
     assert value['code'].tolist() == ['ACCESS_CLEAN_UNIT_SUSPECT'] and value['part_number'].tolist() == ['3QF601025KAX1']
-    golf = pd.read_excel(out / 'acc1.xlsx', sheet_name='Golf')
-    assert 'Labour Time (hours)' in golf.columns and golf['Labour Time (hours)'].max() < 10
+    gti = pd.read_excel(out / 'acc1.xlsx', sheet_name='GTI')
+    assert 'Labour Time (hours)' in gti.columns and gti['Labour Time (hours)'].max() < 10
 
 
 def test_notebook_entry_point_without_export(acc_run):
     db, *_ = acc_run
     model_dict = build_accessory_model_dict(db_dir=db, export=False)
-    assert len(model_dict) == 14
+    assert len(model_dict) == 10
 
 
 def test_locked_export_file_stops_the_run(acc_run, monkeypatch, tmp_path):

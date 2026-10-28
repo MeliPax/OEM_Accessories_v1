@@ -129,7 +129,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 
 | File | Purpose |
 |---|---|
-| `pipeline.yaml` | Model year window (`min_model_year: 2020`, `max_model_year:` empty = no upper limit), source files, which fields a reused model number must keep across years, logging |
+| `pipeline.yaml` | Model year window (`min_model_year: 2020`, `max_model_year:` empty = no upper limit), shared by both pipelines. A dataset can narrow it under `datasets:`: accessories use `min_model_year: 2024` (vehicles stay at 2020; a dataset window outside the shared one is a config error). Also source files, which fields a reused model number must keep across years, logging |
 | `categories.yaml` | The taxonomy fields and whether each is single- or multi-value |
 | `models.yaml` | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`) |
 | `keywords.yaml` | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it) |

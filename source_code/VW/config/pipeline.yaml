@@ -1,7 +1,8 @@
 # Run settings for the VW pipeline. Taxonomy vocabulary lives in categories/models/keywords.yaml,
 # availability in vehicles/*.yaml.
 
-# Model year window, shared by every dataset (VW models and accessories).
+# Model year window, shared by every dataset (VW models and accessories). A dataset can narrow it with its
+# own min_model_year / max_model_year under datasets: (empty or left out = the shared value).
 min_model_year: 2020          # earliest model year processed (required, 4 digits)
 max_model_year:               # latest model year processed; empty = every available year from min onward
 
@@ -19,6 +20,8 @@ datasets:
     year_rule: range_overlap   # keep rows whose [start, end] range overlaps the window
     start_column: min_year
     end_column: max_year
+    min_model_year: 2024       # accessories from 2024 onward only; vehicles keep the shared 2020
+    max_model_year:            # empty = the shared max_model_year
 
 validation:
   # A model number may be reused across model years: the key is (model_number, model_year).
