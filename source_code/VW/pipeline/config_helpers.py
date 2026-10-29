@@ -614,6 +614,12 @@ def load_accessory_config(config_dir, settings):
     usable = known | set(ACCESSORY_DERIVED) | sources
     if not export.get('columns'):
         errors.append(f'CONFG_VALUE_INVALID: {where}: export.columns is empty')
+    by_header = {}
+    for name, header in (export.get('columns') or {}).items():
+        by_header.setdefault(str(header).strip().lower(), []).append(name)
+    for names in [n for n in by_header.values() if len(n) > 1]:
+        errors.append(f'CONFG_DUPLICATE_ENTRY: {where}: export.columns: header '
+                      f'"{export["columns"][names[0]]}" is used by {" and ".join(names)}')
     for name in list(export.get('columns') or {}) + list(export.get('sort_by') or []):
         if name not in usable:
             errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: export column {name!r} is not in the dict '

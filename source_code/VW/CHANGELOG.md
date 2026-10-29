@@ -2,7 +2,15 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-29 — Vehicle file template and `new_vehicle.py`
+## 2026-10-29 — Final export column names (plan 012)
+
+- The Excel export's headers are now `Part`, `ModelName`, `Description`, `Price`, `Hours`, `Comments`, `Variant`, `Year`, `Model`, set in `export.columns` in `accessories.yaml` and commented there as the final column names.
+- **`Model` changed meaning:** it was the model name and is now the VW model number. The name is `ModelName`.
+- Renamed: Part Number → Part, MSRP → Price, Labour Time (hours) → Hours, Model Number → Model.
+- Cost is no longer in the file; it stays in the dict and the review file. The dict keeps the pipeline names.
+- A header used twice in `export.columns` is a config error (`CONFG_DUPLICATE_ENTRY`).
+
+## 2026-10-29 — Vehicle file template and `new_vehicle.py` · `de5e084`
 
 - `config/vehicles/_template.yaml` shows how to fill a vehicle file: every category with its allowed values, option set examples (base, submodel, EV), the review status and the three kinds of verified fact.
 - `python new_vehicle.py "<Model>"` copies it to `config/vehicles/<model>.yaml` with make, model and the model's submodels filled in. It refuses a model not in `models.yaml`, a model that already has a file, and never overwrites.

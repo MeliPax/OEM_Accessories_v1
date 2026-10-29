@@ -30,7 +30,7 @@ part_number:
   restore: leading_zeros_only       # leading_zeros_only | never
   allowed_characters: A-Z0-9        # characters a proven part number may use (a regex character class)
   max_unproven_share: 0.01          # more rows than this not proven stops the run (the layout changed?)
-  export_as_text: true              # Part Number cells written as Excel text, so Excel never drops the zeros
+  export_as_text: true              # Part cells written as Excel text, so Excel never drops the zeros
 
 # Units (planning/ideas/006_labor_time_units_design.md). Each unit is defined by how many of it make one
 # hour; the multiplier is definitions[target_unit] / definitions[source_unit] (minutes -> hours = 1/60).
@@ -111,14 +111,16 @@ export:
   file_name: "{run_id}.xlsx"                    # run_id = vw_accessories_<YYYYMMDD_HHMMSS>
   include_unmatched: false                      # rows without a model number stay in the review file
   sort_by: [part_number, applicable_year, model_number]
-  columns:                                      # dict column: header in the file, in this order
-    part_number: Part Number
-    model_name_clean: Model                     # standard name (GTI -> Golf GTI); the sheet keeps the file's name
+  # FINAL COLUMN NAMES (plan 012): the headers of the output file, in this order (pipeline column: header).
+  # A column left out is not in the file (cost, for now). The headers apply to the Excel file only; the dict
+  # keeps the pipeline names. Each header is used once.
+  columns:
+    part_number: Part                           # written as Excel text (part_number.export_as_text)
+    model_name_clean: ModelName                 # standard name (GTI -> Golf GTI); the sheet keeps the file's name
     product_description: Description
-    msrp: MSRP
-    cost: Cost
-    labor_time: Labour Time (hours)             # converted per units: above (idea 006)
+    msrp: Price
+    labor_time: Hours                           # converted per units: above (idea 006)
     comments: Comments
     variant: Variant                            # built per the variant block above
     applicable_year: Year
-    model_number: Model Number
+    model_number: Model                         # the VW model number

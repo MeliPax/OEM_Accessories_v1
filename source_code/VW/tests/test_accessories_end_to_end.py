@@ -215,9 +215,13 @@ def test_export_has_a_sheet_per_model_with_the_configured_columns(acc_run):
     spec = cfg.load_accessory_config(CONFIG_DIR, cfg.load_settings(CONFIG_DIR))
     for name, sheet in sheets.items():
         assert list(sheet.columns) == list(spec['export']['columns'].values())
-        assert sheet['Model Number'].notna().all()                                   # matched rows only (A13)
+        assert list(sheet.columns) == ['Part', 'ModelName', 'Description', 'Price', 'Hours', 'Comments',
+                                       'Variant', 'Year', 'Model']                  # final names (plan 012)
+        assert sheet['Model'].notna().all()                                         # matched rows only (A13)
         assert len(sheet) == int((model_dict[name]['model_number'] != '').sum())
     assert set(sheets['GTI']['Year']) == {'2024', '2025', '2026'} and set(sheets['ID. Buzz']['Year']) == {'2025'}
+    assert set(sheets['GTI']['ModelName']) == {'Golf GTI'}                          # the name; Model is the number
+    assert 'cost' in model_dict['GTI'].columns and 'part_number' in model_dict['GTI'].columns   # dict unchanged
 
 
 def test_every_exported_model_number_traces_to_a_lookup_line(acc_run):
@@ -267,7 +271,7 @@ def test_part_numbers_are_proven_by_make_and_model(acc_run):
     assert '71200' not in set(rows['part_number']) and set(rows.loc[rows['part_number_source'] == '71200',
                                                                    'part_number']) == {'000071200'}
     atlas = pd.read_excel(out / 'acc1.xlsx', sheet_name='Atlas', dtype=str)
-    assert '000071200' in set(atlas['Part Number'])
+    assert '000071200' in set(atlas['Part'])
 
 
 def test_comments_are_clean_and_keep_the_raw_text(acc_run):
@@ -292,7 +296,7 @@ def test_labour_time_is_exported_in_hours(acc_run):
     value = review[review['type'] == 'value']
     assert value['code'].tolist() == ['ACCESS_CLEAN_UNIT_SUSPECT'] and value['part_number'].tolist() == ['3QF601025KAX1']
     gti = pd.read_excel(out / 'acc1.xlsx', sheet_name='GTI')
-    assert 'Labour Time (hours)' in gti.columns and gti['Labour Time (hours)'].max() < 10
+    assert 'Hours' in gti.columns and gti['Hours'].max() < 10
 
 
 def test_notebook_entry_point_without_export(acc_run):

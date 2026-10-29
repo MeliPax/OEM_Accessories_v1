@@ -10,6 +10,9 @@ from pipeline.clean_helpers import clean_value
 from pipeline.config_helpers import ConfigError
 
 
+FINAL_HEADERS = ['Part', 'ModelName', 'Description', 'Price', 'Hours', 'Comments', 'Variant', 'Year', 'Model']
+
+
 def load_all(config_dir):
     cfg.load_settings(config_dir)
     taxonomy = cfg.validate_taxonomy(cfg.load_taxonomy(config_dir))
@@ -101,7 +104,7 @@ def test_vehicle_years_per_model_and_submodel(option_sets):
 def test_accessory_config_is_valid(settings):
     spec = cfg.load_accessory_config(CONFIG_DIR, settings)
     assert spec['renames']['stockCode'] == 'part_number' and spec['types']['msrp'] == 'number'
-    assert list(spec['export']['columns'].values())[-3:] == ['Variant', 'Year', 'Model Number']
+    assert list(spec['export']['columns'].values()) == FINAL_HEADERS                 # plan 012
     assert spec['variant']['fields'][0] == 'trim' and spec['variant']['base_label'] == 'Base'
     pn = spec['part_number']
     assert spec['renames']['make&model'] == 'make_model' and pn['source_column'] == 'stockCode'
@@ -131,6 +134,7 @@ def test_accessory_config_is_valid(settings):
     ('      match_type: exact ', '      match_type: regex ', 'match_type must be one of exact, prefix'),
     ('      replace_with: Thule.com', '      replace_with: ""', 'link_rules #1: replace_with is empty'),
     ('remove_tags: [b,', 'remove_tags: [p, b,', 'tags p are both separators and remove_tags'),
+    ('    msrp: Price', '    msrp: model', 'export.columns: header "model" is used by msrp and model_number'),
 ])
 def test_broken_accessory_config_is_rejected(config_copy, settings, old, new, message):
     replace_in(config_copy / 'accessories.yaml', old, new)

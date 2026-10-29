@@ -8,7 +8,7 @@
 
 | OI | Item | Owner | Linked | Status |
 |---|---|---|---|---|
-| OI-01 | Sign off testing of plans 001, 002, 003, 006, 007, 008, 009, 010, so they can move to `completed/` | user | [plans](README.md#index) | Open |
+| OI-01 | Sign off testing of plans 001, 002, 003, 006, 007, 008, 009, 010, 012, so they can move to `completed/` | user | [plans](README.md#index) | Open |
 | OI-02 | Notebook cells for plans 001, 002, 003; added only while the notebook is closed | agent | [plan 003](plans/003_accessory_model_matching.md) | Open |
 | OI-03 | Review `config/vehicles/*.yaml`: all 10 are `drafted`; set `reviewed` with who and when | user | [plan 001](plans/001_vw_model_ingest_mvp.md) | Open |
 | OI-04 | Atlas 2020, ID.4 2026, ID. Buzz 2026: parts listed, no vehicle in the export. Missing vehicles or wrong year ranges? (Golf R and Arteon: verified never offered, plan 009) | data source | [DI-05](data_issues.md#di-05) | Open |
@@ -22,7 +22,7 @@
 | OI-12 | Name to record as `verified_by` for the Golf R 2020–2021 and Arteon 2022–2023 entries: **P.M** | user | [plan 009](plans/009_human_verified_vehicle_facts.md) | Closed 2026-10-28 |
 | OI-13 | Decisions DOC-1 to DOC-10 for the requirements register and documentation standard | user | [idea 011](ideas/011_requirements_and_documentation_design.md) | Open |
 | OI-14 | `db/review/accessory_review.csv` was overwritten outside the pipeline on 2026-10-28 at 09:04 (13 bare match keys instead of 467 rows). Rebuilt by the plan 009 real run (241 rows); the overwritten version was copied to the session scratchpad first (`accessory_review_overwritten_0904.csv`) | user | [idea 005](ideas/005_pipeline_report_card_design.md) | Closed 2026-10-28 |
-| OI-15 | Review plan 012 (final export column names) and decide E4–E6: `hours` lowercase, keep `columns:`, Excel file only | user | [plan 012](plans/012_final_export_columns.md) | Open |
+| OI-15 | Review plan 012 (final export column names) and decide E4–E6: `hours` lowercase, keep `columns:`, Excel file only | user | [plan 012](plans/012_final_export_columns.md) | Closed 2026-10-29 |
 
 ## Adding or closing an item
 
