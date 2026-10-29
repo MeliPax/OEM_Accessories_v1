@@ -135,7 +135,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 | `categories.yaml` | The taxonomy fields and whether each is single- or multi-value |
 | `models.yaml` | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`) |
 | `keywords.yaml` | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it) |
-| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person). A `verified:` section records facts a person confirmed, e.g. never offered in a year (see below) |
+| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person). A `verified:` section records facts a person confirmed, e.g. never offered in a year (see below). **New model:** `python new_vehicle.py "<Model>"` sets one up from [`vehicles/_template.yaml`](config/vehicles/_template.yaml), which shows every option and value |
 | `accessories.yaml` | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), **units** (labour minutes → hours), **comment cleaning** (separators, tags, link rules, allowed link hosts), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, columns and headers in order) |
 | `messages.yaml` | Severity, message, causes and fix for every flag code |
 
@@ -143,7 +143,7 @@ Everything the pipelines know lives in `config/` (YAML). The code doesn't change
 
 1. Run `python run_ingest.py` on the new VW export.
 2. New words show up as `VEH_PARSE_UNKNOWN_WORD` → add them to `config/keywords.yaml`.
-3. New models or years show up as `VEH_VALID_NOT_IN_CONFIG` → add or extend the option set in `config/vehicles/<model>.yaml`.
+3. New models or years show up as `VEH_VALID_NOT_IN_CONFIG` → add or extend the option set in `config/vehicles/<model>.yaml`. For a new model, add it to `config/models.yaml`, then run `python new_vehicle.py "<Model>"`: it copies the template to `config/vehicles/<model>.yaml` with make and model filled in (it never overwrites a file).
 4. Run `python run_accessories.py`. Check `db/review/accessory_review_<run_id>.csv`:
    - an `ACCESS_LOOKUP_*` code means accessory years have no vehicle; the fix steps say whether to rerun the ingest, add a year to the config, or ask the data source;
    - `ACCESS_COVER_VEHICLE_NO_PARTS` means vehicles have no parts yet, usually because the accessory file isn't updated for that model year.

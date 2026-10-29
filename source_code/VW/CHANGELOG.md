@@ -2,7 +2,13 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-28 — Run-id file names; part numbers proven inside the window
+## 2026-10-29 — Vehicle file template and `new_vehicle.py`
+
+- `config/vehicles/_template.yaml` shows how to fill a vehicle file: every category with its allowed values, option set examples (base, submodel, EV), the review status and the three kinds of verified fact.
+- `python new_vehicle.py "<Model>"` copies it to `config/vehicles/<model>.yaml` with make, model and the model's submodels filled in. It refuses a model not in `models.yaml`, a model that already has a file, and never overwrites.
+- Files in `config/vehicles/` starting with `_` are never read by the pipeline. A test checks that the template lists every keyword value and that all its examples load once uncommented.
+
+## 2026-10-28 — Run-id file names; part numbers proven inside the window · `da8ea5f`
 
 - Every file a run writes is named `<name>_<run_id>.csv` (run id = `<pipeline>_<YYYYMMDD_HHMMSS>`); nothing is overwritten. Readers take the newest file. The run registers and `steps.csv` stay one file each.
 - `accessory_runs.csv` records the files each accessory run used and wrote (`vehicles_file`, `review_file`, `lookup_file`, `verified_file`, `part_number_file`); the terminal line prints them.

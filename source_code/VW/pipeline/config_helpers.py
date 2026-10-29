@@ -293,7 +293,7 @@ def taxonomy_version(config_dir):
     """Short hash of the vocabulary + availability files, so outputs record which config made them."""
     config_dir = Path(config_dir)
     digest = hashlib.sha1()
-    for path in [config_dir / n for n in CONFIG_FILES[1:]] + sorted((config_dir / 'vehicles').glob('*.yaml')):
+    for path in [config_dir / n for n in CONFIG_FILES[1:]] + vehicle_files(config_dir):
         if path.exists():
             digest.update(path.name.encode())
             digest.update(path.read_bytes().replace(b'\r\n', b'\n'))
@@ -310,10 +310,16 @@ def keyword_values(taxonomy):
 
 # ---------------------------------------------------------------- option sets
 
+def vehicle_files(config_dir):
+    """config/vehicles/*.yaml, one per model. Files starting with _ (the template, _template.yaml) are
+    never read."""
+    return sorted(p for p in (Path(config_dir) / 'vehicles').glob('*.yaml') if not p.name.startswith('_'))
+
+
 def load_option_sets(config_dir, taxonomy):
     """Read config/vehicles/*.yaml into a flat list of option sets, and validate them."""
     vehicles_dir = Path(config_dir) / 'vehicles'
-    files = sorted(vehicles_dir.glob('*.yaml'))
+    files = vehicle_files(config_dir)
     if not files:
         raise ConfigError(f'CONFG_NO_VEHICLE_FILES: vehicles/: no option-set files found in {vehicles_dir}')
 
@@ -427,7 +433,7 @@ def load_verified(config_dir, taxonomy, option_sets):
     declared = vehicle_years(option_sets)
     facts, errors = [], []
 
-    for path in sorted((Path(config_dir) / 'vehicles').glob('*.yaml')):
+    for path in vehicle_files(config_dir):
         doc = read_yaml(path)
         model = doc.get('model')
         if model not in taxonomy['models']:

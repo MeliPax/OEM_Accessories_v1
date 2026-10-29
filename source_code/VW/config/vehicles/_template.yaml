@@ -1,0 +1,106 @@
+# TEMPLATE: one vehicle file = one model. Never read by the pipeline (files starting with _ are skipped).
+#
+# ---------------------------------------------------------------- start here
+# Copy it with the helper (fills make and model, picks the file name, never overwrites a file):
+#
+#     python new_vehicle.py "ID.4"            # from source_code/VW -> config/vehicles/id4.yaml
+#
+# or copy it by hand to config/vehicles/<model>.yaml and fill in model: below.
+# Then: uncomment and edit the examples you need, delete the rest, and run python run_ingest.py.
+# A mistake stops the run with a CONFG_ code that names this file, the set and the bad value.
+#
+# ---------------------------------------------------------------- the rules
+# - The file says what the model CAN have, per year range. It also says which years the model exists:
+#   a year not covered by any option set is reported as not in config (VEH_VALID_NOT_IN_CONFIG).
+# - Values are the normalized keyword values from keywords.yaml, spelled exactly as listed below.
+#   A value keywords.yaml can't produce is a config error (CONFG_UNKNOWN_REFERENCE).
+# - A category that is not listed in a set means "not offered" in those years.
+# - years are inclusive [start, end]; the same model + submodel can't have overlapping ranges.
+# - Start a new set whenever the options change from one year to the next.
+# - inventory_status (Limited Availability) is metadata, never an option.
+#
+# ---------------------------------------------------------------- categories and their values
+# (from keywords.yaml on 2026-10-29; add a new word there first, then use its value here)
+#
+#   trim                 Autobahn, Comfortline, Execline, Highline, PRO, PRO S, S, Trendline
+#   special_edition      1st Edition, 20th Anniversary, 35th Anniversary, 40th Anniversary, Black Edition,
+#                        Dune, Peak Edition, Rabbit Edition, United Edition, Wolfsburg Edition
+#   appearance_package   Black, R-Line
+#   technology_package   IQ.DRIVE
+#   performance_package  Performance
+#   engine               2.0L TSI, 3.6L FSI, Turbo
+#   transmission         Automatic, DSG Dual-Clutch, Manual
+#   drivetrain           AWD, FWD, RWD
+#   body_style           5-Door, Convertible, Coupe, Hatchback
+#   battery_supplier     LG Energy Solution, SK On
+
+# ---------------------------------------------------------------- who the file is for (required)
+make: Volkswagen                  # must match make: in models.yaml
+model:                            # exactly as in models.yaml, e.g. Golf, ID.4, ID. Buzz, e-Golf
+
+# ---------------------------------------------------------------- review status
+# drafted  = built from the data, not yet checked by a person (the default)
+# reviewed = a person checked it; fill reviewed_by and reviewed_on (YYYY-MM-DD)
+status: drafted
+reviewed_by:
+reviewed_on:
+
+# ---------------------------------------------------------------- option sets: what each year range can have
+option_sets:
+  # --- <model> (base): no submodel line
+  # - years: [2024, 2025]
+  #   trim: [Comfortline, Highline, Trendline]
+  #   engine: [2.0L TSI]
+  #   transmission: [Automatic]
+  #   drivetrain: [AWD, FWD]
+  #   body_style: [5-Door]
+  #   appearance_package: [R-Line]
+  #   technology_package: [IQ.DRIVE]
+  #
+  # - years: [2026, 2026]             # options changed in 2026 -> a new set
+  #   trim: [Comfortline, Highline]
+  #   special_edition: [Peak Edition]
+  #   drivetrain: [AWD]
+  #
+  # --- <model> <submodel>: a submodel defined under the model in models.yaml (GTI, R, Cross Sport, GLI)
+  # - submodel: GTI
+  #   years: [2024, 2026]
+  #   trim: [Autobahn]
+  #   performance_package: [Performance]
+  #   transmission: [Automatic, Manual]
+  #
+  # --- an EV: battery_supplier instead of engine
+  # - years: [2023, 2023]
+  #   trim: [PRO]
+  #   drivetrain: [AWD, RWD]
+  #   battery_supplier: [LG Energy Solution, SK On]
+
+# ---------------------------------------------------------------- verified facts (optional)
+# Facts a person confirmed, so a flag that keeps coming back is explained once. Each entry needs
+# exactly one of never_offered / no_parts_expected, plus reason, verified_by and verified_on.
+# Years are always listed one by one, never as a range. submodel: leave it out for the base model.
+verified:
+  # --- the vehicle didn't exist in those years (the years must NOT be in option_sets)
+  # - never_offered:
+  #     years: [2020, 2021]
+  #   reason: Not offered in Canada before model year 2022
+  #   verified_by: P.M
+  #   verified_on: 2026-10-29
+  #
+  # --- an option didn't exist on the vehicle in those years (the option sets must not offer it)
+  - submodel: R
+    years: [2024, 2025]
+    never_offered:
+      transmission: [Manual]
+    reason: Golf R was DSG only for 2024-2025
+    verified_by: P.M
+    verified_on: 2026-10-29
+  #
+  # --- the vehicle exists but no parts are expected yet (the years MUST be in option_sets)
+  # --- it expires on until:, so a forgotten gap comes back as ACCESS_VERIFY_EXPIRED
+  # - no_parts_expected:
+  #     years: [2026]
+  #     until: 2027-03-31
+  #   reason: The 2026 accessory catalogue isn't published yet
+  #   verified_by: P.M
+  #   verified_on: 2026-10-29
