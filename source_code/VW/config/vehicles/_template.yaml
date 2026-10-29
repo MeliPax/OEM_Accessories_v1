@@ -88,13 +88,13 @@ verified:
   #   verified_on: 2026-10-29
   #
   # --- an option didn't exist on the vehicle in those years (the option sets must not offer it)
-  - submodel: R
-    years: [2024, 2025]
-    never_offered:
-      transmission: [Manual]
-    reason: Golf R was DSG only for 2024-2025
-    verified_by: P.M
-    verified_on: 2026-10-29
+  # - submodel: R
+  #   years: [2024, 2025]
+  #   never_offered:
+  #     transmission: [Manual]
+  #   reason: Golf R was DSG only for 2024-2025
+  #   verified_by: P.M
+  #   verified_on: 2026-10-29
   #
   # --- the vehicle exists but no parts are expected yet (the years MUST be in option_sets)
   # --- it expires on until:, so a forgotten gap comes back as ACCESS_VERIFY_EXPIRED
