@@ -105,3 +105,5 @@ Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_da
 | 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | build plan 010 | 2026-10-28 |
 | 010 | [Work Process, Tracking and Indexing: Plan](plans/010_work_process_and_tracking.md) | Built — in user testing | user signs off testing (OI-01); idea 011 extends the checks once approved (OI-13) | 2026-10-28 |
 | 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides DOC-1 to DOC-10 (OI-13) | 2026-10-28 |
+| 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | user reviews plan 012 and decides E4–E6 (OI-15) | 2026-10-29 |
+| 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Plan — waiting for approval | user reviews plan 012 and decides E4–E6 (OI-15) | 2026-10-29 |

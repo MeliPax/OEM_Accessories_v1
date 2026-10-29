@@ -1,7 +1,7 @@
 # VW Open Items
 
 **Purpose:** every follow-up and open question across the VW work, in one list, each with an owner. Ideas and plans refer to these by `OI-NN` instead of keeping their own lists.
-**Last updated:** 2026-10-28
+**Last updated:** 2026-10-29
 
 **Owners:** `user` (decide or sign off) · `data source` (VW data) · `agent` (work to do)
 **Status:** `Open` · `Waiting` (asked; waiting for an answer) · `Closed YYYY-MM-DD` (the row is kept)
@@ -22,6 +22,7 @@
 | OI-12 | Name to record as `verified_by` for the Golf R 2020–2021 and Arteon 2022–2023 entries: **P.M** | user | [plan 009](plans/009_human_verified_vehicle_facts.md) | Closed 2026-10-28 |
 | OI-13 | Decisions DOC-1 to DOC-10 for the requirements register and documentation standard | user | [idea 011](ideas/011_requirements_and_documentation_design.md) | Open |
 | OI-14 | `db/review/accessory_review.csv` was overwritten outside the pipeline on 2026-10-28 at 09:04 (13 bare match keys instead of 467 rows). Rebuilt by the plan 009 real run (241 rows); the overwritten version was copied to the session scratchpad first (`accessory_review_overwritten_0904.csv`) | user | [idea 005](ideas/005_pipeline_report_card_design.md) | Closed 2026-10-28 |
+| OI-15 | Review plan 012 (final export column names) and decide E4–E6: `hours` lowercase, keep `columns:`, Excel file only | user | [plan 012](plans/012_final_export_columns.md) | Open |
 
 ## Adding or closing an item
 
