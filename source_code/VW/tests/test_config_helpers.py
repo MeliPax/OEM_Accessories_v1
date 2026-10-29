@@ -212,7 +212,8 @@ def load_verified(config_dir):
 def test_real_verified_facts(taxonomy, option_sets):
     facts = cfg.load_verified(CONFIG_DIR, taxonomy, option_sets)
     assert {(f['label'], f['model'], f['submodel'], tuple(sorted(f['years']))) for f in facts} == {
-        ('golf.yaml #1', 'Golf', 'R', (2020, 2021)), ('arteon.yaml #1', 'Arteon', None, (2022, 2023))}
+        ('golf.yaml #1', 'Golf', 'R', (2020, 2021)), ('arteon.yaml #1', 'Arteon', None, (2022, 2023)),
+        ('id4.yaml #1', 'ID.4', None, (2026,)), ('id_buzz.yaml #1', 'ID. Buzz', None, (2026,))}
     assert {f['verified_by'] for f in facts} == {'P.M'}
 
 

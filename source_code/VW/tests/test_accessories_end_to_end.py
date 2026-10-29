@@ -64,7 +64,7 @@ def test_every_step_is_logged_and_rows_reconcile(acc_run):
     db, _, status, summary, _ = acc_run
     steps = read(db / 'logs' / 'steps.csv')
     assert steps[steps['run_id'] == 'acc1']['step'].tolist() == STEPS
-    assert status == 'ok_with_errors'                     # ID.4 and ID. Buzz 2026 are errors to review
+    assert status == 'ok_with_warnings'                   # ID.4 and ID. Buzz 2026: verified never offered
     assert (summary['rows_read'], summary['rows_staged'], summary['rows_in_window'], summary['rows_unique']) == \
            (24396, 20399, 9675, 1028)
     assert (summary['model_names'], summary['unknown_model_names']) == (10, 0)
@@ -121,16 +121,17 @@ def test_dict_unmatched_rows_equal_the_review_part_rows(acc_run):
                                 'Jetta GLI', 'Taos', 'Tiguan']
     unmatched = pd.concat([d[d['model_number'] == ''] for d in model_dict.values()])
     review = read(run_file(db, 'review', 'accessory_review', 'acc1'))
-    assert len(unmatched) == summary['unmatched_part_years'] == len(review[review['type'] == 'part']) == 93
-    assert set(unmatched['match_status']) == set(MISSES.values())
-    assert len(review[review['type'] == 'vehicle']) == 14 and summary['review_rows'] == len(review) == 109
+    assert len(unmatched) == summary['unmatched_part_years'] == 93                   # nothing deleted
+    assert set(unmatched['match_status']) == {'never_offered'}                      # ID.4 + ID. Buzz 2026, verified
+    assert len(review[review['type'] == 'part']) == 0
+    assert len(review[review['type'] == 'vehicle']) == 14 and summary['review_rows'] == len(review) == 16
 
 
 def test_verified_facts_outside_the_window_are_not_reported_unused(acc_run):
     db, _, _, summary, _ = acc_run
     flags = read(db / 'logs' / 'flags' / 'acc1.csv')
     assert not flags['code'].isin(['ACCESS_VERIFY_ENTRY_UNUSED', 'ACCESS_VERIFY_CONTRADICTED']).any()
-    assert (summary['flags_verified'], summary['verified_contradicted']) == (0, 0)
+    assert (summary['flags_verified'], summary['verified_contradicted']) == (2, 0)   # ID.4, ID. Buzz 2026
     log = (db / 'logs' / 'runs' / 'acc1.log').read_text(encoding='utf-8')
     assert ('OUTSIDE WINDOW | window=2024..(no max) [min = current_year - 2] | facts=2 | '
             'entries=arteon.yaml #1, golf.yaml #1') in log
@@ -162,25 +163,25 @@ def test_dict_unmatched_rows_equal_the_review_part_rows_plus_the_verified_ones(a
     parts = review[review['type'] == 'part']
     verified = unmatched[unmatched['match_status'] == 'never_offered']
     assert len(unmatched) == summary['unmatched_part_years'] == 451                  # nothing deleted
-    assert len(verified) == 226 and len(parts) == 451 - 226                          # Golf R 108 + Arteon 118
-    assert set(unmatched['match_status']) == set(MISSES_2020.values()) | {'never_offered'}
+    assert len(verified) == 319 and len(parts) == 451 - 319           # Golf R 108 + Arteon 118 + ID.4/ID. Buzz 93
+    assert set(unmatched['match_status']) == {'ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN', 'never_offered'}   # Atlas 2020
     assert len(review[review['type'] == 'vehicle']) == 14
 
 
-def test_verified_facts_turn_four_lookup_errors_into_info(acc_run_2020):
+def test_verified_facts_turn_six_lookup_errors_into_info(acc_run_2020):
     db, _, _, summary, _ = acc_run_2020
     flags = read(db / 'logs' / 'flags' / 'acc2020.csv')
     lookup = flags[flags['code'].str.startswith('ACCESS_LOOKUP_')]
     verified = lookup[lookup['verified_entry'] != '']
     assert sorted(verified['record']) == ['volkswagen|arteon|(base)|2022', 'volkswagen|arteon|(base)|2023',
-                                          'volkswagen|golf|r|2020', 'volkswagen|golf|r|2021']
+                                          'volkswagen|golf|r|2020', 'volkswagen|golf|r|2021',
+                                          'volkswagen|id. buzz|(base)|2026', 'volkswagen|id.4|(base)|2026']
     assert set(verified['severity']) == {'info'} and set(verified['original_severity']) == {'error'}
-    assert set(verified['verified_entry']) == {'arteon.yaml #1', 'golf.yaml #1'}
-    assert sorted(lookup.loc[lookup['severity'] == 'error', 'record']) == [
-        'volkswagen|atlas|(base)|2020', 'volkswagen|id. buzz|(base)|2026', 'volkswagen|id.4|(base)|2026']
+    assert set(verified['verified_entry']) == {'arteon.yaml #1', 'golf.yaml #1', 'id4.yaml #1', 'id_buzz.yaml #1'}
+    assert sorted(lookup.loc[lookup['severity'] == 'error', 'record']) == ['volkswagen|atlas|(base)|2020']
     report = read(run_file(db, 'dq', 'verified_flags', 'acc2020'))
-    assert len(report) == 4 and set(report['verified_by']) == {'P.M'} and (report['reason'] != '').all()
-    assert (summary['flags_verified'], summary['verified_contradicted'], summary['review_rows']) == (4, 0, 241)
+    assert len(report) == 6 and set(report['verified_by']) == {'P.M'} and (report['reason'] != '').all()
+    assert (summary['flags_verified'], summary['verified_contradicted'], summary['review_rows']) == (6, 0, 148)
     assert not flags['code'].isin(['ACCESS_VERIFY_ENTRY_UNUSED', 'ACCESS_VERIFY_CONTRADICTED']).any()
 
 

@@ -68,19 +68,19 @@ Write a fact in its home and link to it from elsewhere; copies go stale.
 
 ## Baseline
 
-Real runs on 2026-10-28 (accessory file 2026-10-20, vehicle export `vw_models_data.csv`). Update after each build's real run.
+Real runs on 2026-10-28, accessories again on 2026-10-29 (accessory file 2026-10-20, vehicle export `vw_models_data.csv`). Update after each build's real run.
 
 | Measure | Value |
 |---|---|
 | Vehicles in `vehicles.csv` | 269 (54 rows excluded by the year window) |
 | Year windows | Vehicles 2020+ (`datasets.vw_models`); accessories `current_year - 2` = 2024+ (`datasets.accessories`), and the accessory run reads only vehicles 2024+ (111 of 269; 158 ignored) |
 | Accessory rows: read / in window / unique (part, model) | 24,396 / 9,675 / 1,028 (13,051 / 1,357 at 2020+) |
-| Lookup keys: total / found / missed / verified | 29 / 27 / 2 / 0 (2 errors: ID.4, ID. Buzz 2026); 71 / 64 / 7 / 4 at 2020+ |
+| Lookup keys: total / found / missed / verified | 29 / 27 / 2 / 2 (ID.4, ID. Buzz 2026: verified never offered; run `ok_with_warnings`); 71 / 64 / 7 / 6 at 2020+ |
 | Dict rows / exported rows / export sheets | 9,481 / 9,388 / 10 (25,796 / 25,345 / 14 at 2020+) |
 | Vehicles with no parts | 14 (model year 2027) |
-| Accessory review rows | 109 (241 at 2020+) |
+| Accessory review rows | 16 (148 at 2020+) |
 | Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
-| Tests | 285 passing (committed config) |
+| Tests | 285 passing |
 
 ## Index
 

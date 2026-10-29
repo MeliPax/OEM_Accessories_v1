@@ -28,7 +28,7 @@
 | [DI-02](#di-02) | Accessories | 90% of rows are exact copies | 11,694 of 13,051 rows | Handled |
 | [DI-03](#di-03) | Accessories | Part numbers lose their leading zeros | 1 part, 12 rows (704 rows file-wide) | Handled (008); ask the source |
 | [DI-04](#di-04) | Accessories | Golf GTI is named only "GTI" | 109 parts | Handled |
-| [DI-05](#di-05) | Accessories | Year ranges reach years with no VW vehicle | 7 model-years, 451 part-years (2 and 93 from 2024) | **Open** (ID.4, ID. Buzz 2026); the rest out of scope from 2024 or verified (009) |
+| [DI-05](#di-05) | Accessories | Year ranges reach years with no VW vehicle | 7 model-years, 451 part-years (2 and 93 from 2024) | **Handled**: ID.4, ID. Buzz 2026 verified never offered (2026-10-29); the rest out of scope from 2024 or verified (009) |
 | [DI-06](#di-06) | Accessories | No parts listed for model year 2027 | 14 vehicles | **Open** |
 | [DI-07](#di-07) | Accessories | Labour time unit not stated (minutes); one value looks like hours | 1,357 rows; 1 part suspect | Handled (006) + **Open** (one value) |
 | [DI-08](#di-08) | Accessories | Comments hold HTML markup; sentences run together | 38 texts, 256 rows | Handled (007) |
@@ -48,7 +48,7 @@
 | [DV-06](#dv-06) | VW models | Model numbers reused across years with a trim change | CMC4NR, CMC4UR | Accepted |
 | [DV-07](#dv-07) | VW models | Many vehicles have no trim in the description | 56 of 269 | Handled |
 | [DV-08](#dv-08) | VW models | Base Atlas missing for 2020 | 2020 | **Open** |
-| [DV-09](#dv-09) | VW models | ID.4 and ID. Buzz end at 2025 | 2026 | **Open** |
+| [DV-09](#dv-09) | VW models | ID.4 and ID. Buzz end at 2025 | 2026 | **Handled** (verified never offered) |
 | [DV-10](#dv-10) | VW models | Inventory note `*Ltd Avail*` inside the description | 11 rows | Handled |
 | [DV-11](#dv-11) | VW models | Model year 2019 rows | 54 rows | Handled |
 
@@ -127,7 +127,8 @@
 - **Ask the data source:** confirm Atlas 2020, ID.4 2026 and ID. Buzz 2026 ([OI-04](open_items.md)).
 - **Verified (2026-10-28, P.M):** Golf R was never offered in 2020–2021, and Arteon in 2022–2023 (`verified:` in `config/vehicles/golf.yaml` and `arteon.yaml`, idea 009). Their 4 lookup flags are now info and listed in `db/dq/verified_flags.csv`. Their 226 part-years stay in the dict as `never_offered` and are out of the review file. The lookup errors go from 7 to 3.
 - **Accessories from 2024 (2026-10-28):** Atlas 2020, Golf R 2020–2021 and Arteon 2022–2023 are now outside the accessory window and no longer looked up. ID.4 2026 and ID. Buzz 2026 remain.
-- **Status:** **Open** (ID.4 2026, ID. Buzz 2026); Atlas 2020 out of scope; Golf R and Arteon Handled.
+- **Verified 2026-10-29:** ID.4 2026 and ID. Buzz 2026 are not offered in Canada (P.M; `id4.yaml`, `id_buzz.yaml` `verified:`). Their 93 part-years drop to info and leave the review file.
+- **Status:** **Handled**: ID.4, ID. Buzz 2026, Golf R and Arteon verified; Atlas 2020 out of scope.
 
 ### DI-06
 
@@ -319,7 +320,8 @@
 
 - **Found:** the export has ID.4 for 2021–2025 and ID. Buzz for 2025 only. Other models reach 2026–2027.
 - **Ask the data source:** are the 2026 ID models missing from the export? (See DI-05.)
-- **Status:** **Open**.
+- **Verified 2026-10-29:** not offered in Canada for 2026 (P.M).
+- **Status:** **Handled**.
 
 ### DV-10
 

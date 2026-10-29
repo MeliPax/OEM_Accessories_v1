@@ -11,7 +11,7 @@
 | OI-01 | Sign off testing of plans 001, 002, 003, 006, 007, 008, 009, 010, 012, so they can move to `completed/` | user | [plans](README.md#index) | Open |
 | OI-02 | Notebook cells for plans 001, 002, 003; added only while the notebook is closed | agent | [plan 003](plans/003_accessory_model_matching.md) | Open |
 | OI-03 | Review `config/vehicles/*.yaml`: all 10 are `drafted`; set `reviewed` with who and when | user | [plan 001](plans/001_vw_model_ingest_mvp.md) | Open |
-| OI-04 | Atlas 2020, ID.4 2026, ID. Buzz 2026: parts listed, no vehicle in the export. Missing vehicles or wrong year ranges? (Golf R and Arteon: verified never offered, plan 009) | data source | [DI-05](data_issues.md#di-05) | Open |
+| OI-04 | Atlas 2020, ID.4 2026, ID. Buzz 2026: parts listed, no vehicle in the export. Missing vehicles or wrong year ranges? (Golf R, Arteon, and on 2026-10-29 ID.4 and ID. Buzz 2026: verified never offered, plan 009; Atlas 2020 is outside the accessory window) | data source | [DI-05](data_issues.md#di-05) | Open |
 | OI-05 | No accessory parts for model year 2027 (14 vehicles) | data source | [DI-06](data_issues.md#di-06) | Open |
 | OI-06 | Labour time 0.4 on `3QF601025KAX1`: minutes or hours? | data source | [DI-07](data_issues.md#di-07) | Open |
 | OI-07 | Export `stockCode` as text, so leading zeros aren't lost | data source | [DI-03](data_issues.md#di-03), [plan 008](plans/008_part_number_integrity.md) | Open |

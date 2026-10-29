@@ -30,3 +30,11 @@ option_sets:
   - years: [2025, 2025]
     trim: [PRO, PRO S]
     drivetrain: [AWD]
+
+verified:
+  # --- the vehicle didn't exist in those years (the years must NOT be in option_sets)
+  - never_offered:
+      years: [2026]
+    reason: Not offered in Canada this year (2026)
+    verified_by: P.M
+    verified_on: 2026-10-29

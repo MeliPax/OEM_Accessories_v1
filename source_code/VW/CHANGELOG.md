@@ -2,7 +2,12 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
-## 2026-10-29 — Final export column names (plan 012)
+## 2026-10-29 — ID.4 and ID. Buzz 2026 verified never offered (plan 009 facts)
+
+- `id4.yaml` and `id_buzz.yaml` record that neither is offered in Canada for 2026 (P.M, 2026-10-29). `id_buzz.yaml` has `reviewed_by` / `reviewed_on`.
+- The accessory run's last 2 lookup errors drop to info: status `ok_with_warnings`, review rows 109 → 16, flags verified 2. The 93 part-years stay in the dict without a model number, as before.
+
+## 2026-10-29 — Final export column names (plan 012) · `0ae8234`
 
 - The Excel export's headers are now `Part`, `ModelName`, `Description`, `Price`, `Hours`, `Comments`, `Variant`, `Year`, `Model`, set in `export.columns` in `accessories.yaml` and commented there as the final column names.
 - **`Model` changed meaning:** it was the model name and is now the VW model number. The name is `ModelName`.
