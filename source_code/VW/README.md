@@ -66,11 +66,11 @@ model_year_dict = build_accessory_model_dict()          # export=False to skip t
 model_year_dict["GTI"]   # one row per part, applicable year and vehicle, with model_number and variant
 ```
 
-| Exit code | Meaning |
-|---|---|
-| `0` | Finished; may have warnings (check the review files) |
-| `1` | Errors were flagged (e.g. accessory years with no vehicle), or the run failed (see the `FATAL` line) |
-| `2` | `config/pipeline.yaml` is invalid |
+| Exit code | Meaning                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| `0`     | Finished; may have warnings (check the review files)                                                   |
+| `1`     | Errors were flagged (e.g. accessory years with no vehicle), or the run failed (see the `FATAL` line) |
+| `2`     | `config/pipeline.yaml` is invalid                                                                    |
 
 Options:
 
@@ -95,20 +95,20 @@ The tests cover each helper module, the message catalogue, and full runs of both
 
 Every file a run writes is named with its run id, `<pipeline>_<YYYYMMDD_HHMMSS>` (e.g. `db/review/accessory_review_vw_accessories_20261028_151851.csv`), so no run overwrites another and each file traces to its run. The accessory run reads the newest `vehicles_<run_id>.csv`; the file it used is in its terminal line and in `db/dq/accessory_runs.csv` (`vehicles_file`, `review_file`, ...). `db/dq/ingest_runs.csv`, `db/dq/accessory_runs.csv` and `db/logs/steps.csv` are one file each, one row per run. Run files in `db/` are git-ignored, like the logs and exports.
 
-| File | What it shows |
-|---|---|
-| `db/final/vehicles_<run_id>.csv` | One row per vehicle with its taxonomy fields |
-| `db/review/review_queue_<run_id>.csv` | Vehicles a person should check (vehicle ingest) |
-| `db/review/accessory_review_<run_id>.csv` | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
-| `db/dq/part_number_check_<run_id>.csv` | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not |
-| `db/dq/accessory_lookup_<run_id>.csv` | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed |
-| `db/dq/verified_flags_<run_id>.csv` | Flags a verified fact explained this run (now info, left out of review), with the entry, reason, who and when |
-| `output/<run_id>.xlsx` | The accessory export: one sheet per accessory model name, matched rows only (git-ignored) |
-| `db/logs/runs/<run_id>.log` | The readable story of a run; each flag is a block with what / checked / found / causes / fix |
-| `db/logs/changes/<run_id>.csv` | Every value set or changed: before, after, and the rule or keyword that did it |
-| `db/logs/flags/<run_id>.csv` | Every flag, with its code and full message |
-| `db/logs/steps.csv` | One row per step, across all runs |
-| `db/dq/ingest_runs.csv`, `db/dq/accessory_runs.csv` | One summary row per run |
+| File                                                    | What it shows                                                                                                                                                                                  |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `db/final/vehicles_<run_id>.csv`                      | One row per vehicle with its taxonomy fields                                                                                                                                                   |
+| `db/review/review_queue_<run_id>.csv`                 | Vehicles a person should check (vehicle ingest)                                                                                                                                                |
+| `db/review/accessory_review_<run_id>.csv`             | Accessory part-years with no vehicle, part numbers restored or not proven, suspect values (labour units, unreviewed links), and vehicles with no parts, each with code, checks, causes and fix |
+| `db/dq/part_number_check_<run_id>.csv`                | How every part number was proven by `make&model`: same, restored (leading zeros put back) or why not                                                                                         |
+| `db/dq/accessory_lookup_<run_id>.csv`                 | One row per (model, submodel, year) key: what was checked, the model numbers found or why it missed                                                                                            |
+| `db/dq/verified_flags_<run_id>.csv`                   | Flags a verified fact explained this run (now info, left out of review), with the entry, reason, who and when                                                                                  |
+| `output/<run_id>.xlsx`                                | The accessory export: one sheet per accessory model name, matched rows only (git-ignored)                                                                                                      |
+| `db/logs/runs/<run_id>.log`                           | The readable story of a run; each flag is a block with what / checked / found / causes / fix                                                                                                   |
+| `db/logs/changes/<run_id>.csv`                        | Every value set or changed: before, after, and the rule or keyword that did it                                                                                                                 |
+| `db/logs/flags/<run_id>.csv`                          | Every flag, with its code and full message                                                                                                                                                     |
+| `db/logs/steps.csv`                                   | One row per step, across all runs                                                                                                                                                              |
+| `db/dq/ingest_runs.csv`, `db/dq/accessory_runs.csv` | One summary row per run                                                                                                                                                                        |
 
 [db/README.md](db/README.md) explains every table, column and flag code.
 
@@ -116,12 +116,12 @@ Every file a run writes is named with its run id, `<pipeline>_<YYYYMMDD_HHMMSS>`
 
 Every flag has a code `<PIPELINE>_<STAGE>_<WHAT>`: `CONFG_` for config, `VEH_` for the vehicle ingest, `ACCESS_` for accessories. Its severity and wording live in [config/messages.yaml](config/messages.yaml):
 
-| Severity | Meaning |
-|---|---|
-| `fatal` | The run stops (broken config, missing file, output file open in Excel) |
-| `error` | A row or key can't be used (left out, or no model number) and goes to review |
-| `warning` | Used, but a person should look; goes to review |
-| `info` | Noted in the log only |
+| Severity    | Meaning                                                                      |
+| ----------- | ---------------------------------------------------------------------------- |
+| `fatal`   | The run stops (broken config, missing file, output file open in Excel)       |
+| `error`   | A row or key can't be used (left out, or no model number) and goes to review |
+| `warning` | Used, but a person should look; goes to review                               |
+| `info`    | Noted in the log only                                                        |
 
 To improve a message, edit `messages.yaml`. A test keeps the codes in the code and the catalogue in sync. The full list of scenarios is in [planning/ideas/004_error_message_catalogue_design.md](planning/ideas/004_error_message_catalogue_design.md).
 
@@ -129,15 +129,15 @@ To improve a message, edit `messages.yaml`. A test keeps the codes in the code a
 
 Everything the pipelines know lives in `config/` (YAML). The code doesn't change when VW adds vehicles or the accessory file changes; the config does.
 
-| File | Purpose |
-|---|---|
-| `pipeline.yaml` | One model year window per pipeline under `datasets:`. Vehicles `vw_models`: `min_model_year: 2020`. Accessories: `min_model_year: current_year - 2` (2024 in 2026, worked out at run start). `max_model_year:` empty = no upper limit. Every step that selects data uses its window and ignores anything outside it: the accessory run reads only vehicles inside the accessory window. `within: vw_models` keeps the accessory window inside the vehicle window (an empty accessory max takes the vehicle max). Also source files, which fields a reused model number must keep across years, logging |
-| `categories.yaml` | The taxonomy fields and whether each is single- or multi-value |
-| `models.yaml` | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`) |
-| `keywords.yaml` | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it) |
-| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person). A `verified:` section records facts a person confirmed, e.g. never offered in a year (see below). **New model:** `python new_vehicle.py "<Model>"` sets one up from [`vehicles/_template.yaml`](config/vehicles/_template.yaml), which shows every option and value |
-| `accessories.yaml` | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), **units** (labour minutes → hours), **comment cleaning** (separators, tags, link rules, allowed link hosts), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, and `export.columns`: the **final column names** of the Excel file, in order: `Part`, `ModelName`, `Description`, `Price`, `Hours`, `Comments`, `Variant`, `Year`, `Model`. `Model` is the VW model number; Cost is left out for now. The dict keeps the pipeline names) |
-| `messages.yaml` | Severity, message, causes and fix for every flag code |
+| File                      | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pipeline.yaml`         | One model year window per pipeline under `datasets:`. Vehicles `vw_models`: `min_model_year: 2020`. Accessories: `min_model_year: current_year - 2` (2024 in 2026, worked out at run start). `max_model_year:` empty = no upper limit. Every step that selects data uses its window and ignores anything outside it: the accessory run reads only vehicles inside the accessory window. `within: vw_models` keeps the accessory window inside the vehicle window (an empty accessory max takes the vehicle max). Also source files, which fields a reused model number must keep across years, logging |
+| `categories.yaml`       | The taxonomy fields and whether each is single- or multi-value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `models.yaml`           | Models, submodels, series, and spelling aliases **shared by both pipelines** (e.g. accessory `GTI` → `Golf GTI`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `keywords.yaml`         | What each word or phrase in a description means, grouped by category; plus `resolutions:` that re-read a value for specific vehicles (a lone `Black` becomes `Black Edition` where the option set offers it)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `vehicles/<model>.yaml` | What each model can have, per year range. It also says which years a model legitimately exists. `status: drafted` (built from the data) or `reviewed` (checked by a person). A `verified:` section records facts a person confirmed, e.g. never offered in a year (see below). **New model:** `python new_vehicle.py "<Model>"` sets one up from [`vehicles/_template.yaml`](config/vehicles/_template.yaml), which shows every option and value                                                                                                                                                                                                                                                                                                                                |
+| `accessories.yaml`      | Accessory file layout (sheet, header row, columns), the **part number** check (`make&model` proves the full part number; never padded), **units** (labour minutes → hours), **comment cleaning** (separators, tags, link rules, allowed link hosts), kept statuses, data-quality rules, fitment hint words, the **variant** label (which vehicle fields describe it, in what order, and the `Base` label when none has a value), and the export (folder, file name, and `export.columns`: the **final column names** of the Excel file, in order: `Part`, `ModelName`, `Description`, `Price`, `Hours`, `Comments`, `Variant`, `Year`, `Model`. `Model` is the VW model number; Cost is left out for now. The dict keeps the pipeline names)                                                                                     |
+| `messages.yaml`         | Severity, message, causes and fix for every flag code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ### When new vehicles or a new accessory file come out
 
@@ -163,13 +163,14 @@ verified:
     verified_on: 2026-10-28
 ```
 
-| Fact | Means | Effect |
-|---|---|---|
-| `never_offered: {years: [...]}` | The vehicle didn't exist in those years | Accessory lookup flags for exactly that model, submodel and year drop to info and leave the review file |
-| `never_offered: {<category>: [...]}` + `years: [...]` | That option didn't exist on the vehicle in those years | Guards the data: a vehicle in the export with that option is an error |
-| `no_parts_expected: {years: [...], until: YYYY-MM-DD}` | The vehicle exists, but no parts are expected yet | Its `ACCESS_COVER_VEHICLE_NO_PARTS` flags drop to info until the date, then come back (`ACCESS_VERIFY_EXPIRED`) |
+| Fact                                                      | Means                                                  | Effect                                                                                                              |
+| --------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `never_offered: {years: [...]}`                         | The vehicle didn't exist in those years                | Accessory lookup flags for exactly that model, submodel and year drop to info and leave the review file             |
+| `never_offered: {<category>: [...]}` + `years: [...]` | That option didn't exist on the vehicle in those years | Guards the data: a vehicle in the export with that option is an error                                               |
+| `no_parts_expected: {years: [...], until: YYYY-MM-DD}`  | The vehicle exists, but no parts are expected yet      | Its `ACCESS_COVER_VEHICLE_NO_PARTS` flags drop to info until the date, then come back (`ACCESS_VERIFY_EXPIRED`) |
 
 The final `verify` step in both pipelines applies these:
+
 - **Kept:** nothing is deleted. A verified flag keeps its original severity and the entry in the flag log, and is listed in `db/dq/verified_flags_<run_id>.csv`.
 - **Contradictions:** data that contradicts a fact becomes an error (`ACCESS_VERIFY_CONTRADICTED`, `VEH_VERIFY_CONTRADICTED`), for example a Golf R 2021 in a future export.
 - **Unused facts:** a fact that matched nothing is reported as info (`ACCESS_VERIFY_ENTRY_UNUSED`).

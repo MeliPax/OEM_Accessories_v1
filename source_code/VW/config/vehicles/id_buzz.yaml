@@ -8,7 +8,7 @@ make: Volkswagen
 model: ID. Buzz
 
 # drafted = built from the VW export, not yet checked by a person; set reviewed (with who / when) once checked
-status: drafted
+status: reviewed
 reviewed_by: P.M
 reviewed_on: 2026-10-29
 
