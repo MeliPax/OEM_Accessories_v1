@@ -5,6 +5,8 @@
 **Next:** user signs off testing (OI-01); confirm the 0.4 value with the source (OI-06)
 **Links:** idea [006](../ideas/006_labor_time_units_design.md) · depends on plan [003](003_accessory_model_matching.md)
 **Summary:** Labour minutes converted to hours in the clean step, with lineage, suspect-value flags and the unit in the export header.
+
+> **Corrected by [013](../ideas/013_labour_time_units_to_hours_design.md) (2026-11-02):** the source unit is time units (100 = 1 hour, ÷ 100), not minutes; the converted value is in `labor_hours`.
 **Note:** written after the build, on 2026-10-28, from the idea's decisions and build notes. The plan step was skipped at build time, and this file records the work in the standard format.
 
 ## Outcome

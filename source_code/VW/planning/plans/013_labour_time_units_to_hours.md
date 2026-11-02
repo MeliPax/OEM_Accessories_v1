@@ -1,9 +1,8 @@
 # 013 — Labour Time Units to Hours: Plan
 
-**Status:** Building
-**Checkpoint:** 2026-11-02, phases H1–H2 done and committed (config, validation, convert_units, DQ, messages, tests: 290 passed, 1 failed as at baseline). Next: phase H3, first task (real runs, then docs)
+**Status:** Built — in user testing (2026-11-02)
 **Updated:** 2026-11-02
-**Next:** build phases H1–H3 (Claude)
+**Next:** user signs off testing (OI-01); the source confirms the 0.4 value (OI-06)
 **Links:** idea [013](../ideas/013_labour_time_units_to_hours_design.md) · corrects plan [006](006_labor_time_units.md) · changes the export of plans [003](003_accessory_model_matching.md) and [012](012_final_export_columns.md) · data issue [DI-07](../data_issues.md#di-07)
 **Summary:** `laborTime` is read as `labor_time_source` (time units, 100 = 1 hour) and converted in `clean` to a new `labor_hours` column, which the DQ rules, dict and export use; `labor_time` is removed.
 
@@ -17,12 +16,12 @@ laborTime ─stage─► labor_time_source (time units) ─clean: ÷100, 2 dp─
 
 **Success criteria (real run, accessory file 2026-10-20)**
 
-- [ ] Run log: `UNITS labor_time_source: time_units -> hours x 0.01, 2 decimals`.
-- [ ] Export `Hours` matches `labor_time_source / 100` on every row: 0 → 0, 10 → 0.10, 25 → 0.25, 30 → 0.30, 40 → 0.40, 50 → 0.50, 100 → 1.00, 250 → 2.50.
-- [ ] `3QF601025KAX1` (0.4): `ACCESS_CLEAN_UNIT_SUSPECT` once per part and value, `Hours` **empty** in the export, a `type = value` row in `accessory_review.csv`; no `not_null` flag for the same value (H5).
-- [ ] No column named `labor_time` in the dict, the review file or the code (`grep -rn "'labor_time'" pipeline tests` finds nothing).
-- [ ] Export headers unchanged (plan 012): `Part, ModelName, Description, Price, Hours, Comments, Variant, Year, Model`.
-- [ ] Full test suite passes; `run_ingest.py` and `run_accessories.py` complete.
+- [x] Run log: `UNITS labor_time_source: time_units -> hours x 0.01, 2 decimals`.
+- [x] Export `Hours` matches `labor_time_source / 100` on every row: 0 → 0, 10 → 0.10, 25 → 0.25, 30 → 0.30, 40 → 0.40, 50 → 0.50, 100 → 1.00, 250 → 2.50.
+- [x] `3QF601025KAX1` (0.4): `ACCESS_CLEAN_UNIT_SUSPECT` once per part and value, `Hours` **empty** in the export, a `type = value` row in `accessory_review.csv`; no `not_null` flag for the same value (H5).
+- [x] No column named `labor_time` in the dict, the review file or the code (`grep -rn "'labor_time'" pipeline tests` finds nothing).
+- [x] Export headers unchanged (plan 012): `Part, ModelName, Description, Price, Hours, Comments, Variant, Year, Model`.
+- [x] Full test suite passes; `run_ingest.py` and `run_accessories.py` complete.
 
 ## Phase H1 — Config and validation
 
@@ -54,15 +53,15 @@ laborTime ─stage─► labor_time_source (time units) ─clean: ÷100, 2 dp─
 
 ## Phase H3 — Tests, real run and docs
 
-- [ ] Tests updated (table below); full suite passes.
-- [ ] Real runs: `python run_ingest.py`, `python run_accessories.py`; success criteria ticked with the numbers; Baseline table in `planning/README.md` updated.
-- [ ] Docs:
+- [x] Tests updated (table below); full suite passes.
+- [x] Real runs: `python run_ingest.py`, `python run_accessories.py`; success criteria ticked with the numbers; Baseline table in `planning/README.md` updated.
+- [x] Docs:
   - idea / plan 006: a note at the top, "source unit corrected by 013 (time units, ÷ 100, not minutes)";
   - `data_issues.md` DI-07 rewritten (the unit is 100 time units per hour; 0.4 is still suspect, now left empty);
   - `open_items.md` OI-06 reworded (0.4: a fraction of a time unit);
   - `ARCHITECTURE.md` examples (`labour 10 min → 0.17 h` → `labour 10 → 0.10 h`, `25 min → 0.42 h` → `25 → 0.25 h`);
   - `README.md`, `db/README.md` (`ACCESS_CLEAN_UNIT_SUSPECT` row), `CHANGELOG.md` entry with the commit.
-- [ ] Commit (approved and tested; not pushed).
+- [x] Commit (approved and tested; not pushed).
 
 **Done when:** the suite and real runs pass and the docs match the code → `Built — in user testing`.
 
@@ -85,6 +84,7 @@ laborTime ─stage─► labor_time_source (time units) ─clean: ÷100, 2 dp─
 | 2026-11-02 | **Build.** H1 and H2 committed together: the config from H1 can't run until `convert_units` (H2) writes `labor_hours` | Claude |
 | 2026-11-02 | **Build.** `not_null` on `labor_hours` skips a row whose `labor_time_source` is filled: the only way the target is empty with a filled source is a suspect value, so no extra state is needed | Claude |
 | 2026-11-02 | **Build.** The "used by two entries" check is `CONFG_DUPLICATE_ENTRY` (the plan said `CONFG_VALUE_INVALID`); suspect values are not logged as `unit_convert` changes (nothing was converted) | Claude |
+| 2026-11-02 | **Real run** `vw_accessories_20261102_105718`: log `time_units -> hours x 0.01, 2 decimals`; 13 distinct values converted (10 → 0.1 … 250 → 2.5); `3QF601025KAX1` flagged once, `Hours` empty on its 22 export rows, 0 missing-labour flags; headers unchanged; 9,388 export rows, 16 review rows | Claude |
 | 2026-11-02 | **Build.** Test fixture `part()` default labour changed 0.5 → 50: 0.5 is now a fraction of a time unit and would be flagged | Claude |
 
 ## Risks

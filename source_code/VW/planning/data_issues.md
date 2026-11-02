@@ -30,7 +30,7 @@
 | [DI-04](#di-04) | Accessories | Golf GTI is named only "GTI" | 109 parts | Handled |
 | [DI-05](#di-05) | Accessories | Year ranges reach years with no VW vehicle | 7 model-years, 451 part-years (2 and 93 from 2024) | **Handled**: ID.4, ID. Buzz 2026 verified never offered (2026-10-29); the rest out of scope from 2024 or verified (009) |
 | [DI-06](#di-06) | Accessories | No parts listed for model year 2027 | 14 vehicles | **Open** |
-| [DI-07](#di-07) | Accessories | Labour time unit not stated (minutes); one value looks like hours | 1,357 rows; 1 part suspect | Handled (006) + **Open** (one value) |
+| [DI-07](#di-07) | Accessories | Labour time unit not stated (time units, 100 = 1 hour; first read as minutes); one value is a fraction of a unit | 1,357 rows; 1 part suspect | Handled (006, corrected by 013) + **Open** (one value) |
 | [DI-08](#di-08) | Accessories | Comments hold HTML markup; sentences run together | 38 texts, 256 rows | Handled (007) |
 | [DI-09](#di-09) | Accessories | Comments use `\|` / `\|\|` as line breaks | 8 texts, 64 rows | Handled (007) |
 | [DI-10](#di-10) | Accessories | Comment links to a catalogue page that isn't public | 1 part, 13 rows | Handled (007) |
@@ -152,16 +152,18 @@
 
 ### DI-07
 
-**Labour time unit not stated (minutes); one value looks like hours**
+**Labour time unit not stated (time units, 100 = 1 hour); one value is a fraction of a unit**
 
-- **Found:** `laborTime` holds minutes, but the file doesn't say so. The values are 0 (793 rows) and whole minutes from 10 to 250. Part `3QF601025KAX1` (20" Mejorada wheel, Atlas and Atlas Cross Sport) has **0.4**, which is not a whole minute and is most likely already in hours (24 minutes).
+- **Corrected 2026-11-02 ([idea 013](ideas/013_labour_time_units_to_hours_design.md)):** `laborTime` holds **time units, 100 to the hour** (300 = 3 h), not minutes. The labour values below are unchanged; only their meaning is: 25 is 0.25 h (was read as 25 min = 0.42 h).
+- **Found (2026-10-27, read as minutes):** `laborTime` holds minutes, but the file doesn't say so. The values are 0 (793 rows) and whole minutes from 10 to 250. Part `3QF601025KAX1` (20" Mejorada wheel, Atlas and Atlas Cross Sport) has **0.4**, which is not a whole minute and is most likely already in hours (24 minutes).
 - **Impact:** the export shows minutes under a "Labour Time" header; the 0.4 value is inconsistent with every other row.
 - **Fix:** [idea 006](ideas/006_labor_time_units_design.md):
   - convert minutes to hours using unit definitions in config (2 decimals);
   - keep the raw minutes for lineage;
   - export the header as `Labour Time (hours)`;
   - flag values that look like the wrong unit (`ACCESS_CLEAN_UNIT_SUSPECT`).
-- **Handling (built 2026-10-28):** the export shows hours. `3QF601025KAX1` is flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`; it is still converted (0.4 min → 0.01 h) until the source confirms the value.
+- **Handling (built 2026-11-02, plan 013):** `laborTime` is read as `labor_time_source` and `labor_hours` = ÷ 100, 2 decimals; DQ rules, dict and export (`Hours`) use `labor_hours`. `3QF601025KAX1` (0.4, not a whole time unit) is flagged `ACCESS_CLEAN_UNIT_SUSPECT`, `labor_hours` left empty, and listed in `accessory_review.csv`.
+- **Handling (built 2026-10-28, superseded):** the export shows hours. `3QF601025KAX1` is flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`; it is still converted (0.4 min → 0.01 h) until the source confirms the value.
 - **Ask the data source:** confirm the unit, and the labour time for `3QF601025KAX1`.
 - **Status:** Handled (idea 006) + **Open** (the 0.4 value).
 

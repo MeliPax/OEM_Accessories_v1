@@ -45,7 +45,7 @@ The system turns the vehicle text into structured fields, then attaches the righ
 |---|---|---|
 | Config drives behaviour | No model, word, year, rule or column name is hard-coded | Adding a trim word is one line in `keywords.yaml` |
 | Lookup, not merge | Vehicles are searched once per unique key; nothing merged is saved | 1,028 accessory rows need only 29 lookups |
-| Every change is traceable | Each changed value is logged before → after, with the rule and row count | `labor_time: "10" -> "0.17" (minutes -> hours; 89 rows)` |
+| Every change is traceable | Each changed value is logged before → after, with the rule and row count | `labor_hours: "10" -> "0.1" (time_units -> hours x 0.01; 89 rows)` |
 | Every problem is a coded flag | Each flag says what was checked, what was found, the causes and the fix | `ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN` (section 7) |
 | Never guess | Part numbers are proven from the source, never padded; ambiguous words are resolved only with evidence | `71200` is restored to `000071200` only because `make&model` says `000071200Atlas` |
 | Nothing is overwritten | Every output file carries its run id | `accessory_review_vw_accessories_20261029_085242.csv` |
@@ -147,7 +147,7 @@ config ─► ingest ─► staging ─► year_window ─► part_numbers ─�
 | clean_text | Cleans comments: HTML, pipes, links, spacing, sentence ends. The raw text is kept | 34 of 40 texts changed; 1 link replaced |
 | dedupe | Removes exact copies, logging each one against the row it copies | 8,647 removed → 1,028 unique |
 | part_number_review | Flags every restored or unproven part number in scope | `000071200` restored (10 rows) |
-| clean | Applies name aliases, converts units, types the numbers | `GTI` → `Golf GTI`; labour minutes → hours |
+| clean | Applies name aliases, converts units, types the numbers | `GTI` → `Golf GTI`; labour time units → hours (÷ 100) in `labor_hours` |
 | resolve_names | Checks every accessory model name is a known model or submodel | 10 of 10 resolved |
 | lookup | Builds a vehicle index for the window, then looks up each unique key once | 29 keys, 27 found |
 | build_dict | Expands each year range to single years and attaches the model numbers and variant | 9,481 rows in 10 models; 93 part-years with no vehicle |
@@ -165,7 +165,7 @@ staging       kept (Active)
 year_window   2006-2026 overlaps 2024+ → clipped to 2024-2026
 part_numbers  000019819C + "GTI" = make&model → proven, same
 dedupe        21 rows → 1
-clean         model GTI → Golf GTI (alias) │ labour 10 min → 0.17 h
+clean         model GTI → Golf GTI (alias) │ labour 10 → 0.1 h (labor_hours)
 lookup        keys golf gti 2024, 2025, 2026 → 5, 2 and 2 model numbers
 build_dict    9 rows: one per year and model number, with a variant label
 export (GTI sheet)
@@ -222,7 +222,7 @@ Configured in `accessories.yaml` → `variant`. The label joins the vehicle's st
 |---|---|---|---|
 | fatal | The run stops | `failed` | `ACCESS_EXPORT_FILE_LOCKED` (the Excel file is open) |
 | error | A row or key can't be used; goes to review | `ok_with_errors` | `ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN` |
-| warning | Used, but a person should look; goes to review | `ok_with_warnings` | `ACCESS_CLEAN_UNIT_SUSPECT` (0.4 minutes) |
+| warning | Used, but a person should look; goes to review | `ok_with_warnings` | `ACCESS_CLEAN_UNIT_SUSPECT` (0.4 time units) |
 | info | Noted in the log only | `ok` | `ACCESS_YEAR_CLIPPED` |
 
 - Codes follow `<PIPELINE>_<STAGE>_<WHAT>`. The wording lives in `messages.yaml`, and the code passes only the facts.
@@ -244,7 +244,7 @@ Nothing is deleted. A verified flag keeps its original severity in the flag log 
 
 `accessories.yaml` → `export.columns` holds the **final column names**, in order. It maps each pipeline column to its header in the file:
 
-`part_number: Part` · `model_name_clean: ModelName` · `product_description: Description` · `msrp: Price` · `labor_time: Hours` · `comments: Comments` · `variant: Variant` · `applicable_year: Year` · `model_number: Model`
+`part_number: Part` · `model_name_clean: ModelName` · `product_description: Description` · `msrp: Price` · `labor_hours: Hours` · `comments: Comments` · `variant: Variant` · `applicable_year: Year` · `model_number: Model`
 
 - A column left out is not in the file; Cost, for now.
 - The headers apply to the Excel file only. The dict returned to the notebook keeps the pipeline names.
@@ -293,7 +293,7 @@ db/
 | Leading zeros lost | Accessories | 151 rows in scope | part_numbers (proof from `make&model`) | `71200` → `000071200` |
 | Different model names | Accessories | 90 GTI rows | shared alias | `GTI` → `Golf GTI` |
 | Year ranges past the vehicle's life | Accessories | 93 part-years | lookup flags + verified facts | ID.4 2026: never offered |
-| Unit not stated | Accessories | All labour values | units config | `25` min → `0.42` h; `0.4` flagged |
+| Unit not stated | Accessories | All labour values | units config | `25` → `0.25` h (time units ÷ 100, idea 013); `0.4` flagged, left empty |
 | HTML, pipes, private links in comments | Accessories | 34 texts | clean_text | `<p>...</p><p>...` → two sentences; Salsify link → `Thule.com` |
 | No parts for the newest year | Accessories | 14 vehicles (2027) | coverage | Flag for the data source |
 
@@ -327,7 +327,7 @@ Every challenge is listed with its full detail and status in [planning/data_issu
 - **Data source:**
   - no parts for model year 2027 (DI-06);
   - base Atlas 2020 missing from the vehicle export (DV-08);
-  - whether `0.4` labour on `3QF601025KAX1` is minutes or hours (OI-06);
+  - whether `0.4` labour on `3QF601025KAX1` is right: a fraction of a time unit, left empty (OI-06);
   - export part numbers as text (OI-07).
 - **Matching precision:** 14 vehicle rows share all their parsed fields with another row but have a different model number. Something that tells them apart isn't in the description, so their parts list both model numbers.
 - **Fitment hints:** 15 descriptions say things like "not for R-Line". They are flagged as info but not used to narrow the match (DI-13).

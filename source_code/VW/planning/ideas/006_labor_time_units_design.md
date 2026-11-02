@@ -8,6 +8,8 @@
 **Applies to:** the accessory pipeline (plan 003), `clean` step
 **Asked for:** labour time arrives in minutes; the export should show hours. The units and the multiplier are config, not code, with good governance.
 
+> **Corrected by [013](../ideas/013_labour_time_units_to_hours_design.md) (2026-11-02):** the source unit is time units (100 = 1 hour, ÷ 100), not minutes; the converted value is in `labor_hours`.
+
 ## What the data shows (2026-10-27, 1,357 unique part / model rows)
 
 | Labour value (`laborTime`) | Rows | Reads as |

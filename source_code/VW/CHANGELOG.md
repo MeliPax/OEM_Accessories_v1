@@ -2,6 +2,13 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
+## 2026-11-02 — Labour time units to hours (plan 013) · `78c487a`
+
+- `laborTime` is in **time units, 100 to the hour** (300 = 3 h), not minutes as plan 006 assumed. `accessories.yaml` defines `time_units: 100`.
+- The ingest value is read as `labor_time_source` and kept unchanged (dict only). `clean` writes `labor_time_source ÷ 100` (2 decimals) to a new **`labor_hours`** column, which the DQ rules, the dict and the export (`Hours`) use. `labor_time` no longer exists; config validation rejects it.
+- **Every non-zero `Hours` value changes**, e.g. 25 → 0.25 (was 0.42), 100 → 1.00 (was 1.67), 250 → 2.50 (was 4.17). This is the correction, not a regression.
+- Suspect values (`not_whole`, above 1000 time units) are flagged `ACCESS_CLEAN_UNIT_SUSPECT` and `labor_hours` is **left empty**; no second "missing" flag. Today: `3QF601025KAX1` (0.4), 22 export rows.
+
 ## 2026-10-29 — ID.4 and ID. Buzz 2026 verified never offered (plan 009 facts)
 
 - `id4.yaml` and `id_buzz.yaml` record that neither is offered in Canada for 2026 (P.M, 2026-10-29). `id_buzz.yaml` has `reviewed_by` / `reviewed_on`.
