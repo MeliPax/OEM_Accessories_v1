@@ -596,6 +596,9 @@ def load_accessory_config(config_dir, settings):
         if col not in known:
             errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: keep_rows.{col} is not a pipeline column '
                           f'(known: {", ".join(sorted(known))})')
+    units = _units_spec(spec.get('units'), types, where, errors)
+    converted = {u['target_column'] for u in units['columns'].values() if u['target_column']}   # made in clean
+    checkable = known | converted
     for rule, items in (spec.get('dq_rules') or {}).items():
         if rule not in DQ_RULES:
             errors.append(f'CONFG_VALUE_INVALID: {where}: dq_rules.{rule} is not a rule '
@@ -603,15 +606,14 @@ def load_accessory_config(config_dir, settings):
             continue
         names = [c for pair in items for c in pair] if DQ_RULES[rule] == 'pairs' else list(items or [])
         for name in names:
-            if name not in known:
+            if name not in checkable:
                 errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: dq_rules.{rule} names unknown column {name!r} '
-                              f'(known: {", ".join(sorted(known))})')
+                              f'(known: {", ".join(sorted(checkable))})')
 
     export = spec.get('export') or {}
-    units = _units_spec(spec.get('units'), types, where, errors)
     text_cleaning = _text_cleaning_spec(spec.get('text_cleaning'), types, where, errors)
-    sources = {f'{c}_source' for c in list(units['columns']) + text_cleaning['columns']}   # lineage columns
-    usable = known | set(ACCESSORY_DERIVED) | sources
+    sources = {f'{c}_source' for c in text_cleaning['columns']}   # lineage columns (units keep their read column)
+    usable = checkable | set(ACCESSORY_DERIVED) | sources
     if not export.get('columns'):
         errors.append(f'CONFG_VALUE_INVALID: {where}: export.columns is empty')
     by_header = {}
@@ -661,15 +663,16 @@ def _number(value):
 
 
 def _units_spec(block, types, where, errors):
-    """Check the units block (idea 006). Returns {definitions, columns: {column: {..., factor}}}: factor is
-    definitions[target_unit] / definitions[source_unit]."""
+    """Check the units block (ideas 006, 013). Returns {definitions, columns: {column: {..., factor,
+    target_column}}}: factor is definitions[target_unit] / definitions[source_unit]; the column is read and
+    kept unchanged, the converted value goes to target_column (a new column, not one read or derived)."""
     block = block or {}
     definitions = block.get('definitions') or {}
     for unit, per_hour in definitions.items():
         if not _number(per_hour) or per_hour <= 0:
             errors.append(f'CONFG_VALUE_INVALID: {where}: units.definitions.{unit} must be a number above 0 '
                           f'(how many {unit} make one hour), got {per_hour!r}')
-    columns = {}
+    columns, targets = {}, {}
     for column, rule in (block.get('columns') or {}).items():
         rule = rule or {}
         at = f'units.columns.{column}'
@@ -693,10 +696,23 @@ def _units_spec(block, types, where, errors):
             errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.suspect_if.not_whole must be true or false')
         if suspect.get('above') is not None and not _number(suspect['above']):
             errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.suspect_if.above must be a number')
+        target_column = rule.get('target_column')
+        if not isinstance(target_column, str) or not re.fullmatch(r'[a-z][a-z0-9_]*', target_column):
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.target_column must be a new column name '
+                          f'(lowercase snake_case), got {target_column!r}')
+            target_column = None
+        elif target_column in types or target_column in ACCESSORY_DERIVED:
+            errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.target_column {target_column!r} is already a '
+                          f'pipeline column; name a new column')
+        elif target_column in targets:
+            errors.append(f'CONFG_DUPLICATE_ENTRY: {where}: units.columns.{targets[target_column]} and {at} '
+                          f'both write {target_column}')
+        if target_column:
+            targets.setdefault(target_column, column)
         source, target = definitions.get(rule.get('source_unit')), definitions.get(rule.get('target_unit'))
         factor = target / source if _number(source) and _number(target) and source > 0 else None
         columns[str(column)] = {'source_unit': rule.get('source_unit'), 'target_unit': rule.get('target_unit'),
-                                'decimals': decimals, 'factor': factor,
+                                'target_column': target_column, 'decimals': decimals, 'factor': factor,
                                 'not_whole': bool(suspect.get('not_whole', False)), 'above': suspect.get('above')}
     return {'definitions': definitions, 'columns': columns}
 

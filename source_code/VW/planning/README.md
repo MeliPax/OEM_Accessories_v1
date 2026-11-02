@@ -107,3 +107,5 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 (accessory file 2026-10
 | 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides DOC-1 to DOC-10 (OI-13) | 2026-10-28 |
 | 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | completed with plan 012 once testing is signed off (OI-01) | 2026-10-29 |
 | 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-29 |
+| 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off | 2026-11-02 |
+| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Building | build phases H1–H3 (Claude) | 2026-11-02 |

@@ -110,6 +110,9 @@ def test_accessory_config_is_valid(settings):
     assert spec['renames']['make&model'] == 'make_model' and pn['source_column'] == 'stockCode'
     assert pn['pattern'].fullmatch('000071200') and not pn['pattern'].fullmatch('000 071200')
     assert spec['types']['part_number'] == 'text'               # idea 008: never typed as a number
+    labour = spec['units']['columns']['labor_time_source']      # idea 013: time units -> labor_hours
+    assert (labour['factor'], labour['target_column']) == (1 / 100, 'labor_hours')
+    assert spec['renames']['laborTime'] == 'labor_time_source' and 'labor_time' not in spec['types']
 
 
 @pytest.mark.parametrize('old, new, message', [
@@ -135,6 +138,15 @@ def test_accessory_config_is_valid(settings):
     ('      replace_with: Thule.com', '      replace_with: ""', 'link_rules #1: replace_with is empty'),
     ('remove_tags: [b,', 'remove_tags: [p, b,', 'tags p are both separators and remove_tags'),
     ('    msrp: Price', '    msrp: model', 'export.columns: header "model" is used by msrp and model_number'),
+    # idea 013: the converted labour column, and no stale labor_time anywhere
+    ('      target_column: labor_hours ', '      target_column: Labor Hours ',
+     'target_column must be a new column name'),
+    ('      target_column: labor_hours ', '      target_column: msrp ',
+     "target_column 'msrp' is already a pipeline column"),
+    ('    labor_time_source:            #', '    cost:\n      source_unit: hours\n      target_unit: hours\n'
+     '      target_column: labor_hours\n    labor_time_source:            #', 'both write labor_hours'),
+    ('numeric_non_negative: [labor_hours]', 'numeric_non_negative: [labor_time]', "unknown column 'labor_time'"),
+    ('    labor_hours: Hours ', '    labor_time: Hours ', "export column 'labor_time' is not in the dict"),
 ])
 def test_broken_accessory_config_is_rejected(config_copy, settings, old, new, message):
     replace_in(config_copy / 'accessories.yaml', old, new)

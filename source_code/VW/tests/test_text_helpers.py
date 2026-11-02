@@ -117,28 +117,34 @@ def test_markup_only_copies_become_one_row_after_dedupe(spec, ctx):
     assert len(remove_duplicates(df, ctx)) == 1                                          # C5
 
 
-# ---------------------------------------------------------------- units (idea 006)
+# ---------------------------------------------------------------- units (ideas 006, 013)
 
 def labour(*values):
-    return pd.DataFrame([{'source_row': n, 'part_number': f'P{n}', 'model_name': 'Golf', 'labor_time': v}
+    return pd.DataFrame([{'source_row': n, 'part_number': f'P{n}', 'model_name': 'Golf', 'labor_time_source': v}
                          for n, v in enumerate(values, start=3)])
 
 
-def test_minutes_become_hours_with_the_multiplier_from_the_definitions(spec, ctx):
-    assert spec['units']['columns']['labor_time']['factor'] == 1 / 60
-    df, review = convert_units(labour(0, 10, 25, 250, None), spec, ctx)
-    assert df['labor_time'].tolist()[:4] == [0.0, 0.17, 0.42, 4.17] and pd.isna(df['labor_time'].iloc[4])
-    assert df['labor_time_source'].tolist()[:4] == [0, 10, 25, 250]
+def test_time_units_become_hours_in_a_new_labor_hours_column(spec, ctx):
+    assert spec['units']['columns']['labor_time_source']['factor'] == 1 / 100
+    df, review = convert_units(labour(0, 10, 25, 250, 300, None), spec, ctx)
+    assert df['labor_hours'].tolist()[:5] == [0.0, 0.1, 0.25, 2.5, 3.0] and pd.isna(df['labor_hours'].iloc[5])
+    assert df['labor_time_source'].tolist()[:5] == [0, 10, 25, 250, 300]          # read value kept unchanged
+    assert 'labor_time' not in df.columns and 'labor_time_source_source' not in df.columns
     changes = [(c['before'], c['after']) for c in ctx['changes'] if c['rule'] == 'unit_convert']
-    assert changes == [('10', '0.17'), ('25', '0.42'), ('250', '4.17')]                 # 0 stays 0, not logged
+    assert changes == [('10', '0.1'), ('25', '0.25'), ('250', '2.5'), ('300', '3')]  # 0 stays 0, not logged
     assert review == [] and ctx['flags'] == []
 
 
-def test_suspect_values_are_flagged_and_still_converted(spec, ctx):
-    df, review = convert_units(labour(0.4, 0.4, 700), spec, ctx)
-    assert df['labor_time'].tolist() == [0.01, 0.01, 11.67]
+def test_suspect_values_are_flagged_and_left_empty(spec, ctx):
+    df, review = convert_units(labour(0.4, 0.4, 1200, 50), spec, ctx)
+    assert pd.isna(df['labor_hours'].iloc[:3]).all() and df['labor_hours'].iloc[3] == 0.5
+    assert df['labor_time_source'].tolist() == [0.4, 0.4, 1200, 50]
     found = sorted(f['found'] for f in ctx['flags'])
-    assert found == ['above 600 minutes', 'not a whole number of minutes', 'not a whole number of minutes']
-    assert ctx['flags'][0]['message'] == ('Part P3: labor_time 0.4 minutes looks like the wrong unit (not a whole '
-                                          'number of minutes); converted to 0.01 hours anyway (1 row)')
+    assert found == ['above 1000 time_units', 'not a whole number of time_units',
+                     'not a whole number of time_units']
+    assert ctx['flags'][0]['message'] == ('Part P3: labor_time_source 0.4 time_units looks like the wrong unit '
+                                          '(not a whole number of time_units); labor_hours left empty, not '
+                                          'converted to hours (1 row)')
+    changes = [(c['before'], c['after']) for c in ctx['changes'] if c['rule'] == 'unit_convert']
+    assert changes == [('50', '0.5')]                                       # suspect values not logged as changed
     assert {r['code'] for r in review} == {'ACCESS_CLEAN_UNIT_SUSPECT'}

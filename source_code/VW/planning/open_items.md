@@ -23,6 +23,8 @@
 | OI-13 | Decisions DOC-1 to DOC-10 for the requirements register and documentation standard | user | [idea 011](ideas/011_requirements_and_documentation_design.md) | Open |
 | OI-14 | `db/review/accessory_review.csv` was overwritten outside the pipeline on 2026-10-28 at 09:04 (13 bare match keys instead of 467 rows). Rebuilt by the plan 009 real run (241 rows); the overwritten version was copied to the session scratchpad first (`accessory_review_overwritten_0904.csv`) | user | [idea 005](ideas/005_pipeline_report_card_design.md) | Closed 2026-10-28 |
 | OI-15 | Review plan 012 (final export column names) and decide E4–E6: `hours` lowercase, keep `columns:`, Excel file only | user | [plan 012](plans/012_final_export_columns.md) | Closed 2026-10-29 |
+| OI-16 | Decisions H1–H7 for labour time units to hours (new `labor_hours` column) | user | [idea 013](ideas/013_labour_time_units_to_hours_design.md) | Closed 2026-11-02 |
+| OI-17 | Approve plan 013 (labour time ÷ 100 into `labor_hours`) | user | [plan 013](plans/013_labour_time_units_to_hours.md) | Closed 2026-11-02 |
 
 ## Adding or closing an item
 

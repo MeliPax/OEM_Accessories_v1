@@ -3,7 +3,8 @@ import pytest
 
 from conftest import CONFIG_DIR
 from pipeline import config_helpers as cfg
-from pipeline.accessory_helpers import (check_quality, clean_accessories, read_accessories, remove_duplicates,
+from pipeline.accessory_helpers import (check_quality, clean_accessories, convert_units, read_accessories,
+                                        remove_duplicates,
                                         resolve_names, sheet_name, stage_accessories, unique_keys)
 from pipeline.logging_helpers import PipelineFatal, end_run, start_run
 
@@ -12,7 +13,7 @@ SOURCE_COLUMNS = ['stockCode', 'make name', 'model', 'make&model', 'year range',
 
 
 def part(stock='P1', model='GTI', years='2019-2021', status='Active', make='Volkswagen', desc='Floor Mats',
-         msrp='100', cost='60', labor='0.5', notes=''):
+         msrp='100', cost='60', labor='50', notes=''):
     return {'stockCode': stock, 'make name': make, 'model': model, 'make&model': stock + model, 'year range': years,
             'status': status, 'productDescription': desc, 'dealerNotes': notes, 'MSRP': msrp, 'cost': cost,
             'laborTime': labor}
@@ -142,11 +143,22 @@ def test_unique_keys_are_clipped_to_the_window(tmp_path, spec, ctx, taxonomy, se
 def test_quality_rules_and_fitment_hints(tmp_path, spec, ctx, taxonomy):
     df = staged(tmp_path, spec, ctx, [part(msrp='50', cost='60'), part('P2', cost='0', labor='-1'),
                                       part('P3', desc='Front Mud Flaps, not for R-Line')])
-    check_quality(clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)
+    cleaned, _ = convert_units(clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)
+    check_quality(cleaned, spec, ctx)
     assert codes(ctx) == ['ACCESS_DQ_VALUE_NOT_ABOVE', 'ACCESS_DQ_VALUE_ZERO', 'ACCESS_DQ_VALUE_NEGATIVE',
                           'ACCESS_DQ_FITMENT_HINT']
     assert ctx['flags'][0]['message'] == 'msrp 50 is not above cost 60'
+    assert ctx['flags'][2]['category'] == 'labor_hours'                   # the rules check hours (idea 013)
     assert ctx['flags'][-1]['severity'] == 'info'
+
+
+def test_a_suspect_labour_value_is_flagged_once_not_again_as_missing(tmp_path, spec, ctx, taxonomy):
+    df = staged(tmp_path, spec, ctx, [part(labor='0.4'), part('P2', labor='')])
+    cleaned, _ = convert_units(clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)
+    check_quality(cleaned, spec, ctx)
+    assert pd.isna(cleaned['labor_hours']).all() and cleaned['labor_time_source'].iloc[0] == 0.4
+    assert codes(ctx) == ['ACCESS_CLEAN_UNIT_SUSPECT', 'ACCESS_DQ_VALUE_MISSING']   # P1 suspect, P2 really empty
+    assert ctx['flags'][1]['subject'].startswith('P2 ') and ctx['flags'][1]['category'] == 'labor_hours'
 
 
 def test_sheet_names_follow_excel_rules():

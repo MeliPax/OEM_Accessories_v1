@@ -17,7 +17,7 @@ columns:
   dealerNotes:        { name: comments, type: text }
   MSRP:               { name: msrp, type: number }
   cost:               { name: cost, type: number }
-  laborTime:          { name: labor_time, type: number }
+  laborTime:          { name: labor_time_source, type: number }   # time units as read; converted to labor_hours (idea 013)
 
 # Part numbers kept exactly as the source (planning/ideas/008_part_number_integrity_design.md).
 # check_column holds the part number followed directly by the model name ("000071200Atlas"). Removing the
@@ -32,21 +32,25 @@ part_number:
   max_unproven_share: 0.01          # more rows than this not proven stops the run (the layout changed?)
   export_as_text: true              # Part cells written as Excel text, so Excel never drops the zeros
 
-# Units (planning/ideas/006_labor_time_units_design.md). Each unit is defined by how many of it make one
-# hour; the multiplier is definitions[target_unit] / definitions[source_unit] (minutes -> hours = 1/60).
-# The dict keeps <column>_source (the value as read); the export shows the converted value.
+# Units (planning/ideas/006_labor_time_units_design.md, corrected by idea 013). Each unit is defined by how
+# many of it make one hour; the multiplier is definitions[target_unit] / definitions[source_unit]
+# (time units -> hours = 1/100). Each entry reads a column (the value as read, kept unchanged for lineage)
+# and writes the converted value to target_column, which DQ rules, the dict and the export use.
 units:
   definitions:
     hours: 1
     minutes: 60
+    time_units: 100               # the labour unit in the accessory file: 100 time units = 1 hour (300 = 3 h)
   columns:
-    labor_time:
-      source_unit: minutes        # what the accessory file holds
+    labor_time_source:            # laborTime as read (time units); demoted: dict only, never exported
+      source_unit: time_units     # what the accessory file holds
       target_unit: hours          # what the dict and the export hold
-      decimals: 2                 # rounding of the converted value (25 min -> 0.42 h)
-      suspect_if:                 # values that look like the wrong unit: flagged ACCESS_CLEAN_UNIT_SUSPECT, still converted
-        not_whole: true           # a fraction of a minute (0.4) probably means the value is already in hours
-        above: 600                # more than 10 hours of labour is unlikely for an accessory
+      target_column: labor_hours  # promoted: DQ rules, dict, export "Hours"
+      decimals: 2                 # whole time units convert exactly (25 -> 0.25 h)
+      suspect_if:                 # values that look like the wrong unit: flagged ACCESS_CLEAN_UNIT_SUSPECT,
+                                  # labor_hours left empty (idea 013, H5)
+        not_whole: true           # a fraction of a time unit (0.4) can't be right
+        above: 1000               # more than 10 hours of labour is unlikely for an accessory
 
 # Comment cleaning (planning/ideas/007_comment_text_cleaning_design.md). Separators split a text into
 # sentences; each is trimmed and gets sentence_end when it has no ending punctuation (not after a link);
@@ -79,9 +83,9 @@ known_statuses: [Active, Inactive]
 # The year range itself is checked when it is split (ACCESS_YEAR_RANGE_INVALID / _REVERSED).
 dq_rules:
   greater_than: [[msrp, cost]]                  # left value must be > right value
-  not_null: [part_number, model_name, product_description, msrp, cost, labor_time]
+  not_null: [part_number, model_name, product_description, msrp, cost, labor_hours]
   numeric_non_zero: [msrp, cost]
-  numeric_non_negative: [labor_time]            # zero or more
+  numeric_non_negative: [labor_hours]           # zero or more
 
 # description words that hint at narrower fitment. Logged at INFO only (ACCESS_DQ_FITMENT_HINT):
 # an accessory still fits every vehicle in its set (idea 003, A4).
@@ -119,7 +123,7 @@ export:
     model_name_clean: ModelName                 # standard name (GTI -> Golf GTI); the sheet keeps the file's name
     product_description: Description
     msrp: Price
-    labor_time: Hours                           # converted per units: above (idea 006)
+    labor_hours: Hours                          # time units / 100, per units: above (idea 013)
     comments: Comments
     variant: Variant                            # built per the variant block above
     applicable_year: Year

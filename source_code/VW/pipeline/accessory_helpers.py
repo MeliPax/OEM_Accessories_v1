@@ -43,12 +43,14 @@ DATASET = 'accessories'
 YEAR_RANGE = re.compile(r'^\s*(\d{4})\s*(?:-\s*(\d{4}))?\s*$')
 SHEET_FORBIDDEN = re.compile(r'[\[\]:*?/\\]')
 DICT_COLUMNS = ['part_number', 'part_number_source', 'part_number_check', 'model_name', 'model_name_clean', 'model', 'submodel', 'product_description',
-                'comments', 'msrp', 'cost', 'labor_time', 'applicable_year', 'match_key', 'model_number',
+                'comments', 'msrp', 'cost', 'labor_time_source', 'labor_hours', 'applicable_year', 'match_key', 'model_number',
                 'vehicle_id', 'variant', 'match_status', 'source_row']
+
 REVIEW_COLUMNS = ['type', 'record', 'part_number', 'model_name', 'model', 'submodel', 'year', 'match_key',
                   'model_number', 'code', 'severity', 'message', 'checked', 'found', 'causes', 'fix']
 # idea 008: how stockCode was proven by make&model. Only these two results count as proven.
 PROVEN = ('same', 'restored')
+
 SPLIT_REASONS = {'no_check_value': 'make&model is empty',
                  'no_suffix': 'the model name is empty',
                  'suffix_not_at_end': 'make&model does not end with the model name',
@@ -451,33 +453,33 @@ def clean_text_columns(df, spec, ctx=None, step='clean_text'):
 
 
 def convert_units(df, spec, ctx=None, step='clean'):
-    """Convert the units columns (idea 006): value x definitions[target] / definitions[source], rounded.
-    Keeps <column>_source (the value as read). One change per distinct value; values that look like the
-    wrong unit are flagged ACCESS_CLEAN_UNIT_SUSPECT and still converted. Returns (df, review rows)."""
+    """Convert the units columns (ideas 006, 013): column x definitions[target] / definitions[source], rounded,
+    written to the rule's target_column; the column read is kept unchanged (lineage). One change per distinct
+    value; values that look like the wrong unit are flagged ACCESS_CLEAN_UNIT_SUSPECT and their target is
+    left empty, so the export never shows a made-up value. Returns (df, review rows)."""
     df = df.copy()
     review = []
     for col, rule in spec['units']['columns'].items():
+        target = rule['target_column']
         source = df[col]
-        df[f'{col}_source'] = source
-        df[col] = (source * rule['factor']).round(rule['decimals'])
-        log_info(ctx, step, 'UNITS', column=col, rule=f'{rule["source_unit"]} -> {rule["target_unit"]} '
-                 f'x {rule["factor"]:.6g}, {rule["decimals"]} decimals')
-        for value, rows in source.dropna().value_counts().sort_index().items():
-            converted = round(value * rule['factor'], rule['decimals'])
-            if converted == value:                                      # 0 minutes = 0 hours
-                continue
-            log_change(ctx, step, {'record': f'{col} {_number_text(value)}'}, col, _number_text(value),
-                       _number_text(converted), 'unit_convert',
-                       f'{rule["source_unit"]} -> {rule["target_unit"]} x {rule["factor"]:.6g}, '
-                       f'{rule["decimals"]} decimals; {_rows(rows)}')
+        how = f'{rule["source_unit"]} -> {rule["target_unit"]} x {rule["factor"]:.6g}, {rule["decimals"]} decimals'
         suspect = pd.Series('', index=df.index)
         if rule['not_whole']:
             suspect[source.notna() & (source % 1 != 0)] = f'not a whole number of {rule["source_unit"]}'
         if rule['above'] is not None:
             suspect[source.notna() & (source > rule['above'])] = f'above {_number_text(rule["above"])} ' \
                                                                   f'{rule["source_unit"]}'
+        df[target] = (source * rule['factor']).round(rule['decimals']).mask(suspect != '')
+        log_info(ctx, step, 'UNITS', column=col, target=target, rule=how)
+        trusted = source[suspect == '']
+        for value, rows in trusted.dropna().value_counts().sort_index().items():
+            converted = round(value * rule['factor'], rule['decimals'])
+            if converted == value:                                      # 0 time units = 0 hours
+                continue
+            log_change(ctx, step, {'record': f'{col} {_number_text(value)}'}, target, _number_text(value),
+                       _number_text(converted), 'unit_convert', f'{col} -> {target}: {how}; {_rows(rows)}')
         flagged = df[suspect != ''].assign(reason=suspect[suspect != ''])
-        for (part, value), group in flagged.groupby(['part_number', f'{col}_source'], sort=True):
+        for (part, value), group in flagged.groupby(['part_number', col], sort=True):
             first = group.iloc[0]
             flag = log_flag(ctx, step, first, 'ACCESS_CLEAN_UNIT_SUSPECT', col, value,
                             subject=f'{part} {col}={_number_text(value)} - {_rows(len(group))}',
@@ -485,7 +487,7 @@ def convert_units(df, spec, ctx=None, step='clean'):
                                     f'{_number_text(rule["above"])}',
                             found=first['reason'], column=col, value=_number_text(value),
                             source_unit=rule['source_unit'], target_unit=rule['target_unit'],
-                            converted=_number_text(first[col]), reason=first['reason'], part_number=part,
+                            target_column=target, reason=first['reason'], part_number=part,
                             rows=_rows(len(group)))
             if flag:
                 review.append(_value_review(flag, group))
@@ -626,6 +628,9 @@ def check_quality(df, spec, ctx=None, step='validate'):
     ACCESS_DQ_FITMENT_HINT notes at info. Runs on the deduplicated rows (one per part and model)."""
     rules = spec['dq_rules']
     counts = {}
+    # a converted column that is empty while its source is filled was left empty on purpose
+    # (ACCESS_CLEAN_UNIT_SUSPECT, idea 013): not flagged again as missing
+    converted_from = {u['target_column']: c for c, u in spec['units']['columns'].items()}
 
     def flag(row, code, field, field_value, /, checked, found, **facts):
         log_flag(ctx, step, row, code, field, field_value, checked=checked, found=found,
@@ -639,6 +644,8 @@ def check_quality(df, spec, ctx=None, step='validate'):
                 flag(row, 'ACCESS_DQ_VALUE_NOT_ABOVE', left, a, checked=f'{left} > {right}',
                      found=f'{left}={a}, {right}={b}', left=left, left_value=a, right=right, right_value=b)
         for col in rules.get('not_null', []):
+            if col in converted_from and pd.notna(row[converted_from[col]]):
+                continue
             if pd.isna(row[col]) or str(row[col]).strip() == '':
                 flag(row, 'ACCESS_DQ_VALUE_MISSING', col, '', checked=f'{col} is filled', found='empty', column=col)
         for col in rules.get('numeric_non_zero', []):

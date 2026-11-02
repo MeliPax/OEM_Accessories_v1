@@ -564,13 +564,13 @@ ACCESS_STGNG_PART_NUMBER_SPLIT_RATE:
 
 ACCESS_CLEAN_UNIT_SUSPECT:
   severity: warning
-  message: 'Part {part_number}: {column} {value} {source_unit} looks like the wrong unit ({reason}); converted to {converted} {target_unit} anyway ({rows})'
-  facts: [part_number, column, value, source_unit, target_unit, converted, reason, rows]
+  message: 'Part {part_number}: {column} {value} {source_unit} looks like the wrong unit ({reason}); {target_column} left empty, not converted to {target_unit} ({rows})'
+  facts: [part_number, column, value, source_unit, target_unit, target_column, reason, rows]
   causes:
     - The value was entered in another unit (e.g. already in hours)
     - A typo in the accessory file
   fix:
-    - Confirm the unit with the data source; if the value is already in hours, ask them to correct the file
+    - Confirm the value with the data source and ask them to correct the file; the export shows it once it converts cleanly
     - If values like this are normal, change units.columns.{column}.suspect_if in config/accessories.yaml
     - Rerun run_accessories.py
 

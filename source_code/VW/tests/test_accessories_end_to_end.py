@@ -287,11 +287,16 @@ def test_comments_are_clean_and_keep_the_raw_text(acc_run):
 
 
 def test_labour_time_is_exported_in_hours(acc_run):
-    """Idea 006: minutes -> hours, 2 decimals; the 0.4 value on 3QF601025KAX1 is flagged for review."""
+    """Idea 013: laborTime is in time units (100 = 1 hour). labor_hours = labor_time_source / 100, 2 decimals;
+    the 0.4 value on 3QF601025KAX1 is flagged for review and left empty."""
     db, out, _, summary, model_dict = acc_run
     rows = pd.concat(model_dict.values())
-    pairs = set(zip(rows['labor_time_source'], rows['labor_time']))
-    assert {(25.0, 0.42), (250.0, 4.17), (0.0, 0.0), (0.4, 0.01)} <= pairs
+    assert 'labor_time' not in rows.columns
+    suspect = rows['part_number'] == '3QF601025KAX1'
+    ok = rows[~suspect]
+    assert (ok['labor_hours'] == (ok['labor_time_source'] / 100).round(2)).all()
+    assert {(25.0, 0.25), (250.0, 2.5), (0.0, 0.0), (100.0, 1.0)} <= set(zip(ok['labor_time_source'], ok['labor_hours']))
+    assert (rows.loc[suspect, 'labor_time_source'] == 0.4).all() and rows.loc[suspect, 'labor_hours'].isna().all()
     assert summary['unit_suspects'] == 1
     review = read(run_file(db, 'review', 'accessory_review', 'acc1'))
     value = review[review['type'] == 'value']
