@@ -73,7 +73,8 @@ Every flag carries a code from `config/messages.yaml`. Its message, causes and f
 | `ACCESS_STGNG_PART_NUMBER_INCONSISTENT` | One proven part number is written more than one way in `stockCode` |
 | `ACCESS_STGNG_PART_NUMBER_SPLIT_RATE` | Fatal: more than `max_unproven_share` of rows can't be proven (the file layout probably changed) |
 
-| `ACCESS_CLEAN_UNIT_SUSPECT` | A value looks like the wrong unit (e.g. 0.4 time units of labour); `labor_hours` left empty, confirm with the source |
+| `ACCESS_CLEAN_UNIT_CORRECTED` | A labour value above 0 and below 1 was read as hours and corrected × 100 into `labor_time_corrected` (0.4 → 40 time units = 0.4 h); ask the source to fix the file |
+| `ACCESS_CLEAN_UNIT_SUSPECT` | A value looks like the wrong unit (not whole after any correction, or above 1000 time units); `labor_hours` left empty, confirm with the source |
 | `ACCESS_CLEAN_UNREVIEWED_LINK` | A comment link no `link_rules` entry or `allowed_link_hosts` covers; kept as it is |
 | `ACCESS_VERIFY_CONTRADICTED` | A verified fact says a vehicle was never offered in a year, but the vehicle DB has vehicles for it: correct the entry or the data |
 | `ACCESS_VERIFY_EXPIRED` | A `no_parts_expected` fact passed its `until` date; its coverage flags are back |

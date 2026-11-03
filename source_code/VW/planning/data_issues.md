@@ -30,7 +30,7 @@
 | [DI-04](#di-04) | Accessories | Golf GTI is named only "GTI" | 109 parts | Handled |
 | [DI-05](#di-05) | Accessories | Year ranges reach years with no VW vehicle | 7 model-years, 451 part-years (2 and 93 from 2024) | **Handled**: ID.4, ID. Buzz 2026 verified never offered (2026-10-29); the rest out of scope from 2024 or verified (009) |
 | [DI-06](#di-06) | Accessories | No parts listed for model year 2027 | 14 vehicles | **Open** |
-| [DI-07](#di-07) | Accessories | Labour time unit not stated (time units, 100 = 1 hour; first read as minutes); one value is a fraction of a unit | 1,357 rows; 1 part suspect | Handled (006, corrected by 013) + **Open** (one value) |
+| [DI-07](#di-07) | Accessories | Labour time unit not stated (time units, 100 = 1 hour; first read as minutes); one value is a fraction of a unit | 1,357 rows; 1 part suspect | Handled (006, corrected by 013; 0.4 corrected by 014) |
 | [DI-08](#di-08) | Accessories | Comments hold HTML markup; sentences run together | 38 texts, 256 rows | Handled (007) |
 | [DI-09](#di-09) | Accessories | Comments use `\|` / `\|\|` as line breaks | 8 texts, 64 rows | Handled (007) |
 | [DI-10](#di-10) | Accessories | Comment links to a catalogue page that isn't public | 1 part, 13 rows | Handled (007) |
@@ -164,8 +164,9 @@
   - flag values that look like the wrong unit (`ACCESS_CLEAN_UNIT_SUSPECT`).
 - **Handling (built 2026-11-02, plan 013):** `laborTime` is read as `labor_time_source` and `labor_hours` = ÷ 100, 2 decimals; DQ rules, dict and export (`Hours`) use `labor_hours`. `3QF601025KAX1` (0.4, not a whole time unit) is flagged `ACCESS_CLEAN_UNIT_SUSPECT`, `labor_hours` left empty, and listed in `accessory_review.csv`.
 - **Handling (built 2026-10-28, superseded):** the export shows hours. `3QF601025KAX1` is flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`; it is still converted (0.4 min → 0.01 h) until the source confirms the value.
-- **Ask the data source:** confirm the unit, and the labour time for `3QF601025KAX1`.
-- **Status:** Handled (idea 006) + **Open** (the 0.4 value).
+- **Handling (built 2026-11-03, plan 014):** a value above 0 and below 1 is read as hours typed into the time-units column: `3QF601025KAX1` 0.4 → `labor_time_corrected` 40 → `labor_hours` 0.4 (22 export rows), flagged `ACCESS_CLEAN_UNIT_CORRECTED` with a review row. `labor_time_source` keeps 0.4.
+- **Ask the data source:** confirm the unit (time units, 100 = 1 hour), and correct the labour time for `3QF601025KAX1` in the file.
+- **Status:** Handled (ideas 006, 013, 014); the source fix is a request, not a blocker.
 
 ### DI-08
 

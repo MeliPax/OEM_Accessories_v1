@@ -68,7 +68,7 @@ Write a fact in its home and link to it from elsewhere; copies go stale.
 
 ## Baseline
 
-Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after plan 013 (accessory file 2026-10-20, vehicle export `vw_models_data.csv`). Update after each build's real run.
+Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after plan 013, 2026-11-03 after plan 014 (accessory file 2026-10-20, vehicle export `vw_models_data.csv`). Update after each build's real run.
 
 | Measure | Value |
 |---|---|
@@ -80,8 +80,8 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | Vehicles with no parts | 14 (model year 2027) |
 | Accessory review rows | 16 (148 at 2020+) |
 | Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
-| Labour (plan 013) | `Hours` = `laborTime` ÷ 100: 13 distinct values converted (0.1–2.5 h); 1 suspect part (`3QF601025KAX1`, 22 export rows, `Hours` empty) |
-| Tests | 290 passing, 1 failing (`test_lookup_finds_27_of_29_keys_and_explains_the_2_misses` expects `id_buzz.yaml` "drafted"; it is "reviewed" since 2026-10-29) |
+| Labour (plans 013, 014) | `Hours` = `laborTime` ÷ 100: 13 distinct values converted (0.1–2.5 h); 1 part corrected below 1 (`3QF601025KAX1` 0.4 → 40 → 0.4 h, 22 export rows); 0 suspects; 0 empty `Hours` |
+| Tests | 297 passing, 1 failing (`test_lookup_finds_27_of_29_keys_and_explains_the_2_misses` expects `id_buzz.yaml` "drafted"; it is "reviewed" since 2026-10-29) |
 
 ## Index
 
@@ -109,6 +109,6 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | completed with plan 012 once testing is signed off (OI-01) | 2026-10-29 |
 | 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-29 |
 | 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off | 2026-11-02 |
-| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (OI-01); the source confirms the 0.4 value (OI-06) | 2026-11-02 |
+| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-02 |
 | 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off | 2026-11-03 |
-| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Building | build phases C1–C3 (Claude) | 2026-11-03 |
+| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-03 |

@@ -222,7 +222,7 @@ Configured in `accessories.yaml` → `variant`. The label joins the vehicle's st
 |---|---|---|---|
 | fatal | The run stops | `failed` | `ACCESS_EXPORT_FILE_LOCKED` (the Excel file is open) |
 | error | A row or key can't be used; goes to review | `ok_with_errors` | `ACCESS_LOOKUP_YEAR_AFTER_LAST_KNOWN` |
-| warning | Used, but a person should look; goes to review | `ok_with_warnings` | `ACCESS_CLEAN_UNIT_SUSPECT` (0.4 time units) |
+| warning | Used, but a person should look; goes to review | `ok_with_warnings` | `ACCESS_CLEAN_UNIT_CORRECTED` (0.4 read as hours, corrected to 40) |
 | info | Noted in the log only | `ok` | `ACCESS_YEAR_CLIPPED` |
 
 - Codes follow `<PIPELINE>_<STAGE>_<WHAT>`. The wording lives in `messages.yaml`, and the code passes only the facts.
@@ -293,7 +293,7 @@ db/
 | Leading zeros lost | Accessories | 151 rows in scope | part_numbers (proof from `make&model`) | `71200` → `000071200` |
 | Different model names | Accessories | 90 GTI rows | shared alias | `GTI` → `Golf GTI` |
 | Year ranges past the vehicle's life | Accessories | 93 part-years | lookup flags + verified facts | ID.4 2026: never offered |
-| Unit not stated | Accessories | All labour values | units config | `25` → `0.25` h (time units ÷ 100, idea 013); `0.4` flagged, left empty |
+| Unit not stated | Accessories | All labour values | units config | `25` → `0.25` h (time units ÷ 100, idea 013); `0.4` (below 1) read as hours, corrected to `40` → `0.4` h and flagged (idea 014) |
 | HTML, pipes, private links in comments | Accessories | 34 texts | clean_text | `<p>...</p><p>...` → two sentences; Salsify link → `Thule.com` |
 | No parts for the newest year | Accessories | 14 vehicles (2027) | coverage | Flag for the data source |
 
@@ -327,7 +327,7 @@ Every challenge is listed with its full detail and status in [planning/data_issu
 - **Data source:**
   - no parts for model year 2027 (DI-06);
   - base Atlas 2020 missing from the vehicle export (DV-08);
-  - whether `0.4` labour on `3QF601025KAX1` is right: a fraction of a time unit, left empty (OI-06);
+  - the `0.4` labour on `3QF601025KAX1`: corrected to 40 time units by rule (idea 014); the source should fix the file;
   - export part numbers as text (OI-07).
 - **Matching precision:** 14 vehicle rows share all their parsed fields with another row but have a different model number. Something that tells them apart isn't in the description, so their parts list both model numbers.
 - **Fitment hints:** 15 descriptions say things like "not for R-Line". They are flagged as info but not used to narrow the match (DI-13).

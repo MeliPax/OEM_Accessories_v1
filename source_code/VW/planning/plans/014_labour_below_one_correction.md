@@ -1,9 +1,8 @@
 # 014 — Labour Values Below One Corrected (× 100): Plan
 
-**Status:** Building
-**Checkpoint:** 2026-11-03, phases C1–C2 done and committed (297 passed, 1 failed as at baseline). Next: phase C3, real runs then docs
+**Status:** Built — in user testing (2026-11-03)
 **Updated:** 2026-11-03
-**Next:** build phases C1–C3 (Claude)
+**Next:** user signs off testing (OI-01)
 **Links:** idea [014](../ideas/014_labour_below_one_correction_design.md) · builds on plan [013](013_labour_time_units_to_hours.md) · data issue [DI-07](../data_issues.md#di-07) · open item OI-06
 **Summary:** In the `clean` step, a labour value above 0 and below 1 is read as hours typed into a time-units column, multiplied by 100 into `labor_time_corrected`, flagged `ACCESS_CLEAN_UNIT_CORRECTED`, and then converted to `labor_hours` like any other value.
 
@@ -17,12 +16,12 @@ dedupe (1,028) ─► clean: correct (0 < v < 1: × 100 → labor_time_corrected
 
 **Success criteria (real run, accessory file 2026-10-20)**
 
-- [ ] Run log: `UNITS ... correct between 0 and 1 entered as hours x 100` before the conversion line.
-- [ ] Change log: `0.4 -> 40` (rule `unit_correct`, 2 rows), then `40 -> 0.4` (rule `unit_convert`).
-- [ ] `3QF601025KAX1`: `labor_time_source` 0.4, `labor_time_corrected` 40, `labor_hours` 0.4 in the dict; `Hours` 0.4 on its 22 export rows.
-- [ ] Flags: `ACCESS_CLEAN_UNIT_CORRECTED` once for `3QF601025KAX1`; **no** `ACCESS_CLEAN_UNIT_SUSPECT` (0 suspects today); one `type = value` review row with the new code.
-- [ ] Values of 0 untouched (no `unit_correct` change for 0); all other `Hours` values as in plan 013's run.
-- [ ] Full test suite passes (apart from the known `id_buzz.yaml` test, unless fixed separately); `run_ingest.py` and `run_accessories.py` complete.
+- [x] Run log: `UNITS ... correct between 0 and 1 entered as hours x 100` before the conversion line.
+- [x] Change log: `0.4 -> 40` (rule `unit_correct`, 2 rows), then `40 -> 0.4` (rule `unit_convert`).
+- [x] `3QF601025KAX1`: `labor_time_source` 0.4, `labor_time_corrected` 40, `labor_hours` 0.4 in the dict; `Hours` 0.4 on its 22 export rows.
+- [x] Flags: `ACCESS_CLEAN_UNIT_CORRECTED` once for `3QF601025KAX1`; **no** `ACCESS_CLEAN_UNIT_SUSPECT` (0 suspects today); one `type = value` review row with the new code.
+- [x] Values of 0 untouched (no `unit_correct` change for 0); all other `Hours` values as in plan 013's run.
+- [x] Full test suite passes (apart from the known `id_buzz.yaml` test, unless fixed separately); `run_ingest.py` and `run_accessories.py` complete.
 
 ## Phase C1 — Config, message and validation
 
@@ -47,10 +46,10 @@ dedupe (1,028) ─► clean: correct (0 < v < 1: × 100 → labor_time_corrected
 
 ## Phase C3 — Tests, real run and docs
 
-- [ ] Tests (table below); full suite.
-- [ ] Real runs; success criteria ticked with the numbers; Baseline in `planning/README.md`.
-- [ ] Docs: DI-07 (0.4 handled by the rule, still ask the source) and OI-06 closed (B7); `db/README.md` (new code, `labor_time_corrected`); `README.md` units line; `ARCHITECTURE.md` (clean step, 0.4 example); `CHANGELOG.md`.
-- [ ] Commit (approved and tested; not pushed).
+- [x] Tests (table below); full suite.
+- [x] Real runs; success criteria ticked with the numbers; Baseline in `planning/README.md`.
+- [x] Docs: DI-07 (0.4 handled by the rule, still ask the source) and OI-06 closed (B7); `db/README.md` (new code, `labor_time_corrected`); `README.md` units line; `ARCHITECTURE.md` (clean step, 0.4 example); `CHANGELOG.md`.
+- [x] Commit (approved and tested; not pushed).
 
 **Done when:** suite and real runs pass, docs match → `Built — in user testing`.
 
@@ -73,6 +72,7 @@ dedupe (1,028) ─► clean: correct (0 < v < 1: × 100 → labor_time_corrected
 | 2026-11-03 | **Build.** C1 and C2 committed together: the message catalogue test fails until code raises the new code (C2) | Claude |
 | 2026-11-03 | **Build.** Corrected values rounded to 9 decimals (0.29 x 100 = 28.999999999999996 would read as not whole and be flagged suspect) | Claude |
 | 2026-11-03 | **Build.** A value corrected and still suspect (0.405 -> 40.5) gets both flags; the suspect flag shows the value as read and adds "checked after correcting: 40.5" | Claude |
+| 2026-11-03 | **Real run** `vw_accessories_20261103_083930`: `UNITS CORRECT ... rows=2`; `0.4 -> 40` (unit_correct), `40 -> 0.4` (unit_convert); 1 `ACCESS_CLEAN_UNIT_CORRECTED`, 0 suspects, 0 missing-labour flags; `3QF601025KAX1` `Hours` 0.4 on 22 export rows; 0 empty `Hours`; vs the plan 013 run only those 22 rows changed; 9,388 export rows, 16 review rows | Claude |
 | 2026-11-03 | **Build.** Tests that used 0.4 as a suspect example now use 1.5 (0.4 is corrected) | Claude |
 
 ## Risks

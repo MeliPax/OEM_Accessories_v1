@@ -2,6 +2,13 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
+## 2026-11-03 — Labour values below one corrected × 100 (plan 014) · `32fc9f4`
+
+- In the `clean` step, on the deduplicated rows and before the suspect check and the ÷ 100 conversion, a labour value **above 0 and below 1** is read as hours typed into the time-units column and multiplied by 100: `correct_if: { between: [0, 1], entered_as: hours }` in `accessories.yaml` (× 100 from `units.definitions`).
+- `labor_time_source` keeps the value as read; the new dict column `labor_time_corrected` holds the value used (0.4 → 40). 0 and negative values are never corrected.
+- Each correction: a `unit_correct` change row, an `ACCESS_CLEAN_UNIT_CORRECTED` warning and a review row asking the source to fix the file. The run summary counts `unit_corrected` apart from `unit_suspects`.
+- Today: `3QF601025KAX1` exports `Hours` **0.40** on its 22 rows (was empty). No other row changes; 0 suspects; OI-06 closed.
+
 ## 2026-11-02 — Labour time units to hours (plan 013) · `78c487a`
 
 - `laborTime` is in **time units, 100 to the hour** (300 = 3 h), not minutes as plan 006 assumed. `accessories.yaml` defines `time_units: 100`.
