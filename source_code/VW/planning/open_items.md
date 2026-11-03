@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | OI-01 | Sign off testing of plans 001, 002, 003, 006, 007, 008, 009, 010, 012, 013, 014, so they can move to `completed/` | user | [plans](README.md#index) | Open |
 | OI-02 | Notebook cells for plans 001, 002, 003; added only while the notebook is closed | agent | [plan 003](plans/003_accessory_model_matching.md) | Open |
-| OI-03 | Review `config/vehicles/*.yaml`: all 10 are `drafted`; set `reviewed` with who and when | user | [plan 001](plans/001_vw_model_ingest_mvp.md) | Open |
+| OI-03 | Review `config/vehicles/*.yaml`: 9 of 10 are `drafted` (`id_buzz.yaml` reviewed by P.M, 2026-10-29); set `reviewed` with who and when | user | [plan 001](plans/001_vw_model_ingest_mvp.md) | Open |
 | OI-04 | Atlas 2020, ID.4 2026, ID. Buzz 2026: parts listed, no vehicle in the export. Missing vehicles or wrong year ranges? (Golf R, Arteon, and on 2026-10-29 ID.4 and ID. Buzz 2026: verified never offered, plan 009; Atlas 2020 is outside the accessory window) | data source | [DI-05](data_issues.md#di-05) | Open |
 | OI-05 | No accessory parts for model year 2027 (14 vehicles) | data source | [DI-06](data_issues.md#di-06) | Open |
 | OI-06 | Labour time 0.4 on `3QF601025KAX1`: a fraction of a time unit (100 = 1 hour); what is the right value? Hours left empty until then | data source | [DI-07](data_issues.md#di-07) | Closed 2026-11-03 (corrected by rule, idea 014: read as hours → 40; the source is asked to fix the file, DI-07) |

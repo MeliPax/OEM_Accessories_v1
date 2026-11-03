@@ -81,7 +81,7 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | Accessory review rows | 16 (148 at 2020+) |
 | Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
 | Labour (plans 013, 014) | `Hours` = `laborTime` ÷ 100: 13 distinct values converted (0.1–2.5 h); 1 part corrected below 1 (`3QF601025KAX1` 0.4 → 40 → 0.4 h, 22 export rows); 0 suspects; 0 empty `Hours` |
-| Tests | 297 passing, 1 failing (`test_lookup_finds_27_of_29_keys_and_explains_the_2_misses` expects `id_buzz.yaml` "drafted"; it is "reviewed" since 2026-10-29) |
+| Tests | 298 passing |
 
 ## Index
 

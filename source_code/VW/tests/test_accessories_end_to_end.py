@@ -100,7 +100,11 @@ def test_lookup_finds_27_of_29_keys_and_explains_the_2_misses(acc_run):
     assert len(lookup_flags) == 2                                         # once per key, not per part
     for _, flag in lookup_flags.iterrows():
         assert '/final/vehicles_ingest1.csv model=' in flag['checked'] and '2) config/vehicles/' in flag['checked']
-        assert 'drafted from data, not reviewed' in flag['checked'] and flag['fix'].startswith('1) ')
+        # each miss names its vehicle file's own review status (id4.yaml drafted, id_buzz.yaml reviewed 2026-10-29)
+        name = re.search(r'config/vehicles/(\S+\.yaml)', flag['checked']).group(1)
+        status = cfg.read_yaml(CONFIG_DIR / 'vehicles' / name).get('status', 'drafted')
+        expected = '(reviewed)' if status == 'reviewed' else 'drafted from data, not reviewed'
+        assert expected in flag['checked'] and flag['fix'].startswith('1) ')
 
 
 def test_vehicles_without_parts_are_the_2027_vehicles(acc_run):
