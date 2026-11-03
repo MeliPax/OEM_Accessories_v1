@@ -90,14 +90,14 @@ def test_config_problems_carry_their_codes(config_copy):
 
 
 def test_vehicle_file_status_is_checked(config_copy):
-    replace_in(config_copy / 'vehicles' / 'golf.yaml', 'status: drafted', 'status: approved')
+    replace_in(config_copy / 'vehicles' / 'golf.yaml', 'status: reviewed', 'status: approved')
     with pytest.raises(ConfigError, match='status must be one of drafted, reviewed'):
         load_all(config_copy)
 
 
 def test_vehicle_years_per_model_and_submodel(option_sets):
     years = cfg.vehicle_years(option_sets)
-    assert years[('Golf', None)] == {'years': {2020, 2021}, 'files': 'golf.yaml', 'status': 'drafted'}
+    assert years[('Golf', None)] == {'years': {2020, 2021}, 'files': 'golf.yaml', 'status': 'reviewed'}
     assert min(years[('Golf', 'R')]['years']) == 2022 and max(years[('Arteon', None)]['years']) == 2021
 
 

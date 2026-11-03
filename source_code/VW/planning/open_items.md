@@ -12,7 +12,7 @@
 | ID | Where | What | Owner | Status | Was |
 |---|---|---|---|---|---|
 | 001-T | [plan 001](plans/001_vw_model_ingest_mvp.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
-| 001-U1 | [plan 001](plans/001_vw_model_ingest_mvp.md) | Review `config/vehicles/*.yaml`: 9 of 10 are `drafted` (`id_buzz.yaml` reviewed by P.M, 2026-10-29); set `reviewed` with who and when | user | Open | OI-03 |
+| 001-U1 | [plan 001](plans/001_vw_model_ingest_mvp.md) | Review `config/vehicles/*.yaml`: all 10 `reviewed` by P.M (ID. Buzz 2026-10-29, the other 9 2026-11-03) | user | Closed 2026-11-03 | OI-03 |
 | 002-T | [plan 002](plans/002_pipeline_logging.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
 | 003-A1 | [plan 003](plans/003_accessory_model_matching.md) | Notebook cells for plans 001, 002, 003; added only while the notebook is closed | Claude | Open | OI-02 |
 | 003-D18 | [plan 003](plans/003_accessory_model_matching.md) | Should accessory lookup misses be warnings instead of errors? | user | Open | OI-09 |

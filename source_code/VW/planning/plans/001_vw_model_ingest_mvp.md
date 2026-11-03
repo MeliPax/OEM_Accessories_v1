@@ -1,8 +1,8 @@
 # 001 — VW Model Ingest MVP: Plan
 
 **Status:** Built — in user testing (2026-10-26)
-**Updated:** 2026-10-26
-**Next:** user signs off testing (001-T); review config/vehicles (001-U1); notebook cell (003-A1)
+**Updated:** 2026-11-03
+**Next:** user signs off testing (001-T); notebook cell (003-A1)
 **Links:** idea [001](../ideas/001_vw_model_ingest_design.md) · logging from plan [002](002_pipeline_logging.md)
 **Summary:** The VW vehicle ingest: config, staging, year window, cleaning, parsing, resolutions, validation and vehicles.csv.
 **Branch:** `feature/vw-data-analysis` (or a new `feature/vw-model-ingest` from `dev`, per `accy_v2/planning/VERSIONING.md`)
@@ -99,7 +99,7 @@ Turn the markdown guide into machine-readable config, and make sure bad config f
 
 - [x] `config_helpers.load_option_sets()`: read every `config/vehicles/*.yaml`. Fail if a model/submodel isn't in `models.yaml`, a value isn't in the vocabulary for that category, or two sets for the same model + submodel overlap in years.
 - [x] ~~`config_helpers.draft_option_sets(vehicles)`~~: done as a one-off instead (2026-10-26). The 10 files in `config/vehicles/` were drafted from the 2020+ data, so no pipeline helper is needed; future vehicles are added by hand.
-- [ ] Review the drafted `config/vehicles/*.yaml` (Arteon, Atlas, e-Golf, Golf, ID. Buzz, ID.4, Jetta, Passat, Taos, Tiguan) and adjust where the data under-describes a vehicle. From then on, option sets are written by hand when new vehicles come out.
+- [x] Review the drafted `config/vehicles/*.yaml` (Arteon, Atlas, e-Golf, Golf, ID. Buzz, ID.4, Jetta, Passat, Taos, Tiguan) and adjust where the data under-describes a vehicle. From then on, option sets are written by hand when new vehicles come out. Done 2026-11-03: all 10 `reviewed` by P.M (001-U1).
 - [x] `validate_helpers.check_option_sets()`: flag `no_option_set` and `not_offered` (strict: unlisted category = not offered).
 - [x] `validate_helpers.check_model_number_consistency()`: flag a model number whose parsed values differ across years (e.g. `RM1VPJ`).
 - [x] `storage_helpers` writes `db/review/review_queue.csv` every run (columns in the idea doc, Idea 8).
@@ -159,6 +159,7 @@ Captured so the MVP output is shaped correctly for it:
 | 2026-10-26 | First real run: 12 `inconsistent_model_number` flags, 0 others | `RM1VPJ`, `BJ2VVJ` (Tiguan Black vs Black Edition), and new: `CMC4NR`, `CMC4UR` (Atlas Cross Sport Comfortline 2020 vs Highline 2021+) |
 | 2026-10-26 | Resolution rule: lone `Black` → `Black Edition` where the option set offers it (idea doc D18); new `resolve` step; Tiguan 2024–2026 + Taos 2025–2027 option sets updated | 6 vehicles resolved (BJ2VVJ 2024, RM1VPJ 2025–26, CL26SR 2025–27); flags 12 → 7 (only the Atlas Cross Sport Comfortline/Highline issue left); 81 tests |
 | 2026-10-26 | Reused model numbers may change trim / packages across years; only model / submodel changes are flagged (idea doc D19), configurable in `pipeline.yaml` | User validated the Atlas Cross Sport case; flags 7 → 0, run status `ok`; 84 tests |
+| 2026-11-03 | 001-U1 closed: the 9 drafted vehicle files set to `reviewed` (P.M, 2026-11-03); ID. Buzz was reviewed 2026-10-29 | User checked them and they pass the tests |
 
 ## Risks
 

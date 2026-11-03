@@ -88,7 +88,7 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | # | Doc | Stage | Next | Updated |
 |---|---|---|---|---|
 | 001 | [VW Model Ingest: Design Ideas](ideas/001_vw_model_ingest_design.md) | Idea — approved | completed with plan 001 once testing is signed off (001-T) | 2026-10-26 |
-| 001 | [VW Model Ingest MVP: Plan](plans/001_vw_model_ingest_mvp.md) | Built — in user testing | user signs off testing (001-T); review config/vehicles (001-U1); notebook cell (003-A1) | 2026-10-26 |
+| 001 | [VW Model Ingest MVP: Plan](plans/001_vw_model_ingest_mvp.md) | Built — in user testing | user signs off testing (001-T); notebook cell (003-A1) | 2026-11-03 |
 | 002 | [Pipeline Logging: Design](ideas/002_pipeline_logging_design.md) | Idea — approved | completed with plan 002 once testing is signed off (002-T) | 2026-10-26 |
 | 002 | [Pipeline Logging: Plan](plans/002_pipeline_logging.md) | Built — in user testing | user signs off testing (002-T); notebook cell (003-A1) | 2026-10-26 |
 | 003 | [Accessory Ingest + Model Number Matching: Design](ideas/003_accessory_model_matching_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |

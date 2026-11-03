@@ -374,7 +374,7 @@
 | Base model | A model with no submodel. Accessory `Golf` means the **base Golf only** (not GTI or R); `Atlas` means base Atlas (not Cross Sport) |
 | Aliases | Alternative spellings mapped to one standard name, **shared by both sources** so they produce the same names (`Atlas Sport Cross` → `Atlas Cross Sport`, `GTI` → `Golf GTI`) |
 | Option set | What a model / submodel can have in a range of years (trims, packages, ...). It also says which years the model legitimately exists. A category not listed means "not offered" |
-| Drafted / reviewed | A vehicle config file is `drafted` when built from the data and `reviewed` once a person has checked it. Today all 10 are `drafted` |
+| Drafted / reviewed | A vehicle config file is `drafted` when built from the data and `reviewed` once a person has checked it. All 10 are `reviewed` (2026-11-03) |
 | Taxonomy fields | trim, special edition, appearance / technology / performance package, engine, transmission, drivetrain, body style, battery supplier, inventory status. Multi-value fields (appearance, technology, body style) can hold several values |
 | Inventory status | Metadata (e.g. Limited Availability); never used for matching |
 | Edition | "Edition" is never stored alone; it is part of an edition name (Black Edition, Peak Edition, 40th Anniversary) |
