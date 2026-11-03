@@ -2,8 +2,8 @@
 
 **Status:** Idea — approved (B1–B7, 2026-11-03)
 **Updated:** 2026-11-03
-**Next:** completed with plan 014 once testing is signed off
-**Links:** plan [014](../plans/014_labour_below_one_correction.md) · builds on idea [013](013_labour_time_units_to_hours_design.md) / plan [013](../plans/013_labour_time_units_to_hours.md) · data issue [DI-07](../data_issues.md#di-07) · open item OI-06
+**Next:** completed with plan 014 once testing is signed off (014-T)
+**Links:** plan [014](../plans/014_labour_below_one_correction.md) · builds on idea [013](013_labour_time_units_to_hours_design.md) / plan [013](../plans/013_labour_time_units_to_hours.md) · data issue [DI-07](../data_issues.md#di-07) · data-source question DI07-S1
 **Summary:** A labour value above 0 and below 1 is treated as an entry error (hours typed into a time-units column) and multiplied by 100 in the `clean` step, before the hours conversion and before the dict expands the rows.
 **Applies to:** the accessory pipeline, `clean` step (runs on the 1,028 deduplicated rows, not the ~9,400 dict rows)
 **Asked for:** in the first round of transformation, take the ingested labour values below 1 and multiply them by 100 (0.4 → 40). Any value below 1 is treated as an error and corrected this way. Do it before the data is expanded, so it runs on fewer rows.
@@ -72,6 +72,8 @@ units:
 | every other part | unchanged | — | unchanged | — |
 
 ## Decisions
+
+> **IDs (idea 015):** B1–B7 are 014-D1 – 014-D7.
 
 | # | Question | Proposed |
 |---|---|---|

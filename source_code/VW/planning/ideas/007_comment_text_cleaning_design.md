@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (C1–C8, 2026-10-27)
 **Updated:** 2026-10-28
-**Next:** completed with plan 007 once testing is signed off (OI-01)
+**Next:** completed with plan 007 once testing is signed off (007-T)
 **Links:** plan [007](../plans/007_comment_text_cleaning.md) (as built) · data issues [DI-08](../data_issues.md#di-08) to [DI-11](../data_issues.md#di-11), [DI-16](../data_issues.md#di-16)
 **Summary:** Comments cleaned into readable sentences (tags, pipes, links, spaces) by rules in config; the raw text is kept.
 **Applies to:** the accessory pipeline (plan 003), the `comments` column (`dealerNotes` in the file)
@@ -108,6 +108,8 @@ Why `link_rules` match the URL and not the whole sentence: the sentence around i
 | Links flagged `ACCESS_CLEAN_UNREVIEWED_LINK` | 0 (the 3 vwhub.com links are on an allowed host, C3) |
 
 ## Decisions
+
+> **IDs (idea 015):** C1–C8 are 007-D1 – 007-D8.
 
 | # | Question | Proposed |
 |---|---|---|

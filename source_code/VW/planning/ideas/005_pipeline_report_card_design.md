@@ -2,7 +2,7 @@
 
 **Status:** Idea — waiting for decisions (R1–R3 decided 2026-10-28; R4–R12 open)
 **Updated:** 2026-10-28
-**Next:** user decides R4–R12 (OI-11)
+**Next:** user decides 005-D4 – 005-D12
 **Links:** uses plans [002](../plans/002_pipeline_logging.md), [003](../plans/003_accessory_model_matching.md) · `VERIFIED` status from plan [009](../plans/009_human_verified_vehicle_facts.md)
 **Summary:** One Excel run report per run (`<run_id>_report.xlsx`), one worksheet per category, built for the platform manager.
 **Applies to:** both pipelines (vehicle ingest and accessories); one report per run
@@ -193,17 +193,19 @@ action_key, decision, decided_by, decided_on, note, until
 
 ## Decisions
 
+> **IDs (idea 015):** renumbered 005-D1 – 005-D12; they were R1–R12.
+
 | # | Question | Proposed |
 |---|---|---|
-| R1 | One report covering **both** pipelines, written at the end of each run, plus `python run_report.py` to rebuild it for the latest runs? | ✅ 2026-10-28: Yes. Each run creates its own report |
-| R2 | Format: an **Excel workbook** in `output/reports/`, plus a short summary printed in the terminal? | ✅ 2026-10-28: Yes, named `<run_id>_report.xlsx` (run id + timestamp). The logs are only for investigating |
-| R3 | Sheet order Summary → Actions → Details → Changes → Coverage → Funnel → Trend → Run info, read top-down? | ✅ 2026-10-28: Yes: every report category is its own worksheet, each with a run-id / time / takeaway banner |
-| R4 | Verdict RED / AMBER / GREEN, with the rules and thresholds (`max_db_age_days: 7`, ...) in a new `config/report.yaml`? | Yes |
-| R5 | Group flags into **actions** with `owner` and `group_by` per code in `messages.yaml`; info flags are counted but not listed as actions? | Yes |
-| R6 | Owners: `you_decide` (lookup gaps), `data_source` (VW data), `config` (YAML / keywords), `platform` (pipeline faults)? | Yes. Rename them to match your team |
-| R7 | Track actions across runs: `NEW` / `OPEN` (with age) / `RESOLVED`, new items on top? | Yes (phase R-2) |
-| R8 | Record decisions in `db/review/decisions.csv` (in git), with an optional `until` date that makes a decision expire? | Yes (phase R-2). "Never offered" stays in idea 009 |
-| R9 | The report copies the review rows (a snapshot); the next run warns when a review file was changed outside the pipeline? | Yes |
-| R10 | The checklist above, every item shown pass or fail? | Yes |
-| R11 | Build in phases R-1 → R-2 → R-3, each usable on its own? | Yes |
-| R12 | Who reads it first, and what's their name for the owner groups (for example "VW data" or "Data source")? | Your answer |
+| 005-D1 | One report covering **both** pipelines, written at the end of each run, plus `python run_report.py` to rebuild it for the latest runs? | ✅ 2026-10-28: Yes. Each run creates its own report |
+| 005-D2 | Format: an **Excel workbook** in `output/reports/`, plus a short summary printed in the terminal? | ✅ 2026-10-28: Yes, named `<run_id>_report.xlsx` (run id + timestamp). The logs are only for investigating |
+| 005-D3 | Sheet order Summary → Actions → Details → Changes → Coverage → Funnel → Trend → Run info, read top-down? | ✅ 2026-10-28: Yes: every report category is its own worksheet, each with a run-id / time / takeaway banner |
+| 005-D4 | Verdict RED / AMBER / GREEN, with the rules and thresholds (`max_db_age_days: 7`, ...) in a new `config/report.yaml`? | Yes |
+| 005-D5 | Group flags into **actions** with `owner` and `group_by` per code in `messages.yaml`; info flags are counted but not listed as actions? | Yes |
+| 005-D6 | Owners: `you_decide` (lookup gaps), `data_source` (VW data), `config` (YAML / keywords), `platform` (pipeline faults)? | Yes. Rename them to match your team |
+| 005-D7 | Track actions across runs: `NEW` / `OPEN` (with age) / `RESOLVED`, new items on top? | Yes (phase R-2) |
+| 005-D8 | Record decisions in `db/review/decisions.csv` (in git), with an optional `until` date that makes a decision expire? | Yes (phase R-2). "Never offered" stays in idea 009 |
+| 005-D9 | The report copies the review rows (a snapshot); the next run warns when a review file was changed outside the pipeline? | Yes |
+| 005-D10 | The checklist above, every item shown pass or fail? | Yes |
+| 005-D11 | Build in phases R-1 → R-2 → R-3, each usable on its own? | Yes |
+| 005-D12 | Who reads it first, and what's their name for the owner groups (for example "VW data" or "Data source")? | Your answer |

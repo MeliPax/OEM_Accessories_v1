@@ -9,7 +9,7 @@ planning/
 ├── ideas/          Design: what was asked, what the data shows, options, decisions. Approved before planning.
 ├── plans/          Approved work: outcome, success criteria, phases and tasks, tests, decision log, risks.
 ├── completed/      Plans the user signed off, with Completion notes. The idea stays in ideas/ (status Completed).
-├── open_items.md   Every follow-up and open question (OI-NN), with an owner.
+├── open_items.md   Every follow-up and open question, with an owner; IDs numbered by their doc (013-D2, DI07-S1).
 └── data_issues.md  Data issues in the VW source files (DI-NN, DV-NN), and the data definitions.
 ```
 
@@ -39,7 +39,7 @@ A date or detail may follow in brackets, e.g. `Idea — approved (V1–V8, 2026-
 **Status:** one of the fixed status words
 **Checkpoint:** (Building plans only) where the work stopped
 **Updated:** YYYY-MM-DD
-**Next:** the next action and who owns it (OI-NN)
+**Next:** the next action and who owns it, naming the item ID (013-T, 005-D4 – 005-D12, DI03-S1)
 **Links:** the idea, plan, dependencies, data issues
 **Summary:** one sentence: what this is
 ```
@@ -81,35 +81,36 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | Accessory review rows | 16 (148 at 2020+) |
 | Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
 | Labour (plans 013, 014) | `Hours` = `laborTime` ÷ 100: 13 distinct values converted (0.1–2.5 h); 1 part corrected below 1 (`3QF601025KAX1` 0.4 → 40 → 0.4 h, 22 export rows); 0 suspects; 0 empty `Hours` |
-| Tests | 298 passing |
+| Tests | 304 passing |
 
 ## Index
 
 | # | Doc | Stage | Next | Updated |
 |---|---|---|---|---|
-| 001 | [VW Model Ingest: Design Ideas](ideas/001_vw_model_ingest_design.md) | Idea — approved | completed with plan 001 once testing is signed off (OI-01) | 2026-10-26 |
-| 001 | [VW Model Ingest MVP: Plan](plans/001_vw_model_ingest_mvp.md) | Built — in user testing | user signs off testing (OI-01); review config/vehicles (OI-03); notebook cell (OI-02) | 2026-10-26 |
-| 002 | [Pipeline Logging: Design](ideas/002_pipeline_logging_design.md) | Idea — approved | completed with plan 002 once testing is signed off (OI-01) | 2026-10-26 |
-| 002 | [Pipeline Logging: Plan](plans/002_pipeline_logging.md) | Built — in user testing | user signs off testing (OI-01); notebook cell (OI-02) | 2026-10-26 |
-| 003 | [Accessory Ingest + Model Number Matching: Design](ideas/003_accessory_model_matching_design.md) | Idea — approved | completed with plan 003 once testing is signed off (OI-01) | 2026-10-27 |
-| 003 | [Accessory Ingest + Model Number Matching: Plan](plans/003_accessory_model_matching.md) | Built — in user testing | user signs off testing (OI-01); notebook cell (OI-02); lookup misses as warnings? (OI-09) | 2026-10-27 |
-| 004 | [Error and Flag Messages: Design](ideas/004_error_message_catalogue_design.md) | Idea — approved | completed with plan 003 once testing is signed off (OI-01) | 2026-10-27 |
-| 005 | [Pipeline Run Report: Design](ideas/005_pipeline_report_card_design.md) | Idea — waiting for decisions | user decides R4–R12 (OI-11) | 2026-10-28 |
-| 006 | [Labour Time Units (minutes → hours): Design](ideas/006_labor_time_units_design.md) | Idea — approved | completed with plan 006 once testing is signed off (OI-01) | 2026-10-28 |
-| 006 | [Labour Time Units (minutes → hours): Plan](plans/006_labor_time_units.md) | Built — in user testing | user signs off testing (OI-01); confirm the 0.4 value with the source (OI-06) | 2026-10-28 |
-| 007 | [Comment Text Cleaning: Design](ideas/007_comment_text_cleaning_design.md) | Idea — approved | completed with plan 007 once testing is signed off (OI-01) | 2026-10-28 |
-| 007 | [Comment Text Cleaning: Plan](plans/007_comment_text_cleaning.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-28 |
-| 008 | [Part Numbers Kept Exactly as the Source: Design](ideas/008_part_number_integrity_design.md) | Idea — approved | completed with plan 008 once testing is signed off (OI-01) | 2026-10-27 |
-| 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (OI-01); ask the source to export stockCode as text (OI-07) | 2026-10-28 |
-| 009 | [Human-Verified Vehicle Facts: Design](ideas/009_human_verified_vehicle_facts_design.md) | Idea — approved | build plan 009 | 2026-10-28 |
-| 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-28 |
-| 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | build plan 010 | 2026-10-28 |
-| 010 | [Work Process, Tracking and Indexing: Plan](plans/010_work_process_and_tracking.md) | Built — in user testing | user signs off testing (OI-01); idea 011 extends the checks once approved (OI-13) | 2026-10-28 |
-| 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides DOC-1 to DOC-10 (OI-13) | 2026-10-28 |
-| 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | completed with plan 012 once testing is signed off (OI-01) | 2026-10-29 |
-| 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-29 |
-| 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off | 2026-11-02 |
-| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-02 |
-| 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off | 2026-11-03 |
-| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-03 |
-| 015 | [Pending Items Numbered by Their Doc: Design](ideas/015_doc_numbered_item_ids_design.md) | Idea — waiting for decisions | user decides N1–N8 (OI-20) | 2026-11-03 |
+| 001 | [VW Model Ingest: Design Ideas](ideas/001_vw_model_ingest_design.md) | Idea — approved | completed with plan 001 once testing is signed off (001-T) | 2026-10-26 |
+| 001 | [VW Model Ingest MVP: Plan](plans/001_vw_model_ingest_mvp.md) | Built — in user testing | user signs off testing (001-T); review config/vehicles (001-U1); notebook cell (003-A1) | 2026-10-26 |
+| 002 | [Pipeline Logging: Design](ideas/002_pipeline_logging_design.md) | Idea — approved | completed with plan 002 once testing is signed off (002-T) | 2026-10-26 |
+| 002 | [Pipeline Logging: Plan](plans/002_pipeline_logging.md) | Built — in user testing | user signs off testing (002-T); notebook cell (003-A1) | 2026-10-26 |
+| 003 | [Accessory Ingest + Model Number Matching: Design](ideas/003_accessory_model_matching_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
+| 003 | [Accessory Ingest + Model Number Matching: Plan](plans/003_accessory_model_matching.md) | Built — in user testing | user signs off testing (003-T); notebook cells (003-A1); lookup misses as warnings? (003-D18) | 2026-10-27 |
+| 004 | [Error and Flag Messages: Design](ideas/004_error_message_catalogue_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
+| 005 | [Pipeline Run Report: Design](ideas/005_pipeline_report_card_design.md) | Idea — waiting for decisions | user decides 005-D4 – 005-D12 | 2026-10-28 |
+| 006 | [Labour Time Units (minutes → hours): Design](ideas/006_labor_time_units_design.md) | Idea — approved | completed with plan 006 once testing is signed off (006-T) | 2026-10-28 |
+| 006 | [Labour Time Units (minutes → hours): Plan](plans/006_labor_time_units.md) | Built — in user testing | user signs off testing (006-T) | 2026-10-28 |
+| 007 | [Comment Text Cleaning: Design](ideas/007_comment_text_cleaning_design.md) | Idea — approved | completed with plan 007 once testing is signed off (007-T) | 2026-10-28 |
+| 007 | [Comment Text Cleaning: Plan](plans/007_comment_text_cleaning.md) | Built — in user testing | user signs off testing (007-T) | 2026-10-28 |
+| 008 | [Part Numbers Kept Exactly as the Source: Design](ideas/008_part_number_integrity_design.md) | Idea — approved | completed with plan 008 once testing is signed off (008-T) | 2026-10-27 |
+| 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (008-T); ask the source to export stockCode as text (DI03-S1) | 2026-10-28 |
+| 009 | [Human-Verified Vehicle Facts: Design](ideas/009_human_verified_vehicle_facts_design.md) | Idea — approved | completed with plan 009 once testing is signed off (009-T) | 2026-10-28 |
+| 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Built — in user testing | user signs off testing (009-T) | 2026-10-28 |
+| 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | completed with plan 010 once testing is signed off (010-T) | 2026-10-28 |
+| 010 | [Work Process, Tracking and Indexing: Plan](plans/010_work_process_and_tracking.md) | Built — in user testing | user signs off testing (010-T); idea 011 extends the checks once approved (011-D1 – 011-D10) | 2026-10-28 |
+| 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides 011-D1 – 011-D10 | 2026-10-28 |
+| 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | completed with plan 012 once testing is signed off (012-T) | 2026-10-29 |
+| 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (012-T) | 2026-10-29 |
+| 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off (013-T) | 2026-11-02 |
+| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (013-T) | 2026-11-02 |
+| 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off (014-T) | 2026-11-03 |
+| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Built — in user testing | user signs off testing (014-T) | 2026-11-03 |
+| 015 | [Pending Items Numbered by Their Doc: Design](ideas/015_doc_numbered_item_ids_design.md) | Idea — approved | completed with plan 015 once testing is signed off (015-T) | 2026-11-03 |
+| 015 | [Pending Items Numbered by Their Doc: Plan](plans/015_doc_numbered_item_ids.md) | Built — in user testing | user signs off testing (015-T) | 2026-11-03 |

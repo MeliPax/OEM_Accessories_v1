@@ -98,7 +98,7 @@
 
   Never padded: the complete number must be proven by `make&model`.
 - **Handling (built 2026-10-27):** every row is checked; the result is in `db/dq/part_number_check.csv`. On the 2026-10-20 file, 704 rows are restored and 0 can't be proven. The in-scope part appears in `accessory_review.csv` as `ACCESS_STGNG_PART_NUMBER_RESTORED`, and the export shows `000071200`.
-- **Ask the data source:** export `stockCode` as text.
+- **Ask the data source (DI03-S1):** export `stockCode` as text.
 - **Status:** Handled (idea 008). Still ask the data source to export `stockCode` as text.
 
 ### DI-04
@@ -124,7 +124,7 @@
   | Golf R 2020, 2021 | 54, 54 | `ACCESS_LOOKUP_YEAR_BEFORE_FIRST_KNOWN` | Golf R was not sold in those model years |
 
 - **Impact:** 451 part-years get no model number. They stay in the data, are left out of the export, and are listed in `db/review/accessory_review.csv` with what was checked and the fix.
-- **Ask the data source:** confirm Atlas 2020, ID.4 2026 and ID. Buzz 2026 ([OI-04](open_items.md)).
+- **Ask the data source ([DI05-S1](open_items.md)):** confirm Atlas 2020, ID.4 2026 and ID. Buzz 2026.
 - **Verified (2026-10-28, P.M):** Golf R was never offered in 2020–2021, and Arteon in 2022–2023 (`verified:` in `config/vehicles/golf.yaml` and `arteon.yaml`, idea 009). Their 4 lookup flags are now info and listed in `db/dq/verified_flags.csv`. Their 226 part-years stay in the dict as `never_offered` and are out of the review file. The lookup errors go from 7 to 3.
 - **Accessories from 2024 (2026-10-28):** Atlas 2020, Golf R 2020–2021 and Arteon 2022–2023 are now outside the accessory window and no longer looked up. ID.4 2026 and ID. Buzz 2026 remain.
 - **Verified 2026-10-29:** ID.4 2026 and ID. Buzz 2026 are not offered in Canada (P.M; `id4.yaml`, `id_buzz.yaml` `verified:`). Their 93 part-years drop to info and leave the review file.
@@ -147,7 +147,7 @@
   Their accessories stop at 2026.
 - **Impact:** no parts are exported for 2027 vehicles.
 - **Handling:** flagged `ACCESS_COVER_VEHICLE_NO_PARTS` (once per model-year) and listed in the review file.
-- **Ask the data source:** an accessory file updated for 2027.
+- **Ask the data source (DI06-S1):** an accessory file updated for 2027.
 - **Status:** **Open**.
 
 ### DI-07
@@ -165,7 +165,7 @@
 - **Handling (built 2026-11-02, plan 013):** `laborTime` is read as `labor_time_source` and `labor_hours` = ÷ 100, 2 decimals; DQ rules, dict and export (`Hours`) use `labor_hours`. `3QF601025KAX1` (0.4, not a whole time unit) is flagged `ACCESS_CLEAN_UNIT_SUSPECT`, `labor_hours` left empty, and listed in `accessory_review.csv`.
 - **Handling (built 2026-10-28, superseded):** the export shows hours. `3QF601025KAX1` is flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`; it is still converted (0.4 min → 0.01 h) until the source confirms the value.
 - **Handling (built 2026-11-03, plan 014):** a value above 0 and below 1 is read as hours typed into the time-units column: `3QF601025KAX1` 0.4 → `labor_time_corrected` 40 → `labor_hours` 0.4 (22 export rows), flagged `ACCESS_CLEAN_UNIT_CORRECTED` with a review row. `labor_time_source` keeps 0.4.
-- **Ask the data source:** confirm the unit (time units, 100 = 1 hour), and correct the labour time for `3QF601025KAX1` in the file.
+- **Ask the data source (DI07-S1, closed: handled by rule):** confirm the unit (time units, 100 = 1 hour), and correct the labour time for `3QF601025KAX1` in the file.
 - **Status:** Handled (ideas 006, 013, 014); the source fix is a request, not a blocker.
 
 ### DI-08
@@ -246,6 +246,7 @@
 
 - **Found:** one comment reads `ReferAlways install the product according to the manufacturer's instructions...` (2 rows). It looks like a "Refer to ..." sentence was cut off and joined to the standard installation sentence.
 - **Impact:** the export shows "ReferAlways".
+- **Ask the data source (DI16-S1, optional):** what the "Refer..." sentence should say.
 - **Decision (2026-10-28):** leave the text as it is. Cleaning has no rule for it: there is no separator to split on, and the pipeline never guesses missing text.
 - **Status:** Accepted.
 
@@ -314,7 +315,7 @@
 **Base Atlas missing for 2020**
 
 - **Found:** the 2020 rows have only Atlas Cross Sport; there is no base Atlas. The accessory file lists 132 parts for base Atlas 2020 (see DI-05).
-- **Ask the data source:** is base Atlas 2020 missing from the export?
+- **Ask the data source (DI05-S1):** is base Atlas 2020 missing from the export?
 - **Status:** **Open**.
 
 ### DV-09
@@ -322,7 +323,7 @@
 **ID.4 and ID. Buzz end at 2025**
 
 - **Found:** the export has ID.4 for 2021–2025 and ID. Buzz for 2025 only. Other models reach 2026–2027.
-- **Ask the data source:** are the 2026 ID models missing from the export? (See DI-05.)
+- **Ask the data source (DI05-S1):** are the 2026 ID models missing from the export? (See DI-05.)
 - **Verified 2026-10-29:** not offered in Canada for 2026 (P.M).
 - **Status:** **Handled**.
 

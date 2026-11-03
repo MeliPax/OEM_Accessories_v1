@@ -2,6 +2,12 @@
 
 What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
 
+
+## 2026-11-03 — Pending items numbered by their doc (plan 015)
+
+- Every pending item's ID now says where it lives: `NNN-Kn` for a doc (`013-D2`, `003-A1`, `014-T`) and `DInn-Sn` for a data-source question (`DI07-S1`). Kinds: `D` decision, `T` testing sign-off, `P` plan approval, `U` user task, `A` Claude task, `S` data source.
+- `planning/open_items.md` rebuilt (sorted by ID, with Where and Was columns); OI-01 split into one sign-off per plan (`001-T` … `015-T`); ideas 005 and 011's open decisions renumbered (`005-D4` – `005-D12`, `011-D1` – `011-D10`); approved ideas carry an ID note (`H1–H7 are 013-D1 – 013-D7`).
+- `tests/test_planning_docs.py` enforces it (prefix exists, open IDs named in their doc, references resolve, no `OI-NN` in a `Next:` line); rules in `CLAUDE.md` and `planning/README.md`. No pipeline change.
 ## 2026-11-03 — Labour values below one corrected × 100 (plan 014) · `32fc9f4`
 
 - In the `clean` step, on the deduplicated rows and before the suspect check and the ÷ 100 conversion, a labour value **above 0 and below 1** is read as hours typed into the time-units column and multiplied by 100: `correct_if: { between: [0, 1], entered_as: hours }` in `accessories.yaml` (× 100 from `units.definitions`).

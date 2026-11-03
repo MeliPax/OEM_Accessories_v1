@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-26)
 **Updated:** 2026-10-26
-**Next:** user signs off testing (OI-01); review config/vehicles (OI-03); notebook cell (OI-02)
+**Next:** user signs off testing (001-T); review config/vehicles (001-U1); notebook cell (003-A1)
 **Links:** idea [001](../ideas/001_vw_model_ingest_design.md) · logging from plan [002](002_pipeline_logging.md)
 **Summary:** The VW vehicle ingest: config, staging, year window, cleaning, parsing, resolutions, validation and vehicles.csv.
 **Branch:** `feature/vw-data-analysis` (or a new `feature/vw-model-ingest` from `dev`, per `accy_v2/planning/VERSIONING.md`)

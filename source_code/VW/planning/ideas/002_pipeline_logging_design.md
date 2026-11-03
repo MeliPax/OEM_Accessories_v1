@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (L1–L6, 2026-10-26)
 **Updated:** 2026-10-26
-**Next:** completed with plan 002 once testing is signed off (OI-01)
+**Next:** completed with plan 002 once testing is signed off (002-T)
 **Links:** plan [002](../plans/002_pipeline_logging.md) · used by plan [001](../plans/001_vw_model_ingest_mvp.md)
 **Summary:** Every pipeline step logs what ran, rows in and out, each value changed (before → after) and every flag.
 
@@ -172,6 +172,8 @@ logging:
 ```
 
 ## Decisions
+
+> **IDs (idea 015):** L1–L6 are 002-D1 – 002-D6.
 
 | ID | Question | Recommendation |
 |---|---|---|

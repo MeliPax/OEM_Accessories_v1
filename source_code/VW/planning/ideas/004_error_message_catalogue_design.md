@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (E1–E7, 2026-10-27)
 **Updated:** 2026-10-27
-**Next:** completed with plan 003 once testing is signed off (OI-01)
+**Next:** completed with plan 003 once testing is signed off (003-T)
 **Links:** built in plan [003](../plans/003_accessory_model_matching.md) · catalogue `config/messages.yaml`
 **Summary:** Every flag and fatal gets a prefixed code with message, checked, found, causes and fix, worded in config/messages.yaml.
 **Applies to:** the vehicle ingest (built, plans 001–002) and the accessory pipeline (plan 003)
@@ -219,6 +219,8 @@ Each one gets the same checked / found / causes / fix text in `messages.yaml`.
 - **Once per run** for counts that aren't problems (`ACCESS_YEAR_CLIPPED`, `ACCESS_CLEAN_BAD_CHARACTERS`).
 
 ## Decisions
+
+> **IDs (idea 015):** E1–E7 are 004-D1 – 004-D7.
 
 | #  | Question                                                                                                                          | Proposed                                        |
 | -- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |

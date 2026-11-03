@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-28)
 **Updated:** 2026-10-28
-**Next:** user signs off testing (OI-01); idea 011 extends the checks once approved (OI-13)
+**Next:** user signs off testing (010-T); idea 011 extends the checks once approved (011-D1 – 011-D10)
 **Links:** idea [010](../ideas/010_work_process_and_tracking_design.md) · rules in [../../CLAUDE.md](../../CLAUDE.md)
 **Summary:** Fixed headers and status words on every planning doc, an index with next actions, open_items.md, CHANGELOG.md, a baseline table, a resume procedure, and a test that keeps the index and the docs in step.
 

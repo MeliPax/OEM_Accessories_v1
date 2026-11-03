@@ -2,7 +2,7 @@
 
 **Status:** Idea — waiting for decisions (DOC-1 to DOC-10)
 **Updated:** 2026-10-28
-**Next:** user decides DOC-1 to DOC-10 (OI-13)
+**Next:** user decides 011-D1 – 011-D10
 **Links:** extends idea / plan [010](010_work_process_and_tracking_design.md) · rules in [../../CLAUDE.md](../../CLAUDE.md)
 **Summary:** A requirements register that captures every lasting rule when it is decided, a documentation set with one audience per doc, and a documentation step in the definition of done.
 
@@ -170,15 +170,17 @@ Order:
 
 ## Decisions
 
+> **IDs (idea 015):** renumbered 011-D1 – 011-D10; they were DOC-1 – DOC-10.
+
 | # | Question | Proposed |
 |---|---|---|
-| DOC-1 | One register, `docs/REQUIREMENTS.md`, with `REQ-<AREA>-NN` entries (requirement, why, source, verified by, status) and an index table at the top? | Yes |
-| DOC-2 | Only **lasting rules** become requirements; one-off choices stay in the ideas? | Yes. About 50 from today's 95 decisions |
-| DOC-3 | The agent writes a requirement **in the same turn** a rule is decided, and says so in its reply; `Proposed` until you confirm? | Yes |
-| DOC-4 | Requirements are never edited in place or deleted: `Superseded by` with a new ID? | Yes |
-| DOC-5 | The doc set above: README (start page), `docs/` REQUIREMENTS, ARCHITECTURE, features/, RUNBOOK, CONFIG; `db/README.md` stays as the data dictionary? | Yes |
-| DOC-6 | One feature doc per feature, describing how it works **now**, using the template? | Yes |
-| DOC-7 | Every plan ends with a Documentation phase (tasks 1–8); a plan can't be `Completed` until it's done? | Yes |
-| DOC-8 | Tests check what can be checked: requirement tests exist, links resolve, every flag in the runbook, every config key in `CONFIG.md`, completed plans link a feature doc? | Yes |
-| DOC-9 | The runbook is written for the platform manager, and becomes the "what to do" behind the run report's actions (idea 005)? | Yes |
-| DOC-10 | Order: plan 010, then 011, then plan 009 built under the full standard? | Yes |
+| 011-D1 | One register, `docs/REQUIREMENTS.md`, with `REQ-<AREA>-NN` entries (requirement, why, source, verified by, status) and an index table at the top? | Yes |
+| 011-D2 | Only **lasting rules** become requirements; one-off choices stay in the ideas? | Yes. About 50 from today's 95 decisions |
+| 011-D3 | The agent writes a requirement **in the same turn** a rule is decided, and says so in its reply; `Proposed` until you confirm? | Yes |
+| 011-D4 | Requirements are never edited in place or deleted: `Superseded by` with a new ID? | Yes |
+| 011-D5 | The doc set above: README (start page), `docs/` REQUIREMENTS, ARCHITECTURE, features/, RUNBOOK, CONFIG; `db/README.md` stays as the data dictionary? | Yes |
+| 011-D6 | One feature doc per feature, describing how it works **now**, using the template? | Yes |
+| 011-D7 | Every plan ends with a Documentation phase (tasks 1–8); a plan can't be `Completed` until it's done? | Yes |
+| 011-D8 | Tests check what can be checked: requirement tests exist, links resolve, every flag in the runbook, every config key in `CONFIG.md`, completed plans link a feature doc? | Yes |
+| 011-D9 | The runbook is written for the platform manager, and becomes the "what to do" behind the run report's actions (idea 005)? | Yes |
+| 011-D10 | Order: plan 010, then 011, then plan 009 built under the full standard? | Yes |

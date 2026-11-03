@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (P1–P13, 2026-10-27)
 **Updated:** 2026-10-27
-**Next:** completed with plan 008 once testing is signed off (OI-01)
+**Next:** completed with plan 008 once testing is signed off (008-T)
 **Links:** plan [008](../plans/008_part_number_integrity.md) (as built) · data issue [DI-03](../data_issues.md#di-03)
 **Summary:** Part numbers kept exactly as the source: leading zeros restored only when make&model proves them; never padded.
 **Applies to:** the accessory pipeline (plan 003): `ingest`, `staging` and `export`
@@ -138,6 +138,8 @@ The pipeline never pads a part number (adds zeros to reach a length). The comple
 Restoring happens in staging, before the status filter and year window. So the 704 rows are all fixed, but only the 12 in-scope rows reach the export.
 
 ## Decisions
+
+> **IDs (idea 015):** P1–P13 are 008-D1 – 008-D13.
 
 | # | Question | Proposed |
 |---|---|---|

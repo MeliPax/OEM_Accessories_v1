@@ -19,8 +19,12 @@ STATUSES = {
     'completed': {'Completed'},
 }
 INDEX_ROW = re.compile(r'^\| (\d{3}) \| \[[^\]]+\]\(([^)]+)\) \| ([^|]+) \| ([^|]*) \| ([^|]+) \|$', re.M)
-OPEN_ITEM_ROW = re.compile(r'^\| (OI-\d{2}) \|', re.M)
-OPEN_ITEM_REF = re.compile(r'\bOI-\d{2}\b')
+# item IDs (idea 015): NNN-Kn for a doc, DInn-Sn for a data issue; a decision set is a range "005-D4 – 005-D12"
+ITEM = r'(?:\d{3}|DI\d{2})-[A-Z]\d*'
+ITEM_REF = re.compile(rf'(?<![\w-])({ITEM})(?![\w-])')
+KINDS = set('DTPUAS')
+OPEN_ITEM_ROW = re.compile(rf'^\| ({ITEM}(?: – {ITEM})?) \| [^|]+ \| [^|]+ \| [^|]+ \| ([^|]+) \| ([^|]*) \|$', re.M)
+OLD_ITEM_REF = re.compile(r'\bOI-\d{2}\b')
 
 
 def header(text):
@@ -33,13 +37,67 @@ def stage(status):
     return status.split(' (')[0].strip()
 
 
+def expand(item_id):
+    """'005-D4 – 005-D12' -> {'005-D4', ..., '005-D12'}; a single ID -> {itself}."""
+    first, _, last = item_id.partition(' – ')
+    if not last:
+        return {first}
+    stem = first.rstrip('0123456789')
+    return {f'{stem}{n}' for n in range(int(first[len(stem):]), int(last[len(stem):]) + 1)}
+
+
+def check_items(root, docs, ideas):
+    """Idea 015: open_items.md IDs say where they live, and every reference resolves."""
+    problems = []
+    items_text = (root / 'open_items.md').read_text(encoding='utf-8')
+    rows = OPEN_ITEM_ROW.findall(items_text)
+    known = set().union(*(expand(i) for i, _, _ in rows)) if rows else set()
+    was = {r for _, _, w in rows for r in OLD_ITEM_REF.findall(w)}
+    issues = {f'DI{n}' for n in re.findall(r'^### DI-(\d{2})$', (root / 'data_issues.md').read_text(encoding='utf-8'), re.M)}
+    texts = {name: p.read_text(encoding='utf-8') for name, p in docs.items()}
+    texts['data_issues.md'] = (root / 'data_issues.md').read_text(encoding='utf-8')
+
+    for line in items_text.split('\n'):
+        if re.match(r'^\| OI-\d{2} \|', line):
+            problems.append(f'open_items.md: {line.split("|")[1].strip()} is an old OI-NN ID; use NNN-Kn (idea 015)')
+    for item_id, status, _ in rows:
+        prefix, kind = item_id.split('-')[0], item_id.split('-')[1][0]
+        if kind not in KINDS:
+            problems.append(f'open_items.md: {item_id}: kind "{kind}" is not one of {", ".join(sorted(KINDS))}')
+        if prefix not in ideas | issues | {'000'}:
+            problems.append(f'open_items.md: {item_id}: no doc or data issue {prefix}')
+        if status.strip() == 'Open':
+            first = item_id.split(' – ')[0]
+            where = [t for n, t in texts.items() if (n.split('/')[-1][:3] == prefix or
+                                                      (prefix.startswith('DI') and n == 'data_issues.md'))]
+            if not any(first in t for t in where):
+                problems.append(f'open_items.md: open item {first} is not named in its doc ({prefix})')
+
+    readme = (root / 'README.md').read_text(encoding='utf-8')
+    for name, text in list(texts.items()) + [('README.md', readme)]:
+        own = name.split('/')[-1][:3]
+        for ref in sorted({r for r in ITEM_REF.findall(text)} - known):
+            prefix, kind = ref.split('-')[0], ref.split('-')[1][0]
+            if kind == 'D' and prefix == own:          # a decision in its own idea's table or ID note
+                continue
+            if kind in KINDS and prefix in ideas | issues:
+                problems.append(f'{name}: {ref} is mentioned but not in open_items.md')
+        for ref in sorted(set(OLD_ITEM_REF.findall(text)) - was):
+            problems.append(f'{name}: {ref} is mentioned but no open_items.md row has it as Was')
+    nexts = [(n, header(t).get('Next', '')) for n, t in texts.items() if n != 'data_issues.md']
+    nexts += [(f'README.md index ({path})', nxt) for _, path, _, nxt, _ in INDEX_ROW.findall(readme)]
+    for name, nxt in nexts:
+        if OLD_ITEM_REF.search(nxt):
+            problems.append(f'{name}: the Next line names an old OI-NN ID; use the doc-numbered ID (idea 015)')
+    return problems
+
+
 def check_planning(root):
     """Every way the planning docs can drift apart, as readable problems (empty when all is well)."""
     problems = []
     docs = {f'{folder}/{p.name}': p for folder in FOLDERS for p in sorted((root / folder).glob('*.md'))}
     index = {path: (number, st.strip(), nxt.strip(), upd.strip())
              for number, path, st, nxt, upd in INDEX_ROW.findall((root / 'README.md').read_text(encoding='utf-8'))}
-    open_items = set(OPEN_ITEM_ROW.findall((root / 'open_items.md').read_text(encoding='utf-8')))
     ideas = {p.name[:3] for p in (root / 'ideas').glob('*.md')}
 
     for name, path in docs.items():
@@ -73,10 +131,7 @@ def check_planning(root):
     for name in sorted(set(index) - set(docs)):
         problems.append(f'README index lists {name}, which does not exist')
 
-    texts = [p.read_text(encoding='utf-8') for p in docs.values()] + [(root / 'README.md').read_text(encoding='utf-8')]
-    for ref in sorted({r for t in texts for r in OPEN_ITEM_REF.findall(t)} - open_items):
-        problems.append(f'{ref} is mentioned but not in open_items.md')
-    return problems
+    return problems + check_items(root, docs, ideas)
 
 
 def test_the_planning_docs_are_in_step():
@@ -99,9 +154,17 @@ PLAN = 'plans/010_work_process_and_tracking.md'
     (IDEA, '**Status:** Idea — approved', '**Status:** Idea — done', 'status "Idea — done" is not one of'),
     (PLAN, '**Status:** Built — in user testing', '**Status:** Building', 'a Building plan needs a **Checkpoint:** line'),
     (IDEA, '**Updated:** 2026-10-28', '**Updated:** 2026-10-29', 'index Updated 2026-10-28 but the file says 2026-10-29'),
-    (IDEA, '**Next:** build plan 009', '**Next:** build plan 009 (OI-99)', 'OI-99 is mentioned but not in open_items.md'),
-    ('README.md', '| Idea — approved | build plan 009 |', '| Plan — approved | build plan 009 |',
+    ('README.md', '| Idea — approved | completed with plan 009 once testing is signed off (009-T) |',
+     '| Plan — approved | completed with plan 009 once testing is signed off (009-T) |',
      'index stage "Plan — approved" but the file says "Idea — approved"'),
+    # idea 015: doc-numbered item IDs
+    (IDEA, 'signed off (009-T)', 'signed off (009-A9)', '009-A9 is mentioned but not in open_items.md'),
+    (IDEA, 'signed off (009-T)', 'signed off (OI-01)', 'the Next line names an old OI-NN ID'),
+    (IDEA, '## Decisions\n', '## Decisions\n\nSee OI-99.\n', 'OI-99 is mentioned but no open_items.md row has it as Was'),
+    ('open_items.md', '| 015-T |', '| OI-22 |', 'OI-22 is an old OI-NN ID'),
+    ('open_items.md', '| 015-T |', '| 099-T |', '099-T: no doc or data issue 099'),
+    ('open_items.md', '| 003-A1 |', '| 003-X1 |', 'kind "X" is not one of'),
+    ('open_items.md', '| 015-T |', '| 007-U1 |', 'open item 007-U1 is not named in its doc (007)'),
 ])
 def test_drift_is_caught(planning_copy, file, old, new, problem):
     replace_in(planning_copy / file, old, new)

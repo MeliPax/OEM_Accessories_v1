@@ -1,9 +1,9 @@
 # 015 — Pending Items Numbered by Their Doc: Design
 
-**Status:** Idea — waiting for decisions
+**Status:** Idea — approved (N1–N8, 2026-11-03)
 **Updated:** 2026-11-03
-**Next:** user decides N1–N8 (OI-20)
-**Links:** extends idea [010](010_work_process_and_tracking_design.md) / plan [010](../plans/010_work_process_and_tracking.md) (tracking) · [open_items.md](../open_items.md) · [data_issues.md](../data_issues.md) · `tests/test_planning_docs.py`
+**Next:** completed with plan 015 once testing is signed off (015-T)
+**Links:** plan [015](../plans/015_doc_numbered_item_ids.md) · extends idea [010](010_work_process_and_tracking_design.md) / plan [010](../plans/010_work_process_and_tracking.md) (tracking) · [open_items.md](../open_items.md) · [data_issues.md](../data_issues.md) · `tests/test_planning_docs.py`
 **Summary:** Every pending item gets an ID that starts with the number of the doc (or data issue) it belongs to, e.g. `013-D2` or `DI07-S1`, so the ID alone says which file to open.
 **Applies to:** planning docs, `open_items.md`, the VW `CLAUDE.md` rules, `tests/test_planning_docs.py`. No pipeline code, config or output changes.
 **Asked for:** pending items and decisions use IDs (`OI-06`, `H3`, `B1`, `DOC-4`) that don't say where they live. Number them all by the doc ID so it's clear where to find each one.
@@ -62,13 +62,15 @@ Work that belongs to no single doc uses `000` (the planning process itself), e.g
 
 ## Decisions
 
+> **IDs (idea 015):** N1–N8 are 015-D1 – 015-D8.
+
 | # | Question | Proposed |
 |---|---|---|
-| N1 | ID format `NNN-Kn` for docs and `DInn-Sn` for data issues (`000-` for process work)? | Yes |
-| N2 | Kinds `D` decision, `T` test sign-off, `U` user task, `A` Claude task, `S` data source? | Yes |
-| N3 | Split OI-01 into one `NNN-T` per plan, shown in each plan's `Next:` line? | Yes |
-| N4 | Rename open **and** closed items, with a **Was** column? (Alternative: only open items) | Open and closed: one scheme everywhere; Was keeps history |
-| N5 | Decisions: renumber the **open** ones now (005 R4–R12 → `005-D4`…, 011 DOC-1–10 → `011-D1`…); approved ideas keep their tables with a one-line "H1–H7 are 013-D1 – 013-D7" note rather than being rewritten? | Yes: approved tables match the commits that cite them |
-| N6 | `open_items.md` sorted by ID with columns ID · Where · What · Owner · Status · Was? | Yes |
-| N7 | Enforce it in `tests/test_planning_docs.py` (prefix exists, open IDs appear in their doc, no new `OI-NN`)? | Yes |
-| N8 | Update the VW `CLAUDE.md` and `planning/README.md` rules (header `Next:` names the ID; chat always links IDs)? | Yes |
+| N1 | ID format `NNN-Kn` for docs and `DInn-Sn` for data issues (`000-` for process work)? | ✅ 2026-11-03: Yes |
+| N2 | Kinds `D` decision, `T` test sign-off, `U` user task, `A` Claude task, `S` data source? | ✅ 2026-11-03: Yes |
+| N3 | Split OI-01 into one `NNN-T` per plan, shown in each plan's `Next:` line? | ✅ 2026-11-03: Yes |
+| N4 | Rename open **and** closed items, with a **Was** column? (Alternative: only open items) | ✅ 2026-11-03: Open and closed: one scheme everywhere; Was keeps history |
+| N5 | Decisions: renumber the **open** ones now (005 R4–R12 → `005-D4`…, 011 DOC-1–10 → `011-D1`…); approved ideas keep their tables with a one-line "H1–H7 are 013-D1 – 013-D7" note rather than being rewritten? | ✅ 2026-11-03: Yes: approved tables match the commits that cite them |
+| N6 | `open_items.md` sorted by ID with columns ID · Where · What · Owner · Status · Was? | ✅ 2026-11-03: Yes |
+| N7 | Enforce it in `tests/test_planning_docs.py` (prefix exists, open IDs appear in their doc, no new `OI-NN`)? | ✅ 2026-11-03: Yes |
+| N8 | Update the VW `CLAUDE.md` and `planning/README.md` rules (header `Next:` names the ID; chat always links IDs)? | ✅ 2026-11-03: Yes |

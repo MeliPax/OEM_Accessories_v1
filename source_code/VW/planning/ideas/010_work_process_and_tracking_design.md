@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (G1–G9, 2026-10-28)
 **Updated:** 2026-10-28
-**Next:** build plan 010
+**Next:** completed with plan 010 once testing is signed off (010-T)
 **Links:** plan [010](../plans/010_work_process_and_tracking.md) · rules in [../../CLAUDE.md](../../CLAUDE.md)
 **Summary:** The idea → plan → build → completed process, what we track and where, and indexing so status is read without loading whole files.
 **Applies to:** all VW work: the planning folder, the docs, and how an agent finds what was done
@@ -139,6 +139,8 @@ What the check verifies (it runs with the normal test suite):
 6. Nothing moves to `completed/` until the user signs off (OI-01).
 
 ## Decisions
+
+> **IDs (idea 015):** G1–G9 are 010-D1 – 010-D9.
 
 | # | Question | Proposed |
 |---|---|---|

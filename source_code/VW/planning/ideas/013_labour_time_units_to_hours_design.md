@@ -2,8 +2,8 @@
 
 **Status:** Idea — approved (H1–H7, 2026-11-02)
 **Updated:** 2026-11-02
-**Next:** completed with plan 013 once testing is signed off
-**Links:** plan [013](../plans/013_labour_time_units_to_hours.md) · corrects idea [006](006_labor_time_units_design.md) / plan [006](../plans/006_labor_time_units.md) · data issue [DI-07](../data_issues.md#di-07) · open item OI-06 · export names plan [012](../plans/012_final_export_columns.md)
+**Next:** completed with plan 013 once testing is signed off (013-T)
+**Links:** plan [013](../plans/013_labour_time_units_to_hours.md) · corrects idea [006](006_labor_time_units_design.md) / plan [006](../plans/006_labor_time_units.md) · data issue [DI-07](../data_issues.md#di-07) · data-source question DI07-S1 · export names plan [012](../plans/012_final_export_columns.md)
 **Summary:** `laborTime` arrives in time units (100 time units = 1 hour; 300 = 3 h), not minutes; a new `labor_hours` column carries the converted value downstream and the ingest value is demoted to lineage.
 **Applies to:** the accessory pipeline (plan 003): `stage` (column names), `clean` (conversion), DQ rules, dict, export
 **Asked for:** the labour value comes in time units (100 time units = 1 hour). At transformation, create a new labour column = ingest value / 100 (300 / 100 = 3) and push it to the output file. The ingest labour column is demoted; the new column is promoted for everything downstream.
@@ -76,6 +76,8 @@ units:
 **4. Governance kept from 006:** the multiplier is logged on every run (`time_units -> hours x 0.01, 2 decimals`), one change-log row per distinct value (`25 -> 0.25`, rule `unit_convert`), suspect values flagged `ACCESS_CLEAN_UNIT_SUSPECT` and listed in `accessory_review.csv`.
 
 ## Decisions
+
+> **IDs (idea 015):** H1–H7 are 013-D1 – 013-D7.
 
 | # | Question | Proposed |
 |---|---|---|

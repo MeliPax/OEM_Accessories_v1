@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-28)
 **Updated:** 2026-10-28
-**Next:** user signs off testing (OI-01); confirm the 0.4 value with the source (OI-06)
+**Next:** user signs off testing (006-T)
 **Links:** idea [006](../ideas/006_labor_time_units_design.md) · depends on plan [003](003_accessory_model_matching.md)
 **Summary:** Labour minutes converted to hours in the clean step, with lineage, suspect-value flags and the unit in the export header.
 

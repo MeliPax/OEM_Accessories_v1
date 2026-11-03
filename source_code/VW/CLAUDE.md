@@ -40,12 +40,20 @@ Rules:
 |---|---|
 | Stage, next action, date | The doc's header and its README *Index* row (same words) |
 | Decisions | The idea's *Decisions* table before the build; the plan's *Decision log* from then on |
-| Follow-ups and open questions | `planning/open_items.md` (`OI-NN`, owner, status; closed rows kept) |
+| Follow-ups and open questions | `planning/open_items.md`: IDs numbered by their doc (below), owner, status; closed rows kept |
 | What shipped | `CHANGELOG.md` (one entry per build or completion, with the commit) |
 | Run numbers after a build | The *Baseline* table in `planning/README.md` |
 | Data issues found or fixed | `planning/data_issues.md` (summary table and the `DI-NN` section) |
 | Flag codes | `config/messages.yaml` (a test checks code ↔ catalogue both ways) |
 | How to run, outputs, config | `README.md`, `db/README.md` |
+
+## Item IDs: the ID says where to look (idea 015)
+
+- Every pending item, decision, sign-off and data-source question has an ID that starts with the doc it belongs to: `NNN-Kn` (`013-D2` → `planning/ideas/013_*`, `003-A1` → `planning/plans/003_*`) or `DInn-Sn` for a data issue (`DI07-S1` → `planning/data_issues.md#di-07`). `000-Kn` is for the planning process itself.
+- Kinds: `D` decision · `T` testing sign-off · `P` plan approval · `U` task for the user · `A` task for Claude · `S` question for the data source. One `T` and one `P` per plan, without a number (`013-T`, `013-P`).
+- New ideas number their decisions `NNN-D1`, `NNN-D2`, ... in the Decisions table. A doc's `Next:` line names the ID it waits on. Never create an `OI-NN`; the old ones resolve through the Was column of `open_items.md`.
+- **In chat, always write an ID with a link to its doc**, e.g. [`003-A1`](planning/plans/003_accessory_model_matching.md), never a bare code.
+- `tests/test_planning_docs.py` checks it: prefixes exist, open IDs are named in their doc, references resolve, no `OI-NN` in a `Next:` line.
 
 ## Standing rules
 

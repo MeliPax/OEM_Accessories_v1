@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (D1–D19, 2026-10-26)
 **Updated:** 2026-10-26
-**Next:** completed with plan 001 once testing is signed off (OI-01)
+**Next:** completed with plan 001 once testing is signed off (001-T)
 **Links:** plan [001](../plans/001_vw_model_ingest_mvp.md)
 **Summary:** How to ingest the VW model export into a vehicle table broken into taxonomy fields, driven by YAML config.
 **Taxonomy source:** [assets/vw_vehicle_keyword_taxonomy_and_normalization_guide.md](../../assets/vw_vehicle_keyword_taxonomy_and_normalization_guide.md)
@@ -370,6 +370,8 @@ Columns: `vehicle_id, model_number, model_year, description_clean, issue, catego
 *A per-vehicle corrections file (manually overriding parsed values) was considered and removed for now (2026-10-26). It can be added later if data mistakes need fixing in `vehicles.csv` itself.*
 
 ## Decisions
+
+> **IDs (idea 015):** D1–D19 are 001-D1 – 001-D19.
 
 IDs (`D1`, `D2`, ...) are stable labels referenced from the rest of this doc and the plan.
 

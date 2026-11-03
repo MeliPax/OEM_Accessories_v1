@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (A1–A17, 2026-10-27)
 **Updated:** 2026-10-27
-**Next:** completed with plan 003 once testing is signed off (OI-01)
+**Next:** completed with plan 003 once testing is signed off (003-T)
 **Links:** plan [003](../plans/003_accessory_model_matching.md) · builds on ideas [001](001_vw_model_ingest_design.md), [002](002_pipeline_logging_design.md); A9 replaced by idea [004](004_error_message_catalogue_design.md)
 **Summary:** Ingest the accessory file and attach model numbers by a unique (model, submodel, year) lookup; one DataFrame per accessory model.
 **Source:** `datasets/2026_10_20_VW Canada Accessories Data EN.xlsx`, explored in `oem_access_data_analysis.ipynb`
@@ -271,6 +271,8 @@ config -> ingest -> staging -> year_window -> clean -> resolve_names -> lookup -
 | 9 | **Exact-duplicate rows** (13,051 → 1,357) hide real changes if deduped carelessly                                                                         | Low / medium                                     | Dedupe only rows identical on every column used; log the count; flag (part, model) pairs whose duplicates differ                                                                                          |
 
 ## Decisions
+
+> **IDs (idea 015):** A1–A17 are 003-D1 – 003-D17; the open question on lookup misses is 003-D18.
 
 | ID  | Question                                                                                                                                                              | Recommendation                                                                                                                                                                                                                                                                                                       |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-29)
 **Updated:** 2026-10-29
-**Next:** user signs off testing (OI-01)
+**Next:** user signs off testing (012-T)
 **Links:** idea [012](../ideas/012_final_export_columns_design.md) · changes the export of plan [003](003_accessory_model_matching.md)
 **Summary:** The accessory export gets its final column names from `export.columns` in `accessories.yaml` (Part, ModelName, Description, Price, Hours, Comments, Variant, Year, Model); Cost is left out of the file.
 

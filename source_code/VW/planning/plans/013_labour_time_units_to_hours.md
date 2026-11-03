@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-11-02)
 **Updated:** 2026-11-02
-**Next:** user signs off testing (OI-01)
+**Next:** user signs off testing (013-T)
 **Links:** idea [013](../ideas/013_labour_time_units_to_hours_design.md) · corrects plan [006](006_labor_time_units.md) · changes the export of plans [003](003_accessory_model_matching.md) and [012](012_final_export_columns.md) · data issue [DI-07](../data_issues.md#di-07)
 **Summary:** `laborTime` is read as `labor_time_source` (time units, 100 = 1 hour) and converted in `clean` to a new `labor_hours` column, which the DQ rules, dict and export use; `labor_time` is removed.
 

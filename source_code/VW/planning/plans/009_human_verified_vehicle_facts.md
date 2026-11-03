@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-28)
 **Updated:** 2026-10-28
-**Next:** user signs off testing (OI-01)
+**Next:** user signs off testing (009-T)
 **Links:** idea [009](../ideas/009_human_verified_vehicle_facts_design.md) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md), [003](003_accessory_model_matching.md) · feeds idea [005](../ideas/005_pipeline_report_card_design.md)
 **Summary:** A verified: section per vehicle YAML and a final verify step in both pipelines: matched flags drop to info, contradictions become errors.
 

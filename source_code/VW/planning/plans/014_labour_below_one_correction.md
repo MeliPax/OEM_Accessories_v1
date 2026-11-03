@@ -2,8 +2,8 @@
 
 **Status:** Built — in user testing (2026-11-03)
 **Updated:** 2026-11-03
-**Next:** user signs off testing (OI-01)
-**Links:** idea [014](../ideas/014_labour_below_one_correction_design.md) · builds on plan [013](013_labour_time_units_to_hours.md) · data issue [DI-07](../data_issues.md#di-07) · open item OI-06
+**Next:** user signs off testing (014-T)
+**Links:** idea [014](../ideas/014_labour_below_one_correction_design.md) · builds on plan [013](013_labour_time_units_to_hours.md) · data issue [DI-07](../data_issues.md#di-07) · data-source question DI07-S1
 **Summary:** In the `clean` step, a labour value above 0 and below 1 is read as hours typed into a time-units column, multiplied by 100 into `labor_time_corrected`, flagged `ACCESS_CLEAN_UNIT_CORRECTED`, and then converted to `labor_hours` like any other value.
 
 ## Outcome

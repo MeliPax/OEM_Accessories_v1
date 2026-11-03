@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (E1–E6, 2026-10-29)
 **Updated:** 2026-10-29
-**Next:** completed with plan 012 once testing is signed off (OI-01)
+**Next:** completed with plan 012 once testing is signed off (012-T)
 **Links:** plan [012](../plans/012_final_export_columns.md) · changes the export of plan [003](../plans/003_accessory_model_matching.md)
 **Summary:** A new set of column names for the accessory export, kept in config and marked as the final names at the end of the pipeline; Cost is dropped from the file.
 
@@ -36,6 +36,8 @@
 Option B: a new file such as `config/output_columns.yaml`. This gives a second place to keep in step with `export.columns`, for no gain.
 
 ## Decisions
+
+> **IDs (idea 015):** E1–E6 are 012-D1 – 012-D6.
 
 | # | Decision | Choice | By |
 |---|---|---|---|

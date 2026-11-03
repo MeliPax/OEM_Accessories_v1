@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (V1–V8, 2026-10-28)
 **Updated:** 2026-10-28
-**Next:** build plan 009
+**Next:** completed with plan 009 once testing is signed off (009-T)
 **Links:** plan [009](../plans/009_human_verified_vehicle_facts.md)
 **Summary:** A verified: section per vehicle YAML records what a person confirmed was never offered, so the flags it explains stop coming back.
 **Applies to:** both pipelines. Facts live in `config/vehicles/<model>.yaml`; the check runs on the vehicle ingest's validation flags and the accessory lookup and coverage flags.
@@ -103,6 +103,8 @@ The **vehicles with no parts** (14 in 2027) aren't "never offered": the vehicles
 - **Review files:** verified flags are left out; contradictions are added.
 
 ## Decisions
+
+> **IDs (idea 015):** V1–V8 are 009-D1 – 009-D8.
 
 | # | Question | Proposed |
 |---|---|---|

@@ -2,7 +2,7 @@
 
 **Status:** Idea — approved (L1–L5, 2026-10-27)
 **Updated:** 2026-10-28
-**Next:** completed with plan 006 once testing is signed off (OI-01)
+**Next:** completed with plan 006 once testing is signed off (006-T)
 **Links:** plan [006](../plans/006_labor_time_units.md) (as built) · data issue [DI-07](../data_issues.md#di-07)
 **Summary:** Labour time converted from minutes to hours with the multiplier from unit definitions in config.
 **Applies to:** the accessory pipeline (plan 003), `clean` step
@@ -70,6 +70,8 @@ The multiplier is `definitions[target] / definitions[source]` = 1 / 60. The run 
 | 0.4 | 0.01, **flagged** `ACCESS_CLEAN_UNIT_SUSPECT` | 2 |
 
 ## Decisions
+
+> **IDs (idea 015):** L1–L5 are 006-D1 – 006-D5.
 
 | # | Question | Proposed |
 |---|---|---|

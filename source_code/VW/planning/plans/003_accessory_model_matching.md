@@ -2,7 +2,7 @@
 
 **Status:** Built — in user testing (2026-10-27)
 **Updated:** 2026-10-27
-**Next:** user signs off testing (OI-01); notebook cell (OI-02); lookup misses as warnings? (OI-09)
+**Next:** user signs off testing (003-T); notebook cells (003-A1); lookup misses as warnings? (003-D18)
 **Links:** ideas [003](../ideas/003_accessory_model_matching_design.md), [004](../ideas/004_error_message_catalogue_design.md) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md) · later: idea [005](../ideas/005_pipeline_report_card_design.md)
 **Summary:** The accessory pipeline: ingest, dedupe, model-number lookup, per-model dict, coverage, data quality and the Excel export; flag codes from messages.yaml.
 
