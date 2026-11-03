@@ -1,4 +1,5 @@
-"""Comment cleaning (idea 007) and labour units (idea 006), on small hand-made values from today's file."""
+"""Comment cleaning (idea 007) and labour units (ideas 006, 013, 014), on small hand-made values from today's file."""
+import copy
 
 import pandas as pd
 import pytest
@@ -136,15 +137,47 @@ def test_time_units_become_hours_in_a_new_labor_hours_column(spec, ctx):
 
 
 def test_suspect_values_are_flagged_and_left_empty(spec, ctx):
-    df, review = convert_units(labour(0.4, 0.4, 1200, 50), spec, ctx)
+    df, review = convert_units(labour(1.5, 1.5, 1200, 50), spec, ctx)
     assert pd.isna(df['labor_hours'].iloc[:3]).all() and df['labor_hours'].iloc[3] == 0.5
-    assert df['labor_time_source'].tolist() == [0.4, 0.4, 1200, 50]
+    assert df['labor_time_source'].tolist() == [1.5, 1.5, 1200, 50]
     found = sorted(f['found'] for f in ctx['flags'])
     assert found == ['above 1000 time_units', 'not a whole number of time_units',
                      'not a whole number of time_units']
-    assert ctx['flags'][0]['message'] == ('Part P3: labor_time_source 0.4 time_units looks like the wrong unit '
+    assert ctx['flags'][0]['message'] == ('Part P3: labor_time_source 1.5 time_units looks like the wrong unit '
                                           '(not a whole number of time_units); labor_hours left empty, not '
                                           'converted to hours (1 row)')
     changes = [(c['before'], c['after']) for c in ctx['changes'] if c['rule'] == 'unit_convert']
     assert changes == [('50', '0.5')]                                       # suspect values not logged as changed
     assert {r['code'] for r in review} == {'ACCESS_CLEAN_UNIT_SUSPECT'}
+
+
+# ---------------------------------------------------------------- values below 1 corrected (idea 014)
+
+def test_values_between_0_and_1_are_read_as_hours_and_corrected(spec, ctx):
+    assert spec['units']['columns']['labor_time_source']['correct']['factor'] == 100
+    df, review = convert_units(labour(0, 0.4, 0.5, 40, -1, None), spec, ctx)
+    assert df['labor_time_source'].tolist()[:5] == [0, 0.4, 0.5, 40, -1]            # as read, unchanged
+    assert df['labor_time_corrected'].tolist()[:5] == [0, 40, 50, 40, -1]           # 0 and negatives untouched
+    assert df['labor_hours'].tolist()[:5] == [0, 0.4, 0.5, 0.4, -0.01]
+    assert pd.isna(df['labor_time_corrected'].iloc[5]) and pd.isna(df['labor_hours'].iloc[5])
+    corrected = [(c['before'], c['after']) for c in ctx['changes'] if c['rule'] == 'unit_correct']
+    assert corrected == [('0.4', '40'), ('0.5', '50')]
+    assert [f['code'] for f in ctx['flags']] == ['ACCESS_CLEAN_UNIT_CORRECTED'] * 2   # no suspect: 40 is whole
+    assert ctx['flags'][0]['message'] == ('Part P4: labor_time_source 0.4 is below 1, read as hours and '
+                                          'corrected to 40 time_units (1 row)')
+    assert {r['code'] for r in review} == {'ACCESS_CLEAN_UNIT_CORRECTED'} and len(review) == 2
+
+
+def test_a_value_still_not_whole_after_correcting_stays_suspect(spec, ctx):
+    df, _ = convert_units(labour(0.405), spec, ctx)
+    assert df['labor_time_corrected'].iloc[0] == 40.5 and pd.isna(df['labor_hours'].iloc[0])
+    assert [f['code'] for f in ctx['flags']] == ['ACCESS_CLEAN_UNIT_CORRECTED', 'ACCESS_CLEAN_UNIT_SUSPECT']
+    assert ctx['flags'][1]['value'] == '0.405' and 'checked after correcting: 40.5' in ctx['flags'][1]['checked']
+
+
+def test_without_correct_if_nothing_is_corrected(spec, ctx):
+    plain = copy.deepcopy(spec)
+    plain['units']['columns']['labor_time_source']['correct'] = None
+    df, _ = convert_units(labour(0.4), plain, ctx)
+    assert 'labor_time_corrected' not in df.columns and pd.isna(df['labor_hours'].iloc[0])
+    assert [f['code'] for f in ctx['flags']] == ['ACCESS_CLEAN_UNIT_SUSPECT']

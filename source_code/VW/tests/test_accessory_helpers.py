@@ -153,10 +153,10 @@ def test_quality_rules_and_fitment_hints(tmp_path, spec, ctx, taxonomy):
 
 
 def test_a_suspect_labour_value_is_flagged_once_not_again_as_missing(tmp_path, spec, ctx, taxonomy):
-    df = staged(tmp_path, spec, ctx, [part(labor='0.4'), part('P2', labor='')])
+    df = staged(tmp_path, spec, ctx, [part(labor='1.5'), part('P2', labor='')])
     cleaned, _ = convert_units(clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)
     check_quality(cleaned, spec, ctx)
-    assert pd.isna(cleaned['labor_hours']).all() and cleaned['labor_time_source'].iloc[0] == 0.4
+    assert pd.isna(cleaned['labor_hours']).all() and cleaned['labor_time_source'].iloc[0] == 1.5
     assert codes(ctx) == ['ACCESS_CLEAN_UNIT_SUSPECT', 'ACCESS_DQ_VALUE_MISSING']   # P1 suspect, P2 really empty
     assert ctx['flags'][1]['subject'].startswith('P2 ') and ctx['flags'][1]['category'] == 'labor_hours'
 
@@ -167,3 +167,12 @@ def test_sheet_names_follow_excel_rules():
     assert sheet_name('Golf/GTI: [Performance]', used) == 'Golf GTI   Performance'
     long = 'A' * 40
     assert sheet_name(long, used) == 'A' * 31 and sheet_name(long, used) == 'A' * 29 + '~2'
+
+
+def test_a_labour_value_below_1_is_corrected_not_left_empty(tmp_path, spec, ctx, taxonomy):
+    df = staged(tmp_path, spec, ctx, [part(labor='0.4')])
+    cleaned, _ = convert_units(clean_accessories(df, spec, taxonomy['aliases'], ctx), spec, ctx)
+    check_quality(cleaned, spec, ctx)
+    row = cleaned.iloc[0]
+    assert (row['labor_time_source'], row['labor_time_corrected'], row['labor_hours']) == (0.4, 40, 0.4)
+    assert codes(ctx) == ['ACCESS_CLEAN_UNIT_CORRECTED']                 # idea 014: no suspect, no missing flag

@@ -113,6 +113,7 @@ def test_accessory_config_is_valid(settings):
     labour = spec['units']['columns']['labor_time_source']      # idea 013: time units -> labor_hours
     assert (labour['factor'], labour['target_column']) == (1 / 100, 'labor_hours')
     assert spec['renames']['laborTime'] == 'labor_time_source' and 'labor_time' not in spec['types']
+    assert labour['correct'] == {'low': 0, 'high': 1, 'entered_as': 'hours', 'factor': 100}   # idea 014
 
 
 @pytest.mark.parametrize('old, new, message', [
@@ -147,6 +148,10 @@ def test_accessory_config_is_valid(settings):
      '      target_column: labor_hours\n    labor_time_source:            #', 'both write labor_hours'),
     ('numeric_non_negative: [labor_hours]', 'numeric_non_negative: [labor_time]', "unknown column 'labor_time'"),
     ('    labor_hours: Hours ', '    labor_time: Hours ', "export column 'labor_time' is not in the dict"),
+    # idea 014: correct_if
+    ('        between: [0, 1] ', '        between: [1, 0] ', 'correct_if.between must be two numbers [low, high]'),
+    ('        entered_as: hours ', '        entered_as: days ', "correct_if.entered_as 'days' is not in units.definitions"),
+    ('        between: [0, 1] ', '        below: 1 ', 'correct_if has unknown keys below'),
 ])
 def test_broken_accessory_config_is_rejected(config_copy, settings, old, new, message):
     replace_in(config_copy / 'accessories.yaml', old, new)

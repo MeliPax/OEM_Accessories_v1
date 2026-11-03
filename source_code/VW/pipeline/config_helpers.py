@@ -711,10 +711,42 @@ def _units_spec(block, types, where, errors):
             targets.setdefault(target_column, column)
         source, target = definitions.get(rule.get('source_unit')), definitions.get(rule.get('target_unit'))
         factor = target / source if _number(source) and _number(target) and source > 0 else None
+        correct = _correct_spec(rule.get('correct_if'), definitions, source, at, where, errors)
         columns[str(column)] = {'source_unit': rule.get('source_unit'), 'target_unit': rule.get('target_unit'),
                                 'target_column': target_column, 'decimals': decimals, 'factor': factor,
+                                'correct': correct,
                                 'not_whole': bool(suspect.get('not_whole', False)), 'above': suspect.get('above')}
     return {'definitions': definitions, 'columns': columns}
+
+
+def _correct_spec(block, definitions, source_per_hour, at, where, errors):
+    """Check units.columns.<column>.correct_if (idea 014). Returns {low, high, entered_as, factor} or None:
+    a value strictly between low and high was typed in entered_as, so factor = definitions[source_unit] /
+    definitions[entered_as] (time_units 100 / hours 1 = x 100)."""
+    if block is None:
+        return None
+    if not isinstance(block, dict):
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.correct_if must be a mapping with between and entered_as')
+        return None
+    unknown = set(block) - {'between', 'entered_as'}
+    if unknown:
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.correct_if has unknown keys '
+                      f'{", ".join(sorted(unknown))} (known: between, entered_as)')
+    between = block.get('between')
+    if not (isinstance(between, list) and len(between) == 2 and all(_number(v) for v in between)
+            and between[0] < between[1]):
+        errors.append(f'CONFG_VALUE_INVALID: {where}: {at}.correct_if.between must be two numbers [low, high] '
+                      f'with low < high, got {between!r}')
+        between = None
+    entered_as = block.get('entered_as')
+    if entered_as not in definitions:
+        errors.append(f'CONFG_UNKNOWN_REFERENCE: {where}: {at}.correct_if.entered_as {entered_as!r} is not in '
+                      f'units.definitions (known: {", ".join(definitions)})')
+        return None
+    per_hour = definitions[entered_as]
+    if not between or not _number(source_per_hour) or not _number(per_hour) or per_hour <= 0:
+        return None
+    return {'low': between[0], 'high': between[1], 'entered_as': entered_as, 'factor': source_per_hour / per_hour}
 
 
 def _text_cleaning_spec(block, types, where, errors):

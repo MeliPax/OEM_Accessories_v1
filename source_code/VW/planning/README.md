@@ -110,3 +110,5 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (OI-01) | 2026-10-29 |
 | 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off | 2026-11-02 |
 | 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (OI-01); the source confirms the 0.4 value (OI-06) | 2026-11-02 |
+| 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off | 2026-11-03 |
+| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Building | build phases C1–C3 (Claude) | 2026-11-03 |

@@ -287,22 +287,26 @@ def test_comments_are_clean_and_keep_the_raw_text(acc_run):
 
 
 def test_labour_time_is_exported_in_hours(acc_run):
-    """Idea 013: laborTime is in time units (100 = 1 hour). labor_hours = labor_time_source / 100, 2 decimals;
-    the 0.4 value on 3QF601025KAX1 is flagged for review and left empty."""
+    """Idea 013: laborTime is in time units (100 = 1 hour). labor_hours = labor_time_source / 100, 2 decimals.
+    Idea 014: the 0.4 on 3QF601025KAX1 is below 1, read as hours, corrected to 40 and flagged for review."""
     db, out, _, summary, model_dict = acc_run
     rows = pd.concat(model_dict.values())
     assert 'labor_time' not in rows.columns
-    suspect = rows['part_number'] == '3QF601025KAX1'
-    ok = rows[~suspect]
+    fixed = rows['part_number'] == '3QF601025KAX1'
+    ok = rows[~fixed]
     assert (ok['labor_hours'] == (ok['labor_time_source'] / 100).round(2)).all()
+    assert (ok['labor_time_corrected'] == ok['labor_time_source']).all()
     assert {(25.0, 0.25), (250.0, 2.5), (0.0, 0.0), (100.0, 1.0)} <= set(zip(ok['labor_time_source'], ok['labor_hours']))
-    assert (rows.loc[suspect, 'labor_time_source'] == 0.4).all() and rows.loc[suspect, 'labor_hours'].isna().all()
-    assert summary['unit_suspects'] == 1
+    assert set(zip(rows.loc[fixed, 'labor_time_source'], rows.loc[fixed, 'labor_time_corrected'],
+                   rows.loc[fixed, 'labor_hours'])) == {(0.4, 40.0, 0.4)}
+    assert (summary['unit_suspects'], summary['unit_corrected']) == (0, 1)
     review = read(run_file(db, 'review', 'accessory_review', 'acc1'))
     value = review[review['type'] == 'value']
-    assert value['code'].tolist() == ['ACCESS_CLEAN_UNIT_SUSPECT'] and value['part_number'].tolist() == ['3QF601025KAX1']
+    assert value['code'].tolist() == ['ACCESS_CLEAN_UNIT_CORRECTED'] and value['part_number'].tolist() == ['3QF601025KAX1']
     gti = pd.read_excel(out / 'acc1.xlsx', sheet_name='GTI')
     assert 'Hours' in gti.columns and gti['Hours'].max() < 10
+    sheets = pd.concat(pd.read_excel(out / 'acc1.xlsx', sheet_name=None).values())
+    assert set(sheets.loc[sheets['Part'].astype(str) == '3QF601025KAX1', 'Hours']) == {0.4}   # was empty (013)
 
 
 def test_notebook_entry_point_without_export(acc_run):

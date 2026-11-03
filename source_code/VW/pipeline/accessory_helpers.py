@@ -43,7 +43,7 @@ DATASET = 'accessories'
 YEAR_RANGE = re.compile(r'^\s*(\d{4})\s*(?:-\s*(\d{4}))?\s*$')
 SHEET_FORBIDDEN = re.compile(r'[\[\]:*?/\\]')
 DICT_COLUMNS = ['part_number', 'part_number_source', 'part_number_check', 'model_name', 'model_name_clean', 'model', 'submodel', 'product_description',
-                'comments', 'msrp', 'cost', 'labor_time_source', 'labor_hours', 'applicable_year', 'match_key', 'model_number',
+                'comments', 'msrp', 'cost', 'labor_time_source', 'labor_time_corrected', 'labor_hours', 'applicable_year', 'match_key', 'model_number',
                 'vehicle_id', 'variant', 'match_status', 'source_row']
 
 REVIEW_COLUMNS = ['type', 'record', 'part_number', 'model_name', 'model', 'submodel', 'year', 'match_key',
@@ -453,15 +453,19 @@ def clean_text_columns(df, spec, ctx=None, step='clean_text'):
 
 
 def convert_units(df, spec, ctx=None, step='clean'):
-    """Convert the units columns (ideas 006, 013): column x definitions[target] / definitions[source], rounded,
-    written to the rule's target_column; the column read is kept unchanged (lineage). One change per distinct
-    value; values that look like the wrong unit are flagged ACCESS_CLEAN_UNIT_SUSPECT and their target is
-    left empty, so the export never shows a made-up value. Returns (df, review rows)."""
+    """Convert the units columns (ideas 006, 013, 014): column x definitions[target] / definitions[source],
+    rounded, written to the rule's target_column; the column read is kept unchanged (lineage). With correct_if,
+    entry errors are fixed first into <column>_corrected, which the checks and the conversion then read. One
+    change per distinct value; values that look like the wrong unit are flagged ACCESS_CLEAN_UNIT_SUSPECT and
+    their target is left empty, so the export never shows a made-up value. Returns (df, review rows)."""
     df = df.copy()
     review = []
     for col, rule in spec['units']['columns'].items():
         target = rule['target_column']
         source = df[col]
+        if rule.get('correct'):                         # idea 014: entry errors fixed before anything else
+            source, corrected_review = _correct_entry_errors(df, col, rule, ctx, step)
+            review += corrected_review
         how = f'{rule["source_unit"]} -> {rule["target_unit"]} x {rule["factor"]:.6g}, {rule["decimals"]} decimals'
         suspect = pd.Series('', index=df.index)
         if rule['not_whole']:
@@ -478,20 +482,54 @@ def convert_units(df, spec, ctx=None, step='clean'):
                 continue
             log_change(ctx, step, {'record': f'{col} {_number_text(value)}'}, target, _number_text(value),
                        _number_text(converted), 'unit_convert', f'{col} -> {target}: {how}; {_rows(rows)}')
-        flagged = df[suspect != ''].assign(reason=suspect[suspect != ''])
-        for (part, value), group in flagged.groupby(['part_number', col], sort=True):
+        flagged = df[suspect != ''].assign(reason=suspect[suspect != ''], _value=source[suspect != ''])
+        for (part, value), group in flagged.groupby(['part_number', '_value'], sort=True):
             first = group.iloc[0]
-            flag = log_flag(ctx, step, first, 'ACCESS_CLEAN_UNIT_SUSPECT', col, value,
-                            subject=f'{part} {col}={_number_text(value)} - {_rows(len(group))}',
+            read = first[col]                                       # the value as read, for the message
+            flag = log_flag(ctx, step, first, 'ACCESS_CLEAN_UNIT_SUSPECT', col, read,
+                            subject=f'{part} {col}={_number_text(read)} - {_rows(len(group))}',
                             checked=f'{col} in {rule["source_unit"]}: suspect if not whole / above '
-                                    f'{_number_text(rule["above"])}',
-                            found=first['reason'], column=col, value=_number_text(value),
+                                    f'{_number_text(rule["above"])}'
+                                    + (f' (checked after correcting: {_number_text(value)})' if value != read else ''),
+                            found=first['reason'], column=col, value=_number_text(read),
                             source_unit=rule['source_unit'], target_unit=rule['target_unit'],
                             target_column=target, reason=first['reason'], part_number=part,
                             rows=_rows(len(group)))
             if flag:
                 review.append(_value_review(flag, group))
     return df, review
+
+
+def _correct_entry_errors(df, col, rule, ctx, step):
+    """correct_if (idea 014): a value strictly between low and high was typed in entered_as, so it is
+    multiplied by factor (0.4 hours -> 40 time units) into <column without _source>_corrected; every other
+    value is copied as read. One unit_correct change per distinct value; ACCESS_CLEAN_UNIT_CORRECTED once per
+    part and value, with a review row. Adds the column to df; returns (corrected values, review rows)."""
+    fix = rule['correct']
+    name = f'{col[:-len("_source")] if col.endswith("_source") else col}_corrected'
+    read = df[col]
+    wrong = read.notna() & (read > fix['low']) & (read < fix['high'])
+    df[name] = read.where(~wrong, (read * fix['factor']).round(9))      # round(9): 0.4 x 100 = 40, not 40.00000000000001
+    how = (f'between {_number_text(fix["low"])} and {_number_text(fix["high"])}: entered as {fix["entered_as"]} '
+           f'x {_number_text(fix["factor"])}')
+    log_info(ctx, step, 'UNITS CORRECT', column=col, corrected=name, rule=how, rows=int(wrong.sum()))
+    review = []
+    for value, rows in read[wrong].value_counts().sort_index().items():
+        log_change(ctx, step, {'record': f'{col} {_number_text(value)}'}, name, _number_text(value),
+                   _number_text(round(value * fix['factor'], 9)), 'unit_correct', f'{how}; {_rows(rows)}')
+    for (part, value), group in df[wrong].groupby(['part_number', col], sort=True):
+        corrected = _number_text(group[name].iloc[0])
+        flag = log_flag(ctx, step, group.iloc[0], 'ACCESS_CLEAN_UNIT_CORRECTED', col, value,
+                        subject=f'{part} {col}={_number_text(value)} - {_rows(len(group))}',
+                        checked=f'{col} between {_number_text(fix["low"])} and {_number_text(fix["high"])} '
+                                f'(correct_if)',
+                        found=f'{_number_text(value)} -> {corrected} {rule["source_unit"]}',
+                        column=col, value=_number_text(value), high=_number_text(fix['high']),
+                        entered_as=fix['entered_as'], corrected=corrected, source_unit=rule['source_unit'],
+                        part_number=part, rows=_rows(len(group)))
+        if flag:
+            review.append(_value_review(flag, group))
+    return df[name], review
 
 
 def _number_text(value):
@@ -898,7 +936,7 @@ def run_summary(ctx, raw, staged, kept, unique, named, state):
             'part_numbers_restored': int(checks.get('restored', 0)),
             'part_numbers_unproven': int(checks[~checks.index.isin(PROVEN)].sum()),
             'texts_cleaned': sum(1 for c in ctx['changes'] if c['step'] == 'clean_text'),
-            'links_flagged': len(state['text_review']), 'unit_suspects': len(state['unit_review']), 'rows_staged': len(staged), 'rows_in_window': len(kept),
+            'links_flagged': len(state['text_review']), 'unit_suspects': sum(r['code'] == 'ACCESS_CLEAN_UNIT_SUSPECT' for r in state['unit_review']), 'unit_corrected': sum(r['code'] == 'ACCESS_CLEAN_UNIT_CORRECTED' for r in state['unit_review']), 'rows_staged': len(staged), 'rows_in_window': len(kept),
             'rows_unique': len(unique), 'model_names': named['model_name'].nunique(),
             'unknown_model_names': named.loc[named['model'] == '', 'model_name'].nunique(),
             'keys': len(results), 'keys_found': sum(1 for r in results.values() if r['vehicles']),

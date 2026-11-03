@@ -574,6 +574,18 @@ ACCESS_CLEAN_UNIT_SUSPECT:
     - If values like this are normal, change units.columns.{column}.suspect_if in config/accessories.yaml
     - Rerun run_accessories.py
 
+ACCESS_CLEAN_UNIT_CORRECTED:
+  severity: warning
+  message: 'Part {part_number}: {column} {value} is below {high}, read as {entered_as} and corrected to {corrected} {source_unit} ({rows})'
+  facts: [part_number, column, value, high, entered_as, corrected, source_unit, rows]
+  causes:
+    - The value was typed in hours into a column that holds time units (100 = 1 hour)
+    - A typo in the accessory file
+  fix:
+    - Ask the data source to correct the value in the file
+    - If values below 1 are real, remove units.columns.{column}.correct_if in config/accessories.yaml
+    - Rerun run_accessories.py
+
 ACCESS_CLEAN_UNREVIEWED_LINK:
   severity: warning
   message: 'The {column} link {url} is not covered by a link rule or an allowed host; kept as it is ({rows})'

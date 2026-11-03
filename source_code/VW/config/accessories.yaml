@@ -47,6 +47,9 @@ units:
       target_unit: hours          # what the dict and the export hold
       target_column: labor_hours  # promoted: DQ rules, dict, export "Hours"
       decimals: 2                 # whole time units convert exactly (25 -> 0.25 h)
+      correct_if:                 # entry errors fixed first, before suspect_if and the conversion (idea 014)
+        between: [0, 1]           # above 0 and below 1 (0 is a real value: no install time)
+        entered_as: hours         # typed in hours: x definitions[time_units] / definitions[hours] = x 100 (0.4 -> 40)
       suspect_if:                 # values that look like the wrong unit: flagged ACCESS_CLEAN_UNIT_SUSPECT,
                                   # labor_hours left empty (idea 013, H5)
         not_whole: true           # a fraction of a time unit (0.4) can't be right
