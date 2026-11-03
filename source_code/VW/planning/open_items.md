@@ -15,9 +15,9 @@
 | 001-U1 | [plan 001](plans/001_vw_model_ingest_mvp.md) | Review `config/vehicles/*.yaml`: all 10 `reviewed` by P.M (ID. Buzz 2026-10-29, the other 9 2026-11-03) | user | Closed 2026-11-03 | OI-03 |
 | 002-T | [plan 002](plans/002_pipeline_logging.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
 | 003-A1 | [plan 003](plans/003_accessory_model_matching.md) | Notebook cells for plans 001, 002, 003; added only while the notebook is closed | Claude | Open | OI-02 |
-| 003-D18 | [plan 003](plans/003_accessory_model_matching.md) | Should accessory lookup misses be warnings instead of errors? | user | Open | OI-09 |
+| 003-D18 | [plan 003](plans/003_accessory_model_matching.md) | Should accessory lookup misses be warnings instead of errors? **No: they stay errors** (missing data that needs action; a warning may need none). They don't stop the run; unresolved ones go to the review file | user | Closed 2026-11-03 | OI-09 |
 | 003-T | [plan 003](plans/003_accessory_model_matching.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
-| 005-D4 – 005-D12 | [idea 005](ideas/005_pipeline_report_card_design.md) | Decisions for the run report | user | Open | OI-11 (R4–R12) |
+| 005-D4 – 005-D12 | [idea 005](ideas/005_pipeline_report_card_design.md) | Decisions for the run report (parked 2026-11-03: kept for later) | user | Open | OI-11 (R4–R12) |
 | 005-U1 | [idea 005](ideas/005_pipeline_report_card_design.md) | `db/review/accessory_review.csv` was overwritten outside the pipeline on 2026-10-28 at 09:04 (13 bare match keys instead of 467 rows). Rebuilt by the plan 009 real run (241 rows); the overwritten version was copied to the session scratchpad first (`accessory_review_overwritten_0904.csv`) | user | Closed 2026-10-28 | OI-14 |
 | 006-T | [plan 006](plans/006_labor_time_units.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
 | 007-T | [plan 007](plans/007_comment_text_cleaning.md) | Sign off testing, so the plan can move to `completed/` | user | Open | OI-01 |
@@ -38,9 +38,9 @@
 | 015-D1 – 015-D8 | [idea 015](ideas/015_doc_numbered_item_ids_design.md) | Decisions for numbering pending items by their doc | user | Closed 2026-11-03 | OI-20 (N1–N8) |
 | 015-P | [plan 015](plans/015_doc_numbered_item_ids.md) | Approve plan 015 (items renamed by doc; kind `P` added) | user | Closed 2026-11-03 | OI-21 |
 | 015-T | [plan 015](plans/015_doc_numbered_item_ids.md) | Sign off testing, so the plan can move to `completed/` | user | Open | — |
-| DI03-S1 | [DI-03](data_issues.md#di-03), [plan 008](plans/008_part_number_integrity.md) | Export `stockCode` as text, so leading zeros aren't lost | data source | Open | OI-07 |
-| DI05-S1 | [DI-05](data_issues.md#di-05) | Atlas 2020, ID.4 2026, ID. Buzz 2026: parts listed, no vehicle in the export. Missing vehicles or wrong year ranges? (Golf R, Arteon, and on 2026-10-29 ID.4 and ID. Buzz 2026: verified never offered, plan 009; Atlas 2020 is outside the accessory window) | data source | Open | OI-04 |
-| DI06-S1 | [DI-06](data_issues.md#di-06) | No accessory parts for model year 2027 (14 vehicles) | data source | Open | OI-05 |
+| DI03-S1 | [DI-03](data_issues.md#di-03), [plan 008](plans/008_part_number_integrity.md) | Export `stockCode` as text, so leading zeros aren't lost. Not asked: the pipeline restores the full number from `make&model` every run (idea 008) | data source | Closed 2026-11-03 | OI-07 |
+| DI05-S1 | [DI-05](data_issues.md#di-05) | Part-years with no vehicle. Not asked as a standing question: each run applies the configured checks (window, `verified:` never offered); whatever is still unresolved goes to the review file for the user to check with the source or the vehicle config | data source | Closed 2026-11-03 | OI-04 |
+| DI06-S1 | [DI-06](data_issues.md#di-06) | No accessory parts for model year 2027. Not asked as a standing question: each run lists the vehicles with no parts (`ACCESS_COVER_VEHICLE_NO_PARTS`) in the review file, and the user checks with the source from there | data source | Closed 2026-11-03 | OI-05 |
 | DI07-S1 | [DI-07](data_issues.md#di-07) | Labour time 0.4 on `3QF601025KAX1`: what is the right value? | data source | Closed 2026-11-03 (corrected by rule, idea 014: read as hours → 40; the source is asked to fix the file) | OI-06 |
 | DI16-S1 | [DI-16](data_issues.md#di-16) | "ReferAlways install": what the "Refer..." sentence should say (optional; text left as it is) | data source | Open | OI-08 |
 

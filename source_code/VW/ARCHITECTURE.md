@@ -325,10 +325,10 @@ Every challenge is listed with its full detail and status in [planning/data_issu
 ## 13. Known limitations and open items
 
 - **Data source:**
-  - no parts for model year 2027 (DI-06);
+  - no parts for model year 2027 (DI-06): listed in the review file each run;
   - base Atlas 2020 missing from the vehicle export (DV-08);
   - the `0.4` labour on `3QF601025KAX1`: corrected to 40 time units by rule (idea 014); the source should fix the file;
-  - export part numbers as text (DI03-S1).
+  - part numbers stored as numbers: restored from `make&model` every run (DI-03).
 - **Matching precision:** 14 vehicle rows share all their parsed fields with another row but have a different model number. Something that tells them apart isn't in the description, so their parts list both model numbers.
 - **Fitment hints:** 15 descriptions say things like "not for R-Line". They are flagged as info but not used to narrow the match (DI-13).
 - **Open decisions:** the run report (idea 005) and the documentation standard (idea 011). See [planning/open_items.md](planning/open_items.md).

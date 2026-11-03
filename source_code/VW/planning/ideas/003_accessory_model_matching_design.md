@@ -272,7 +272,7 @@ config -> ingest -> staging -> year_window -> clean -> resolve_names -> lookup -
 
 ## Decisions
 
-> **IDs (idea 015):** A1–A17 are 003-D1 – 003-D17; the open question on lookup misses is 003-D18.
+> **IDs (idea 015):** A1–A17 are 003-D1 – 003-D17; the question on lookup misses is 003-D18 (decided 2026-11-03).
 
 | ID  | Question                                                                                                                                                              | Recommendation                                                                                                                                                                                                                                                                                                       |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -293,6 +293,7 @@ config -> ingest -> staging -> year_window -> clean -> resolve_names -> lookup -
 | A15 | Export to `source_code/VW/output/`, git-ignored?                                                                                                                    | ✅ 2026-10-27: yes; file name `<run_id>.xlsx` (A17)                                                                                                                                                                                                                                                                |
 | A16 | Vehicles that get no parts?                                                                                                                                           | ✅ 2026-10-27: flagged (`ACCESS_COVER_VEHICLE_NO_PARTS`, `ACCESS_COVER_MODEL_NO_PARTS`), in the review file, and counted for the report card (idea 005). Today: the 14 model-year 2027 vehicles                                                                                                                  |
 | A17 | Run id format (both pipelines)?                                                                                                                                       | ✅ 2026-10-27: the pipeline name, then the run's date and time at the end: `vw_ingest_20261027_143005`, `vw_accessories_20261027_143005` (a second run in the same second gets `_2`). Used in every log file name, so runs sort and read by time; the export is `output/vw_accessories_20261027_143005.xlsx` |
+| 003-D18 | Lookup misses as warnings instead of errors? | ✅ 2026-11-03: **no, they stay errors** (missing data that needs action). They don't stop the run; unresolved ones go to the review file |
 
 ## Out of scope for this idea
 

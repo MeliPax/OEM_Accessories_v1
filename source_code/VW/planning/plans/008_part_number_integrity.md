@@ -1,8 +1,8 @@
 # 008 — Part Numbers Kept Exactly as the Source: Plan
 
 **Status:** Built — in user testing (2026-10-27)
-**Updated:** 2026-10-28
-**Next:** user signs off testing (008-T); ask the source to export stockCode as text (DI03-S1)
+**Updated:** 2026-11-03
+**Next:** user signs off testing (008-T)
 **Links:** idea [008](../ideas/008_part_number_integrity_design.md) · depends on plan [003](003_accessory_model_matching.md)
 **Summary:** Every part number is proven against make&model, leading zeros restored only when proven, never padded, and exported as Excel text.
 **Note:** written after the build, on 2026-10-28, from the idea's decisions and build notes. The plan step was skipped at build time, and this file records the work in the standard format.
@@ -84,6 +84,7 @@ Part numbers reach the dict and the export exactly as the source means them, lea
 | 2026-10-27 | **Build.** Two steps: `part_numbers` (all rows, before dedupe) and `part_number_review` (in scope, after dedupe) | Restore before dedupe so `71200` and `000071200` are one part; flag only what reaches the export |
 | 2026-10-27 | **Build.** The first count said 6 parts lost their zeros; the real count is 3 | Corrected in the idea and data issues |
 | 2026-10-28 | **Build.** The plan was written after the build | The plan step was skipped; recorded so the process is followed from now on (see `CLAUDE.md`) |
+| 2026-11-03 | DI03-S1 closed: the source is not asked to export `stockCode` as text | User: the restore from `make&model` handles it every run |
 
 ## Risks
 

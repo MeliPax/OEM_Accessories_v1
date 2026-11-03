@@ -1,8 +1,8 @@
 # 003 — Accessory Ingest + Model Number Matching: Plan
 
 **Status:** Built — in user testing (2026-10-27)
-**Updated:** 2026-10-27
-**Next:** user signs off testing (003-T); notebook cells (003-A1); lookup misses as warnings? (003-D18)
+**Updated:** 2026-11-03
+**Next:** user signs off testing (003-T); notebook cells (003-A1)
 **Links:** ideas [003](../ideas/003_accessory_model_matching_design.md), [004](../ideas/004_error_message_catalogue_design.md) · depends on plans [001](001_vw_model_ingest_mvp.md), [002](002_pipeline_logging.md) · later: idea [005](../ideas/005_pipeline_report_card_design.md)
 **Summary:** The accessory pipeline: ingest, dedupe, model-number lookup, per-model dict, coverage, data quality and the Excel export; flag codes from messages.yaml.
 
@@ -249,6 +249,7 @@ New `pipeline/lookup_helpers.py`:
 | 2026-10-28 | **One year window per pipeline; dynamic accessory min.** The shared window is gone: `datasets.vw_models` (min 2020) and `datasets.accessories` (min `current_year - 2`, resolved at run start) each have min and max (max empty = open). Every accessory step that selects data uses the accessory window; the vehicle index holds only vehicles inside it (lookup, coverage, contradictions), and `known_years` keeps every DB year to explain a miss. `within: vw_models` keeps the accessory window inside the vehicle window. Part number proof still reads the whole file (it checks the file layout; its review flags were already in-scope only) | User: "every step that determines which data to process" checks its window; accessories min = current year - 2 |
 | 2026-10-28 | **Part numbers proven after the year window.** Step order is staging -> year_window -> part_numbers, so only rows inside the window are proven (151 restored, all 71200; 704 across the whole file before). Staging works out the make&model hint for an empty part number itself | User: the data is already filtered to the window, no need to check the rest |
 | 2026-10-28 | **Every run file is named with the run id** (`<name>_<run_id>.csv`, `storage_helpers`), never overwritten. The accessory run reads the newest `vehicles_<run_id>.csv` and records the files it used and wrote in `accessory_runs.csv`. The run registers and `steps.csv` stay one file each. Run files in `db/` are git-ignored; the old fixed-name files were removed | User: every output labelled with the run id and time stamp, so it can be identified and is not overwritten |
+| 2026-11-03 | 003-D18: lookup misses stay **errors**; they don't stop the run, and unresolved ones go to the review file | User: an error is missing data that needs action; a warning may need none |
 
 ## Risks
 

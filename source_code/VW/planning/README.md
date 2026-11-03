@@ -92,7 +92,7 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | 002 | [Pipeline Logging: Design](ideas/002_pipeline_logging_design.md) | Idea — approved | completed with plan 002 once testing is signed off (002-T) | 2026-10-26 |
 | 002 | [Pipeline Logging: Plan](plans/002_pipeline_logging.md) | Built — in user testing | user signs off testing (002-T); notebook cell (003-A1) | 2026-10-26 |
 | 003 | [Accessory Ingest + Model Number Matching: Design](ideas/003_accessory_model_matching_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
-| 003 | [Accessory Ingest + Model Number Matching: Plan](plans/003_accessory_model_matching.md) | Built — in user testing | user signs off testing (003-T); notebook cells (003-A1); lookup misses as warnings? (003-D18) | 2026-10-27 |
+| 003 | [Accessory Ingest + Model Number Matching: Plan](plans/003_accessory_model_matching.md) | Built — in user testing | user signs off testing (003-T); notebook cells (003-A1) | 2026-11-03 |
 | 004 | [Error and Flag Messages: Design](ideas/004_error_message_catalogue_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
 | 005 | [Pipeline Run Report: Design](ideas/005_pipeline_report_card_design.md) | Idea — waiting for decisions | user decides 005-D4 – 005-D12 | 2026-10-28 |
 | 006 | [Labour Time Units (minutes → hours): Design](ideas/006_labor_time_units_design.md) | Idea — approved | completed with plan 006 once testing is signed off (006-T) | 2026-10-28 |
@@ -100,7 +100,7 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | 007 | [Comment Text Cleaning: Design](ideas/007_comment_text_cleaning_design.md) | Idea — approved | completed with plan 007 once testing is signed off (007-T) | 2026-10-28 |
 | 007 | [Comment Text Cleaning: Plan](plans/007_comment_text_cleaning.md) | Built — in user testing | user signs off testing (007-T) | 2026-10-28 |
 | 008 | [Part Numbers Kept Exactly as the Source: Design](ideas/008_part_number_integrity_design.md) | Idea — approved | completed with plan 008 once testing is signed off (008-T) | 2026-10-27 |
-| 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (008-T); ask the source to export stockCode as text (DI03-S1) | 2026-10-28 |
+| 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (008-T) | 2026-11-03 |
 | 009 | [Human-Verified Vehicle Facts: Design](ideas/009_human_verified_vehicle_facts_design.md) | Idea — approved | completed with plan 009 once testing is signed off (009-T) | 2026-10-28 |
 | 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Built — in user testing | user signs off testing (009-T) | 2026-10-28 |
 | 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | completed with plan 010 once testing is signed off (010-T) | 2026-10-28 |
