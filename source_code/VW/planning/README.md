@@ -112,3 +112,4 @@ Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after pl
 | 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-02 |
 | 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off | 2026-11-03 |
 | 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Built — in user testing | user signs off testing (OI-01) | 2026-11-03 |
+| 015 | [Pending Items Numbered by Their Doc: Design](ideas/015_doc_numbered_item_ids_design.md) | Idea — waiting for decisions | user decides N1–N8 (OI-20) | 2026-11-03 |

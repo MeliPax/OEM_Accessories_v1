@@ -27,6 +27,7 @@
 | OI-17 | Approve plan 013 (labour time ÷ 100 into `labor_hours`) | user | [plan 013](plans/013_labour_time_units_to_hours.md) | Closed 2026-11-02 |
 | OI-18 | Decisions B1–B7 for correcting labour values below 1 (× 100) | user | [idea 014](ideas/014_labour_below_one_correction_design.md) | Closed 2026-11-03 |
 | OI-19 | Approve plan 014 (labour values below 1 corrected × 100) | user | [plan 014](plans/014_labour_below_one_correction.md) | Closed 2026-11-03 |
+| OI-20 | Decisions N1–N8 for numbering pending items by their doc (`013-D2`, `DI07-S1`) | user | [idea 015](ideas/015_doc_numbered_item_ids_design.md) | Open |
 
 ## Adding or closing an item
 
