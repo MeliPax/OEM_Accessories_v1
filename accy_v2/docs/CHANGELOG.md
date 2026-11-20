@@ -4,6 +4,27 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - VW Accessory Pipeline
+
+Merged from `feature/vw-data-analysis` (2026-11-20). Planned as a MINOR release (v2.7.0). Only `source_code/VW/` changes; nothing shared (`accy_v2/`) is touched.
+
+### Added
+- **VW pipeline** in `source_code/VW/` (its own history: `source_code/VW/CHANGELOG.md`, plans 001–015):
+  - vehicle ingest from the VW model export into `vehicles.csv`, with per-model option sets in `config/vehicles/` (all 10 reviewed);
+  - accessory ingest, model-number lookup and a per-model accessory dict, exported to Excel;
+  - logging and data-quality flags from a message catalogue; review files for every flag that needs action;
+  - part numbers kept exactly as the source (leading zeros restored from `make&model`, never padded);
+  - labour time read as time units (100 = 1 hour) into `labor_hours`; values below 1 corrected × 100.
+
+### Not included
+- The model lookup refresh (regenerated vehicle DB, keyword configs incl. Kia and Volkswagen, creds loader, notebooks) is on `feature/model-lookup-refresh`, to merge once the DB rows are complete.
+
+### Tests
+- VW: `pytest source_code/VW/tests`.
+- Hyundai, Genesis, Mazda, Mitsubishi pipelines run on the merged result; lookup results identical to `dev`.
+
+---
+
 ## [Unreleased] - DQ Report Cleanup
 
 ### 🎯 Status: IN DEVELOPMENT
