@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Runners: Genesis landing folder + input file picked by date added
+
+Merged from `fix/genesis-landing-folder` (2026-11-20). PATCH.
+
+### Fixed
+- **Genesis input folder:** the raw data folder was renamed from `landing_zone/hyundai_genesis/` to `landing_zone/genesis/`. `run_pipeline.py` now maps every OEM to `accy_v2/data/landing_zone/<oem>/`; `accy_v2/run_genesis.py` reads `genesis/` and `accy_v2/run_hyundai.py` reads `hyundai/` (it still pointed at the removed `hyundai_genesis/`). The shared code package `oems/hyundai_genesis/` is unchanged.
+- **Input file choice:** runners picked the last *modified* file, so Genesis ran on the 2025 workbook (copying keeps an old modified date; saving an old workbook makes it look newest). New helper `accy_v2/core/helpers/landing_zone.py` picks the file *added* to the folder last and prints the picked and skipped files; used by `run_pipeline.py` and all four `accy_v2/run_*.py`.
+
+### Tests
+- All 8 entry points (`run_pipeline.py` and `accy_v2/run_*.py` × Genesis, Hyundai, Mazda, Mitsubishi) run end to end. Genesis now runs on the 2026-8-1 workbook: 31 sheets, 75 found / 12 not found, 0 errors. Hyundai 148 / 8, 0 errors. Mitsubishi's 52 errors are unchanged from `dev`.
+
+---
+
 ## [Unreleased] - VW Accessory Pipeline
 
 Merged from `feature/vw-data-analysis` (2026-11-20). Planned as a MINOR release (v2.7.0). Only `source_code/VW/` changes; nothing shared (`accy_v2/`) is touched.
