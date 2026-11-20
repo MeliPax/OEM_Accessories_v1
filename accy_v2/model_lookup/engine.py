@@ -18,7 +18,7 @@ def load_env():
     Looks for .env in model_lookup/creds/ relative to this script.
     """
     script_dir = Path(__file__).parent  # model_lookup directory
-    env_path = script_dir / "creds" / ".env"
+    env_path = script_dir / "creds" / "db_creds.env"
 
     load_dotenv(dotenv_path=env_path)
 

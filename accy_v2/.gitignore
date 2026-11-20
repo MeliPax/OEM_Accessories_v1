@@ -26,5 +26,7 @@ data/landing_zone/
 # Secrets and credentials — keep locally, never commit
 .env
 *.env
-creds/
-**/creds/
+creds/*
+**/creds/*
+# Placeholder-only templates are safe to commit
+!**/creds/*_example.env
