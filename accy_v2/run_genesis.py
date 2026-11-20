@@ -4,12 +4,12 @@ Entry point for the Genesis OEM pipeline.
 Usage (run from the project root directory):
     python accy_v2/run_genesis.py [path_to_excel_file]
 
-If no path is provided, auto-discovers the most recent .xlsx in landing_zone/hyundai_genesis/
-(shared with Hyundai pipeline, as both process the same source workbook).
+If no path is provided, auto-discovers the most recent .xlsx in landing_zone/genesis/
+(the Hyundai/Genesis workbook; this pipeline reads its Genesis sheet).
 
 Examples:
     python accy_v2/run_genesis.py
-    python accy_v2/run_genesis.py "data/landing_zone/hyundai_genesis/Hyundai_Genesis_ACCY.xlsx"
+    python accy_v2/run_genesis.py "accy_v2/data/landing_zone/genesis/Hyundai_Genesis_ACCY.xlsx"
 """
 
 import sys
@@ -27,7 +27,7 @@ sys.path.insert(0, str(project_root))     # For model_lookup package import
 from oems.genesis.pipeline.orchestrator import GenesisPipeline
 
 CONFIG_DIR = accy_v2_dir / "oems" / "genesis" / "config"
-DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai_genesis"
+DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "genesis"
 
 
 def main() -> None:
