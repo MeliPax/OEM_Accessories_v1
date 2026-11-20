@@ -5,3 +5,6 @@ ready_to_upload/
 *.env
 creds/
 **/creds/
+# Python bytecode
+__pycache__/
+*.pyc

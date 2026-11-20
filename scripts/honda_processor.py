@@ -13,14 +13,13 @@
 # ---
 
 # %%
+from __future__ import annotations
 
 import pandas as pd
 import pathlib as pl
 import os
 from glob import glob
-
-
-from __future__ import annotations
+from honda_vehicle_matcher import match_vehicle
 
 import re
 import logging
@@ -1311,6 +1310,9 @@ def load_excel_files_to_dict(directory_path: str) -> Dict[str, Dict[str, pd.Data
             for sheet_name in xls.sheet_names:
                 try:
                     df = pd.read_excel(xls, sheet_name=sheet_name)
+                    # Sanitize: convert NaN to empty strings to avoid "float is not iterable" errors
+                    df = df.astype(str)
+                    df = df.replace('nan', '')
                     workbook[sheet_name] = df
 
                     # ✅ Identify metadata worksheet
@@ -1621,6 +1623,39 @@ def attach_model_number(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def attach_model_number_with_matcher(
+    df: pd.DataFrame,
+    honda_models_db: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Attach model number by matching model_year + model_name to database.
+    """
+    df = df.copy()
+
+    df['model_number'] = None
+    df['model_match_certainty'] = 'UNMATCHED'
+    df['model_match_score'] = 0.0
+
+    for idx, row in df.iterrows():
+        try:
+            result = match_vehicle(
+                {
+                    'model_year': row.get('model_year'),
+                    'model_name': row.get('model_name'),
+                },
+                honda_models_db
+            )
+
+            if result.matched:
+                df.loc[idx, 'model_number'] = result.db_row.get('ModelNumber')
+                df.loc[idx, 'model_match_certainty'] = result.certainty
+                df.loc[idx, 'model_match_score'] = result.match_score
+        except Exception as e:
+            pass
+
+    return df
+
+
 def build_model_ready_to_load_df(
     merged_df: pd.DataFrame,
     core_columns: list,
@@ -1785,6 +1820,7 @@ def create_ready_to_load_data(
     extracted_results: Dict[str, ProcessedRawFileResult],
     config: PipelineConfig,
     output_dir: str,
+    honda_models_db: pd.DataFrame = None,
 ):
     """
     Phase 3 of the pipeline.
@@ -1876,11 +1912,14 @@ def create_ready_to_load_data(
             assert df_trim["trim"].iloc[0] == trim
 
         # --------------------------------------------------
-        # 2. Attach model number (stub = trim)
+        # 2. Attach model number (via matcher if database provided)
         # --------------------------------------------------
         model_trim_dfs = []
         for _, df_trim in trim_dfs.items():
-            df_trim = attach_model_number(df_trim)
+            if honda_models_db is not None:
+                df_trim = attach_model_number_with_matcher(df_trim, honda_models_db)
+            else:
+                df_trim = attach_model_number(df_trim)
             model_trim_dfs.append(df_trim)
 
         if not model_trim_dfs:
@@ -2223,6 +2262,12 @@ def data_extract_orchestrator(
             failures[model_key] = e
             print(f"❌ FAILURE: {model_key}")
             print(str(e))
+            # Debug: print full traceback to file
+            import traceback
+            tb_str = traceback.format_exc()
+            print("\n--- FULL TRACEBACK ---")
+            print(tb_str)
+            print("--- END TRACEBACK ---\n")
 
 
     print("\n" + "=" * 120)
@@ -2257,6 +2302,11 @@ def run_pipeline(
 
     excel_dict = load_excel_files_to_dict(input_dir)
 
+    # Load honda models database for vehicle matching
+    honda_models_df = pd.read_csv("models_catalogue/honda_models.csv")
+    honda_models_valid = honda_models_df[honda_models_df["ModelName"].notna()].copy()
+    print(f"Loaded {len(honda_models_valid)} valid Honda vehicle records")
+
     print("\n" + "=" * 120)
     print("🔎 Extracting model data")
     print("=" * 120)
@@ -2285,6 +2335,7 @@ def run_pipeline(
         extracted_results=extracted_results,
         config=config,
         output_dir=output_dir,
+        honda_models_db=honda_models_valid,
     )
 
     print("\n✅ Pipeline completed successfully")

@@ -1,0 +1,122 @@
+================================================================================
+HONDA PIPELINE - LOGGING SETUP COMPLETE
+================================================================================
+
+WHAT WAS DONE:
+==============
+
+1. FIXED THE PIPELINE CODE
+   - Modified scripts/honda_processor.py to use the correct matcher function
+   - Modified scripts/honda_processor.ipynb to call attach_model_number_with_matcher()
+   - The pipeline now loads the Honda vehicle database and matches each row
+
+2. ADDED COMPREHENSIVE LOGGING
+   - Created honda_logs/ directory with logging system
+   - Modified notebook with debug print statements at key steps:
+     * Matcher function initialization and completion
+     * Model attachment loop entry and model number sampling
+     * Excel export with column value inspection
+   - All output will be visible in the notebook console
+
+3. CREATED DOCUMENTATION
+   - honda_logs/README.md - Full logging system documentation
+   - honda_logs/EXECUTION_GUIDE.md - Step-by-step execution and debugging guide
+   - This file - Summary of changes
+
+================================================================================
+
+HOW TO RUN THE PIPELINE NOW:
+============================
+
+1. Open the notebook:
+   scripts/honda_processor.ipynb
+
+2. Run all cells:
+   Kernel → Restart & Run All (or Ctrl+Shift+Enter)
+
+3. Watch the console output for logging messages like:
+   [MATCHER DEBUG] Starting model attachment for 217 rows
+   [MODEL ATTACHMENT] Using matcher (db has 217 records)
+   [MATCHER DEBUG] Completed: 217/217 rows with model numbers
+   [EXCEL EXPORT] Column 'Model': 217 non-null values
+
+4. Check the output file:
+   ready_to_upload/2026/Honda/Honda_Accessories-Upload_file-<timestamp>.xlsx
+
+   Look for Column "Model" to have:
+   - ✓ Values like: YF9H5TK, FE2F5SJ, RS4H5RJS (CORRECT - Honda model codes)
+   - ✗ NOT: LX 2WD, EX, TOURING (WRONG - trim names)
+
+================================================================================
+
+WHAT TO LOOK FOR:
+=================
+
+SUCCESS INDICATORS:
+  [MATCHER DEBUG] Completed: 217/217 rows with model numbers
+  [EXCEL EXPORT] Column 'Model': 217 non-null values (sample: ['YF9H5TK', ...])
+
+  → Output file has model numbers, not trim names
+
+FAILURE INDICATORS:
+  [MODEL ATTACHMENT] Using stub (db is None)
+  [MATCHER DEBUG] Completed: 0/217 rows with model numbers
+  [EXCEL EXPORT] Column 'Model': 217 non-null (sample: ['LX 2WD', 'EX', ...])
+
+  → Something is still wrong, logs will show what
+
+================================================================================
+
+LOG FILES:
+==========
+
+Location: honda_logs/
+
+- pipeline_logger.py      - Core logging system
+- pipeline_hooks.py       - Integration functions
+- __init__.py             - Package initialization
+- setup_logging.py        - Setup utility
+- instrument_notebook.py  - Notebook instrumentation
+- README.md               - Full documentation
+- EXECUTION_GUIDE.md      - Execution guide
+- debug.log               - Console output logs (created during run)
+
+When you run the pipeline, all output will also be saved to:
+  honda_logs/debug.log
+
+================================================================================
+
+TROUBLESHOOTING:
+================
+
+Q: I don't see the logging output
+A: Make sure you ran "Kernel → Restart & Run All" not just individual cells
+
+Q: I see "[MODEL ATTACHMENT] Using stub (db is None)"
+A: Database wasn't loaded - check that honda_models.csv exists in models_catalogue/
+
+Q: I see "0/217 rows with model numbers"
+A: Matcher returned no matches - check vehicle data format in extracted results
+
+Q: Output file still has trim names instead of model codes
+A: Model numbers weren't attached to the dataframe - check logs for which step failed
+
+Q: No output file was created
+A: Check that excel export completed - look for errors in console
+
+================================================================================
+
+NEXT STEP:
+==========
+
+Run the notebook now with logging enabled:
+
+  1. Open scripts/honda_processor.ipynb
+  2. Kernel → Restart & Run All
+  3. Watch the console for [MATCHER DEBUG] and [MODEL ATTACHMENT] messages
+  4. Check the output file to verify model numbers are there
+  5. If there are issues, the logs will show exactly where they occurred
+
+The logging output will guide you to find any problems in the pipeline.
+
+================================================================================
