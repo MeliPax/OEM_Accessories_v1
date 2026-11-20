@@ -61,8 +61,9 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
             f"No Excel/CSV files found in {landing_zone}"
         )
 
-    # Return most recent file
-    return [max(all_files, key=lambda f: f.stat().st_mtime)]
+    # The file added to the folder last (not the last modified: copying keeps the old modified date)
+    from core.helpers.landing_zone import latest_added
+    return [latest_added(all_files)]
 
 
 def get_pipeline_class(oem: str):
