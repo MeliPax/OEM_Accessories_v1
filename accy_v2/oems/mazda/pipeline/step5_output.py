@@ -26,8 +26,6 @@ def prepare_frames(
 
     DECISION [019]: Explicit source→output mapping enables easy column additions.
     All column naming is driven by YAML, not hardcoded.
-
-    Note: Mazda uses "short_model_number" column (not "Model") for the orphan check.
     """
     model_name = meta_data.get("model_name", "unknown")
     downstream_schema = config.get("downstream_schema", {})
@@ -41,9 +39,9 @@ def prepare_frames(
         # Apply language-specific column mapping from downstream schema
         df = apply_downstream_column_mapping(df, downstream_schema, lang)
 
-        # Flag orphaned records (null model numbers) — safety net for upstream failures
-        # Mazda uses "short_model_number" as the model number column
-        df = flag_orphaned_records(df, dq_logger, sheet_key, model_number_column="short_model_number")
+        # Last check: rows with no model number that earlier steps didn't catch
+        # (short_model_number is already renamed to Model by the column mapping)
+        df = flag_orphaned_records(df, dq_logger, sheet_key, model_number_column="Model")
 
         frames[sheet_key] = df
 
