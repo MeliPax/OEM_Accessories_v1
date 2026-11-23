@@ -1,0 +1,109 @@
+# VW Changelog
+
+What shipped, newest first: one entry per build or completion, with the plan numbers and the commit. Status and next actions are in [planning/README.md](planning/README.md#index).
+
+
+## 2026-11-03 — Pending items numbered by their doc (plan 015)
+
+- Every pending item's ID now says where it lives: `NNN-Kn` for a doc (`013-D2`, `003-A1`, `014-T`) and `DInn-Sn` for a data-source question (`DI07-S1`). Kinds: `D` decision, `T` testing sign-off, `P` plan approval, `U` user task, `A` Claude task, `S` data source.
+- `planning/open_items.md` rebuilt (sorted by ID, with Where and Was columns); OI-01 split into one sign-off per plan (`001-T` … `015-T`); ideas 005 and 011's open decisions renumbered (`005-D4` – `005-D12`, `011-D1` – `011-D10`); approved ideas carry an ID note (`H1–H7 are 013-D1 – 013-D7`).
+- `tests/test_planning_docs.py` enforces it (prefix exists, open IDs named in their doc, references resolve, no `OI-NN` in a `Next:` line); rules in `CLAUDE.md` and `planning/README.md`. No pipeline change.
+## 2026-11-03 — Labour values below one corrected × 100 (plan 014) · `32fc9f4`
+
+- In the `clean` step, on the deduplicated rows and before the suspect check and the ÷ 100 conversion, a labour value **above 0 and below 1** is read as hours typed into the time-units column and multiplied by 100: `correct_if: { between: [0, 1], entered_as: hours }` in `accessories.yaml` (× 100 from `units.definitions`).
+- `labor_time_source` keeps the value as read; the new dict column `labor_time_corrected` holds the value used (0.4 → 40). 0 and negative values are never corrected.
+- Each correction: a `unit_correct` change row, an `ACCESS_CLEAN_UNIT_CORRECTED` warning and a review row asking the source to fix the file. The run summary counts `unit_corrected` apart from `unit_suspects`.
+- Today: `3QF601025KAX1` exports `Hours` **0.40** on its 22 rows (was empty). No other row changes; 0 suspects; OI-06 closed.
+
+## 2026-11-02 — Labour time units to hours (plan 013) · `78c487a`
+
+- `laborTime` is in **time units, 100 to the hour** (300 = 3 h), not minutes as plan 006 assumed. `accessories.yaml` defines `time_units: 100`.
+- The ingest value is read as `labor_time_source` and kept unchanged (dict only). `clean` writes `labor_time_source ÷ 100` (2 decimals) to a new **`labor_hours`** column, which the DQ rules, the dict and the export (`Hours`) use. `labor_time` no longer exists; config validation rejects it.
+- **Every non-zero `Hours` value changes**, e.g. 25 → 0.25 (was 0.42), 100 → 1.00 (was 1.67), 250 → 2.50 (was 4.17). This is the correction, not a regression.
+- Suspect values (`not_whole`, above 1000 time units) are flagged `ACCESS_CLEAN_UNIT_SUSPECT` and `labor_hours` is **left empty**; no second "missing" flag. Today: `3QF601025KAX1` (0.4), 22 export rows.
+
+## 2026-10-29 — ID.4 and ID. Buzz 2026 verified never offered (plan 009 facts)
+
+- `id4.yaml` and `id_buzz.yaml` record that neither is offered in Canada for 2026 (P.M, 2026-10-29). `id_buzz.yaml` has `reviewed_by` / `reviewed_on`.
+- The accessory run's last 2 lookup errors drop to info: status `ok_with_warnings`, review rows 109 → 16, flags verified 2. The 93 part-years stay in the dict without a model number, as before.
+
+## 2026-10-29 — Final export column names (plan 012) · `0ae8234`
+
+- The Excel export's headers are now `Part`, `ModelName`, `Description`, `Price`, `Hours`, `Comments`, `Variant`, `Year`, `Model`, set in `export.columns` in `accessories.yaml` and commented there as the final column names.
+- **`Model` changed meaning:** it was the model name and is now the VW model number. The name is `ModelName`.
+- Renamed: Part Number → Part, MSRP → Price, Labour Time (hours) → Hours, Model Number → Model.
+- Cost is no longer in the file; it stays in the dict and the review file. The dict keeps the pipeline names.
+- A header used twice in `export.columns` is a config error (`CONFG_DUPLICATE_ENTRY`).
+
+## 2026-10-29 — Vehicle file template and `new_vehicle.py` · `de5e084`
+
+- `config/vehicles/_template.yaml` shows how to fill a vehicle file: every category with its allowed values, option set examples (base, submodel, EV), the review status and the three kinds of verified fact.
+- `python new_vehicle.py "<Model>"` copies it to `config/vehicles/<model>.yaml` with make, model and the model's submodels filled in. It refuses a model not in `models.yaml`, a model that already has a file, and never overwrites.
+- Files in `config/vehicles/` starting with `_` are never read by the pipeline. A test checks that the template lists every keyword value and that all its examples load once uncommented.
+
+## 2026-10-28 — Run-id file names; part numbers proven inside the window · `da8ea5f`
+
+- Every file a run writes is named `<name>_<run_id>.csv` (run id = `<pipeline>_<YYYYMMDD_HHMMSS>`); nothing is overwritten. Readers take the newest file. The run registers and `steps.csv` stay one file each.
+- `accessory_runs.csv` records the files each accessory run used and wrote (`vehicles_file`, `review_file`, `lookup_file`, `verified_file`, `part_number_file`); the terminal line prints them.
+- Run files in `db/` are git-ignored; the old fixed-name files were removed from the repo.
+- The part number check runs after the year window: 151 rows restored (704 across the whole file before).
+
+## 2026-10-28 — One year window per pipeline; accessories from current year - 2 · `05de7c1`
+
+- `pipeline.yaml`: the shared window is gone. `datasets.vw_models` and `datasets.accessories` each set
+  `min_model_year` / `max_model_year`: a year, or `current_year - N` worked out at run start. Vehicles: 2020+.
+  Accessories: `current_year - 2` (2024+ in 2026). Max empty = open.
+- The accessory run reads only vehicles inside its window: lookup, coverage and contradiction checks never see
+  2020–2023 vehicles. The run log shows `VEHICLE WINDOW` with the counts.
+- `within: vw_models`: an accessory window outside the vehicle window is a config error; an empty accessory max
+  takes the vehicle max.
+
+## 2026-10-28 — Accessories from model year 2024 (plan 003 config) · `a2d8f78`
+
+- `pipeline.yaml`: a dataset can narrow the shared year window. `datasets.accessories.min_model_year: 2024`; the vehicle ingest keeps 2020+. A dataset window outside the shared one is a `CONFG_VALUE_INVALID` error.
+- Coverage checks only vehicle years inside the accessory window, so 2020–2023 vehicles aren't flagged as having no parts.
+- Verified facts entirely outside the window are logged as `OUTSIDE WINDOW`, not flagged unused.
+- Today's data: unique accessory rows 1,357 -> 1,028, keys 71 -> 29, lookup errors 3 -> 2, review rows 241 -> 109, export 14 -> 10 sheets.
+
+## 2026-10-28 — Human-verified vehicle facts (plan 009) · `05acbae`
+
+- New `verified:` section in `config/vehicles/<model>.yaml`: `never_offered` years or options, and `no_parts_expected` until a date. Each entry needs a reason, `verified_by` and `verified_on`, and is validated at load.
+- New final `verify` step in both pipelines:
+  - a flag a fact covers exactly drops to info, keeping its original severity, and leaves the review file;
+  - contradictions become errors (`ACCESS_VERIFY_CONTRADICTED`, `VEH_VERIFY_CONTRADICTED`);
+  - unused facts are reported, and expired facts bring their flags back.
+- New `db/dq/verified_flags.csv` and `db/definitions/dim_verified.csv`. Flags gain `model`, `submodel`, `original_severity` and `verified_entry`.
+- First facts (P.M, 2026-10-28): Golf R never offered 2020–2021, Arteon never offered 2022–2023. Accessory lookup errors go from 7 to 3, and review rows from 467 to 241.
+
+## 2026-10-28 — Work process, tracking and indexing (plan 010) · `18a80bf`
+
+- Every idea and plan opens with a fixed five-field header (`Status`, `Updated`, `Next`, `Links`, `Summary`), using fixed status words.
+- The planning index gains `Next` and `Updated` columns, and the README gains a run *Baseline* table.
+- New `planning/open_items.md` (OI-01 to OI-14) and this changelog.
+- New `tests/test_planning_docs.py` keeps the index, the headers and the open items in step.
+- `CLAUDE.md` gains the resume procedure for interrupted build work.
+
+## 2026-10-28 — Labour hours, comment cleaning, work process rules (plans 006, 007) · `97c0229`
+
+- Labour time converted from minutes to hours using unit definitions in config, with `labor_time_source` kept and suspect values flagged (`ACCESS_CLEAN_UNIT_SUSPECT`). The export header is `Labour Time (hours)`.
+- Comments are cleaned into sentences (tags, pipes, links, spaces) by the new `clean_text` step, which runs before dedupe. `comments_source` is kept, and links no rule covers are flagged (`ACCESS_CLEAN_UNREVIEWED_LINK`).
+- As-built plans 006–008. New ideas 005 (run report), 009 (verified facts) and 010 (process), and plans 009 and 010.
+- `source_code/VW/CLAUDE.md`: the idea → plan → build → completed process, loaded automatically for VW work.
+
+## 2026-10-27 — Accessory pipeline, flag messages, part numbers (plans 003, 008) · `f0e0ffa`
+
+- The accessory pipeline produces the per-model dict and the Excel export, matching by a unique (model, submodel, year) lookup.
+- Coverage and data-quality flags go to `accessory_review.csv`.
+- Flag codes `CONFG_` / `VEH_` / `ACCESS_` come from `config/messages.yaml` (idea 004).
+- Part numbers are proven against `make&model`: leading zeros restored only when proven, never padded, and exported as Excel text.
+
+## 2026-10-26 — Vehicle ingest and logging (plans 001, 002) · `b068917`
+
+- Vehicle ingest from the VW model export into `db/final/vehicles.csv` (269 vehicles), driven by YAML config: keywords, models and option sets per vehicle.
+- Logging on every step: run log, `steps.csv`, change log (before → after), flag log, run summary.
+
+## 2026-10-23 — Planning workspace and datasets · `7b42c88`, `ea1c31f`
+
+- `planning/` with ideas and the ingest MVP plan.
+- Datasets moved into `source_code/VW/datasets`.
+- Keyword taxonomy guides added.

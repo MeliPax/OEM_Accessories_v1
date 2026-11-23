@@ -23,6 +23,7 @@ sys.path.insert(0, str(accy_v2_dir))      # For core.*, oems.* imports
 sys.path.insert(0, str(model_lookup_dir)) # For model_lookup internal imports
 sys.path.insert(0, str(project_root))     # For model_lookup package import
 
+from core.helpers.landing_zone import latest_added
 from oems.mazda.pipeline.orchestrator import MazdaPipeline
 
 CONFIG_DIR = accy_v2_dir / "oems" / "mazda" / "config"
@@ -33,12 +34,12 @@ def main() -> None:
     if len(sys.argv) >= 2:
         file_path = sys.argv[1]
     else:
-        # Auto-discover the most recent .csv file in the default directory
-        csv_files = sorted(DEFAULT_DATA_DIR.glob("*.csv"), key=lambda p: p.stat().st_mtime, reverse=True)
+        # Auto-discover the .csv file added to the default directory last
+        csv_files = list(DEFAULT_DATA_DIR.glob("*.csv"))
         if not csv_files:
             print(f"ERROR: No .csv files found in {DEFAULT_DATA_DIR}")
             sys.exit(1)
-        file_path = str(csv_files[0])
+        file_path = str(latest_added(csv_files))
         print(f"Auto-discovered: {file_path}")
 
     try:
