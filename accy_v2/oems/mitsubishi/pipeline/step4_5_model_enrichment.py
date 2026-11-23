@@ -248,7 +248,7 @@ def _batch_lookup_model_numbers(
                     "package": result.package,
                 }
                 pipeline_logger.debug(
-                    f"  [OK] Found model_number='{model_number}' confidence={result.confidence:.2f} "
+                    f"  [OK] Found model_number='{result.model_number}' confidence={result.confidence:.2f} "
                     f"drivetrain={result.drivetrain} fuel_type={result.fuel_type} "
                     f"for {vehicle_make} {year} {trim}"
                 )

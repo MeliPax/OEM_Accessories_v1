@@ -4,6 +4,89 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Mitsubishi: false lookup errors removed
+
+Merged from `fix/mitsubishi-model-number` (2026-11-23). PATCH.
+
+### Fixed
+- **Mitsubishi model-number lookup** (`accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`): since `fb6dc79` (2026-09-01, "Fix 4: Mitsubishi packages") the debug line after a successful lookup used `model_number`, a name that commit had removed. Every found model number raised `NameError` after it was stored: output model numbers were correct, but the log showed `[ERROR]` and the DQ report a false "Error during model number lookup" warning for each one.
+
+### Impact
+- Mitsubishi lookups: 0 found / 10 not found / 52 errors → 52 found / 10 not found / 0 errors.
+- DQ warnings 135 → 83; `_Report` trim coverage 62 of 135 (45.9%) → 62 of 83 (74.7%). Genuine gaps still reported (PHEV 2024–2026, 2020 RVR not in the vehicle DB, `gt-p` trim).
+
+### Tests
+- All four OEMs run on `dev` and on the fix with the same inputs: output data sheets identical cell by cell for every OEM; DQ reports identical for Mazda, Hyundai, Genesis; Mitsubishi differs only by the 52 false warnings.
+
+---
+
+## [Unreleased] - Runners: Genesis landing folder + input file picked by date added
+
+Merged from `fix/genesis-landing-folder` (2026-11-20). PATCH.
+
+### Fixed
+- **Genesis input folder:** the raw data folder was renamed from `landing_zone/hyundai_genesis/` to `landing_zone/genesis/`. `run_pipeline.py` now maps every OEM to `accy_v2/data/landing_zone/<oem>/`; `accy_v2/run_genesis.py` reads `genesis/` and `accy_v2/run_hyundai.py` reads `hyundai/` (it still pointed at the removed `hyundai_genesis/`). The shared code package `oems/hyundai_genesis/` is unchanged.
+- **Input file choice:** runners picked the last *modified* file, so Genesis ran on the 2025 workbook (copying keeps an old modified date; saving an old workbook makes it look newest). New helper `accy_v2/core/helpers/landing_zone.py` picks the file *added* to the folder last and prints the picked and skipped files; used by `run_pipeline.py` and all four `accy_v2/run_*.py`.
+
+### Tests
+- All 8 entry points (`run_pipeline.py` and `accy_v2/run_*.py` × Genesis, Hyundai, Mazda, Mitsubishi) run end to end. Genesis now runs on the 2026-8-1 workbook: 31 sheets, 75 found / 12 not found, 0 errors. Hyundai 148 / 8, 0 errors. Mitsubishi's 52 errors are unchanged from `dev`.
+
+---
+
+## [Unreleased] - VW Accessory Pipeline
+
+Merged from `feature/vw-data-analysis` (2026-11-20). Planned as a MINOR release (v2.7.0). Only `source_code/VW/` changes; nothing shared (`accy_v2/`) is touched.
+
+### Added
+- **VW pipeline** in `source_code/VW/` (its own history: `source_code/VW/CHANGELOG.md`, plans 001–015):
+  - vehicle ingest from the VW model export into `vehicles.csv`, with per-model option sets in `config/vehicles/` (all 10 reviewed);
+  - accessory ingest, model-number lookup and a per-model accessory dict, exported to Excel;
+  - logging and data-quality flags from a message catalogue; review files for every flag that needs action;
+  - part numbers kept exactly as the source (leading zeros restored from `make&model`, never padded);
+  - labour time read as time units (100 = 1 hour) into `labor_hours`; values below 1 corrected × 100.
+
+### Not included
+- The model lookup refresh (regenerated vehicle DB, keyword configs incl. Kia and Volkswagen, creds loader, notebooks) is on `feature/model-lookup-refresh`, to merge once the DB rows are complete.
+
+### Tests
+- VW: `pytest source_code/VW/tests`.
+- Hyundai, Genesis, Mazda, Mitsubishi pipelines run on the merged result; lookup results identical to `dev`.
+
+---
+
+## [Unreleased] - DQ Report Cleanup
+
+### 🎯 Status: IN DEVELOPMENT
+
+**DQ Report: Filter csv_uniqueness_rule Noise**
+
+Removed `csv_uniqueness_rule` warnings from stakeholder-facing DQ export documents. These warnings are expected operational noise (duplicate detection from ADS refresh cycles) and do not represent actionable data quality issues. Warnings remain in pipeline logs for engineering diagnostics.
+
+### ✅ Changes Implemented
+
+1. **DQ Logger Filtering (Option A)**
+   - File: `accy_v2/core/helpers/dq_logger.py`
+   - Modified `write_dq_report()` to accept `exclude_rules` parameter with default `["csv_uniqueness_rule"]`
+   - Updated `_build_summary()` to filter records before counting/summarizing
+   - Added `"filtered_rules"` metadata field to DQ report payload for audit trail
+   - Backward compatible: existing call sites automatically use default filtering
+
+2. **Report Impact**
+   - Genesis: warnings 39 → 9 (30 csv_uniqueness_rule entries removed)
+   - Hyundai: warnings ~145 → ~115 (estimated)
+   - Mazda: warnings 0 → 0 (already clean)
+   - Mitsubishi: warnings ~124 → ~94 (estimated)
+
+### 📋 Verification Approach
+
+1. Run all 4 OEM pipelines and confirm DQ reports
+2. Verify `"filtered_rules": ["csv_uniqueness_rule"]` is present in payload
+3. Confirm all actionable rules (model_number_lookup_rule, etc.) still present
+4. Check pipeline logs still contain csv_uniqueness_rule entries
+5. No regression testing (rules still logged, just not in export)
+
+---
+
 ## [2.5.1] - 2026-09-08
 
 ### 🎯 Status: IMPLEMENTED & VERIFIED

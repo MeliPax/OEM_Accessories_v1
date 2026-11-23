@@ -369,6 +369,16 @@ def _batch_lookup_model_numbers(
 
                 # Log implied fuel type for DQ review (Fix C)
                 if result.implied_fuel_type:
+                    # Extract config details from matched rule for audit trail
+                    rule_config = ""
+                    if result.implied_fuel_rule:
+                        model_kws = ", ".join(result.implied_fuel_rule.get("model_keywords", []))
+                        trim_kws = ", ".join(result.implied_fuel_rule.get("trim_keywords", []))
+                        years = result.implied_fuel_rule.get("years", [])
+                        rule_config = f"config: model=[{model_kws}], trim=[{trim_kws}]"
+                        if years:
+                            rule_config += f", years={years}"
+
                     dq_logger.log_warning(
                         sheet_name=group_key,
                         model_name=model_name,
@@ -376,9 +386,8 @@ def _batch_lookup_model_numbers(
                         record_snapshot={"trim": trim, "fuel_type": result.implied_fuel_type},
                         rule_violated="implied_fuel_type_rule",
                         issue_description=(
-                            f"[IMPLIED_FUEL_TYPE] {vehicle_make} {year} {trim}: Source label has no fuel keyword; "
-                            f"matched via configured implied_fuel_type rule ('{result.implied_fuel_type}' is the only variant in DB). "
-                            f"Verify this assignment is correct — if source intended a different fuel type, update the source label."
+                            f"Source omitted fuel type; inferred '{result.implied_fuel_type}' per trim config. "
+                            f"({rule_config}). Verify."
                         ),
                     )
 

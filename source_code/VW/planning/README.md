@@ -1,0 +1,116 @@
+# VW Planning
+
+Planning workspace for the VW data work: ideas, plans, completion records, data issues and open items. The rules agents follow are in [../CLAUDE.md](../CLAUDE.md), which loads automatically for VW work.
+
+**To see what has been worked on and what comes next, read the [Index](#index) below and [open_items.md](open_items.md).** You don't need to open the docs themselves.
+
+```
+planning/
+├── ideas/          Design: what was asked, what the data shows, options, decisions. Approved before planning.
+├── plans/          Approved work: outcome, success criteria, phases and tasks, tests, decision log, risks.
+├── completed/      Plans the user signed off, with Completion notes. The idea stays in ideas/ (status Completed).
+├── open_items.md   Every follow-up and open question, with an owner; IDs numbered by their doc (013-D2, DI07-S1).
+└── data_issues.md  Data issues in the VW source files (DI-NN, DV-NN), and the data definitions.
+```
+
+## Lifecycle: four stages, three approval gates
+
+```
+Idea ──(user approves the decisions)──► Plan ──(user approves the plan)──► Build ──(user signs off testing)──► Completed
+```
+
+| Stage | Status words (fixed) | Lives in | Leaves the stage when |
+|---|---|---|---|
+| Idea | `Seed` · `Idea — waiting for decisions` · `Idea — approved` | `ideas/NNN_*_design.md` | the user approves every decision |
+| Plan | `Plan — waiting for approval` · `Plan — approved` | `plans/NNN_*.md` | the user approves the plan |
+| Build | `Building` · `Built — in user testing` | `plans/NNN_*.md` | tests and real runs pass, and the user signs off |
+| Completed | `Completed` (the idea and the plan) | the plan moves to `completed/` | — |
+| — | `Dropped` (with the reason) | where it is | — |
+
+A date or detail may follow in brackets, e.g. `Idea — approved (V1–V8, 2026-10-28)`. At completion the plan gets a `## Completion notes` section: what shipped, where it lives, tests and real-run numbers, follow-ups.
+
+**Resuming interrupted work:** a `Building` plan carries a `**Checkpoint:**` line (where it stopped, what's done, what's in progress, which files). The next session reads it, checks `git status` and the tests, and continues from the first unticked task.
+
+## The header every idea and plan starts with
+
+```markdown
+# NNN — Title: Design | Plan
+
+**Status:** one of the fixed status words
+**Checkpoint:** (Building plans only) where the work stopped
+**Updated:** YYYY-MM-DD
+**Next:** the next action and who owns it, naming the item ID (013-T, 005-D4 – 005-D12, DI03-S1)
+**Links:** the idea, plan, dependencies, data issues
+**Summary:** one sentence: what this is
+```
+
+`grep -m1 "^\*\*Status:" planning/*/*.md` gives the status of every doc. `tests/test_planning_docs.py` checks the headers, this index and the open items stay in step.
+
+## Naming
+
+- `NNN_` is a 3-digit number shared by an idea, its plan and its completion record (`009_human_verified_vehicle_facts_design.md` → `009_human_verified_vehicle_facts.md`). Take the next free number from the index.
+- Lowercase `snake_case` after the number.
+
+## Where each fact is tracked
+
+| What | Where |
+|---|---|
+| Stage, next action, last update of every idea and plan | The doc's header, mirrored in the [Index](#index) |
+| Decisions before the build | The idea's *Decisions* table |
+| Tasks, progress, deviations | The plan's checkboxes and *Decision log* |
+| Follow-ups and open questions | [open_items.md](open_items.md) |
+| Data issues | [data_issues.md](data_issues.md) |
+| What shipped, and when | [../CHANGELOG.md](../CHANGELOG.md) |
+| Today's run numbers | [Baseline](#baseline) below |
+| Flag codes and their wording | `config/messages.yaml` |
+
+Write a fact in its home and link to it from elsewhere; copies go stale.
+
+## Baseline
+
+Real runs on 2026-10-28, accessories again on 2026-10-29 and 2026-11-02 after plan 013, 2026-11-03 after plan 014 (accessory file 2026-10-20, vehicle export `vw_models_data.csv`). Update after each build's real run.
+
+| Measure | Value |
+|---|---|
+| Vehicles in `vehicles.csv` | 269 (54 rows excluded by the year window) |
+| Year windows | Vehicles 2020+ (`datasets.vw_models`); accessories `current_year - 2` = 2024+ (`datasets.accessories`), and the accessory run reads only vehicles 2024+ (111 of 269; 158 ignored) |
+| Accessory rows: read / in window / unique (part, model) | 24,396 / 9,675 / 1,028 (13,051 / 1,357 at 2020+) |
+| Lookup keys: total / found / missed / verified | 29 / 27 / 2 / 2 (ID.4, ID. Buzz 2026: verified never offered; run `ok_with_warnings`); 71 / 64 / 7 / 6 at 2020+ |
+| Dict rows / exported rows / export sheets | 9,481 / 9,388 / 10 (25,796 / 25,345 / 14 at 2020+) |
+| Vehicles with no parts | 14 (model year 2027) |
+| Accessory review rows | 16 (148 at 2020+) |
+| Part numbers restored / unproven | 151 / 0 (rows inside the window only; 704 across the whole file before) |
+| Labour (plans 013, 014) | `Hours` = `laborTime` ÷ 100: 13 distinct values converted (0.1–2.5 h); 1 part corrected below 1 (`3QF601025KAX1` 0.4 → 40 → 0.4 h, 22 export rows); 0 suspects; 0 empty `Hours` |
+| Tests | 304 passing |
+
+## Index
+
+| # | Doc | Stage | Next | Updated |
+|---|---|---|---|---|
+| 001 | [VW Model Ingest: Design Ideas](ideas/001_vw_model_ingest_design.md) | Idea — approved | completed with plan 001 once testing is signed off (001-T) | 2026-10-26 |
+| 001 | [VW Model Ingest MVP: Plan](plans/001_vw_model_ingest_mvp.md) | Built — in user testing | user signs off testing (001-T); notebook cell (003-A1) | 2026-11-03 |
+| 002 | [Pipeline Logging: Design](ideas/002_pipeline_logging_design.md) | Idea — approved | completed with plan 002 once testing is signed off (002-T) | 2026-10-26 |
+| 002 | [Pipeline Logging: Plan](plans/002_pipeline_logging.md) | Built — in user testing | user signs off testing (002-T); notebook cell (003-A1) | 2026-10-26 |
+| 003 | [Accessory Ingest + Model Number Matching: Design](ideas/003_accessory_model_matching_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
+| 003 | [Accessory Ingest + Model Number Matching: Plan](plans/003_accessory_model_matching.md) | Built — in user testing | user signs off testing (003-T); notebook cells (003-A1) | 2026-11-03 |
+| 004 | [Error and Flag Messages: Design](ideas/004_error_message_catalogue_design.md) | Idea — approved | completed with plan 003 once testing is signed off (003-T) | 2026-10-27 |
+| 005 | [Pipeline Run Report: Design](ideas/005_pipeline_report_card_design.md) | Idea — waiting for decisions | user decides 005-D4 – 005-D12 | 2026-10-28 |
+| 006 | [Labour Time Units (minutes → hours): Design](ideas/006_labor_time_units_design.md) | Idea — approved | completed with plan 006 once testing is signed off (006-T) | 2026-10-28 |
+| 006 | [Labour Time Units (minutes → hours): Plan](plans/006_labor_time_units.md) | Built — in user testing | user signs off testing (006-T) | 2026-10-28 |
+| 007 | [Comment Text Cleaning: Design](ideas/007_comment_text_cleaning_design.md) | Idea — approved | completed with plan 007 once testing is signed off (007-T) | 2026-10-28 |
+| 007 | [Comment Text Cleaning: Plan](plans/007_comment_text_cleaning.md) | Built — in user testing | user signs off testing (007-T) | 2026-10-28 |
+| 008 | [Part Numbers Kept Exactly as the Source: Design](ideas/008_part_number_integrity_design.md) | Idea — approved | completed with plan 008 once testing is signed off (008-T) | 2026-10-27 |
+| 008 | [Part Numbers Kept Exactly as the Source: Plan](plans/008_part_number_integrity.md) | Built — in user testing | user signs off testing (008-T) | 2026-11-03 |
+| 009 | [Human-Verified Vehicle Facts: Design](ideas/009_human_verified_vehicle_facts_design.md) | Idea — approved | completed with plan 009 once testing is signed off (009-T) | 2026-10-28 |
+| 009 | [Human-Verified Vehicle Facts: Plan](plans/009_human_verified_vehicle_facts.md) | Built — in user testing | user signs off testing (009-T) | 2026-10-28 |
+| 010 | [Work Process, Tracking and Indexing: Design](ideas/010_work_process_and_tracking_design.md) | Idea — approved | completed with plan 010 once testing is signed off (010-T) | 2026-10-28 |
+| 010 | [Work Process, Tracking and Indexing: Plan](plans/010_work_process_and_tracking.md) | Built — in user testing | user signs off testing (010-T); idea 011 extends the checks once approved (011-D1 – 011-D10) | 2026-10-28 |
+| 011 | [Requirements Register and Documentation Standard: Design](ideas/011_requirements_and_documentation_design.md) | Idea — waiting for decisions | user decides 011-D1 – 011-D10 | 2026-10-28 |
+| 012 | [Final Export Column Names: Design](ideas/012_final_export_columns_design.md) | Idea — approved | completed with plan 012 once testing is signed off (012-T) | 2026-10-29 |
+| 012 | [Final Export Column Names: Plan](plans/012_final_export_columns.md) | Built — in user testing | user signs off testing (012-T) | 2026-10-29 |
+| 013 | [Labour Time Units to Hours: Design](ideas/013_labour_time_units_to_hours_design.md) | Idea — approved | completed with plan 013 once testing is signed off (013-T) | 2026-11-02 |
+| 013 | [Labour Time Units to Hours: Plan](plans/013_labour_time_units_to_hours.md) | Built — in user testing | user signs off testing (013-T) | 2026-11-02 |
+| 014 | [Labour Values Below One Corrected (× 100): Design](ideas/014_labour_below_one_correction_design.md) | Idea — approved | completed with plan 014 once testing is signed off (014-T) | 2026-11-03 |
+| 014 | [Labour Values Below One Corrected (× 100): Plan](plans/014_labour_below_one_correction.md) | Built — in user testing | user signs off testing (014-T) | 2026-11-03 |
+| 015 | [Pending Items Numbered by Their Doc: Design](ideas/015_doc_numbered_item_ids_design.md) | Idea — approved | completed with plan 015 once testing is signed off (015-T) | 2026-11-03 |
+| 015 | [Pending Items Numbered by Their Doc: Plan](plans/015_doc_numbered_item_ids.md) | Built — in user testing | user signs off testing (015-T) | 2026-11-03 |

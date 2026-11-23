@@ -4,12 +4,12 @@ Entry point for the Hyundai OEM pipeline.
 Usage (run from the project root directory):
     python accy_v2/run_hyundai.py [path_to_excel_file]
 
-If no path is provided, auto-discovers the most recent .xlsx in landing_zone/hyundai_genesis/
-(shared with Genesis pipeline, as both process the same source workbook).
+If no path is provided, auto-discovers the most recent .xlsx in landing_zone/hyundai/
+(the Hyundai/Genesis workbook; this pipeline reads its Hyundai sheet).
 
 Examples:
     python accy_v2/run_hyundai.py
-    python accy_v2/run_hyundai.py "data/landing_zone/hyundai_genesis/Hyundai_Genesis_ACCY.xlsx"
+    python accy_v2/run_hyundai.py "accy_v2/data/landing_zone/hyundai/Hyundai_Genesis_ACCY.xlsx"
 """
 
 import sys
@@ -24,34 +24,27 @@ sys.path.insert(0, str(accy_v2_dir))      # For core.*, oems.* imports
 sys.path.insert(0, str(model_lookup_dir)) # For model_lookup internal imports
 sys.path.insert(0, str(project_root))     # For model_lookup package import
 
+from core.helpers.landing_zone import latest_added
 from oems.hyundai.pipeline.orchestrator import HyundaiPipeline
 
 CONFIG_PATH = (
     accy_v2_dir / "oems" / "hyundai" / "config" / "hyundai_config.yaml"
 )
-DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai_genesis"
+DEFAULT_DATA_DIR = accy_v2_dir / "data" / "landing_zone" / "hyundai"
 
 
 def main() -> None:
     if len(sys.argv) >= 2:
         file_path = sys.argv[1]
     else:
-        # Auto-discover most recently modified .xlsx in the default data folder
-        candidates = sorted(
-            DEFAULT_DATA_DIR.glob("*.xlsx"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
+        # Auto-discover the .xlsx added to the default data folder last
+        candidates = list(DEFAULT_DATA_DIR.glob("*.xlsx"))
         if not candidates:
             # Try common landing zone path with year subdirs
             alt_path = project_root / "landing_zone" / "2026" / "Hyundia"
-            alt_candidates = sorted(
-                alt_path.glob("**/*.xlsx"),
-                key=lambda p: p.stat().st_mtime,
-                reverse=True,
-            )
+            alt_candidates = list(alt_path.glob("**/*.xlsx"))
             if alt_candidates:
-                file_path = str(alt_candidates[0])
+                file_path = str(latest_added(alt_candidates))
                 print(f"Using (from landing_zone): {file_path}")
             else:
                 print(f"No .xlsx files found in {DEFAULT_DATA_DIR}")
@@ -59,7 +52,7 @@ def main() -> None:
                 print(f"Or place a file in: {DEFAULT_DATA_DIR}")
                 sys.exit(1)
         else:
-            file_path = str(candidates[0])
+            file_path = str(latest_added(candidates))
             print(f"Using: {file_path}")
 
     if not Path(file_path).exists():
