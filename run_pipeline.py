@@ -10,10 +10,11 @@ Usage:
     python run_pipeline.py mitsubishi "accy_v2/data/landing_zone/mitsubishi/2026_Outlander_ES_EN.xlsx"
     python run_pipeline.py mazda
     python run_pipeline.py hyundai
-    python run_pipeline.py genesis (uses hyundai_genesis landing zone - shared with Hyundai)
+    python run_pipeline.py genesis
     python run_pipeline.py honda
 
-Note: Genesis shares the hyundai_genesis landing zone with Hyundai pipeline.
+Each OEM reads its own landing zone folder: accy_v2/data/landing_zone/<oem>/
+(hyundai/ and genesis/ each hold a copy of the Hyundai/Genesis workbook; each pipeline reads its own sheet).
 """
 
 import sys
@@ -30,14 +31,8 @@ from accy_v2.oems.mazda.pipeline.orchestrator import MazdaPipeline
 
 
 def get_landing_zone_dir(oem: str) -> str:
-    """Map OEM name to landing zone directory (handles shared directories like hyundai_genesis)."""
-    oem_lower = oem.lower()
-
-    # Genesis shares landing zone with Hyundai
-    if oem_lower == "genesis":
-        return "hyundai_genesis"
-
-    return oem_lower
+    """Map OEM name to its landing zone directory: accy_v2/data/landing_zone/<oem>/."""
+    return oem.lower()
 
 
 def get_landing_zone_files(oem: str, file_path: str = None) -> list:
@@ -66,8 +61,9 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
             f"No Excel/CSV files found in {landing_zone}"
         )
 
-    # Return most recent file
-    return [max(all_files, key=lambda f: f.stat().st_mtime)]
+    # The file added to the folder last (not the last modified: copying keeps the old modified date)
+    from core.helpers.landing_zone import latest_added
+    return [latest_added(all_files)]
 
 
 def get_pipeline_class(oem: str):

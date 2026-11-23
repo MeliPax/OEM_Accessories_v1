@@ -123,6 +123,7 @@ class BasePipeline(ABC):
         transformed: Dict[str, pd.DataFrame],
         meta_data: Dict,
         config: Dict,
+        dq_logger: DQLogger,
         pipeline_logger: PipelineLogger,
     ) -> Dict[str, pd.DataFrame]:
         """Prepare output frames (enrich, rename, filter). Returns {sheet_key: df}. Does NOT write."""
@@ -242,7 +243,7 @@ class BasePipeline(ABC):
                     pipeline_logger.info(f"Step 4.5: SKIPPED (use_model_lookup=false) | sheet='{sheet_name}'")
                     enriched = transformed
 
-                sheet_frames = self.run_step5_output(enriched, meta_data, config, pipeline_logger)
+                sheet_frames = self.run_step5_output(enriched, meta_data, config, dq_logger, pipeline_logger)
 
                 # Merge frames: if a sheet key exists from prior groups (e.g., different years of same model),
                 # concatenate instead of overwriting. This allows consolidating multi-year data into single sheets.

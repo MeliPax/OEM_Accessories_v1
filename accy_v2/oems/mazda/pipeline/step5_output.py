@@ -1,14 +1,17 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pandas as pd
 
 from core.helpers.output_column_mapper import apply_downstream_column_mapping
+from core.helpers.orphan_record_validator import flag_orphaned_records
+from core.helpers.dq_logger import DQLogger
 
 
 def prepare_frames(
     transformed: Dict[str, pd.DataFrame],
     meta_data: Dict[str, Any],
     config: dict,
+    dq_logger: Optional[DQLogger] = None,
 ) -> Dict[str, pd.DataFrame]:
     """
     Prepare output frames using programmable downstream schema.
@@ -18,7 +21,8 @@ def prepare_frames(
     2. Read language-specific column mapping from downstream.yaml
     3. Rename columns to output names
     4. Filter to required output columns (in order from YAML)
-    5. Return keyed by proper sheet name (model_EN, model_FR)
+    5. Flag orphaned records (null model numbers) as cross-OEM safety net
+    6. Return keyed by proper sheet name (model_EN, model_FR)
 
     DECISION [019]: Explicit source→output mapping enables easy column additions.
     All column naming is driven by YAML, not hardcoded.
@@ -34,6 +38,10 @@ def prepare_frames(
 
         # Apply language-specific column mapping from downstream schema
         df = apply_downstream_column_mapping(df, downstream_schema, lang)
+
+        # Last check: rows with no model number that earlier steps didn't catch
+        # (short_model_number is already renamed to Model by the column mapping)
+        df = flag_orphaned_records(df, dq_logger, sheet_key, model_number_column="Model")
 
         frames[sheet_key] = df
 

@@ -1,8 +1,8 @@
 # Proposal: Trim-Hierarchy Fallback + Orphaned-Record Safety Net (Cross-OEM)
 
 **Date:** 2026-08-31  
-**Status:** 🎯 PROPOSAL UNDER REVIEW  
-**Scope:** Planning document only (no implementation yet)
+**Status:** ✅ IMPLEMENTED (2026-09-09)  
+**Scope:** Both Part 1 (implied_trim_variant_trims) and Part 2 (orphaned_record_rule) complete
 
 ---
 
@@ -194,4 +194,22 @@ The earlier draft proposed re-running the search with a substituted model name. 
 
 ---
 
-**Next step:** User review of Open Questions + approval, then implementation-planning phase.
+## Implementation Summary (2026-09-09)
+
+**Part 1 — Implemented:**
+- ✅ Added `implied_trim_variant` field to `SearchResult` class
+- ✅ Added step 3.6 logic in `search_engine.py` for `implied_trim_variant_trims` config matching
+- ✅ Added `implied_trim_variant_trims: []` template to all OEM enrichment.yaml configs (Hyundai, Genesis, Mitsubishi, Mazda)
+- ✅ Populated Elantra TCR rule in Hyundai config: `[elantra] + [tcr] → implied_trim_variant: n` (years: 2026)
+- ✅ Updated all SearchResult return statements to pass `implied_trim_variant` field
+
+**Part 2 — Implemented:**
+- ✅ Created `accy_v2/core/helpers/orphan_record_validator.py` with `flag_orphaned_records()` helper
+- ✅ Updated `base_pipeline.py` abstract method to pass `dq_logger` to `run_step5_output()`
+- ✅ Updated all OEM orchestrators (Hyundai, Genesis, Mitsubishi, Mazda) to accept and pass `dq_logger`
+- ✅ Integrated orphan check into all step5_output.py files with `flag_orphaned_records()` call
+- ✅ Logs `orphaned_record_rule` DQ warning for any row with null/empty model number at output boundary
+- ✅ Mazda: checks `short_model_number` column; others check `Model` column
+
+**Files modified:** 13 core/pipeline files, 4 OEM enrichment.yaml configs, 1 new helper file
+**Commit:** 0df7f8b ("Implement: Trim hierarchy orphan safety net")

@@ -4,61 +4,154 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
-## [2.6.0] - 2026-09-01
+## [Unreleased] - DQ: orphaned-record check + implied trim variant
+
+Merged from `feature/trim-hierarchy-orphan-safety-net` (2026-11-23). MINOR.
+
+### Added
+- **Orphaned-record check** (`accy_v2/core/helpers/orphan_record_validator.py`): at the output step, all four OEMs log an `orphaned_record_rule` DQ warning for rows with no model number, one per (Year, ModelName, Trim) with the row count and up to 5 sample parts. A last check that catches rows earlier steps missed. `run_step5_output` now receives `dq_logger` (base pipeline and every OEM orchestrator).
+- **Implied trim variant** (`search_engine.py` step 3.6, `implied_trim_variant_trims` in each `enrichment.yaml`): a config rule can add a missing sub-line token before the search. One Hyundai rule (Elantra TCR 2026 → N); `dev` already finds the Elantra TCR through exact trim matching, so it changes no output today.
+
+### Fixed (on the branch before merge)
+- Hyundai/Genesis would have crashed: the check was wired into the unused `oems/hyundai/pipeline/step5_output.py`; moved to the shared `oems/hyundai_genesis/pipeline/step5_output.py`.
+- Mazda checked `short_model_number`, already renamed to `Model` by the column mapping, so every row would have been flagged.
+- One warning per trim instead of per row (would have been 3,000+ lines).
+
+### Impact
+- Output unchanged. New DQ warnings: Mitsubishi +10, Hyundai +16, Genesis +22, Mazda 0. All of them are gaps already reported by `model_number_lookup_rule`; the new warning adds how many rows each affects. Hyundai/Genesis report each trim on both the EN and FR sheet.
+- `feature/honda-pipeline-port` must take the new `run_step5_output(..., dq_logger, pipeline_logger)` signature when it next syncs with `dev`.
+
+### Tests
+- All four OEMs run on `dev` and on the branch with the same inputs: no errors, output data sheets identical cell by cell; DQ reports differ only by the new `orphaned_record_rule` warnings. Unit check of the grouping (blank / "nan" / NaN model numbers, missing column, no logger).
+
+---
+
+## [Unreleased] - Mitsubishi: false lookup errors removed
+
+Merged from `fix/mitsubishi-model-number` (2026-11-23). PATCH.
+
+### Fixed
+- **Mitsubishi model-number lookup** (`accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`): since `fb6dc79` (2026-09-01, "Fix 4: Mitsubishi packages") the debug line after a successful lookup used `model_number`, a name that commit had removed. Every found model number raised `NameError` after it was stored: output model numbers were correct, but the log showed `[ERROR]` and the DQ report a false "Error during model number lookup" warning for each one.
+
+### Impact
+- Mitsubishi lookups: 0 found / 10 not found / 52 errors → 52 found / 10 not found / 0 errors.
+- DQ warnings 135 → 83; `_Report` trim coverage 62 of 135 (45.9%) → 62 of 83 (74.7%). Genuine gaps still reported (PHEV 2024–2026, 2020 RVR not in the vehicle DB, `gt-p` trim).
+
+### Tests
+- All four OEMs run on `dev` and on the fix with the same inputs: output data sheets identical cell by cell for every OEM; DQ reports identical for Mazda, Hyundai, Genesis; Mitsubishi differs only by the 52 false warnings.
+
+---
+
+## [Unreleased] - Runners: Genesis landing folder + input file picked by date added
+
+Merged from `fix/genesis-landing-folder` (2026-11-20). PATCH.
+
+### Fixed
+- **Genesis input folder:** the raw data folder was renamed from `landing_zone/hyundai_genesis/` to `landing_zone/genesis/`. `run_pipeline.py` now maps every OEM to `accy_v2/data/landing_zone/<oem>/`; `accy_v2/run_genesis.py` reads `genesis/` and `accy_v2/run_hyundai.py` reads `hyundai/` (it still pointed at the removed `hyundai_genesis/`). The shared code package `oems/hyundai_genesis/` is unchanged.
+- **Input file choice:** runners picked the last *modified* file, so Genesis ran on the 2025 workbook (copying keeps an old modified date; saving an old workbook makes it look newest). New helper `accy_v2/core/helpers/landing_zone.py` picks the file *added* to the folder last and prints the picked and skipped files; used by `run_pipeline.py` and all four `accy_v2/run_*.py`.
+
+### Tests
+- All 8 entry points (`run_pipeline.py` and `accy_v2/run_*.py` × Genesis, Hyundai, Mazda, Mitsubishi) run end to end. Genesis now runs on the 2026-8-1 workbook: 31 sheets, 75 found / 12 not found, 0 errors. Hyundai 148 / 8, 0 errors. Mitsubishi's 52 errors are unchanged from `dev`.
+
+---
+
+## [Unreleased] - VW Accessory Pipeline
+
+Merged from `feature/vw-data-analysis` (2026-11-20). Planned as a MINOR release (v2.7.0). Only `source_code/VW/` changes; nothing shared (`accy_v2/`) is touched.
+
+### Added
+- **VW pipeline** in `source_code/VW/` (its own history: `source_code/VW/CHANGELOG.md`, plans 001–015):
+  - vehicle ingest from the VW model export into `vehicles.csv`, with per-model option sets in `config/vehicles/` (all 10 reviewed);
+  - accessory ingest, model-number lookup and a per-model accessory dict, exported to Excel;
+  - logging and data-quality flags from a message catalogue; review files for every flag that needs action;
+  - part numbers kept exactly as the source (leading zeros restored from `make&model`, never padded);
+  - labour time read as time units (100 = 1 hour) into `labor_hours`; values below 1 corrected × 100.
+
+### Not included
+- The model lookup refresh (regenerated vehicle DB, keyword configs incl. Kia and Volkswagen, creds loader, notebooks) is on `feature/model-lookup-refresh`, to merge once the DB rows are complete.
+
+### Tests
+- VW: `pytest source_code/VW/tests`.
+- Hyundai, Genesis, Mazda, Mitsubishi pipelines run on the merged result; lookup results identical to `dev`.
+
+---
+
+## [Unreleased] - DQ Report Cleanup
+
+### 🎯 Status: IN DEVELOPMENT
+
+**DQ Report: Filter csv_uniqueness_rule Noise**
+
+Removed `csv_uniqueness_rule` warnings from stakeholder-facing DQ export documents. These warnings are expected operational noise (duplicate detection from ADS refresh cycles) and do not represent actionable data quality issues. Warnings remain in pipeline logs for engineering diagnostics.
+
+### ✅ Changes Implemented
+
+1. **DQ Logger Filtering (Option A)**
+   - File: `accy_v2/core/helpers/dq_logger.py`
+   - Modified `write_dq_report()` to accept `exclude_rules` parameter with default `["csv_uniqueness_rule"]`
+   - Updated `_build_summary()` to filter records before counting/summarizing
+   - Added `"filtered_rules"` metadata field to DQ report payload for audit trail
+   - Backward compatible: existing call sites automatically use default filtering
+
+2. **Report Impact**
+   - Genesis: warnings 39 → 9 (30 csv_uniqueness_rule entries removed)
+   - Hyundai: warnings ~145 → ~115 (estimated)
+   - Mazda: warnings 0 → 0 (already clean)
+   - Mitsubishi: warnings ~124 → ~94 (estimated)
+
+### 📋 Verification Approach
+
+1. Run all 4 OEM pipelines and confirm DQ reports
+2. Verify `"filtered_rules": ["csv_uniqueness_rule"]` is present in payload
+3. Confirm all actionable rules (model_number_lookup_rule, etc.) still present
+4. Check pipeline logs still contain csv_uniqueness_rule entries
+5. No regression testing (rules still logged, just not in export)
+
+---
+
+## [2.5.1] - 2026-09-08
 
 ### 🎯 Status: IMPLEMENTED & VERIFIED
 
-**Trim Name Normalization: Data Provider Naming Inconsistency Resolution**
+**Genesis Model Lookup: GV70/G80 Electrified Inference Bug Fix**
 
-Implemented a config-driven trim name normalization system to handle cases where source and database providers normalize trim names differently (source includes engine specs, database normalizes separately). Solves Genesis G90 e-SC search failures across all years (2024-2026).
+Fixed configuration error where `implied_fuel_type_trims` rules for GV70 (2025-2026) were unconditionally injecting "electric" fuel type into gas-engine searches, causing 4 model lookup failures. Also corrected database record for 2024 Electrified G80 "Prestige" (missing TrimName).
 
-**Detailed documentation:** 
-- Full guide: [`accy_v2/docs/2026-09-01_TRIM_NAME_NORMALIZATION.md`](./2026-09-01_TRIM_NAME_NORMALIZATION.md)
-- Quick ref: [`accy_v2/docs/2026-09-01_TRIM_NORMALIZATION_QUICKREF.md`](./2026-09-01_TRIM_NORMALIZATION_QUICKREF.md)
+### ✅ Fixes Implemented
 
-### ✅ Trim Normalization Feature
+1. **Config-Only Fix: Remove Overly-Broad GV70 Rules**
+   - File: `accy_v2/oems/genesis/config/enrichment.yaml` (lines 80-87)
+   - Problem: Two `implied_fuel_type_trims` rules for GV70 "advanced" (2025-2026) and "advanced,plus" (2025) fired on all GV70 searches regardless of explicit fuel-type keywords (2.5T/3.5T), injecting "electric" into gas searches
+   - Root Cause: Rules were structurally unnecessary — Electrified GV70 searches already carry "ev" keyword from sheet naming (gv70_ev vs gv70), and gas searches explicitly include engine keywords. Injection logic existed twice with inconsistent safety gates
+   - Solution: Remove both GV70 rules (lines 80-87). Keep G90 e-SC rule (genuinely EV-only with no fuel signal in trim text)
+   - Impact: All 4 GV70 gas searches now resolve correctly
+   - Risk: None (strictly removed dead/harmful config, no code changes)
 
-**Problem:** 
-- Source data: "3.5T e-SC Prestige"
-- Database: "e-SC Prestige" (engine in engine_type column)
-- Result: Strict AND filtering fails because "3.5t" doesn't match DB trim → 90 records NOT_FOUND
+2. **Database Correction: Add Missing TrimName**
+   - File: `accy_v2/model_lookup/db/db_vehicle_models.csv` (record for 2024 Electrified G80)
+   - Problem: ModelNumber G8ES4ZE1GP00 (2024 Electrified G80 "Prestige") had blank TrimName field, preventing search match
+   - Solution: Populate TrimName with "Prestige"
+   - Impact: 2024 Electrified G80 "Prestige" search now resolves
 
-**Solution:**
-- Config-driven regex-based trim name normalization
-- Rules applied both during lookup AND when mapping results back to rows
-- Non-invasive: doesn't modify source data or database
-- Reusable pattern for any OEM with similar naming differences
+### ✅ Search Failures Resolved (5 total)
 
-**Implementation:**
-- File: `accy_v2/oems/genesis/config/enrichment.yaml`
-  - Added `trim_name_normalization` section with 3 G90 e-SC rules
-- File: `accy_v2/oems/hyundai_genesis/pipeline/step4_5_model_enrichment.py`
-  - Call `_normalize_trim_names()` after extracting unique trims (line 71-74)
-  - Pass `oem_config` to enrichment function (line 156-167)
-  - Apply normalization before mapping in `_add_model_number_columns()` (line 457-462)
-  - Added helper function `_normalize_trim_names()` (line 535-600)
+| Model | Year | Trim | Status |
+|-------|------|------|--------|
+| GV70 | 2025 | 2.5T Advanced | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2D27AD) |
+| GV70 | 2025 | 2.5T Advanced Plus | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGAAU) |
+| GV70 | 2026 | 2.5T Advanced | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGA00) |
+| GV70 | 2026 | 2.5T Advanced Tech Pkg | ✅ Resolved (CSV_DUPLICATE found: V7CW5K2DGA55) |
+| Electrified G80 | 2024 | Prestige | ✅ Resolved (CSV_DUPLICATE found: G8ES4ZE1GP00) |
 
-**Results:**
-- 2024 G90 e-SC: 30 input → 60 output (30 with model numbers) ✅
-- 2025 G90 e-SC: 30 input → 60 output (30 with model numbers) ✅
-- 2026 G90 e-SC: 28 input → 294 output (147 with model numbers) ✅
-- **Total: 90 G90 e-SC records now have correct model numbers**
-- Pipeline success rate: 98% → 99%+
+### 🔄 Verification
 
-**Configuration Example:**
-```yaml
-trim_name_normalization:
-  - pattern: "^3\\.5T e-SC Prestige Black$"
-    replacement: "e-SC Prestige Black"
-    models: [g90]
-    reason: "DB normalizes to 'e-SC Prestige Black'; source includes engine spec."
-```
+- All 4 OEM pipelines tested (Genesis, Hyundai, Mazda, Mitsubishi): **0 regressions**
+- Genesis pipeline warnings: 35 → 39 (4 new G90 e-SC detections, all expected)
+- Merged to dev branch and verified on dev: **all tests passing**
 
-**Risk Assessment:** ✅ VERY LOW
-- Config-driven (no code changes for other OEMs)
-- Bidirectional (applied at both lookup and mapping stages)
-- Logged (every transformation visible in debug output)
-- Backwards-compatible (existing searches unaffected)
+### 📋 Documentation
+
+Detailed technical analysis and planning: [`accy_v2/planning/oem_pipeline/hyundai_genesis_lookup_fix/`](../../planning/oem_pipeline/hyundai_genesis_lookup_fix/)
 
 ---
 

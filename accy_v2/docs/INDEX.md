@@ -2,16 +2,14 @@
 
 Quick navigation to all accy_v2 documentation.
 
-## Latest (2026-09-01)
+## Latest (2026-09-08)
 
-### Trim Name Normalization Feature
-**Location:** [`2026-09-01_TRIM_NAME_NORMALIZATION.md`](./2026-09-01_TRIM_NAME_NORMALIZATION.md)
-- **Problem:** Data provider naming inconsistencies (engine specs embedded in trim names)
-- **Solution:** Config-driven normalization rules applied before/after search
-- **Results:** 90 G90 e-SC records (2024-2026) now find correct model numbers
-- **Impact:** Pipeline success rate improved to 99%+
+### Genesis GV70/G80 Electrified Inference Bug Fix
+**What:** Fixed configuration error where implied fuel-type rules for GV70 (2025-2026) were unconditionally injecting "electric" into gas searches (4 failures), plus corrected 2024 Electrified G80 "Prestige" database record.
 
-**Quick Summary:** Implemented config-driven trim name normalization to handle provider naming differences. Solves G90 e-SC search failures via regex-based trim normalization in enrichment config.
+**What Worked:** Config-only fix (removed 2 overly-broad rules from enrichment.yaml) + database correction. Zero code changes, zero regressions across all 4 OEM pipelines.
+
+**Details:** See [CHANGELOG.md](CHANGELOG.md) (v2.5.1 section) and planning doc at [`accy_v2/planning/oem_pipeline/hyundai_genesis_lookup_fix/`](../../planning/oem_pipeline/hyundai_genesis_lookup_fix/)
 
 ---
 
@@ -85,7 +83,7 @@ Quick navigation to all accy_v2 documentation.
 
 ## How to Use This Index
 
-1. **For current work:** Start with latest section → 2026-08-31_search_gaps_fixes
+1. **For current work:** Start with latest section → Genesis GV70/G80 fix (2026-09-08)
 2. **For architecture:** → SYSTEM_ARCHITECTURE.md
 3. **For configuration:** → config_schema.md
 4. **For past issues/context:** → Issue Tracking section
@@ -93,5 +91,5 @@ Quick navigation to all accy_v2 documentation.
 
 ---
 
-**Last Updated:** 2026-09-01  
-**Current Version:** 2.6.0 (Trim Name Normalization feature added)
+**Last Updated:** 2026-09-08  
+**Current Version:** 2.5.1

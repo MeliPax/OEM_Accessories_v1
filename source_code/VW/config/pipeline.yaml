@@ -1,0 +1,40 @@
+# Run settings for the VW pipeline. Taxonomy vocabulary lives in categories/models/keywords.yaml,
+# availability in vehicles/*.yaml.
+
+# Source files, relative to source_code/VW
+sources:
+  vw_models: datasets/vw_models_data.csv
+  accessories: datasets/2026_10_20_VW Canada Accessories Data EN.xlsx   # layout in accessories.yaml
+
+# Model year window per dataset: every step that selects data uses its dataset's window, and anything
+# outside it is ignored. Columns are the staged, snake_case names.
+#   min_model_year  required: a 4-digit year, or current_year / current_year - N (worked out at run start)
+#   max_model_year  empty = no upper limit (the usual case); same forms as min
+#   within          another dataset whose window this one must sit inside (its data is matched against it)
+datasets:
+  vw_models:
+    year_rule: single_year     # keep rows where min <= year <= max
+    year_column: model_year
+    min_model_year: 2020
+    max_model_year:
+  accessories:
+    year_rule: range_overlap   # keep rows whose [start, end] range overlaps the window, clipped to it
+    start_column: min_year
+    end_column: max_year
+    min_model_year: current_year - 2    # 2026 -> 2024; moves on by itself each January
+    max_model_year:
+    within: vw_models          # accessories are matched to vehicles: no year outside the vehicle window
+
+validation:
+  # A model number may be reused across model years: the key is (model_number, model_year).
+  # Flag a reused model number only when one of these fields differs between its years.
+  # Trim, package or edition changes across years are allowed (e.g. a 2020 Comfortline that became the
+  # 2021 Highline baseline under the same code); they are noted in the run log, not flagged.
+  model_number_consistency:
+    compare: [model, submodel]
+
+logging:
+  console_level: INFO          # what the terminal shows
+  file_level: DEBUG            # what the run log file keeps
+  examples_per_rule: 3         # before -> after examples printed per rule at INFO
+  keep_runs: 30                # per-run log files kept; steps.csv and ingest_runs.csv are never pruned

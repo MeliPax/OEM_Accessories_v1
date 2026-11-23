@@ -1,0 +1,12 @@
+# VW pipeline + analysis notebook. Install with:  python -m pip install -r requirements.txt
+# Tested with Python 3.14, pandas 3.0.5, PyYAML 6.0.3, pytest 9.1.1, openpyxl 3.1.5.
+
+# pipeline
+pandas>=3.0
+PyYAML>=6.0
+
+# tests
+pytest>=8.0
+
+# notebook (reads the accessories Excel file)
+openpyxl>=3.1

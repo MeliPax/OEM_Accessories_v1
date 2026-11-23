@@ -5,3 +5,12 @@ ready_to_upload/
 *.env
 creds/
 **/creds/
+
+# Python bytecode (generated on every run)
+__pycache__/
+*.pyc
+
+# Claude Code: per-person settings and locks (each person keeps their own)
+.claude/settings.json
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
