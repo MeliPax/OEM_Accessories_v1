@@ -4,6 +4,22 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Mitsubishi: false lookup errors removed
+
+Merged from `fix/mitsubishi-model-number` (2026-11-23). PATCH.
+
+### Fixed
+- **Mitsubishi model-number lookup** (`accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`): since `fb6dc79` (2026-09-01, "Fix 4: Mitsubishi packages") the debug line after a successful lookup used `model_number`, a name that commit had removed. Every found model number raised `NameError` after it was stored: output model numbers were correct, but the log showed `[ERROR]` and the DQ report a false "Error during model number lookup" warning for each one.
+
+### Impact
+- Mitsubishi lookups: 0 found / 10 not found / 52 errors → 52 found / 10 not found / 0 errors.
+- DQ warnings 135 → 83; `_Report` trim coverage 62 of 135 (45.9%) → 62 of 83 (74.7%). Genuine gaps still reported (PHEV 2024–2026, 2020 RVR not in the vehicle DB, `gt-p` trim).
+
+### Tests
+- All four OEMs run on `dev` and on the fix with the same inputs: output data sheets identical cell by cell for every OEM; DQ reports identical for Mazda, Hyundai, Genesis; Mitsubishi differs only by the 52 false warnings.
+
+---
+
 ## [Unreleased] - Runners: Genesis landing folder + input file picked by date added
 
 Merged from `fix/genesis-landing-folder` (2026-11-20). PATCH.
