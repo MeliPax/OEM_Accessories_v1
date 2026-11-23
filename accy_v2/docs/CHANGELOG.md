@@ -4,6 +4,28 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - DQ: orphaned-record check + implied trim variant
+
+Merged from `feature/trim-hierarchy-orphan-safety-net` (2026-11-23). MINOR.
+
+### Added
+- **Orphaned-record check** (`accy_v2/core/helpers/orphan_record_validator.py`): at the output step, all four OEMs log an `orphaned_record_rule` DQ warning for rows with no model number, one per (Year, ModelName, Trim) with the row count and up to 5 sample parts. A last check that catches rows earlier steps missed. `run_step5_output` now receives `dq_logger` (base pipeline and every OEM orchestrator).
+- **Implied trim variant** (`search_engine.py` step 3.6, `implied_trim_variant_trims` in each `enrichment.yaml`): a config rule can add a missing sub-line token before the search. One Hyundai rule (Elantra TCR 2026 → N); `dev` already finds the Elantra TCR through exact trim matching, so it changes no output today.
+
+### Fixed (on the branch before merge)
+- Hyundai/Genesis would have crashed: the check was wired into the unused `oems/hyundai/pipeline/step5_output.py`; moved to the shared `oems/hyundai_genesis/pipeline/step5_output.py`.
+- Mazda checked `short_model_number`, already renamed to `Model` by the column mapping, so every row would have been flagged.
+- One warning per trim instead of per row (would have been 3,000+ lines).
+
+### Impact
+- Output unchanged. New DQ warnings: Mitsubishi +10, Hyundai +16, Genesis +22, Mazda 0. All of them are gaps already reported by `model_number_lookup_rule`; the new warning adds how many rows each affects. Hyundai/Genesis report each trim on both the EN and FR sheet.
+- `feature/honda-pipeline-port` must take the new `run_step5_output(..., dq_logger, pipeline_logger)` signature when it next syncs with `dev`.
+
+### Tests
+- All four OEMs run on `dev` and on the branch with the same inputs: no errors, output data sheets identical cell by cell; DQ reports differ only by the new `orphaned_record_rule` warnings. Unit check of the grouping (blank / "nan" / NaN model numbers, missing column, no logger).
+
+---
+
 ## [Unreleased] - Mitsubishi: false lookup errors removed
 
 Merged from `fix/mitsubishi-model-number` (2026-11-23). PATCH.
