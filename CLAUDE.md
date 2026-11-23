@@ -52,6 +52,16 @@
 4. **Don't mix data and code.** A pipeline run can change files you didn't edit (see below). Keep them out of a code commit.
 5. **Push only what the user asked for**, and never push `dev` / `main` without tests passing (see Key Rules).
 6. **After a merge:** delete the branch (local and `origin`).
+7. **No stashes.** A stash is uncommitted work set aside outside any branch; it isn't on GitHub and gets forgotten. Don't leave work in one: commit it to a branch (`git stash branch <type>/<name>`), or drop it once you've confirmed it holds nothing needed. If `git stash list` shows anything, tell the user what each one holds.
+8. **Switching branches with uncommitted changes:** if the user has files open or modified (often notebooks), don't stash or discard them. Do the branch work in a separate worktree (`git worktree add <dir> <branch>`) and remove it afterwards.
+
+### Long-lived branches: keep them in sync with `dev`
+
+A branch that lives for weeks (e.g. a Honda pipeline branch) must pick up what lands on `dev`, especially shared code: `accy_v2/core/`, `accy_v2/model_lookup/`, `run_pipeline.py`.
+
+- **Check:** `git fetch` then `git log --oneline <branch>..origin/dev -- accy_v2/core accy_v2/model_lookup run_pipeline.py`. Anything listed → sync.
+- **Sync = merge `dev` into the branch** (`git merge origin/dev` on the branch). Don't rebase a long-lived branch: it rewrites every commit.
+- Resolve conflicts keeping both sides' intent, run that OEM's pipeline before and after the merge, and say in the merge commit what was tested.
 
 ### Vehicle DB: keep `dev` up to date
 
