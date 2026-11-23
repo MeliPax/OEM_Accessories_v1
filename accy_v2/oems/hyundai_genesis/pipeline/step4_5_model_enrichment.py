@@ -68,6 +68,11 @@ def run(
     trim_col = oem_config.get("trim_column", "trim_level")
     unique_trims = sorted(first_lang_df[trim_col].unique().tolist())
 
+    # Apply trim name normalization rules (e.g., strip engine specs from trim names)
+    unique_trims = _normalize_trim_names(
+        unique_trims, model_name, oem_config, pipeline_logger
+    )
+
     pipeline_logger.debug(
         f"Group '{group_key}': Unique trims identified: {unique_trims}"
     )
@@ -160,6 +165,7 @@ def run(
             model_name=model_name,
             dq_logger=dq_logger,
             pipeline_logger=pipeline_logger,
+            oem_config=oem_config,
         )
         enriched_dict[lang] = enriched_df
 
@@ -441,19 +447,34 @@ def _add_model_number_columns(
     model_name: str,
     dq_logger: DQLogger,
     pipeline_logger: PipelineLogger,
+    oem_config: Dict[str, Any] = None,
 ) -> pd.DataFrame:
     """
     Add model_number, package, and model_number_status columns to DataFrame.
     For duplicate-code trims, explode rows (one output per model number/package pair).
     Exclude rows where trim is in missing_trims.
+    Applies trim name normalization rules before mapping.
     """
     df = df.copy()
 
-    # Map trim -> list of model numbers (len 1 normally, >1 for duplicates)
-    df["model_number"] = df[trim_col].map(model_mapping)
+    # Apply trim name normalization to dataframe (must match what was done during lookup)
+    if oem_config:
+        normalized_trims = _normalize_trim_names(
+            df[trim_col].unique().tolist(), model_name, oem_config, pipeline_logger
+        )
+        trim_normalization_map = dict(zip(df[trim_col].unique(), normalized_trims))
+        df["_normalized_trim"] = df[trim_col].map(trim_normalization_map)
+    else:
+        df["_normalized_trim"] = df[trim_col]
+
+    # Map trim -> list of model numbers (using normalized trim names)
+    df["model_number"] = df["_normalized_trim"].map(model_mapping)
 
     # Map trim -> list of packages (parallel to model_numbers)
-    df["package"] = df[trim_col].map(package_mapping)
+    df["package"] = df["_normalized_trim"].map(package_mapping)
+
+    # Clean up temporary normalization column
+    df = df.drop(columns=["_normalized_trim"])
 
     # Flag rows resolved via the duplicate-model-number path, before exploding
     df["_is_duplicate_match"] = df[trim_col].isin(duplicate_trims)
@@ -526,3 +547,69 @@ def _categorize_search_failure(
         f"(3) trim is not listed as a package modifier."
     )
     return message
+
+
+def _normalize_trim_names(
+    trims: List[str],
+    model_name: str,
+    oem_config: Dict[str, Any],
+    pipeline_logger: PipelineLogger,
+) -> List[str]:
+    """
+    Apply trim name normalization rules from config.
+
+    Handles cases where source provider includes engine specs in trim names
+    but database normalizes them separately (e.g., "3.5T e-SC Prestige" → "e-SC Prestige").
+
+    Normalization is applied before keyword extraction to ensure search keywords match DB data.
+
+    Args:
+        trims: List of trim names from source data
+        model_name: Model name (e.g., "g90", "gv70") for rule matching
+        oem_config: OEM config dict (contains trim_name_normalization rules)
+        pipeline_logger: Logger for debugging
+
+    Returns:
+        List of normalized trim names
+    """
+    import re
+
+    # Get normalization rules from config
+    norm_rules = oem_config.get("trim_name_normalization", [])
+    if not norm_rules:
+        return trims
+
+    normalized_trims = []
+    for trim in trims:
+        normalized_trim = trim
+
+        # Apply each rule
+        for rule in norm_rules:
+            # Check if this rule applies to this model
+            rule_models = rule.get("models", [])
+            if rule_models and model_name.lower() not in [m.lower() for m in rule_models]:
+                continue  # Rule doesn't apply to this model
+
+            # Apply pattern replacement
+            pattern = rule.get("pattern", "")
+            replacement = rule.get("replacement", "")
+            reason = rule.get("reason", "")
+
+            if pattern and replacement is not None:
+                try:
+                    new_trim = re.sub(pattern, replacement, normalized_trim)
+                    if new_trim != normalized_trim:
+                        pipeline_logger.debug(
+                            f"Trim normalization: '{normalized_trim}' → '{new_trim}' "
+                            f"({reason})"
+                        )
+                        normalized_trim = new_trim
+                        # Don't break — allow multiple rules to apply in sequence
+                except Exception as e:
+                    pipeline_logger.warning(
+                        f"Trim normalization failed for '{trim}' with pattern '{pattern}': {str(e)}"
+                    )
+
+        normalized_trims.append(normalized_trim)
+
+    return normalized_trims

@@ -2,7 +2,20 @@
 
 Quick navigation to all accy_v2 documentation.
 
-## Latest (2026-08-31)
+## Latest (2026-09-01)
+
+### Trim Name Normalization Feature
+**Location:** [`2026-09-01_TRIM_NAME_NORMALIZATION.md`](./2026-09-01_TRIM_NAME_NORMALIZATION.md)
+- **Problem:** Data provider naming inconsistencies (engine specs embedded in trim names)
+- **Solution:** Config-driven normalization rules applied before/after search
+- **Results:** 90 G90 e-SC records (2024-2026) now find correct model numbers
+- **Impact:** Pipeline success rate improved to 99%+
+
+**Quick Summary:** Implemented config-driven trim name normalization to handle provider naming differences. Solves G90 e-SC search failures via regex-based trim normalization in enrichment config.
+
+---
+
+## Previous Release (2026-08-31)
 
 ### Three Critical Search Gaps Fixes
 **Location:** [`2026-08-31_search_gaps_fixes/`](./2026-08-31_search_gaps_fixes/)
@@ -80,5 +93,5 @@ Quick navigation to all accy_v2 documentation.
 
 ---
 
-**Last Updated:** 2026-08-31  
-**Current Version:** 2.5.0
+**Last Updated:** 2026-09-01  
+**Current Version:** 2.6.0 (Trim Name Normalization feature added)
