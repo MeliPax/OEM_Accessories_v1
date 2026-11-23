@@ -41,6 +41,28 @@
 
 ---
 
+## Commit & Push Checklist (every agent, every commit)
+
+1. **`git status` first.** Know every changed file before staging anything.
+2. **Stage files by name** (`git add path/to/file`). Never `git add -A` / `git add .`: pipeline runs leave changes behind that don't belong in your commit.
+3. **Never commit** (all in `.gitignore`; if one shows up, fix `.gitignore`, don't commit it):
+   - `__pycache__/`, `*.pyc` — Python bytecode
+   - `.claude/settings.json`, `.claude/settings.local.json`, `.claude/scheduled_tasks.lock` — per-person Claude settings
+   - `creds/`, `*.env` — credentials (never read, print or commit them)
+4. **Don't mix data and code.** A pipeline run can change files you didn't edit (see below). Keep them out of a code commit.
+5. **Push only what the user asked for**, and never push `dev` / `main` without tests passing (see Key Rules).
+6. **After a merge:** delete the branch (local and `origin`).
+
+### Vehicle DB: keep `dev` up to date
+
+Pipeline runs fetch new vehicles and append them to `accy_v2/model_lookup/db/db_vehicle_models.csv`. `dev` should always have the latest DB:
+
+- **When `git status` shows the DB changed:** commit it on its own `data/vehicle-db-YYYY-MM-DD` branch from `dev` (DB file only), merge `--no-ff` into `dev`, push `dev`, delete the branch. Commit message: what was added (makes, models, years, row count).
+- **Keyword configs** (`accy_v2/model_lookup/configs/*_keywords.json`) are rewritten on every run. If only `generated_at` changed, discard the change (`git checkout -- <file>`). If the `keywords` list changed, commit it with the DB.
+- Rows with a blank `TrimName` / `ModelName` are committed as fetched; mention them in the commit message.
+
+---
+
 ## Versioning at a Glance
 
 ```
