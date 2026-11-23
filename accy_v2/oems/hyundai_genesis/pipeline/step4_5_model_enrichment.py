@@ -482,11 +482,12 @@ def _add_model_number_columns(
     # Map trim -> list of packages (parallel to model_numbers)
     df["package"] = df["_normalized_trim"].map(package_mapping)
 
+    # Flag rows resolved via the duplicate-model-number path, before exploding
+    # (duplicate_trims holds normalized names, like the mappings above)
+    df["_is_duplicate_match"] = df["_normalized_trim"].isin(duplicate_trims)
+
     # Clean up temporary normalization column
     df = df.drop(columns=["_normalized_trim"])
-
-    # Flag rows resolved via the duplicate-model-number path, before exploding
-    df["_is_duplicate_match"] = df[trim_col].isin(duplicate_trims)
 
     # Explode: one output row per (model_number, package) pair (no-op for length-1 lists)
     df = df.explode(["model_number", "package"], ignore_index=True)
