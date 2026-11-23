@@ -23,6 +23,7 @@ This document defines the workflow and standards for all development in this pro
 | Research | `research/` | Investigation / exploration (no code changes) | Until merged to docs/planning |
 | Docs | `docs/` | Documentation only | Until merged to dev |
 | Refactor | `refactor/` | Code cleanup, no behavior change | Until merged to dev |
+| Data | `data/` | Data refresh only (e.g. `data/vehicle-db-2026-11-23`: vehicle DB rows from pipeline runs); no code | Until merged to dev (same day) |
 
 ### Naming Convention
 
