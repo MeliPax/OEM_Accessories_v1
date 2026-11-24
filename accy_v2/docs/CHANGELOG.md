@@ -4,6 +4,29 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Genesis: trim name normalization (G90 e-SC) + Black package search
+
+Merged from `feature/trim-name-normalization` (2026-11-24). MINOR.
+
+### Added
+- **Trim name normalization** (`oems/hyundai_genesis/pipeline/step4_5_model_enrichment.py`, `_normalize_trim_names`): applies the `trim_name_normalization` rules in `enrichment.yaml` (regex, per model) to trim names before the lookup and when mapping results back to rows. The three G90 rules already in the Genesis config now take effect: "3.5T e-SC Prestige [Black]" → "e-SC Prestige [Black]", bare "3.5T e-SC" → "e-SC Prestige".
+
+### Fixed
+- **Genesis "Black" trims** (`model_lookup/configs/genesis/classification.yaml`): the translator turns "black" into "black-package", which wasn't classified, so it was dropped and Black trims matched every Prestige variant. Now classified as PACKAGE.
+- Rows whose normalized trim matches several model codes keep their "(duplicate model code)" status (the flag compared original names against normalized ones).
+- Removed the stray `test_output.log` from the repo root.
+
+### Impact (Genesis only)
+- G90 2024/2025 "3.5T e-SC" → `G9CS4K3BXXPS`; 2026 "3.5T e-SC Prestige" → the three Prestige codes; 2026 "3.5T e-SC Prestige Black" → `G9CS4K3BGPBL` (all had no model number).
+- GV80 2026/2027 "3.5T Prestige Black" and GV80 Coupe 2027 "3.5T e-SC Coupe Black" no longer get the non-Black `...GP00` codes.
+- Rows with no model number 422 → 220; DQ warnings 42 → 30.
+- Known, not changed here: GV80 "Prestige Black" rows still also get the GV80 Coupe code `V8CC7K3BGPBL`.
+
+### Tests
+- All four OEMs run on `dev` and on the branch with the same inputs, no errors. Mitsubishi, Mazda, Hyundai: output and DQ identical. Genesis: only the g90, gv80 and gv80_coupe sheets differ, as listed above.
+
+---
+
 ## [Unreleased] - DQ: orphaned-record check + implied trim variant
 
 Merged from `feature/trim-hierarchy-orphan-safety-net` (2026-11-23). MINOR.
