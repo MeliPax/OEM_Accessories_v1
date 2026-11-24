@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Genesis: GV80 rows no longer get GV80 Coupe model numbers
+
+Merged from `fix/genesis-gv80-coupe-leak` (2026-11-24). PATCH. Plan and review: `accy_v2/planning/oem_pipeline/genesis_gv80_coupe_leak/PLAN.md`.
+
+### Fixed
+- **Model sub-variant guard** (`model_lookup/models/manufacture_module.py`, `search_models_by_description`): `model_sub_variant_tokens: [coupe]` keeps a bare "gv80" search from returning "GV80 Coupe", but it shared a switch with the trim-word filter, which is skipped when a trim word such as "prestige" is searched. The guard now always applies; the trim-word filter is unchanged. Also guards `apply(axis=1)` against an empty frame.
+
+### Impact
+- Genesis GV80 sheet (EN and FR): 250 rows each removed, all with the Coupe code `V8CC7K3BGPBL`, from 2026/2027 "3.5T Prestige" and "3.5T Prestige Black". Those trims now get `V8CW7K3BGP00` + `V8CW7K3BGPBL` and `V8CW7K3BGPBL` respectively.
+- Only Genesis configures `model_sub_variant_tokens`, and only `GV80 Coupe` has such a word in the vehicle DB. A replay of all 305 lookups from the current inputs changed exactly these 4 searches.
+
+### Tests
+- New `model_lookup/tests/test_model_sub_variant_guard.py`: 5 cases on a sample CSV; the fixed case fails on the previous code.
+- All four OEMs on `dev` and on the fix, same inputs, no errors: Mitsubishi, Mazda, Hyundai output and DQ identical; Genesis differs only by the GV80 rows above, DQ identical.
+
+---
+
 ## [Unreleased] - Genesis: trim name normalization (G90 e-SC) + Black package search
 
 Merged from `feature/trim-name-normalization` (2026-11-24). MINOR.

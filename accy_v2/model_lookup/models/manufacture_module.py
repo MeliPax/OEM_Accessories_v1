@@ -1317,10 +1317,10 @@ def search_models_by_description(
         has_fuel_type = _matches_any_fuel_keyword(df_filtered, fuel_type_keywords, fuel_type_check_columns)
         df_filtered = df_filtered[~has_fuel_type]
 
-    # Post-filter: exclude results with TRIM DISCRIMINATOR keywords not in the search list
-    # However: if any POWERTRAIN_TYPE keyword (fuel type) OR a TRIM keyword was explicitly requested,
-    # skip discriminator filtering because the user is searching for a fuel type or trim
-    # and should get all variants of that fuel type/trim (not just ones they explicitly named).
+    # Post-filter: exclude results with discriminator keywords not in the search list.
+    # - Model check (always): ModelName sub-variant tokens (e.g. "coupe") not searched.
+    # - Trim check: TRIM DISCRIMINATOR keywords not searched; skipped if a fuel type or
+    #   discriminator keyword was explicitly requested (return all variants of that fuel type/trim).
     vocab = load_manufacturer_keyword_vocab(make, configs_dir)
     if vocab:
         trim_discriminators, model_sub_variant_tokens = _get_trim_discriminator_keywords(make, configs_dir, oem_config)
@@ -1333,22 +1333,27 @@ def search_models_by_description(
         # Check if any discriminator keyword was in the search
         discriminator_kw_requested = bool(search_kw_set & all_discriminators)
 
-        # Only apply trim discriminator filtering if neither fuel type nor discriminator keyword was explicitly requested
-        if not user_requested_fuel_type and not discriminator_kw_requested:
-            def _has_extra_discriminator_keywords(row) -> bool:
-                # Check Description for TRIM/TRIM_VARIANT discriminators
-                desc_tokens = set(_extract_description_tokens(row["Description"]))
-                desc_discriminators = desc_tokens & trim_discriminators
-                extra_from_desc = desc_discriminators - search_kw_set
+        # Trim check is skipped when a fuel type or discriminator keyword was searched
+        # (searching "prestige" should return every Prestige variant).
+        skip_trim_check = user_requested_fuel_type or discriminator_kw_requested
 
-                # Check ModelName for MODEL sub-variant discriminators (e.g., "coupe")
-                model_name = row.get("ModelName", "")
-                model_tokens = set(_extract_description_tokens(model_name)) if model_name else set()
-                model_discriminators = model_tokens & model_sub_variant_tokens
-                extra_from_model = model_discriminators - search_kw_set
+        def _has_extra_discriminator_keywords(row) -> bool:
+            # Model check, always applied: a bare "gv80" search must not return
+            # "GV80 Coupe" unless "coupe" was searched (model_sub_variant_tokens).
+            model_name = row.get("ModelName", "")
+            model_tokens = set(_extract_description_tokens(model_name)) if model_name else set()
+            if (model_tokens & model_sub_variant_tokens) - search_kw_set:
+                return True
 
-                return bool(extra_from_desc or extra_from_model)
+            if skip_trim_check:
+                return False
 
+            # Trim check: Description has TRIM/TRIM_VARIANT discriminators that weren't searched
+            desc_tokens = set(_extract_description_tokens(row["Description"]))
+            return bool((desc_tokens & trim_discriminators) - search_kw_set)
+
+        # apply(axis=1) on an empty frame returns a DataFrame, not a mask, so guard it
+        if not df_filtered.empty and (model_sub_variant_tokens or not skip_trim_check):
             df_filtered = df_filtered[~df_filtered.apply(_has_extra_discriminator_keywords, axis=1)]
 
     # Filter by engine_type if provided
