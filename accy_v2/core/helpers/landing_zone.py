@@ -36,5 +36,24 @@ def latest_added(files: Iterable[Path]) -> Path:
     return chosen
 
 
+INPUT_PATTERNS = ("*.xlsx", "*.csv")
+
+
+def latest_input_file(folder: Path) -> Path:
+    """Standard input pick: the .xlsx or .csv file added to the folder last.
+
+    Skips Excel lock files (~$name.xlsx), which exist while a workbook is open and would
+    otherwise look like the newest file.
+    """
+    folder = Path(folder)
+    files = [
+        f for pattern in INPUT_PATTERNS for f in folder.glob(pattern)
+        if f.is_file() and not f.name.startswith("~$")
+    ]
+    if not files:
+        raise FileNotFoundError(f"No Excel/CSV files found in {folder}")
+    return latest_added(files)
+
+
 def _when(path: Path) -> str:
     return datetime.fromtimestamp(added_time(path)).strftime("%Y-%m-%d %H:%M")
