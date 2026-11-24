@@ -1,6 +1,6 @@
 # Fix plan: GV80 rows get GV80 Coupe model numbers
 
-**Status:** 📋 FOR REVIEW. No code changed yet.
+**Status:** ✅ IMPLEMENTED AND TESTED on the branch (`6398d11`); awaiting merge approval.
 **Branch:** `fix/genesis-gv80-coupe-leak` (from `dev` at `c93f806`)
 **Scope:** PATCH (bug fix in shared lookup code; only Genesis is configured to use it)
 **Date:** 2026-11-24
@@ -126,12 +126,34 @@ Expected Genesis numbers: the GV80 sheet loses one exploded row per affected sou
 
 1. ✅ Create branch `fix/genesis-gv80-coupe-leak` from `dev`.
 2. ✅ Write this plan.
-3. ⏳ **Your review of this plan.**
-4. Make the change and the unit test; commit on the branch.
-5. Run the four-OEM comparison; report results.
-6. On your approval: CHANGELOG entry, merge `--no-ff` into `dev`, push, delete the branch.
+3. ✅ Plan reviewed and approved (2026-11-24).
+4. ✅ Change and unit test committed (`6398d11`).
+5. ✅ Four-OEM comparison run; results in section 8.
+6. ⏳ On your approval: CHANGELOG entry, merge `--no-ff` into `dev`, push, delete the branch.
 
 ## 7. Out of scope (noted, not fixed here)
 
 - Hyundai has similar model-line pairs (e.g. Elantra / Elantra N, Santa Fe / Santa Fe Hybrid) but doesn't use `model_sub_variant_tokens`. Whether any of them leak the same way hasn't been checked; worth a separate look.
 - Genesis DB rows label the 3.5T e-SC (a combustion engine with an electric supercharger) as `engine_type: electric`. That's how the ADS data comes; the search relies on it for the G90 / GV80 Coupe e-SC lookups, so it stays as is.
+
+## 8. Test results (2026-11-24)
+
+**Unit test** `test_model_sub_variant_guard.py`: 5 passed. On `dev`'s code the fixed case fails (Coupe code returned) and the other 4 pass, so the test catches the bug.
+
+**Four OEMs, `dev` (`c93f806`) vs branch (`6398d11`), same inputs, no errors:**
+
+| OEM | Output | DQ |
+|---|---|---|
+| Mitsubishi | identical (7,216 rows) | identical (93) |
+| Mazda | identical (27,876 rows) | identical (0) |
+| Hyundai | identical (49,470 rows) | identical (45) |
+| Genesis | only `gv80_EN` / `gv80_FR` differ | identical (30) |
+
+**GV80 sheet (EN and FR each):** 250 rows removed, all with the Coupe code `V8CC7K3BGPBL`, all from the 2026/2027 "3.5T Prestige" and "3.5T Prestige Black" trims. With those rows taken out of `dev`'s sheet, the rest is identical to the branch output. No `V8CC…` code remains on the GV80 sheet. The GV80 Coupe sheet is unchanged.
+
+| Year, Trim | `dev` | Branch |
+|---|---|---|
+| 2026 3.5T Prestige | `V8CC7K3BGPBL`, `V8CW7K3BGP00`, `V8CW7K3BGPBL` (204 rows) | `V8CW7K3BGP00`, `V8CW7K3BGPBL` (136) |
+| 2026 3.5T Prestige Black | `V8CC7K3BGPBL`, `V8CW7K3BGPBL` (124) | `V8CW7K3BGPBL` (62) |
+| 2027 3.5T Prestige | same 3 codes (189) | 2 GV80 codes (126) |
+| 2027 3.5T Prestige Black | same 2 codes (114) | `V8CW7K3BGPBL` (57) |
