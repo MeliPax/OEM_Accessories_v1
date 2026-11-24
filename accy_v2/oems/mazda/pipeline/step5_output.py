@@ -1,14 +1,16 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pandas as pd
 
 from core.helpers.output_column_mapper import apply_downstream_column_mapping
+from core.helpers.dq_logger import DQLogger
 
 
 def prepare_frames(
     transformed: Dict[str, pd.DataFrame],
     meta_data: Dict[str, Any],
     config: dict,
+    dq_logger: Optional[DQLogger] = None,  # kept for OEM-specific output checks
 ) -> Dict[str, pd.DataFrame]:
     """
     Prepare output frames using programmable downstream schema.

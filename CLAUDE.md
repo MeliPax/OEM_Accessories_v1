@@ -41,6 +41,38 @@
 
 ---
 
+## Commit & Push Checklist (every agent, every commit)
+
+1. **`git status` first.** Know every changed file before staging anything.
+2. **Stage files by name** (`git add path/to/file`). Never `git add -A` / `git add .`: pipeline runs leave changes behind that don't belong in your commit.
+3. **Never commit** (all in `.gitignore`; if one shows up, fix `.gitignore`, don't commit it):
+   - `__pycache__/`, `*.pyc` — Python bytecode
+   - `.claude/settings.json`, `.claude/settings.local.json`, `.claude/scheduled_tasks.lock` — per-person Claude settings
+   - `creds/`, `*.env` — credentials (never read, print or commit them)
+4. **Don't mix data and code.** A pipeline run can change files you didn't edit (see below). Keep them out of a code commit.
+5. **Push only what the user asked for**, and never push `dev` / `main` without tests passing (see Key Rules).
+6. **After a merge:** delete the branch (local and `origin`).
+7. **No stashes.** A stash is uncommitted work set aside outside any branch; it isn't on GitHub and gets forgotten. Don't leave work in one: commit it to a branch (`git stash branch <type>/<name>`), or drop it once you've confirmed it holds nothing needed. If `git stash list` shows anything, tell the user what each one holds.
+8. **Switching branches with uncommitted changes:** if the user has files open or modified (often notebooks), don't stash or discard them. Do the branch work in a separate worktree (`git worktree add <dir> <branch>`) and remove it afterwards.
+
+### Long-lived branches: keep them in sync with `dev`
+
+A branch that lives for weeks (e.g. a Honda pipeline branch) must pick up what lands on `dev`, especially shared code: `accy_v2/core/`, `accy_v2/model_lookup/`, `run_pipeline.py`.
+
+- **Check:** `git fetch` then `git log --oneline <branch>..origin/dev -- accy_v2/core accy_v2/model_lookup run_pipeline.py`. Anything listed → sync.
+- **Sync = merge `dev` into the branch** (`git merge origin/dev` on the branch). Don't rebase a long-lived branch: it rewrites every commit.
+- Resolve conflicts keeping both sides' intent, run that OEM's pipeline before and after the merge, and say in the merge commit what was tested.
+
+### Vehicle DB: keep `dev` up to date
+
+Pipeline runs fetch new vehicles and append them to `accy_v2/model_lookup/db/db_vehicle_models.csv`. `dev` should always have the latest DB:
+
+- **When `git status` shows the DB changed:** commit it on its own `data/vehicle-db-YYYY-MM-DD` branch from `dev` (DB file only), merge `--no-ff` into `dev`, push `dev`, delete the branch. Commit message: what was added (makes, models, years, row count).
+- **Keyword configs** (`accy_v2/model_lookup/configs/*_keywords.json`) are rewritten on every run. If only `generated_at` changed, discard the change (`git checkout -- <file>`). If the `keywords` list changed, commit it with the DB.
+- Rows with a blank `TrimName` / `ModelName` are committed as fetched; mention them in the commit message.
+
+---
+
 ## Versioning at a Glance
 
 ```

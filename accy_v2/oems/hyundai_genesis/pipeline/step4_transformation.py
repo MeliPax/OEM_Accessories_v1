@@ -23,7 +23,7 @@ def run(
     """
     valid_trim_cols = step2_result["valid_trim_cols"]
 
-    # step3 already validated that all rows have at least one populated trim col via trim_applicability_required_rule
+    # step3 already validated that all rows have at least one populated trim col via orphaned_record_rule
     melted_df = _melt_trim_cols(standardized_df, valid_trim_cols)
 
     pipeline_logger.debug(
@@ -46,7 +46,7 @@ def _melt_trim_cols(
     Melt trim columns. Keep only rows where the melted trim value is non-null/non-empty
     (since the cell *is* the trim name, not an applicability marker).
 
-    Note: After step3's trim_applicability_required_rule validates that every record has
+    Note: After step3's orphaned_record_rule validates that every record has
     at least one populated trim column, empty trim values here are expected (parts may
     apply to only some trim levels, not all). These are silently filtered as normal
     reshape behavior, not DQ violations.

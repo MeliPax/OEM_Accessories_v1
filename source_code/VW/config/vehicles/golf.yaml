@@ -1,0 +1,79 @@
+# Option sets for the Volkswagen Golf: what each year range can have.
+# Drafted 2026-10-26 from datasets/vw_models_data.csv (model years 2020+), one set per
+# run of consecutive years with identical options. Review before relying on it.
+# Rules: values are normalized keyword values (keywords.yaml); a category that is not
+# listed means "not offered"; years are inclusive; inventory status is never an option.
+
+make: Volkswagen
+model: Golf
+
+# drafted = built from the VW export, not yet checked by a person; set reviewed (with who / when) once checked
+status: reviewed
+reviewed_by: P.M
+reviewed_on: 2026-11-03
+
+option_sets:
+  # --- Golf (base)
+  - years: [2020, 2021]
+    trim: [Comfortline, Highline]
+    transmission: [Automatic, Manual]
+    body_style: [5-Door]
+
+  # --- Golf GTI
+  - submodel: GTI
+    years: [2020, 2021]
+    trim: [Autobahn]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2022, 2022]
+    trim: [Autobahn]
+    performance_package: [Performance]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2023, 2023]
+    trim: [Autobahn]
+    special_edition: [40th Anniversary]
+    performance_package: [Performance]
+    transmission: [Automatic, Manual]
+
+  - submodel: GTI
+    years: [2024, 2024]
+    trim: [Autobahn]
+    performance_package: [Performance]
+
+  - submodel: GTI
+    years: [2025, 2026]
+    trim: [Autobahn]
+
+  # --- Golf R
+  - submodel: R
+    years: [2022, 2022]
+    transmission: [DSG Dual-Clutch, Manual]
+
+  - submodel: R
+    years: [2023, 2023]
+    special_edition: [20th Anniversary]
+    transmission: [DSG Dual-Clutch, Manual]
+
+  - submodel: R
+    years: [2024, 2024]
+    # description carries no options for these years
+
+  - submodel: R
+    years: [2025, 2026]
+    appearance_package: [Black]
+
+# Facts a person confirmed (idea 009). Each entry needs reason, verified_by and verified_on; years are
+# listed one by one. A flag an entry covers drops to info; data that contradicts it is an error.
+#   never_offered: {years: [...]}             the vehicle didn't exist in those years
+#   never_offered: {<category>: [...]}        that option didn't exist (with years: [...] on the entry)
+#   no_parts_expected: {years: [...], until}  the vehicle exists, but no parts are expected until the date
+verified:
+  - submodel: R
+    never_offered:
+      years: [2020, 2021]
+    reason: Golf R wasn't offered in Canada for model years 2020-2021; it returned for 2022
+    verified_by: P.M
+    verified_on: 2026-10-28

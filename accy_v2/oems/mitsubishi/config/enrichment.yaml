@@ -55,6 +55,12 @@ model_lookup:
         - EXTERIOR_COLOR
         - ENGINE_SPEC
 
+      # Trims where only one fuel variant exists in DB (config-driven, cross-OEM reusable)
+      implied_fuel_type_trims: []
+
+      # Trims where only one model sub-line variant exists in DB (config-driven, cross-OEM reusable)
+      implied_trim_variant_trims: []
+
       # Config file paths using central registry
       # DECISION [020]: Use ${PATH_*} placeholders (resolved by ModularConfigLoader)
       # Paths defined in accy_v2/paths.yaml for single source of truth

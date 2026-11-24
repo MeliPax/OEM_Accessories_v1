@@ -4,6 +4,151 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Runners: Mazda uses the standard input pick; run_pipeline works from any folder
+
+Merged from `fix/mazda-runner-input-file` (2026-11-24). PATCH.
+
+### Fixed
+- **Mazda input file:** `accy_v2/run_mazda.py` only considered `.csv`, so with both `20260804_MazdaAccessoryFeed.xlsx` and `Mazda_accessory_feed.csv` in the landing folder it processed the `.csv` while `run_pipeline.py mazda` processed the `.xlsx`. Both now use the standard pick, new `core/helpers/landing_zone.latest_input_file()`: the `.xlsx` or `.csv` file added to the folder last.
+- **Excel lock files** (`~$name.xlsx`, present while a workbook is open) are no longer candidates; one would have been picked as the newest file.
+- **`run_pipeline.py` from another folder:** it printed the input path relative to the current folder and stopped with an error when started from outside the project. It now prints it relative to the project root.
+
+### Tests
+- New `accy_v2/tests/test_landing_zone.py`: 4 cases (xlsx/csv order, lock files, empty folder).
+- All four OEMs on `dev` and on the fix, same inputs: output and DQ identical.
+- On the fix, `run_mazda.py` and `run_pipeline.py mazda` both pick the `.xlsx` and produce identical output (on `dev`, `run_mazda.py` picked the `.csv`). `run_pipeline.py mazda` started from outside the project: fails on `dev`, completes on the fix.
+
+---
+
+## [Unreleased] - DQ: orphaned_record_rule = accessory attached to no vehicle
+
+Merged from `fix/orphaned-record-rule-definition` (2026-11-24). PATCH.
+
+### Fixed
+- **Orphaned record definition:** an orphaned record is an accessory not attached to any vehicle in the applicability (trim) columns. The step-5 check added with the orphan safety net flagged rows with **no model number** instead, repeating `model_number_lookup_rule` for every lookup miss. Removed it (`core/helpers/orphan_record_validator.py` and its calls in Hyundai/Genesis, Mazda and Mitsubishi step 5; the `dq_logger` argument stays).
+- **Renamed** the existing applicability checks to `orphaned_record_rule`, with messages saying the accessory is attached to no vehicle: Hyundai/Genesis step 3 (was `trim_applicability_required_rule`: all trim columns empty) and Mitsubishi step 4 (was `trim_applicability_rule`: no trim column marked X). Mazda has no applicability columns.
+
+### Impact
+- Output unchanged for all four OEMs.
+- DQ: Genesis 30 → 16 (14 repeated lookup misses gone), Hyundai 45 → 29 (16 gone; 1 real orphan, 2026 Kona EV record 10, renamed), Mitsubishi 93 → 83 (10 gone; 3 real orphans, 2026 PHEV records 122/123 and 2024 Mirage record 75, renamed). Mazda 0.
+
+### Tests
+- All four OEMs on `dev` and on the fix, same inputs, no errors: output data sheets identical cell by cell; DQ reports differ only as listed above.
+
+---
+
+## [Unreleased] - Genesis: GV80 rows no longer get GV80 Coupe model numbers
+
+Merged from `fix/genesis-gv80-coupe-leak` (2026-11-24). PATCH. Plan and review: `accy_v2/planning/oem_pipeline/genesis_gv80_coupe_leak/PLAN.md`.
+
+### Fixed
+- **Model sub-variant guard** (`model_lookup/models/manufacture_module.py`, `search_models_by_description`): `model_sub_variant_tokens: [coupe]` keeps a bare "gv80" search from returning "GV80 Coupe", but it shared a switch with the trim-word filter, which is skipped when a trim word such as "prestige" is searched. The guard now always applies; the trim-word filter is unchanged. Also guards `apply(axis=1)` against an empty frame.
+
+### Impact
+- Genesis GV80 sheet (EN and FR): 250 rows each removed, all with the Coupe code `V8CC7K3BGPBL`, from 2026/2027 "3.5T Prestige" and "3.5T Prestige Black". Those trims now get `V8CW7K3BGP00` + `V8CW7K3BGPBL` and `V8CW7K3BGPBL` respectively.
+- Only Genesis configures `model_sub_variant_tokens`, and only `GV80 Coupe` has such a word in the vehicle DB. A replay of all 305 lookups from the current inputs changed exactly these 4 searches.
+
+### Tests
+- New `model_lookup/tests/test_model_sub_variant_guard.py`: 5 cases on a sample CSV; the fixed case fails on the previous code.
+- All four OEMs on `dev` and on the fix, same inputs, no errors: Mitsubishi, Mazda, Hyundai output and DQ identical; Genesis differs only by the GV80 rows above, DQ identical.
+
+---
+
+## [Unreleased] - Genesis: trim name normalization (G90 e-SC) + Black package search
+
+Merged from `feature/trim-name-normalization` (2026-11-24). MINOR.
+
+### Added
+- **Trim name normalization** (`oems/hyundai_genesis/pipeline/step4_5_model_enrichment.py`, `_normalize_trim_names`): applies the `trim_name_normalization` rules in `enrichment.yaml` (regex, per model) to trim names before the lookup and when mapping results back to rows. The three G90 rules already in the Genesis config now take effect: "3.5T e-SC Prestige [Black]" → "e-SC Prestige [Black]", bare "3.5T e-SC" → "e-SC Prestige".
+
+### Fixed
+- **Genesis "Black" trims** (`model_lookup/configs/genesis/classification.yaml`): the translator turns "black" into "black-package", which wasn't classified, so it was dropped and Black trims matched every Prestige variant. Now classified as PACKAGE.
+- Rows whose normalized trim matches several model codes keep their "(duplicate model code)" status (the flag compared original names against normalized ones).
+- Removed the stray `test_output.log` from the repo root.
+
+### Impact (Genesis only)
+- G90 2024/2025 "3.5T e-SC" → `G9CS4K3BXXPS`; 2026 "3.5T e-SC Prestige" → the three Prestige codes; 2026 "3.5T e-SC Prestige Black" → `G9CS4K3BGPBL` (all had no model number).
+- GV80 2026/2027 "3.5T Prestige Black" and GV80 Coupe 2027 "3.5T e-SC Coupe Black" no longer get the non-Black `...GP00` codes.
+- Rows with no model number 422 → 220; DQ warnings 42 → 30.
+- Known, not changed here: GV80 "Prestige Black" rows still also get the GV80 Coupe code `V8CC7K3BGPBL`.
+
+### Tests
+- All four OEMs run on `dev` and on the branch with the same inputs, no errors. Mitsubishi, Mazda, Hyundai: output and DQ identical. Genesis: only the g90, gv80 and gv80_coupe sheets differ, as listed above.
+
+---
+
+## [Unreleased] - DQ: orphaned-record check + implied trim variant
+
+Merged from `feature/trim-hierarchy-orphan-safety-net` (2026-11-23). MINOR.
+
+### Added
+- **Orphaned-record check** (`accy_v2/core/helpers/orphan_record_validator.py`): at the output step, all four OEMs log an `orphaned_record_rule` DQ warning for rows with no model number, one per (Year, ModelName, Trim) with the row count and up to 5 sample parts. A last check that catches rows earlier steps missed. `run_step5_output` now receives `dq_logger` (base pipeline and every OEM orchestrator).
+- **Implied trim variant** (`search_engine.py` step 3.6, `implied_trim_variant_trims` in each `enrichment.yaml`): a config rule can add a missing sub-line token before the search. One Hyundai rule (Elantra TCR 2026 → N); `dev` already finds the Elantra TCR through exact trim matching, so it changes no output today.
+
+### Fixed (on the branch before merge)
+- Hyundai/Genesis would have crashed: the check was wired into the unused `oems/hyundai/pipeline/step5_output.py`; moved to the shared `oems/hyundai_genesis/pipeline/step5_output.py`.
+- Mazda checked `short_model_number`, already renamed to `Model` by the column mapping, so every row would have been flagged.
+- One warning per trim instead of per row (would have been 3,000+ lines).
+
+### Impact
+- Output unchanged. New DQ warnings: Mitsubishi +10, Hyundai +16, Genesis +22, Mazda 0. All of them are gaps already reported by `model_number_lookup_rule`; the new warning adds how many rows each affects. Hyundai/Genesis report each trim on both the EN and FR sheet.
+- `feature/honda-pipeline-port` must take the new `run_step5_output(..., dq_logger, pipeline_logger)` signature when it next syncs with `dev`.
+
+### Tests
+- All four OEMs run on `dev` and on the branch with the same inputs: no errors, output data sheets identical cell by cell; DQ reports differ only by the new `orphaned_record_rule` warnings. Unit check of the grouping (blank / "nan" / NaN model numbers, missing column, no logger).
+
+---
+
+## [Unreleased] - Mitsubishi: false lookup errors removed
+
+Merged from `fix/mitsubishi-model-number` (2026-11-23). PATCH.
+
+### Fixed
+- **Mitsubishi model-number lookup** (`accy_v2/oems/mitsubishi/pipeline/step4_5_model_enrichment.py`): since `fb6dc79` (2026-09-01, "Fix 4: Mitsubishi packages") the debug line after a successful lookup used `model_number`, a name that commit had removed. Every found model number raised `NameError` after it was stored: output model numbers were correct, but the log showed `[ERROR]` and the DQ report a false "Error during model number lookup" warning for each one.
+
+### Impact
+- Mitsubishi lookups: 0 found / 10 not found / 52 errors → 52 found / 10 not found / 0 errors.
+- DQ warnings 135 → 83; `_Report` trim coverage 62 of 135 (45.9%) → 62 of 83 (74.7%). Genuine gaps still reported (PHEV 2024–2026, 2020 RVR not in the vehicle DB, `gt-p` trim).
+
+### Tests
+- All four OEMs run on `dev` and on the fix with the same inputs: output data sheets identical cell by cell for every OEM; DQ reports identical for Mazda, Hyundai, Genesis; Mitsubishi differs only by the 52 false warnings.
+
+---
+
+## [Unreleased] - Runners: Genesis landing folder + input file picked by date added
+
+Merged from `fix/genesis-landing-folder` (2026-11-20). PATCH.
+
+### Fixed
+- **Genesis input folder:** the raw data folder was renamed from `landing_zone/hyundai_genesis/` to `landing_zone/genesis/`. `run_pipeline.py` now maps every OEM to `accy_v2/data/landing_zone/<oem>/`; `accy_v2/run_genesis.py` reads `genesis/` and `accy_v2/run_hyundai.py` reads `hyundai/` (it still pointed at the removed `hyundai_genesis/`). The shared code package `oems/hyundai_genesis/` is unchanged.
+- **Input file choice:** runners picked the last *modified* file, so Genesis ran on the 2025 workbook (copying keeps an old modified date; saving an old workbook makes it look newest). New helper `accy_v2/core/helpers/landing_zone.py` picks the file *added* to the folder last and prints the picked and skipped files; used by `run_pipeline.py` and all four `accy_v2/run_*.py`.
+
+### Tests
+- All 8 entry points (`run_pipeline.py` and `accy_v2/run_*.py` × Genesis, Hyundai, Mazda, Mitsubishi) run end to end. Genesis now runs on the 2026-8-1 workbook: 31 sheets, 75 found / 12 not found, 0 errors. Hyundai 148 / 8, 0 errors. Mitsubishi's 52 errors are unchanged from `dev`.
+
+---
+
+## [Unreleased] - VW Accessory Pipeline
+
+Merged from `feature/vw-data-analysis` (2026-11-20). Planned as a MINOR release (v2.7.0). Only `source_code/VW/` changes; nothing shared (`accy_v2/`) is touched.
+
+### Added
+- **VW pipeline** in `source_code/VW/` (its own history: `source_code/VW/CHANGELOG.md`, plans 001–015):
+  - vehicle ingest from the VW model export into `vehicles.csv`, with per-model option sets in `config/vehicles/` (all 10 reviewed);
+  - accessory ingest, model-number lookup and a per-model accessory dict, exported to Excel;
+  - logging and data-quality flags from a message catalogue; review files for every flag that needs action;
+  - part numbers kept exactly as the source (leading zeros restored from `make&model`, never padded);
+  - labour time read as time units (100 = 1 hour) into `labor_hours`; values below 1 corrected × 100.
+
+### Not included
+- The model lookup refresh (regenerated vehicle DB, keyword configs incl. Kia and Volkswagen, creds loader, notebooks) is on `feature/model-lookup-refresh`, to merge once the DB rows are complete.
+
+### Tests
+- VW: `pytest source_code/VW/tests`.
+- Hyundai, Genesis, Mazda, Mitsubishi pipelines run on the merged result; lookup results identical to `dev`.
+
+---
+
 ## [Unreleased] - DQ Report Cleanup
 
 ### 🎯 Status: IN DEVELOPMENT

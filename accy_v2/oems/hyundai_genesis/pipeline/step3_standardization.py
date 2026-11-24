@@ -97,7 +97,7 @@ def _validate_trim_applicability(
     model_name: str,
     dq_logger: DQLogger,
 ) -> pd.DataFrame:
-    """Flag + exclude records where every trim column is empty (part has no applicable vehicle trim)."""
+    """Flag + exclude orphaned records: every trim column empty, so the accessory is attached to no vehicle."""
     def _is_empty(v) -> bool:
         return pd.isna(v) or (isinstance(v, str) and v.strip() == "")
 
@@ -109,10 +109,10 @@ def _validate_trim_applicability(
             model_name=model_name,
             record_index=int(idx),
             record_snapshot=row.to_dict(),
-            rule_violated="trim_applicability_required_rule",
+            rule_violated="orphaned_record_rule",
             issue_description=(
-                f"All trim columns ({', '.join(trim_cols)}) are empty — "
-                "part has no applicable vehicle trim, record excluded from output"
+                f"Orphaned record: all trim columns ({', '.join(trim_cols)}) are empty — "
+                "accessory is not attached to any vehicle, record excluded from output"
             ),
         )
 

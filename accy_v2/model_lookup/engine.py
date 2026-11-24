@@ -13,9 +13,8 @@ from pathlib import Path
 
 def load_env():
     """
-    Load environment variables from .env file.
+    Load the SQL login from model_lookup/creds/db_creds.env (git-ignored; never commit it).
     Must be called explicitly by the application.
-    Looks for .env in model_lookup/creds/ relative to this script.
     """
     script_dir = Path(__file__).parent  # model_lookup directory
     env_path = script_dir / "creds" / "db_creds.env"
