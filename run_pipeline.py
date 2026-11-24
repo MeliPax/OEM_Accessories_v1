@@ -51,19 +51,9 @@ def get_landing_zone_files(oem: str, file_path: str = None) -> list:
             raise FileNotFoundError(f"File not found: {file_to_process}")
         return [file_to_process]
 
-    # Auto-discover files
-    excel_files = sorted(landing_zone.glob("*.xlsx"))
-    csv_files = sorted(landing_zone.glob("*.csv"))
-    all_files = excel_files + csv_files
-
-    if not all_files:
-        raise FileNotFoundError(
-            f"No Excel/CSV files found in {landing_zone}"
-        )
-
-    # The file added to the folder last (not the last modified: copying keeps the old modified date)
-    from core.helpers.landing_zone import latest_added
-    return [latest_added(all_files)]
+    # The .xlsx/.csv file added to the folder last (not the last modified: copying keeps the old modified date)
+    from core.helpers.landing_zone import latest_input_file
+    return [latest_input_file(landing_zone)]
 
 
 def get_pipeline_class(oem: str):
@@ -131,7 +121,11 @@ def main():
         files = get_landing_zone_files(oem, file_path)
         print(f"Files to process: {len(files)}")
         for f in files:
-            print(f"  - {f.relative_to(Path.cwd())}")
+            # Relative to the project root, so this works from any folder
+            try:
+                print(f"  - {f.resolve().relative_to(project_root.resolve())}")
+            except ValueError:
+                print(f"  - {f}")
         print()
 
         # Get pipeline and config
