@@ -4,6 +4,23 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - DQ: orphaned_record_rule = accessory attached to no vehicle
+
+Merged from `fix/orphaned-record-rule-definition` (2026-11-24). PATCH.
+
+### Fixed
+- **Orphaned record definition:** an orphaned record is an accessory not attached to any vehicle in the applicability (trim) columns. The step-5 check added with the orphan safety net flagged rows with **no model number** instead, repeating `model_number_lookup_rule` for every lookup miss. Removed it (`core/helpers/orphan_record_validator.py` and its calls in Hyundai/Genesis, Mazda and Mitsubishi step 5; the `dq_logger` argument stays).
+- **Renamed** the existing applicability checks to `orphaned_record_rule`, with messages saying the accessory is attached to no vehicle: Hyundai/Genesis step 3 (was `trim_applicability_required_rule`: all trim columns empty) and Mitsubishi step 4 (was `trim_applicability_rule`: no trim column marked X). Mazda has no applicability columns.
+
+### Impact
+- Output unchanged for all four OEMs.
+- DQ: Genesis 30 → 16 (14 repeated lookup misses gone), Hyundai 45 → 29 (16 gone; 1 real orphan, 2026 Kona EV record 10, renamed), Mitsubishi 93 → 83 (10 gone; 3 real orphans, 2026 PHEV records 122/123 and 2024 Mirage record 75, renamed). Mazda 0.
+
+### Tests
+- All four OEMs on `dev` and on the fix, same inputs, no errors: output data sheets identical cell by cell; DQ reports differ only as listed above.
+
+---
+
 ## [Unreleased] - Genesis: GV80 rows no longer get GV80 Coupe model numbers
 
 Merged from `fix/genesis-gv80-coupe-leak` (2026-11-24). PATCH. Plan and review: `accy_v2/planning/oem_pipeline/genesis_gv80_coupe_leak/PLAN.md`.
