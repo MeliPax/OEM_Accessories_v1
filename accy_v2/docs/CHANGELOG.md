@@ -4,6 +4,22 @@ All notable changes to this project are documented here. Format based on [Keep a
 
 ---
 
+## [Unreleased] - Runners: Mazda uses the standard input pick; run_pipeline works from any folder
+
+Merged from `fix/mazda-runner-input-file` (2026-11-24). PATCH.
+
+### Fixed
+- **Mazda input file:** `accy_v2/run_mazda.py` only considered `.csv`, so with both `20260804_MazdaAccessoryFeed.xlsx` and `Mazda_accessory_feed.csv` in the landing folder it processed the `.csv` while `run_pipeline.py mazda` processed the `.xlsx`. Both now use the standard pick, new `core/helpers/landing_zone.latest_input_file()`: the `.xlsx` or `.csv` file added to the folder last.
+- **Excel lock files** (`~$name.xlsx`, present while a workbook is open) are no longer candidates; one would have been picked as the newest file.
+- **`run_pipeline.py` from another folder:** it printed the input path relative to the current folder and stopped with an error when started from outside the project. It now prints it relative to the project root.
+
+### Tests
+- New `accy_v2/tests/test_landing_zone.py`: 4 cases (xlsx/csv order, lock files, empty folder).
+- All four OEMs on `dev` and on the fix, same inputs: output and DQ identical.
+- On the fix, `run_mazda.py` and `run_pipeline.py mazda` both pick the `.xlsx` and produce identical output (on `dev`, `run_mazda.py` picked the `.csv`). `run_pipeline.py mazda` started from outside the project: fails on `dev`, completes on the fix.
+
+---
+
 ## [Unreleased] - DQ: orphaned_record_rule = accessory attached to no vehicle
 
 Merged from `fix/orphaned-record-rule-definition` (2026-11-24). PATCH.
