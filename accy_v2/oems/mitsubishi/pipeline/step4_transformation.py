@@ -57,8 +57,8 @@ def _validate_trim_applicability(
             model_name=model_name,
             record_index=int(idx),
             record_snapshot=row.to_dict(),
-            rule_violated="trim_applicability_rule",
-            issue_description="Record applies to zero trim levels — excluded from output",
+            rule_violated="orphaned_record_rule",
+            issue_description="Orphaned record: no trim column marked X — accessory is not attached to any vehicle, excluded from output",
         )
 
     return df[has_any_x].reset_index(drop=True)

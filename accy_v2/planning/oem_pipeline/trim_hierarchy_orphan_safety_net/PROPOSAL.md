@@ -1,5 +1,8 @@
 # Proposal: Trim-Hierarchy Fallback + Orphaned-Record Safety Net (Cross-OEM)
 
+> **⚠️ Superseded definition (2026-11-24, P.M.):** an *orphaned record* is an accessory record that is **not attached to any vehicle in the applicability (trim) columns**, not a row with a missing model number. Part 2's model-number check below duplicated `model_number_lookup_rule` and was removed (`fix/orphaned-record-rule-definition`). `orphaned_record_rule` is now the name of the existing applicability checks: Hyundai/Genesis step 3 (all trim columns empty) and Mitsubishi step 4 (no trim column marked X). Mazda has no applicability columns. Part 1 (implied trim variant) is unchanged.
+
+
 **Date:** 2026-08-31  
 **Status:** ✅ IMPLEMENTED (2026-09-09)  
 **Scope:** Both Part 1 (implied_trim_variant_trims) and Part 2 (orphaned_record_rule) complete
