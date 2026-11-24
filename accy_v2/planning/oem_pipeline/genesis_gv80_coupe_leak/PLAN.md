@@ -81,6 +81,36 @@ The `not df_filtered.empty` guard also fixes a latent issue: `DataFrame.apply(ax
 
 Expected Genesis numbers: the GV80 sheet loses one exploded row per affected source row (2026 and 2027, Prestige and Prestige Black, EN and FR). Nothing else in Genesis should move, the GV80 Coupe sheet included.
 
+## 4a. Review: how vehicle configuration feeds this filter (2026-11-24)
+
+**Config inputs to the filter:**
+
+| Input | Defined in | Set for |
+|---|---|---|
+| Sub-variant words (`coupe`) | `model_sub_variant_tokens`, `oems/<oem>/config/enrichment.yaml` | Genesis only |
+| Trim words (`prestige`, `advanced`, …) | TRIM / TRIM_VARIANT entries, `model_lookup/configs/<make>/classification.yaml` | every make |
+| Fuel words (`electric`, `hybrid`, …) | `fuel_type_keywords` in enrichment.yaml (or built-in list) | every make |
+| Filter runs at all | keyword vocabulary `model_lookup/configs/<make>_keywords.json` (rewritten on ADS refresh) | every make |
+
+**Findings:**
+- **Only one model line in the vehicle DB has a sub-variant word:** `GV80 Coupe` (2025–2027). No Hyundai, Mazda, Mitsubishi or Honda model name contains `coupe`.
+- **Hyundai and Mitsubishi** pass their config to the same function but have no `model_sub_variant_tokens`. With an empty set, the new code runs the filter under exactly the old condition, so their results can't change.
+- **Mazda** doesn't use the model lookup (0 searches).
+- **`model_lookup/core/search.py`** has its own, older copy of the trim filter with no sub-variant concept. No pipeline uses it, so it's unaffected.
+- **VW** (`source_code/VW`) has `coupe` in its own classification config but doesn't call this function.
+- **The GV80 Coupe sheet** searches include `coupe` (and `electric`, from `e-sc`), so the always-on guard keeps the Coupe rows there.
+- **Future data:** a source sheet for a Coupe trim that doesn't say "coupe" would now return nothing instead of a wrong GV80 match, and gets reported as NOT_FOUND. That's the intended direction.
+- **Config caution for later:** whatever goes in `model_sub_variant_tokens` now always removes model lines containing that word unless it's searched. Words that are also fuel types (`hybrid`, `electric`) or single letters (`n`) shouldn't be added without a test. For example, `hybrid` would remove `Tucson Hybrid` from any search that doesn't literally contain "hybrid", including ones where the hybrid fuel type is implied by a config rule.
+
+**Replay check:** every real search from the latest inputs was run through both the current and the proposed filter (Genesis 87, Hyundai 156, Mitsubishi 62, Mazda 0). **4 results differ, all intended:**
+
+| Year | Keywords | Current | Proposed |
+|---|---|---|---|
+| 2026 | gv80 3.5t prestige | GV80 `…GP00`, GV80 `…GPBL`, Coupe `V8CC7K3BGPBL` | GV80 `…GP00`, GV80 `…GPBL` |
+| 2026 | gv80 3.5t prestige black-package | GV80 `…GPBL`, Coupe `V8CC7K3BGPBL` | GV80 `…GPBL` |
+| 2027 | gv80 3.5t prestige | same pattern as 2026 | GV80 codes only |
+| 2027 | gv80 3.5t prestige black-package | same pattern as 2026 | GV80 code only |
+
 ## 5. Tests
 
 1. **Unit test** (new, `accy_v2/model_lookup/tests/test_model_sub_variant_guard.py`), using a small temporary CSV, so it doesn't depend on the live DB:
